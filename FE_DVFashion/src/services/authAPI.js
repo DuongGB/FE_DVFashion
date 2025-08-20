@@ -1,0 +1,28 @@
+import api from "./api";
+
+export const authAPI = {
+  // login
+  login: (data) => {
+    return api.post("/auth/sign-in", data);
+  },
+
+  // register
+  register: (userData) => {
+    return api.post("/auth/sign-up", userData);
+  },
+
+  // Đăng xuất
+  logout: () => {
+    return api.post("/auth/logout");
+  },
+
+  // Refresh token
+  refreshToken: () => {
+    return api.post("/auth/refresh-token");
+  },
+
+  // Get current user information
+  getCurrentUser: () => {
+    return api.get("/auth/me");
+  },
+};
