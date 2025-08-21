@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
 import Banner from "../components/common/Banner";
 import Category from "../components/common/Category";
+import ProductCarousel from "../components/common/ProductCarousel";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -74,6 +75,9 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* Content */}
+      <ProductCarousel />
     </div>
   );
 }
