@@ -1,11 +1,10 @@
-import { useAuth } from "../hooks/useAuth";
-import LoginForm from "../components/ui/auth/LoginForm";
-import Header from "../components/common/Header";
-import Footer from "../components/common/Footer";
-import { useNavigate } from "react-router-dom";
-import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
 import { useEffect } from "react";
-import { ArrowUp } from "react-feather";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
+import Banner from "../components/common/Banner";
+import Category from "../components/common/Category";
+import ProductCarousel from "../components/common/ProductCarousel";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -21,46 +20,64 @@ export default function HomePage() {
     }
   }, [isAuthenticated, user, navigate]);
 
+  const ads = [
+    {
+      id: 1,
+      title: "MEN WEAR",
+      subtitle: "Nhập COOLNEW Giảm 30K đơn đầu tiên từ 199k",
+      image: "./src/assets/ads_home_1.avif",
+      button: "KHÁM PHÁ",
+    },
+    {
+      id: 2,
+      title: "WOMEN ACTIVE",
+      subtitle: "Tặng phụ kiện cho đơn từ 399k | Freeship",
+      image: "./src/assets/ads_home_2.avif",
+      button: "KHÁM PHÁ",
+    },
+  ];
+
   return (
     // <div className="flex flex-col items-center justify-center h-screen gap-4">
     //   {!isAuthenticated && <LoginForm />}
     // </div>
     <div className="font-sans">
       {/* Banner */}
-      <div className="relative bg-orange-600 text-white py-16 px-8 flex items-center justify-between overflow-hidden">
-        {/* Left content */}
-        <div>
-          <div className="bg-orange-300 inline-block px-4 py-2 rounded font-bold mb-4">
-            2.9 COLLECTION
-          </div>
-          <h1 className="text-5xl font-bold mb-4">Tự do vươn mình</h1>
-          <p className="text-2xl mb-6">Mua 02 giảm thêm 10%</p>
-          <button className="bg-white text-orange-600 px-6 py-2 rounded-full font-bold shadow hover:bg-orange-100 transition">
-            MUA NGAY &rarr;
-          </button>
+      <Banner />
+
+      {/* Main content */}
+      <Category />
+
+      {/* Advertisement */}
+      <div className="w-full max-w-7xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {ads.map((ad) => (
+            <div
+              key={ad.id}
+              className="relative rounded-2xl overflow-hidden group"
+            >
+              {/* Background image */}
+              <img
+                src={ad.image}
+                alt={ad.title}
+                className="w-full h-[400px] object-cover transform group-hover:scale-105 transition duration-500"
+              />
+
+              {/* Overlay content */}
+              <div className="absolute inset-0 bg-black/30 flex flex-col justify-end p-6">
+                <h2 className="text-white text-3xl font-bold">{ad.title}</h2>
+                <p className="text-white text-sm mt-2">{ad.subtitle}</p>
+                <button className="mt-4 bg-white text-black font-semibold px-6 py-2 rounded-full hover:bg-gray-100 transition">
+                  {ad.button}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-        {/* Right images */}
-        <div className="flex items-end gap-8">
-          <img
-            src="/assets/runner.png"
-            alt="Runner"
-            className="h-72 object-contain"
-          />
-          <img
-            src="/assets/tshirt.png"
-            alt="Tshirt"
-            className="h-80 object-contain"
-          />
-        </div>
-        {/* Decorative background */}
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-orange-700 opacity-40 pointer-events-none" />
       </div>
 
-      {/* Bottom bar */}
-      <div className="bg-orange-700 text-white py-2 text-center font-bold tracking-widest">
-        2.8 COLLECTION &nbsp; ★ &nbsp; 2.9 COLLECTION &nbsp; ★ &nbsp; 2.8
-        COLLECTION
-      </div>
+      {/* Content */}
+      <ProductCarousel />
     </div>
   );
 }
