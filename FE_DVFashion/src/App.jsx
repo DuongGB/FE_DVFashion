@@ -5,29 +5,32 @@ import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
 import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
 import CustomerPage from "./pages/CustomerPage";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
 
-        {/* Routes by role */}
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
-          <Route path="/admin" element={<AdminPage />} />
-        </Route>
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
-          <Route path="/staff" element={<StaffPage />} />
-        </Route>
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_CUSTOMER"]} />}>
-          <Route path="/customer" element={<CustomerPage />} />
-        </Route>
+          {/* Routes by role */}
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
+            <Route path="/staff" element={<StaffPage />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_CUSTOMER"]} />}>
+            <Route path="/customer" element={<CustomerPage />} />
+          </Route>
 
-        {/* General dashboard page (anyone can log in) */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-      </Routes>
+          {/* General dashboard page (anyone can log in) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
+        </Routes>
+      </MainLayout>
     </Router>
   );
 }
