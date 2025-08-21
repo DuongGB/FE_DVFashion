@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Phone,
-  Mail,
-  Facebook,
-  Instagram,
-  Youtube,
-  ArrowUp,
-  MessageCircle,
-} from "react-feather";
+import { Phone, Mail, Facebook, Instagram, Youtube } from "react-feather";
 
 export default function Footer() {
   return (
@@ -21,7 +13,7 @@ export default function Footer() {
             từ khách hàng để có thể nâng cấp trải nghiệm dịch vụ và sản phẩm tốt
             hơn nữa.
           </p>
-          <button className="bg-white text-black font-bold px-6 py-2 rounded-full shadow hover:bg-gray-200 transition mb-4">
+          <button className="bg-white text-black font-bold px-6 py-2 rounded-full shadow hover:bg-gray-200 transition mb-4 cursor-pointer">
             ĐÓNG GÓP Ý KIẾN &rarr;
           </button>
         </div>
@@ -31,11 +23,11 @@ export default function Footer() {
             <span>
               <span className="font-bold">Hotline</span>
               <br />
-              1900.272737 - 028.7777.2737
+              0xxx 309 xxx
             </span>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="material-icons text-2xl">mail</span>
+            <Mail className="text-2xl" size={30} />
             <span>
               <span className="font-bold">Email</span>
               <br />
@@ -44,23 +36,13 @@ export default function Footer() {
           </div>
           <div className="flex gap-4 mt-4">
             <a href="#" aria-label="Facebook">
-              <img src="/assets/facebook.svg" alt="Facebook" className="h-8" />
-            </a>
-            <a href="#" aria-label="Zalo">
-              <img src="/assets/zalo.svg" alt="Zalo" className="h-8" />
-            </a>
-            <a href="#" aria-label="TikTok">
-              <img src="/assets/tiktok.svg" alt="TikTok" className="h-8" />
+              <Facebook className="h-12" />
             </a>
             <a href="#" aria-label="Instagram">
-              <img
-                src="/assets/instagram.svg"
-                alt="Instagram"
-                className="h-8"
-              />
+              <Instagram className="h-12" />
             </a>
             <a href="#" aria-label="YouTube">
-              <img src="/assets/youtube.svg" alt="YouTube" className="h-8" />
+              <Youtube className="h-12" />
             </a>
           </div>
         </div>
@@ -72,17 +54,17 @@ export default function Footer() {
           <h3 className="font-bold mb-2">DVFASHIONCLUB</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Tài khoản DvfashionClub
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Đăng kí thành viên
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Ưu đãi & Đặc quyền
               </a>
             </li>
@@ -90,12 +72,12 @@ export default function Footer() {
           <h3 className="font-bold mt-4 mb-2">TÀI LIỆU - TUYỂN DỤNG</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Tuyển dụng
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Đăng ký bản quyền
               </a>
             </li>
@@ -105,22 +87,22 @@ export default function Footer() {
           <h3 className="font-bold mb-2">CHÍNH SÁCH</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Chính sách đổi trả 60 ngày
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Chính sách khuyến mãi
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Chính sách bảo mật
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Chính sách giao hàng
               </a>
             </li>
@@ -130,12 +112,12 @@ export default function Footer() {
           <h3 className="font-bold mb-2">CHĂM SÓC KHÁCH HÀNG</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Trải nghiệm mua sắm 100% hài lòng
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Hỏi đáp - FAQs
               </a>
             </li>
@@ -143,12 +125,12 @@ export default function Footer() {
           <h3 className="font-bold mt-4 mb-2">KIẾN THỨC MẶC ĐẸP</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Hướng dẫn chọn size
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Blog
               </a>
             </li>
@@ -158,7 +140,7 @@ export default function Footer() {
           <h3 className="font-bold mb-2">DVFashion.ME</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Lịch sử thay đổi website
               </a>
             </li>
@@ -168,42 +150,42 @@ export default function Footer() {
           <h3 className="font-bold mb-2">VỀ DVFashion</h3>
           <ul>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Quy tắc ứng xử của DVFashion
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 DVFashion 101
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 DVKH xuất sắc
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Câu chuyện về DVFashion
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Nhà máy
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Care & Share
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Cam kết bền vững
               </a>
             </li>
             <li>
-              <a href="#" className="hover:underline">
+              <a href="#" className="hover:text-blue-500 leading-7">
                 Tầm nhìn 2030
               </a>
             </li>
@@ -211,46 +193,15 @@ export default function Footer() {
         </div>
         <div>
           <h3 className="font-bold mb-2">ĐỊA CHỈ LIÊN HỆ</h3>
-          <ul>
-            <li>
-              <a href="#" className="hover:underline font-bold">
-                Văn phòng Hà Nội:
-              </a>{" "}
-              Tầng 3-4, Tòa nhà BMM, Km2, Đường Phùng Hưng, Phường Hà Đông,
-              Thành phố Hà Nội, Việt Nam
-            </li>
-            <li>
-              <a href="#" className="hover:underline font-bold">
-                Trung tâm vận hành Hà Nội:
-              </a>{" "}
-              Lô C8, KCN Lại Yên, Xã Lại Yên, Huyện Hoài Đức, Thành phố Hà Nội
-            </li>
-            <li>
-              <a href="#" className="hover:underline font-bold">
-                Văn phòng và Trung tâm vận hành TPHCM:
-              </a>{" "}
-              Lô C3, đường D2, KCN Cát Lái, Thành Mỹ Lợi, TP. Thủ Đức, TP. Hồ
-              Chí Minh
-            </li>
-            <li>
-              <a href="#" className="hover:underline font-bold">
-                Trung tâm R&D:
-              </a>{" "}
-              T6-01, The Manhattan Vinhomes Grand Park, Long Bình, TP. Thủ Đức
-            </li>
-          </ul>
+          <span className="text-sm">
+            {" "}
+            12 Nguyễn Văn Bảo, Phường 4, Quận Gò Vấp, TP HCM
+          </span>
         </div>
       </div>
 
       {/* Bottom section */}
       <div className="max-w-7xl mx-auto flex flex-col items-center gap-2 pt-6">
-        <button
-          className="bg-blue-600 text-white rounded-full p-3 mb-2 shadow-lg hover:bg-blue-700 transition"
-          aria-label="Scroll to top"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        >
-          <span className="material-icons">keyboard_arrow_up</span>
-        </button>
         <div className="text-xs text-gray-400 text-center mb-2">
           @ CÔNG TY TNHH FASTECH ASIA
           <br />
