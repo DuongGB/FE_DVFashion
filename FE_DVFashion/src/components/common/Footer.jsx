@@ -203,20 +203,10 @@ export default function Footer() {
       {/* Bottom section */}
       <div className="max-w-7xl mx-auto flex flex-col items-center gap-2 pt-6">
         <div className="text-xs text-gray-400 text-center mb-2">
-          @ CÔNG TY TNHH FASTECH ASIA
+          © 2025 DVFashion. Bản quyền thuộc về Nguyễn Tấn Thái Dương và Trần
+          Hiển Vinh
           <br />
-          Mã số doanh nghiệp: 0108617038. Giấy chứng nhận đăng ký doanh nghiệp
-          do Sở Kế hoạch và Đầu tư TP Hà Nội cấp lần đầu ngày 20/02/2019.
-        </div>
-        <div className="flex gap-2 justify-center items-center">
-          <img src="/assets/ncsc.png" alt="NCSC" className="h-8" />
-          <img src="/assets/dmca.png" alt="DMCA" className="h-8" />
-          <img src="/assets/qr.png" alt="QR" className="h-8" />
-          <img
-            src="/assets/bocongthuong.png"
-            alt="Bộ Công Thương"
-            className="h-8"
-          />
+          Trường: Đại học Công Nghiệp TP HCM - Khoa Công Nghệ Thông Tin
         </div>
       </div>
     </footer>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
 import Banner from "../components/common/Banner";
+import Category from "../components/common/Category";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -25,6 +26,8 @@ export default function HomePage() {
     <div className="font-sans">
       {/* Banner */}
       <Banner />
+      {/* Main content */}
+      <Category />
     </div>
   );
 }
