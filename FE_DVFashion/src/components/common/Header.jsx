@@ -109,7 +109,10 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       {/* Nav */}
       <nav className="flex gap-8 font-bold text-lg items-center relative w-full justify-center">
         <div className="group relative w-[110px] flex justify-center">
-          <a href="#" className="cursor-pointer w-full text-center">
+          <a
+            href="#"
+            className="cursor-pointer w-full text-center text-blue-600"
+          >
             NEW
           </a>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-blue-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
@@ -161,13 +164,16 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
           placeholder="Tìm kiếm..."
           className="border rounded-full px-4 py-1"
         />
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={onUserClick}
+        >
           <User size={24} />
           <span className="text-sm font-semibold" onClick={onUserClick}>
             {isAuthenticated ? user?.email : "Tài khoản"}
           </span>
         </div>
-        <div className="relative">
+        <div className="relative cursor-pointer">
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
             0
@@ -259,8 +265,14 @@ function LoginModal({ show, onClose }) {
   const { isAuthenticated } = useAuth();
   if (!show || isAuthenticated) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 relative min-w-[350px]">
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 "
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-lg p-6 relative min-w-[350px]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
           onClick={onClose}
