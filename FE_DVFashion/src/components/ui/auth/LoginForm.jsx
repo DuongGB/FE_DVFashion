@@ -7,8 +7,8 @@ export default function LoginForm({ onSuccess }) {
     username: "admin@gmail.com",
     password: "admin",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -16,7 +16,6 @@ export default function LoginForm({ onSuccess }) {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -32,35 +31,99 @@ export default function LoginForm({ onSuccess }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 p-6 bg-white shadow-lg rounded-xl w-80"
+      className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col gap-4 relative"
     >
-      <h2 className="text-xl font-semibold text-center">Login</h2>
-      <div>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.username}
-          onChange={handleChange}
-          className="p-2 border rounded"
-          required
-        />
+      {/* Logo */}
+      <div className="flex items-center gap-2 mb-2 w-20 h-10">
+        <img src="./src/assets/logo_DVF.png" />
       </div>
-      <div>
+      {/* Title */}
+      <h2 className="text-2xl font-bold mb-2 leading-7">
+        Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn
+      </h2>
+      {/* Benefits */}
+      <div className="flex gap-4 mb-2">
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-xl">%</span>
+          <span className="text-xs">Voucher ưu đãi</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-xl">🎁</span>
+          <span className="text-xs">Quà tặng độc quyền</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-xl">💸</span>
+          <span className="text-xs">Hoàn tiền Coolcash</span>
+        </div>
+      </div>
+      {/* Social login */}
+      <div className="flex gap-3 mb-2">
+        <button
+          type="button"
+          className="border rounded-full p-2 flex items-center justify-center w-10 h-10"
+        >
+          <img
+            src="./src/assets/google.avif"
+            alt="Google"
+            className="w-6 h-6"
+          />
+        </button>
+      </div>
+      {/* Divider */}
+      <div className="flex items-center gap-2 mb-2">
+        <hr className="flex-1 border-gray-300" />
+        <span className="text-sm text-gray-500">Hoặc</span>
+        <hr className="flex-1 border-gray-300" />
+      </div>
+      {/* Input Email/Phone */}
+      <input
+        type="email"
+        name="username"
+        placeholder="Email/SĐT của bạn"
+        value={formData.username}
+        onChange={handleChange}
+        className="p-3 border rounded-lg mb-2"
+        required
+      />
+      {/* Input Password */}
+      <div className="relative mb-2">
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
-          placeholder="Password"
+          placeholder="Mật khẩu"
           value={formData.password}
           onChange={handleChange}
-          className="p-2 border rounded"
+          className="p-3 border rounded-lg w-full"
           required
         />
+        <span
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500"
+          onClick={() => setShowPassword((v) => !v)}
+        >
+          {showPassword ? "👁️" : "👁️‍🗨️"}
+        </span>
       </div>
-      {loginError && <div className="error">{loginError.message}</div>}
-      <button type="submit" disabled={isLoginLoading}>
-        {isLoginLoading ? "Logging in..." : "Login"}
+      {/* Error */}
+      {loginError && (
+        <div className="text-red-500 text-sm mb-2">{loginError.message}</div>
+      )}
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={isLoginLoading}
+        className="bg-black text-white py-3 rounded-lg font-bold text-lg"
+      >
+        {isLoginLoading ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
       </button>
+      {/* Links */}
+      <div className="flex justify-between mt-2 text-sm">
+        <a href="#" className="text-blue-600 hover:underline font-bold">
+          Đăng ký tài khoản mới
+        </a>
+        <a href="#" className="text-blue-600 hover:underline font-bold">
+          Quên mật khẩu
+        </a>
+      </div>
     </form>
   );
 }
