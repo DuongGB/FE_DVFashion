@@ -77,14 +77,28 @@ const megaMenuItems = [
 
 // Top bar component
 function TopBar({ onLoginClick }) {
+  const navigate = useNavigate();
   return (
     <div className="bg-gray-500 text-white flex justify-between px-8 py-2 text-sm">
       <div>VỀ DVFASHION</div>
       <div className="flex gap-4">
         <a href="#">DVFclub</a>
-        <a href="#">Blog</a>
-        <a href="#">CSKH</a>
-        <button className="hover:underline" onClick={onLoginClick}>
+        <button
+          className="hover:underline cursor-pointer"
+          onClick={() => navigate("/blog")}
+        >
+          Blog
+        </button>
+        <button
+          className="hover:underline cursor-pointer"
+          onClick={() => navigate("/help")}
+        >
+          CSKH
+        </button>
+        <button
+          className="hover:underline cursor-pointer"
+          onClick={onLoginClick}
+        >
           Đăng nhập
         </button>
       </div>
@@ -110,7 +124,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       <nav className="flex gap-8 font-bold text-lg items-center relative w-full justify-center">
         <div className="group relative w-[110px] flex justify-center">
           <a
-            href="#"
+            href="/"
             className="cursor-pointer w-full text-center text-blue-600"
           >
             NEW
@@ -119,21 +133,21 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="#" className="cursor-pointer w-full text-center">
+          <a href="/" className="cursor-pointer w-full text-center">
             NAM
           </a>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="#" className="cursor-pointer w-full text-center">
+          <a href="/" className="cursor-pointer w-full text-center">
             NỮ
           </a>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="#" className="cursor-pointer w-full text-center">
+          <a href="/" className="cursor-pointer w-full text-center">
             THỂ THAO
           </a>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
@@ -141,7 +155,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         </div>
         <div className="group relative w-[110px] flex justify-center">
           <a
-            href="#"
+            href="/"
             className="flex flex-col items-center text-red-600 font-bold w-full text-center"
           >
             SALE
@@ -150,7 +164,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="#" className="cursor-pointer w-full text-center">
+          <a href="/" className="cursor-pointer w-full text-center">
             C&S
           </a>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>

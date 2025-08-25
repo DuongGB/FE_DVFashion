@@ -6,6 +6,7 @@ import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
 import CustomerPage from "./pages/CustomerPage";
 import MainLayout from "./layouts/MainLayout";
+import BlogPage from "./pages/BlogPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <MainLayout>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<BlogPage />} />
 
           {/* Routes by role */}
           <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
