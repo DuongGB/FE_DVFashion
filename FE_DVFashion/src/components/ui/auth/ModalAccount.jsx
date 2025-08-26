@@ -70,7 +70,7 @@ export default function ModalAccount({ show, onClose, user }) {
           <div className="bg-white border rounded-lg flex-1 p-3 flex flex-col justify-center">
             <div className="font-bold text-lg flex items-center gap-2">
               <span className="text-black">🪙</span>
-              <span>2.000 DVFcash</span>
+              <span>0 DVFcash</span>
             </div>
             <div className="text-xs text-gray-500">Chờ: 0 DVFcash</div>
           </div>
