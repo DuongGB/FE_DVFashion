@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 
 export default function ModalAccount({ show, onClose, user }) {
   const { logout, isLogoutLoading } = useAuth();
+  const navigate = useNavigate();
   if (!show) return null;
 
   const handleLogout = async () => {
@@ -96,7 +97,13 @@ export default function ModalAccount({ show, onClose, user }) {
           </div>
         </div>
         {/* Go to account */}
-        <button className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg mt-4">
+        <button
+          className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 cursor-pointer"
+          onClick={() => {
+            navigate("/account");
+            onClose();
+          }}
+        >
           ĐI ĐẾN TÀI KHOẢN
         </button>
         <button
