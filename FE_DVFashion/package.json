@@ -14,9 +14,12 @@
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
     "axios": "^1.11.0",
+    "feather-icons": "^4.29.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-feather": "^2.0.10",
     "react-router-dom": "^7.8.1",
+    "swiper": "^11.2.10",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
