@@ -6,6 +6,7 @@ import BlogPage from "./pages/BlogPage";
 import Dashboard from "./pages/Dashboard";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/staff/StaffPage";
+import AccountPage from "./pages/customer/AccountPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["ROLE_CUSTOMER"]} />}>
             <Route path="/customer" element={<HomePage />} />
+            <Route path="/account" element={<AccountPage />} />
           </Route>
 
           {/* General dashboard page (anyone can log in) */}
