@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { getDefaultRouteByRoles } from "../../utils/getDefaultRouteByRoles";
 import { ShoppingCart, User } from "react-feather";
 import LoginForm from "../ui/auth/LoginForm";
+import { Link } from "react-router-dom";
+import { getLastName } from "../../utils/getLastName";
+import ModalAccount from "../ui/auth/ModalAccount";
 
 const megaMenuItems = [
   {
@@ -12,60 +15,60 @@ const megaMenuItems = [
     items: [
       {
         label: "Sản phẩm mới",
-        href: "#",
+        to: "#",
         className: "text-blue-600 font-medium",
       },
       { label: "Bán chạy nhất", isBold: true },
-      { label: "ECC Collection", href: "#" },
-      { label: "Excool Collection", href: "#" },
-      { label: "Copper Denim", href: "#" },
-      { label: "Promax", href: "#" },
+      { label: "ECC Collection", to: "#" },
+      { label: "Excool Collection", to: "#" },
+      { label: "Copper Denim", to: "#" },
+      { label: "Promax", to: "#" },
     ],
   },
   {
     title: "ÁO NAM",
     arrow: true,
     items: [
-      { label: "Áo Tanktop", href: "#" },
-      { label: "Áo thun", href: "#" },
-      { label: "Áo Thể Thao", href: "#" },
-      { label: "Áo Polo", href: "#" },
-      { label: "Áo Sơ Mi", href: "#" },
-      { label: "Áo Dài Tay", href: "#" },
-      { label: "Áo Khoác", href: "#" },
-      { label: "Áo thun Graphic", href: "#" },
+      { label: "Áo Tanktop", to: "#" },
+      { label: "Áo thun", to: "#" },
+      { label: "Áo Thể Thao", to: "#" },
+      { label: "Áo Polo", to: "#" },
+      { label: "Áo Sơ Mi", to: "#" },
+      { label: "Áo Dài Tay", to: "#" },
+      { label: "Áo Khoác", to: "#" },
+      { label: "Áo thun Graphic", to: "#" },
     ],
   },
   {
     title: "QUẦN NAM",
     arrow: true,
     items: [
-      { label: "Quần Short", href: "#" },
-      { label: "Quần Jogger", href: "#" },
-      { label: "Quần Thể Thao", href: "#" },
-      { label: "Quần Dài", href: "#" },
-      { label: "Quần Pants", href: "#" },
-      { label: "Quần Jean", href: "#" },
-      { label: "Quần Kaki", href: "#" },
-      { label: "Quần Bơi", href: "#" },
+      { label: "Quần Short", to: "#" },
+      { label: "Quần Jogger", to: "#" },
+      { label: "Quần Thể Thao", to: "#" },
+      { label: "Quần Dài", to: "#" },
+      { label: "Quần Pants", to: "#" },
+      { label: "Quần Jean", to: "#" },
+      { label: "Quần Kaki", to: "#" },
+      { label: "Quần Bơi", to: "#" },
     ],
   },
   {
     title: "QUẦN LÓT NAM",
     arrow: true,
     items: [
-      { label: "Brief (Tam giác)", href: "#" },
-      { label: "Trunk (Boxer)", href: "#" },
-      { label: "Boxer Brief (Boxer dài)", href: "#" },
-      { label: "Long Leg", href: "#" },
-      { label: "Short mặc nhà", href: "#" },
+      { label: "Brief (Tam giác)", to: "#" },
+      { label: "Trunk (Boxer)", to: "#" },
+      { label: "Boxer Brief (Boxer dài)", to: "#" },
+      { label: "Long Leg", to: "#" },
+      { label: "Short mặc nhà", to: "#" },
     ],
   },
   {
     title: "PHỤ KIỆN",
     arrow: true,
     items: [
-      { label: "Tất cả phụ kiện", href: "#" },
+      { label: "Tất cả phụ kiện", to: "#" },
       {
         label: "(Tất, mũ, túi...)",
         isItalic: true,
@@ -76,13 +79,13 @@ const megaMenuItems = [
 ];
 
 // Top bar component
-function TopBar({ onLoginClick }) {
+function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
   const navigate = useNavigate();
   return (
     <div className="bg-gray-500 text-white flex justify-between px-8 py-2 text-sm">
-      <div>VỀ DVFASHION</div>
+      <Link to="/">VỀ DVFASHION</Link>
       <div className="flex gap-4">
-        <a href="#">DVFclub</a>
+        <Link to="#">DVFclub</Link>
         <button
           className="hover:underline cursor-pointer"
           onClick={() => navigate("/blog")}
@@ -95,12 +98,25 @@ function TopBar({ onLoginClick }) {
         >
           CSKH
         </button>
-        <button
-          className="hover:underline cursor-pointer"
-          onClick={onLoginClick}
-        >
-          Đăng nhập
-        </button>
+        {!isAuthenticated && (
+          <button
+            className="hover:underline cursor-pointer"
+            onClick={onLoginClick}
+          >
+            Đăng nhập
+          </button>
+        )}
+        {isAuthenticated && (
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={onUserClick}
+          >
+            <User size={18} />
+            <span className="text-sm font-semibold">
+              {getLastName(user?.fullName)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -112,61 +128,61 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
     <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
       {/* Logo */}
       <div className="flex items-center gap-4 w-[110px]">
-        <a href="/" className="text-2xl font-bold text-orange-600 w-full">
+        <Link to="/" className="text-2xl font-bold text-orange-600 w-full">
           <img
             src=".\src\assets\logo_DVF.png"
             alt="DVFASHION"
             className="h-8 w-full object-contain"
           />
-        </a>
+        </Link>
       </div>
       {/* Nav */}
       <nav className="flex gap-8 font-bold text-lg items-center relative w-full justify-center">
         <div className="group relative w-[110px] flex justify-center">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="cursor-pointer w-full text-center text-blue-600"
           >
             NEW
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-blue-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="/" className="cursor-pointer w-full text-center">
+          <Link to="/" className="cursor-pointer w-full text-center">
             NAM
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="/" className="cursor-pointer w-full text-center">
+          <Link to="/" className="cursor-pointer w-full text-center">
             NỮ
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="/" className="cursor-pointer w-full text-center">
+          <Link to="/" className="cursor-pointer w-full text-center">
             THỂ THAO
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="flex flex-col items-center text-red-600 font-bold w-full text-center"
           >
             SALE
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-red-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
-          <a href="/" className="cursor-pointer w-full text-center">
+          <Link to="/" className="cursor-pointer w-full text-center">
             C&S
-          </a>
+          </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
@@ -184,7 +200,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         >
           <User size={24} />
           <span className="text-sm font-semibold" onClick={onUserClick}>
-            {isAuthenticated ? user?.email : "Tài khoản"}
+            {isAuthenticated ? getLastName(user?.fullName) : "Tài khoản"}
           </span>
         </div>
         <div className="relative cursor-pointer">
@@ -220,10 +236,10 @@ function MegaMenu() {
             <ul className="space-y-1">
               {col.items.map((item, i) => (
                 <li key={i}>
-                  {item.href ? (
-                    <a href={item.href} className={item.className || ""}>
+                  {item.to ? (
+                    <Link to={item.to} className={item.className || ""}>
                       {item.label}
-                    </a>
+                    </Link>
                   ) : item.isBold ? (
                     <span className="font-bold">{item.label}</span>
                   ) : item.isItalic ? (
@@ -262,13 +278,13 @@ function MegaMenu() {
       </div>
       {/* Submenu bottom */}
       <div className="absolute left-0 bottom-0 w-full bg-gray-50 border-t flex justify-center items-center gap-8 py-4 px-2 text-base font-bold rounded-b-2xl">
-        <a href="#" className="text-gray-500 font-normal">
+        <Link to="#" className="text-gray-500 font-normal">
           THEO NHU CẦU
-        </a>
-        <a href="#">ĐỒ LÓT</a>
-        <a href="#">ĐỒ THỂ THAO</a>
-        <a href="#">MẶC HÀNG NGÀY</a>
-        <a href="#">GRAPHIC TEES</a>
+        </Link>
+        <Link to="#">ĐỒ LÓT</Link>
+        <Link to="#">ĐỒ THỂ THAO</Link>
+        <Link to="#">MẶC HÀNG NGÀY</Link>
+        <Link to="#">GRAPHIC TEES</Link>
       </div>
     </div>
   );
@@ -302,6 +318,7 @@ function LoginModal({ show, onClose }) {
 export default function Header() {
   const { isAuthenticated, user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -312,15 +329,34 @@ export default function Header() {
     }
   }, [isAuthenticated, user, navigate]);
 
+  // Display modal show account if authenticated
+  const handleUserClick = () => {
+    if (isAuthenticated && user?.roles?.includes("ROLE_CUSTOMER")) {
+      setShowAccount(true);
+    } else {
+      setShowLogin(true);
+    }
+  };
+
   return (
     <header className="bg-white shadow">
-      <TopBar onLoginClick={() => setShowLogin(true)} />
+      <TopBar
+        onLoginClick={() => setShowLogin(true)}
+        isAuthenticated={isAuthenticated}
+        user={user}
+        onUserClick={() => handleUserClick}
+      />
       <MainMenu
         isAuthenticated={isAuthenticated}
         user={user}
-        onUserClick={() => setShowLogin(true)}
+        onUserClick={() => handleUserClick(true)}
       />
       <LoginModal show={showLogin} onClose={() => setShowLogin(false)} />
+      <ModalAccount
+        show={showAccount}
+        onClose={() => setShowAccount(false)}
+        user={user}
+      />
     </header>
   );
 }

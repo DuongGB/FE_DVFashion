@@ -24,7 +24,7 @@ function App() {
             <Route path="/staff" element={<StaffPage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["ROLE_CUSTOMER"]} />}>
-            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/customer" element={<HomePage />} />
           </Route>
 
           {/* General dashboard page (anyone can log in) */}
