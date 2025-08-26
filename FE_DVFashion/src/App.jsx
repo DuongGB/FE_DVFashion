@@ -1,12 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import Dashboard from "./pages/Dashboard";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
-import AdminPage from "./pages/AdminPage";
-import StaffPage from "./pages/StaffPage";
-import CustomerPage from "./pages/CustomerPage";
 import MainLayout from "./layouts/MainLayout";
+import AdminPage from "./pages/admin/AdminPage";
 import BlogPage from "./pages/BlogPage";
+import Dashboard from "./pages/Dashboard";
+import HomePage from "./pages/HomePage";
+import StaffPage from "./pages/staff/StaffPage";
 
 function App() {
   return (
