@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
 import { getCookie } from "../utils/cookies";
+import { data } from "react-router-dom";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -20,6 +21,14 @@ export const useAuth = () => {
     },
     retry: false,
     enabled: isAuthenticated, // Only fetch if authenticated
+  });
+
+  // Register mutation
+  const registerMutation = useMutation({
+    mutationFn: authAPI.register,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["auth", "user"]);
+    },
   });
 
   // Login mutation
@@ -46,6 +55,9 @@ export const useAuth = () => {
     error,
     isAuthenticated: !!user,
     login: loginMutation.mutateAsync,
+    register: registerMutation.mutateAsync,
+    isRegisterLoading: registerMutation.isPending,
+    registerError: registerMutation.error,
     logout: logoutMutation.mutateAsync,
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
