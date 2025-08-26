@@ -1,8 +1,9 @@
-# 🎯 FE_DVFashion Project
+# 🎯 FE DVFashion Shop - Intelligent Clothing Store Management System
 
-## 👥 Team Members
-| 1   | Nguyen Tan Thai Duong - 21049641
-| 2   | Tran Hien Vinh - 21015151
+## 🤝 Development Team  
+
+- **Developer 1**: Tran Hien Vinh  
+- **Developer 2**: Nguyen Tan Thai Duong 
 
 ## 🧑‍🏫 Supervisor
 - **Name:** Nguyen Thi Hong Luong
@@ -27,4 +28,7 @@ Project goals:
   - [Axios](https://axios-http.com/) – API calls.
   - [Tailwind CSS](https://tailwindcss.com/) – Fast UI styling.
 
----
+## 📄 License  
+
+This project is developed for educational and research purposes.  
+⭐ **If you find this project useful, don’t forget to give us a star!** ⭐  
