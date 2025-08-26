@@ -4,8 +4,8 @@ import { useAuth } from "../../../hooks/useAuth";
 export default function LoginForm({ onSuccess }) {
   const { login, isLoginLoading, loginError } = useAuth();
   const [formData, setFormData] = useState({
-    username: "admin@gmail.com",
-    password: "admin",
+    username: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
 
@@ -77,7 +77,7 @@ export default function LoginForm({ onSuccess }) {
       </div>
       {/* Input Email/Phone */}
       <input
-        type="email"
+        type="text"
         name="username"
         placeholder="Email/SĐT của bạn"
         value={formData.username}
