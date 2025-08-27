@@ -333,7 +333,7 @@ function LoginModal({ show, onClose }) {
 }
 
 export default function Header() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
@@ -355,7 +355,7 @@ export default function Header() {
 
   // Display modal show account if authenticated
   const handleUserClick = () => {
-    if (isAuthenticated && user?.roles?.includes("ROLE_CUSTOMER")) {
+    if (isAuthenticated && user?.roles) {
       setShowAccount(true);
     } else {
       setShowLogin(true);

@@ -10,6 +10,7 @@ export default function ModalAccount({ show, onClose, user }) {
     try {
       await logout();
       onClose();
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }

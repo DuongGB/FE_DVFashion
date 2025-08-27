@@ -46,6 +46,7 @@ export const useAuth = () => {
     onSuccess: () => {
       // Clear all caches
       queryClient.clear();
+      document.cookie = "isAuthenticated=false; path=/"; // Update cookie
     },
   });
 
