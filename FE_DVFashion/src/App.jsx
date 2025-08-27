@@ -1,9 +1,9 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
 import MainLayout from "./layouts/MainLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import AdminPage from "./pages/admin/AdminPage";
 import BlogPage from "./pages/BlogPage";
-import Dashboard from "./pages/Dashboard";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/staff/StaffPage";
 import AccountPage from "./pages/customer/AccountPage";
@@ -11,29 +11,33 @@ import AccountPage from "./pages/customer/AccountPage";
 function App() {
   return (
     <Router>
-      <MainLayout>
-        <Routes>
+      <Routes>
+        {/* Admin routes */}
+        <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
+          <Route path="/admin/*" element={<AdminLayout />}>
+            <Route index element={<AdminPage />} />
+          </Route>
+        </Route>
+
+        {/* Main layout routes */}
+        <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
 
-          {/* Routes by role */}
-          <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
-            <Route path="/admin" element={<AdminPage />} />
-          </Route>
           <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
             <Route path="/staff" element={<StaffPage />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={["ROLE_CUSTOMER"]} />}>
+
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN"]} />
+            }
+          >
             <Route path="/customer" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
-
-          {/* General dashboard page (anyone can log in) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
-        </Routes>
-      </MainLayout>
+        </Route>
+      </Routes>
     </Router>
   );
 }

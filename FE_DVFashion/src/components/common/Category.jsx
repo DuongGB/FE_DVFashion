@@ -5,32 +5,32 @@ export default function Category({ category }) {
     {
       id: 1,
       name: "ÁO THUN",
-      image: "./src/assets/shirt.jpg",
+      image: "./src/assets/shirt.avif",
     },
     {
       id: 2,
       name: "ÁO POLO",
-      image: "./src/assets/t-shirt.jpg",
+      image: "./src/assets/polo.avif",
     },
     {
       id: 3,
       name: "QUẦN SHORT",
-      image: "./src/assets/shirt.jpg",
+      image: "./src/assets/short.avif",
     },
     {
       id: 4,
       name: "QUẦN LÓT",
-      image: "./src/assets/t-shirt.jpg",
+      image: "./src/assets/underwear.avif",
     },
     {
       id: 5,
       name: "ĐỒ BƠI",
-      image: "./src/assets/shirt.jpg",
+      image: "./src/assets/swimsuit.avif",
     },
     {
       id: 6,
       name: "PHỤ KIỆN",
-      image: "./src/assets/t-shirt.jpg",
+      image: "./src/assets/accessory.avif",
     },
   ];
   return (
