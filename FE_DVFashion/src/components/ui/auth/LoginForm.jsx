@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 
 export default function LoginForm({ onSuccess }) {
   const { login, isLoginLoading, loginError } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -20,8 +22,17 @@ export default function LoginForm({ onSuccess }) {
     e.preventDefault();
     try {
       const result = await login(formData);
-      if (result?.data?.success && onSuccess) {
-        onSuccess();
+      if (result?.data?.success) {
+        // Kiểm tra role và chuyển hướng
+        // const roles = result?.data?.data?.roles || [];
+        // if (roles.includes("ROLE_ADMIN")) {
+        //   navigate("/admin");
+        // } else if (roles.includes("ROLE_STAFF")) {
+        //   navigate("/staff");
+        // } else {
+        //   navigate("/");
+        // }
+        if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Login failed:", err);

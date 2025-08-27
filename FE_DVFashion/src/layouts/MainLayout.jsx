@@ -1,8 +1,9 @@
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
+import { Outlet } from "react-router-dom";
 import { ArrowUp } from "react-feather";
 
-export default function MainLayout({ children }) {
+export default function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -11,7 +12,9 @@ export default function MainLayout({ children }) {
       </div>
 
       {/* Main content */}
-      <main>{children}</main>
+      <main>
+        <Outlet />
+      </main>
 
       {/* Footer */}
       <Footer />

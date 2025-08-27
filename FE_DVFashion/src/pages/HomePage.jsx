@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
 import Banner from "../components/common/Banner";
@@ -8,17 +8,25 @@ import ProductCarousel from "../components/common/ProductCarousel";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
   console.log("HomePage user:", user);
   console.log("HomePage isAuthenticated:", isAuthenticated);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && user?.roles) {
+    // Chỉ redirect nếu đang ở trang chủ "/"
+    if (
+      isAuthenticated &&
+      user?.roles &&
+      location.pathname === "/" // chỉ redirect ở trang chủ
+    ) {
       const defaultRoute = getDefaultRouteByRoles(user?.roles);
-      navigate(defaultRoute);
+      if (defaultRoute !== "/") {
+        navigate(defaultRoute);
+      }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, location.pathname]);
 
   const ads = [
     {
