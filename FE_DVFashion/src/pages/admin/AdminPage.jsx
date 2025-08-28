@@ -64,7 +64,7 @@ export default function AdminPage() {
   return (
     <div className="overflow-y-auto">
       <h1 className="text-3xl font-bold mb-6">
-        Xin chào, {user?.name || "Admin"}
+        Xin chào, {user?.fullName || "Admin"}
       </h1>
 
       {/* Stats Overview */}
@@ -101,7 +101,7 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b">
+                <tr key={order.id} className="border-b hover:bg-gray-300">
                   <td className="py-3 px-6">{order.id}</td>
                   <td className="py-3 px-6">{order.customer}</td>
                   <td className="py-3 px-6">{order.date}</td>
