@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getDefaultRouteByRoles } from "../../utils/getDefaultRouteByRoles";
 import { ShoppingCart, User } from "react-feather";
 import LoginForm from "../ui/auth/LoginForm";
@@ -338,20 +338,28 @@ export default function Header() {
   const [showAccount, setShowAccount] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Chỉ điều hướng khi vừa đăng nhập
-    if (!wasAuthenticated && isAuthenticated && user?.roles) {
-      const defaultRoute = getDefaultRouteByRoles(user?.roles);
+    if (
+      !wasAuthenticated &&
+      isAuthenticated &&
+      user?.roles &&
+      location.pathname === "/"
+    ) {
+      let defaultRoute = getDefaultRouteByRoles(user?.roles);
+      if (user?.roles?.includes("ROLE_CUSTOMER")) {
+        defaultRoute = "/customer";
+      }
       navigate(defaultRoute);
       setShowLogin(false);
-      setWasAuthenticated(true); // Đánh dấu đã đăng nhập
+      setWasAuthenticated(true);
     }
-    // Nếu logout thì reset lại
     if (!isAuthenticated && wasAuthenticated) {
       setWasAuthenticated(false);
     }
-  }, [isAuthenticated, user, navigate, wasAuthenticated]);
+  }, [isAuthenticated, user, navigate, wasAuthenticated, location.pathname]);
 
   // Display modal show account if authenticated
   const handleUserClick = () => {

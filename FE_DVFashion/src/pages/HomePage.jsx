@@ -22,7 +22,12 @@ export default function HomePage() {
       location.pathname === "/" // chỉ redirect ở trang chủ
     ) {
       const defaultRoute = getDefaultRouteByRoles(user?.roles);
-      if (defaultRoute !== "/") {
+      // Chỉ redirect nếu defaultRoute khác "/" và KHÔNG phải là "/customer"
+      if (
+        defaultRoute !== "/" &&
+        defaultRoute !== "/customer" &&
+        location.pathname === "/"
+      ) {
         navigate(defaultRoute);
       }
     }

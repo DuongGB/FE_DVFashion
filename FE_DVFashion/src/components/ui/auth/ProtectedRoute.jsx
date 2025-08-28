@@ -21,7 +21,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
       return <Navigate to={defaultRoute} replace />;
     }
   }
-
   return <Outlet />;
 };
 
