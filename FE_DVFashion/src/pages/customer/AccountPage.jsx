@@ -61,7 +61,7 @@ export default function AccountPage() {
             icon={<IconShoppingCart size={24} />}
             text="Lịch sử đơn hàng"
           />
-          <SidebarItem icon={<IconCoin size={24} />} text="Lịch sử CoolCash" />
+          <SidebarItem icon={<IconCoin size={24} />} text="Lịch sử DVFCash" />
           <SidebarItem icon={<IconTicket size={24} />} text="Ví Voucher" />
           <SidebarItem icon={<IconHome size={24} />} text="Sổ địa chỉ" />
           <SidebarItem
@@ -91,7 +91,7 @@ export default function AccountPage() {
             label="Ngày sinh"
             value={
               user?.dob ||
-              "Hãy cập nhật ngày sinh để coolmate gửi cho bạn 1 phần quà đặc biệt nhé"
+              "Hãy cập nhật ngày sinh để DVFashion gửi cho bạn 1 phần quà đặc biệt nhé"
             }
           />
           <button

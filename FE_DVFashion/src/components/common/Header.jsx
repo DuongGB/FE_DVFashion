@@ -6,7 +6,7 @@ import { ShoppingCart, User } from "react-feather";
 import LoginForm from "../ui/auth/LoginForm";
 import { Link } from "react-router-dom";
 import { getLastName } from "../../utils/getLastName";
-import ModalAccount from "../ui/auth/ModalAccount";
+import ModalAccount from "../ui/account/ModalAccount";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -333,7 +333,7 @@ function LoginModal({ show, onClose }) {
 }
 
 export default function Header() {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);

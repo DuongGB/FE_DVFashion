@@ -12,11 +12,13 @@ import {
   IconCashRegister,
   IconLogout,
 } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 export default function Sidebar({ onClose }) {
   const { logout, isLogoutLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -30,6 +32,9 @@ export default function Sidebar({ onClose }) {
   const handleCustomerPageClick = () => {
     window.open("/customer", "_blank");
   };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <aside
       style={{ backgroundColor: "#18202eff" }}
@@ -40,22 +45,26 @@ export default function Sidebar({ onClose }) {
       <nav className="flex-1">
         <ul className="space-y-2">
           <li>
-            <a
-              href="#"
-              className="flex items-center bg-blue-800 rounded-lg px-4 py-2 font-semibold"
+            <Link
+              to="/admin"
+              className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
+                isActive("/admin") ? "bg-blue-600" : " hover:bg-blue-900"
+              }`}
             >
               <IconHomeInfinity stroke={2} />
               <span className="ml-3">Trang chủ</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to="/admin/orders"
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/orders") ? "bg-blue-600" : "hover:bg-blue-900"
+              }`}
             >
               <IconTruckDelivery stroke={2} />
               <span className="ml-3">Đơn hàng</span>
-            </a>
+            </Link>
           </li>
           <li>
             <a

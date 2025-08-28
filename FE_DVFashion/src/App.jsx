@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/staff/StaffPage";
 import AccountPage from "./pages/customer/AccountPage";
 import CustomerPage from "./pages/customer/CustomerPage";
+import OrdersPage from "./pages/admin/OrderPage";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
+            <Route path="orders" element={<OrdersPage />} />
           </Route>
         </Route>
 
