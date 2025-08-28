@@ -7,6 +7,9 @@ import BlogPage from "./pages/BlogPage";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/staff/StaffPage";
 import AccountPage from "./pages/customer/AccountPage";
+import CustomerPage from "./pages/customer/CustomerPage";
+import OrdersPage from "./pages/admin/OrderPage";
+import ProductPage from "./pages/admin/ProductPage";
 
 function App() {
   return (
@@ -16,6 +19,8 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="products" element={<ProductPage />} />
           </Route>
         </Route>
 
@@ -33,7 +38,7 @@ function App() {
               <ProtectedRoute allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN"]} />
             }
           >
-            <Route path="/customer" element={<HomePage />} />
+            <Route path="/customer" element={<CustomerPage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
         </Route>
