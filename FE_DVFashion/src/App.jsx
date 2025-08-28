@@ -43,6 +43,11 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
           <Route path="/staff/*" element={<StaffLayout />}>
             <Route index element={<StaffPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="categories" element={<CategoryPage />} />
+            <Route path="reviews" element={<ReviewPage />} />
+            <Route path="promotions" element={<PromotionPage />} />
+            <Route path="customers" element={<CustomerManagermentPage />} />
           </Route>
         </Route>
 
