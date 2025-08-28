@@ -95,38 +95,50 @@ export default function Sidebar({ onClose }) {
           <li>
             <Link
               to={"/admin/brands"}
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/brands") ? "bg-blue-600" : "hover:bg-blue-900"
+              }`}
             >
               <IconBuildingStore stroke={2} />
               <span className="ml-3">Thương hiệu</span>
             </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/reviews"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/reviews") ? "bg-blue-600" : "hover:bg-blue-900"
+              }`}
             >
               <IconDevicesCheck stroke={2} />
               <span className="ml-3">Bài nhận xét</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/promotions"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/promotions")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconAdCircle stroke={2} />
-              <span className="ml-3">Quảng cáo</span>
-            </a>
+              <span className="ml-3">Khuyến mãi</span>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/customers"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/customers")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconUsers stroke={2} />
               <span className="ml-3">Khách hàng</span>
-            </a>
+            </Link>
           </li>
           <li>
             <a
