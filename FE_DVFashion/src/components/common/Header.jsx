@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getDefaultRouteByRoles } from "../../utils/getDefaultRouteByRoles";
 import { ShoppingCart, User } from "react-feather";
 import LoginForm from "../ui/auth/LoginForm";
 import { Link } from "react-router-dom";
 import { getLastName } from "../../utils/getLastName";
-import ModalAccount from "../ui/auth/ModalAccount";
+import ModalAccount from "../ui/account/ModalAccount";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -333,25 +333,33 @@ function LoginModal({ show, onClose }) {
 }
 
 export default function Header() {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Chỉ điều hướng khi vừa đăng nhập
-    if (!wasAuthenticated && isAuthenticated && user?.roles) {
-      const defaultRoute = getDefaultRouteByRoles(user?.roles);
+    if (
+      !wasAuthenticated &&
+      isAuthenticated &&
+      user?.roles &&
+      location.pathname === "/"
+    ) {
+      let defaultRoute = getDefaultRouteByRoles(user?.roles);
+      if (user?.roles?.includes("ROLE_CUSTOMER")) {
+        defaultRoute = "/customer";
+      }
       navigate(defaultRoute);
       setShowLogin(false);
-      setWasAuthenticated(true); // Đánh dấu đã đăng nhập
+      setWasAuthenticated(true);
     }
-    // Nếu logout thì reset lại
     if (!isAuthenticated && wasAuthenticated) {
       setWasAuthenticated(false);
     }
-  }, [isAuthenticated, user, navigate, wasAuthenticated]);
+  }, [isAuthenticated, user, navigate, wasAuthenticated, location.pathname]);
 
   // Display modal show account if authenticated
   const handleUserClick = () => {
