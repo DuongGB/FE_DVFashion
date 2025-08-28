@@ -152,10 +152,10 @@ export default function BrandPage() {
           + Tạo thương hiệu
         </button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-gray-400">
               <th className="p-3">ID</th>
               <th className="p-3">Tên</th>
               <th className="p-3">Code</th>
@@ -194,11 +194,9 @@ export default function BrandPage() {
                   <td className="p-3">
                     <button className="text-yellow-600 hover:text-yellow-800 mr-4 cursor-pointer">
                       <IconEdit className="inline-block mr-1" />
-                      Sửa
                     </button>
                     <button className="text-red-600 hover:text-red-800 cursor-pointer">
                       <IconTrash className="inline-block mr-1" />
-                      Xóa
                     </button>
                   </td>
                 </tr>

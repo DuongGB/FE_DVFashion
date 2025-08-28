@@ -64,7 +64,7 @@ export default function AdminPage() {
   return (
     <div className="overflow-y-auto">
       <h1 className="text-3xl font-bold mb-6">
-        Xin chào, {user?.name || "Admin"}
+        Xin chào, {user?.fullName || "Admin"}
       </h1>
 
       {/* Stats Overview */}

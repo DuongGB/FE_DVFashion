@@ -13,6 +13,11 @@ import ProductPage from "./pages/admin/ProductPage";
 import CategoryPage from "./pages/admin/CategoryPage";
 import BrandPage from "./pages/admin/BrandPage";
 import ReviewPage from "./pages/admin/ReviewPage";
+import PromotionPage from "./pages/admin/PromotionPage";
+import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
+import EmployeePage from "./pages/admin/EmployeePage";
+import AnalystReportPage from "./pages/admin/AnalystReportPage";
+import StaffLayout from "./layouts/StaffLayout";
 
 function App() {
   return (
@@ -27,6 +32,17 @@ function App() {
             <Route path="categories" element={<CategoryPage />} />
             <Route path="brands" element={<BrandPage />} />
             <Route path="reviews" element={<ReviewPage />} />
+            <Route path="promotions" element={<PromotionPage />} />
+            <Route path="customers" element={<CustomerManagermentPage />} />
+            <Route path="employees" element={<EmployeePage />} />
+            <Route path="reports" element={<AnalystReportPage />} />
+          </Route>
+        </Route>
+
+        {/* Staff routes */}
+        <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
+          <Route path="/staff/*" element={<StaffLayout />}>
+            <Route index element={<StaffPage />} />
           </Route>
         </Route>
 
@@ -34,10 +50,6 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
-
-          <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
-            <Route path="/staff" element={<StaffPage />} />
-          </Route>
 
           <Route
             element={

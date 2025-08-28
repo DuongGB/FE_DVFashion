@@ -14,10 +14,17 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import EmployeeCard from "../common/EmployeeCard";
+
 export default function Sidebar({ onClose }) {
-  const { logout, isLogoutLoading } = useAuth();
+  const { logout, isLogoutLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const defaultAvatar =
+    "https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG-Free-Download.png";
+
+  const roleDisplay = user?.roles?.[0] === "ROLE_ADMIN" ? "ADMIN" : "Nhân viên";
 
   const handleLogout = async () => {
     try {
@@ -38,10 +45,16 @@ export default function Sidebar({ onClose }) {
   return (
     <aside
       style={{ backgroundColor: "#18202eff" }}
-      className="w-64 text-white flex flex-col py-8 px-6 h-screen"
+      className="w-64 text-white flex flex-col py-8 px-6 h-full"
     >
+      {/* Thông tin nhân viên */}
+      <EmployeeCard
+        name={user?.fullName || "Tên nhân viên"}
+        image={defaultAvatar}
+        role={roleDisplay || "Vai trò"}
+      />
+
       {/* Navigation Links */}
-      <h2 className="text-2xl font-bold mb-10">Trang điều khiển</h2>
       <nav className="flex-1">
         <ul className="space-y-2">
           <li>
@@ -141,22 +154,30 @@ export default function Sidebar({ onClose }) {
             </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/employees"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/employees")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconCashRegister stroke={2} />
               <span className="ml-3">Nhân viên</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/reports"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/analyst-report")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconDeviceAnalytics stroke={2} />
               <span className="ml-3">Phân tích báo cáo</span>
-            </a>
+            </Link>
           </li>
           {/* Dỉrect HomePage of Customer */}
           <li>
@@ -172,16 +193,11 @@ export default function Sidebar({ onClose }) {
           {/* Buuton logout */}
           <li>
             <button
-              className="w-full text-left flex items-center hover:bg-red-600 rounded-lg px-4 py-2 mt-10 bg-red-500 font-semibold"
+              className="flex items-center hover:bg-red-600 rounded-lg p-1 ml-4 bg-red-500 font-semibold cursor-pointer"
               onClick={handleLogout}
               disabled={isLogoutLoading}
             >
               <IconLogout stroke={2} />
-              {isLogoutLoading ? (
-                <span className="ml-3">Đang đăng xuất...</span>
-              ) : (
-                <span className="ml-3">Đăng xuất</span>
-              )}
             </button>
           </li>
         </ul>

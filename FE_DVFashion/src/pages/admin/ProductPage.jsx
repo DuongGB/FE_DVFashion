@@ -232,7 +232,7 @@ export default function ProductPage() {
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-gray-400">
               <th className="p-3">ID</th>
               <th className="p-3">Mã SP</th>
               <th className="p-3">Tên</th>
@@ -282,11 +282,9 @@ export default function ProductPage() {
                       onClick={() => setSelectedProduct(p)}
                     >
                       <IconEye className="inline-block mr-1" />
-                      Xem
                     </button>
                     <button className="text-yellow-600 hover:text-yellow-800 cursor-pointer">
                       <IconEdit className="inline-block mr-1" />
-                      Sửa
                     </button>
                   </td>
                 </tr>

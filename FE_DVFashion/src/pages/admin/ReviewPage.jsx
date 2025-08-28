@@ -234,11 +234,9 @@ export default function ReviewPage() {
                   <td className="p-3">
                     <button className="text-blue-600 hover:text-blue-800 mr-4 cursor-pointer">
                       <IconEye className="inline-block mr-1" />
-                      Xem
                     </button>
                     <button className="text-red-600 hover:text-red-800 cursor-pointer">
                       <IconTrash className="inline-block mr-1" />
-                      Xóa
                     </button>
                   </td>
                 </tr>

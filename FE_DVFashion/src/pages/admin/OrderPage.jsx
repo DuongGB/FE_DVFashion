@@ -222,7 +222,7 @@ export default function OrdersPage() {
       {/* Bảng đơn hàng */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-400">
             <tr>
               <th className="p-3">Mã đơn</th>
               <th className="p-3">Khách hàng</th>
@@ -254,18 +254,15 @@ export default function OrdersPage() {
                     onClick={() => setSelectedOrder(order)}
                   >
                     <IconEye className="inline-block mr-1" />
-                    Xem
                   </button>
                   <button
                     className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
                     onClick={() => setEditingOrder(order)}
                   >
                     <IconEdit className="inline-block mr-1" />
-                    Sửa
                   </button>
                   <button className="text-red-600 hover:text-red-800 cursor-pointer">
                     <IconTrash className="inline-block mr-1" />
-                    Xóa
                   </button>
                 </td>
               </tr>
