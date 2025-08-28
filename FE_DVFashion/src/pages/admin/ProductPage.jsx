@@ -252,7 +252,7 @@ export default function ProductPage() {
           <tbody>
             {paginatedProducts.length > 0 ? (
               paginatedProducts.map((p) => (
-                <tr key={p.id} className="border-b hover:bg-gray-50">
+                <tr key={p.id} className="border-b hover:bg-gray-300">
                   <td className="p-3">{p.id}</td>
                   <td className="p-3">{p.code}</td>
                   <td className="p-3">{p.name}</td>

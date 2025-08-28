@@ -234,7 +234,7 @@ export default function OrdersPage() {
           </thead>
           <tbody>
             {paginatedOrders.map((order) => (
-              <tr key={order.id} className="border-b hover:bg-gray-50">
+              <tr key={order.id} className="border-b hover:bg-gray-300">
                 <td className="p-3">{order.id}</td>
                 <td className="p-3">{order.customer}</td>
                 <td className="p-3">{order.date}</td>

@@ -80,22 +80,26 @@ export default function Sidebar({ onClose }) {
             </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to={"/admin/categories"}
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/categories")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconCategory stroke={2} />
               <span className="ml-3">Danh mục</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
+            <Link
+              to={"/admin/brands"}
               className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
             >
               <IconBuildingStore stroke={2} />
               <span className="ml-3">Thương hiệu</span>
-            </a>
+            </Link>
           </li>
           <li>
             <a

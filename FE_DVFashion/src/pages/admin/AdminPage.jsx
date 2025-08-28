@@ -101,7 +101,7 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b">
+                <tr key={order.id} className="border-b hover:bg-gray-300">
                   <td className="py-3 px-6">{order.id}</td>
                   <td className="py-3 px-6">{order.customer}</td>
                   <td className="py-3 px-6">{order.date}</td>

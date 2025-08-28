@@ -10,6 +10,8 @@ import AccountPage from "./pages/customer/AccountPage";
 import CustomerPage from "./pages/customer/CustomerPage";
 import OrdersPage from "./pages/admin/OrderPage";
 import ProductPage from "./pages/admin/ProductPage";
+import CategoryPage from "./pages/admin/CategoryPage";
+import BrandPage from "./pages/admin/BrandPage";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
             <Route index element={<AdminPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="products" element={<ProductPage />} />
+            <Route path="categories" element={<CategoryPage />} />
+            <Route path="brands" element={<BrandPage />} />
           </Route>
         </Route>
 
