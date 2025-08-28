@@ -14,10 +14,17 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import EmployeeCard from "../common/EmployeeCard";
+
 export default function Sidebar({ onClose }) {
-  const { logout, isLogoutLoading } = useAuth();
+  const { logout, isLogoutLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const defaultAvatar =
+    "https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG-Free-Download.png";
+
+  const roleDisplay = user?.roles?.[0] === "ROLE_ADMIN" ? "ADMIN" : "Nhân viên";
 
   const handleLogout = async () => {
     try {
@@ -38,138 +45,254 @@ export default function Sidebar({ onClose }) {
   return (
     <aside
       style={{ backgroundColor: "#18202eff" }}
-      className="w-64 text-white flex flex-col py-8 px-6 h-screen"
+      className="w-64 text-white flex flex-col py-8 px-6 h-full"
     >
-      {/* Navigation Links */}
-      <h2 className="text-2xl font-bold mb-10">Trang điều khiển</h2>
-      <nav className="flex-1">
-        <ul className="space-y-2">
-          <li>
-            <Link
-              to="/admin"
-              className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
-                isActive("/admin") ? "bg-blue-600" : " hover:bg-blue-900"
-              }`}
-            >
-              <IconHomeInfinity stroke={2} />
-              <span className="ml-3">Trang chủ</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/orders"
-              className={`flex items-center rounded-lg px-4 py-2 ${
-                isActive("/admin/orders") ? "bg-blue-600" : "hover:bg-blue-900"
-              }`}
-            >
-              <IconTruckDelivery stroke={2} />
-              <span className="ml-3">Đơn hàng</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/products"
-              className={`flex items-center rounded-lg px-4 py-2 ${
-                isActive("/admin/products")
-                  ? "bg-blue-600"
-                  : "hover:bg-blue-900"
-              }`}
-            >
-              <IconShirt stroke={2} />
-              <span className="ml-3">Sản phẩm</span>
-            </Link>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconCategory stroke={2} />
-              <span className="ml-3">Danh mục</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconBuildingStore stroke={2} />
-              <span className="ml-3">Thương hiệu</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconDevicesCheck stroke={2} />
-              <span className="ml-3">Bài nhận xét</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconAdCircle stroke={2} />
-              <span className="ml-3">Quảng cáo</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconUsers stroke={2} />
-              <span className="ml-3">Khách hàng</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconCashRegister stroke={2} />
-              <span className="ml-3">Nhân viên</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
-            >
-              <IconDeviceAnalytics stroke={2} />
-              <span className="ml-3">Phân tích báo cáo</span>
-            </a>
-          </li>
-          {/* Dỉrect HomePage of Customer */}
-          <li>
-            <button
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left"
-              onClick={handleCustomerPageClick}
-            >
-              <IconHomeEdit stroke={2} />
-              <span className="ml-3">Trang khách hàng</span>
-            </button>
-          </li>
+      {/* Thông tin nhân viên */}
+      <EmployeeCard
+        name={user?.fullName || "Tên nhân viên"}
+        image={defaultAvatar}
+        role={roleDisplay || "Vai trò"}
+      />
 
-          {/* Buuton logout */}
-          <li>
-            <button
-              className="w-full text-left flex items-center hover:bg-red-600 rounded-lg px-4 py-2 mt-10 bg-red-500 font-semibold"
-              onClick={handleLogout}
-              disabled={isLogoutLoading}
-            >
-              <IconLogout stroke={2} />
-              {isLogoutLoading ? (
-                <span className="ml-3">Đang đăng xuất...</span>
-              ) : (
-                <span className="ml-3">Đăng xuất</span>
-              )}
-            </button>
-          </li>
-        </ul>
-      </nav>
+      {/* Navigation Links of ADMIN */}
+      {user?.roles?.[0] === "ROLE_ADMIN" && (
+        <nav className="flex-1">
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to="/admin"
+                className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
+                  isActive("/admin") ? "bg-blue-600" : " hover:bg-blue-900"
+                }`}
+              >
+                <IconHomeInfinity stroke={2} />
+                <span className="ml-3">Trang chủ</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/admin/orders"
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/orders")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconTruckDelivery stroke={2} />
+                <span className="ml-3">Đơn hàng</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/admin/products"
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/products")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconShirt stroke={2} />
+                <span className="ml-3">Sản phẩm</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/categories"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/categories")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconCategory stroke={2} />
+                <span className="ml-3">Danh mục</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/brands"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/brands")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconBuildingStore stroke={2} />
+                <span className="ml-3">Thương hiệu</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/reviews"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/reviews")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconDevicesCheck stroke={2} />
+                <span className="ml-3">Bài nhận xét</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/promotions"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/promotions")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconAdCircle stroke={2} />
+                <span className="ml-3">Khuyến mãi</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/customers"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/customers")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconUsers stroke={2} />
+                <span className="ml-3">Khách hàng</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/employees"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/employees")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconCashRegister stroke={2} />
+                <span className="ml-3">Nhân viên</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/admin/reports"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/admin/analyst-report")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconDeviceAnalytics stroke={2} />
+                <span className="ml-3">Phân tích báo cáo</span>
+              </Link>
+            </li>
+            {/* Dỉrect HomePage of Customer */}
+            <li>
+              <button
+                className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left"
+                onClick={handleCustomerPageClick}
+              >
+                <IconHomeEdit stroke={2} />
+                <span className="ml-3">Trang khách hàng</span>
+              </button>
+            </li>
+
+            {/* Buuton logout */}
+            <li>
+              <button
+                className="flex items-center hover:bg-red-600 rounded-lg p-1 ml-4 bg-red-500 font-semibold cursor-pointer"
+                onClick={handleLogout}
+                disabled={isLogoutLoading}
+              >
+                <IconLogout stroke={2} />
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
+
+      {/* Navigation Links of STAFF */}
+      {user?.roles?.[0] === "ROLE_STAFF" && (
+        <nav className="flex-1">
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to="/staff/orders"
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/staff/orders")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconTruckDelivery stroke={2} />
+                <span className="ml-3">Đơn hàng</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/staff/categories"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/staff/categories")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconCategory stroke={2} />
+                <span className="ml-3">Danh mục</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/staff/reviews"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/staff/reviews")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconDevicesCheck stroke={2} />
+                <span className="ml-3">Bài nhận xét</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/staff/promotions"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/staff/promotions")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconAdCircle stroke={2} />
+                <span className="ml-3">Khuyến mãi</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={"/staff/customers"}
+                className={`flex items-center rounded-lg px-4 py-2 ${
+                  isActive("/staff/customers")
+                    ? "bg-blue-600"
+                    : "hover:bg-blue-900"
+                }`}
+              >
+                <IconUsers stroke={2} />
+                <span className="ml-3">Khách hàng</span>
+              </Link>
+            </li>
+            {/* Buuton logout */}
+            <li>
+              <button
+                className="flex items-center hover:bg-red-600 rounded-lg p-1 ml-4 bg-red-500 font-semibold cursor-pointer"
+                onClick={handleLogout}
+                disabled={isLogoutLoading}
+              >
+                <IconLogout stroke={2} />
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
     </aside>
   );
 }
