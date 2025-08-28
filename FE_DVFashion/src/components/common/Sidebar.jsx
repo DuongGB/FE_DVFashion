@@ -67,13 +67,17 @@ export default function Sidebar({ onClose }) {
             </Link>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2"
+            <Link
+              to="/admin/products"
+              className={`flex items-center rounded-lg px-4 py-2 ${
+                isActive("/admin/products")
+                  ? "bg-blue-600"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <IconShirt stroke={2} />
               <span className="ml-3">Sản phẩm</span>
-            </a>
+            </Link>
           </li>
           <li>
             <a

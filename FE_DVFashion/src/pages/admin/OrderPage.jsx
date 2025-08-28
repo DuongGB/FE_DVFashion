@@ -2,31 +2,144 @@ import { useState } from "react";
 import { IconEye, IconEdit, IconTrash } from "@tabler/icons-react";
 import OrderDetailModal from "../../components/ui/order/OrderDetailModal";
 import OrderEditModal from "../../components/ui/order/OrderEditModal";
+import Pagination from "../../components/common/Pagination";
 
 const orders = [
   {
-    id: "12345",
+    id: "1",
     customer: "John Doe",
     date: "2024-04-01",
     status: "Shipped",
     total: "300,000 VND",
   },
   {
-    id: "12346",
+    id: "2",
     customer: "Jane Smith",
     date: "2024-04-02",
     status: "Processing",
     total: "430,000 VND",
   },
   {
-    id: "12347",
+    id: "3",
     customer: "Michael Johnson",
     date: "2024-04-03",
     status: "Delivered",
     total: "220,000 VND",
   },
   {
-    id: "12348",
+    id: "4",
+    customer: "Emily Davis",
+    date: "2024-04-04",
+    status: "Cancelled",
+    total: "250,000 VND",
+  },
+  {
+    id: "5",
+    customer: "John Doe",
+    date: "2024-04-01",
+    status: "Shipped",
+    total: "300,000 VND",
+  },
+  {
+    id: "6",
+    customer: "Jane Smith",
+    date: "2024-04-02",
+    status: "Processing",
+    total: "430,000 VND",
+  },
+  {
+    id: "7",
+    customer: "Michael Johnson",
+    date: "2024-04-03",
+    status: "Delivered",
+    total: "220,000 VND",
+  },
+  {
+    id: "8",
+    customer: "Emily Davis",
+    date: "2024-04-04",
+    status: "Cancelled",
+    total: "250,000 VND",
+  },
+  {
+    id: "9",
+    customer: "John Doe",
+    date: "2024-04-01",
+    status: "Shipped",
+    total: "300,000 VND",
+  },
+  {
+    id: "10",
+    customer: "Jane Smith",
+    date: "2024-04-02",
+    status: "Processing",
+    total: "430,000 VND",
+  },
+  {
+    id: "11",
+    customer: "Michael Johnson",
+    date: "2024-04-03",
+    status: "Delivered",
+    total: "220,000 VND",
+  },
+  {
+    id: "12",
+    customer: "Emily Davis",
+    date: "2024-04-04",
+    status: "Cancelled",
+    total: "250,000 VND",
+  },
+  {
+    id: "13",
+    customer: "John Doe",
+    date: "2024-04-01",
+    status: "Shipped",
+    total: "300,000 VND",
+  },
+  {
+    id: "14",
+    customer: "Jane Smith",
+    date: "2024-04-02",
+    status: "Processing",
+    total: "430,000 VND",
+  },
+  {
+    id: "15",
+    customer: "Michael Johnson",
+    date: "2024-04-03",
+    status: "Delivered",
+    total: "220,000 VND",
+  },
+  {
+    id: "16",
+    customer: "Emily Davis",
+    date: "2024-04-04",
+    status: "Cancelled",
+    total: "250,000 VND",
+  },
+  {
+    id: "17",
+    customer: "John Doe",
+    date: "2024-04-01",
+    status: "Shipped",
+    total: "300,000 VND",
+  },
+  {
+    id: "18",
+    customer: "Jane Smith",
+    date: "2024-04-02",
+    status: "Processing",
+    total: "430,000 VND",
+  },
+  {
+    id: "19",
+    customer: "Michael Johnson",
+    date: "2024-04-03",
+    status: "Delivered",
+    total: "220,000 VND",
+  },
+  {
+    id: "20",
     customer: "Emily Davis",
     date: "2024-04-04",
     status: "Cancelled",
@@ -48,6 +161,24 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  // Pagination logic
+  const filteredOrders = orders.filter(
+    (order) =>
+      (statusFilter === "Tất cả" || order.status === statusFilter) &&
+      (order.customer.toLowerCase().includes(search.toLowerCase()) ||
+        order.id.includes(search))
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   const statusOptions = [
     "Tất cả",
     "Shipped",
@@ -57,15 +188,8 @@ export default function OrdersPage() {
     "Cancelled",
   ];
 
-  const filteredOrders = orders.filter(
-    (order) =>
-      (statusFilter === "Tất cả" || order.status === statusFilter) &&
-      (order.customer.toLowerCase().includes(search.toLowerCase()) ||
-        order.id.includes(search))
-  );
-
   return (
-    <div className="p-6">
+    <div>
       <h1 className="text-2xl font-bold mb-4">Quản lý đơn hàng</h1>
 
       {/* Thanh công cụ */}
@@ -109,7 +233,7 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map((order) => (
+            {paginatedOrders.map((order) => (
               <tr key={order.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{order.id}</td>
                 <td className="p-3">{order.customer}</td>
@@ -146,7 +270,7 @@ export default function OrdersPage() {
                 </td>
               </tr>
             ))}
-            {filteredOrders.length === 0 && (
+            {paginatedOrders.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center py-6 text-gray-500">
                   Không tìm thấy đơn hàng nào.
@@ -156,6 +280,11 @@ export default function OrdersPage() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}

@@ -9,6 +9,7 @@ import StaffPage from "./pages/staff/StaffPage";
 import AccountPage from "./pages/customer/AccountPage";
 import CustomerPage from "./pages/customer/CustomerPage";
 import OrdersPage from "./pages/admin/OrderPage";
+import ProductPage from "./pages/admin/ProductPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
             <Route path="orders" element={<OrdersPage />} />
+            <Route path="products" element={<ProductPage />} />
           </Route>
         </Route>
 
