@@ -22,7 +22,7 @@ export default function Sidebar({ onClose }) {
   const location = useLocation();
 
   const defaultAvatar =
-    "https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG-Free-Download.png";
+    "https://img.pikbest.com/png-images/20240806/3d-character-of-a-male-office-worker-wearing-white-shirt-and-tie_10659321.png!f305cw";
 
   const roleDisplay = user?.roles?.[0] === "ROLE_ADMIN" ? "ADMIN" : "Nhân viên";
 
@@ -177,7 +177,7 @@ export default function Sidebar({ onClose }) {
               <Link
                 to={"/admin/reports"}
                 className={`flex items-center rounded-lg px-4 py-2 ${
-                  isActive("/admin/analyst-report")
+                  isActive("/admin/reports")
                     ? "bg-blue-600"
                     : "hover:bg-blue-900"
                 }`}
@@ -215,6 +215,17 @@ export default function Sidebar({ onClose }) {
       {user?.roles?.[0] === "ROLE_STAFF" && (
         <nav className="flex-1">
           <ul className="space-y-2">
+            <li>
+              <Link
+                to="/staff"
+                className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
+                  isActive("/staff") ? "bg-blue-600" : " hover:bg-blue-900"
+                }`}
+              >
+                <IconHomeInfinity stroke={2} />
+                <span className="ml-3">Trang chủ</span>
+              </Link>
+            </li>
             <li>
               <Link
                 to="/staff/orders"

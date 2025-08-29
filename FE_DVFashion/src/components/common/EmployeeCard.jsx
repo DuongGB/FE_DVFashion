@@ -1,11 +1,10 @@
 import React from "react";
-import defaultAvatar from "../../assets/logo_DVF.png"; // Hình ảnh mặc định nếu không có ảnh nhân viên
 
 const EmployeeCard = ({ name, image, role }) => {
   return (
     <div className="flex items-center p-4 border border-gray-300 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow mb-4">
       <img
-        src={image || defaultAvatar}
+        src={image}
         alt={name}
         className="w-14 h-14 rounded-full object-cover mr-4"
       />
