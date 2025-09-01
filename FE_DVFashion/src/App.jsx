@@ -18,6 +18,8 @@ import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
 import EmployeePage from "./pages/admin/EmployeePage";
 import AnalystReportPage from "./pages/admin/AnalystReportPage";
 import StaffLayout from "./layouts/StaffLayout";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
@@ -72,6 +74,18 @@ function App() {
           </Route>
         </Route>
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </Router>
   );
 }
