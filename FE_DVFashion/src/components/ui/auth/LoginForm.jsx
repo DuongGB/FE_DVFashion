@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
+import { getDefaultRouteByRoles } from "../../../utils/getDefaultRouteByRoles";
 
 export default function LoginForm({ onSuccess }) {
   const { login, isLoginLoading, loginError } = useAuth();
@@ -22,16 +23,20 @@ export default function LoginForm({ onSuccess }) {
     e.preventDefault();
     try {
       const result = await login(formData);
+      console.log("Login result:", result);
+
       if (result?.data?.success) {
-        // Kiểm tra role và chuyển hướng
-        // const roles = result?.data?.data?.roles || [];
-        // if (roles.includes("ROLE_ADMIN")) {
-        //   navigate("/admin");
-        // } else if (roles.includes("ROLE_STAFF")) {
-        //   navigate("/staff");
-        // } else {
-        //   navigate("/");
-        // }
+        // Lấy roles từ response
+        const roles = result?.data?.data?.roles || [];
+        console.log("Roles from login response:", roles);
+
+        // Xác định route mặc định dựa trên roles (ưu tiên ADMIN)
+        const defaultRoute = getDefaultRouteByRoles(roles);
+        console.log("Default route determined:", defaultRoute);
+
+        // Chuyển hướng đến route tương ứng
+        navigate(defaultRoute, { replace: true });
+
         if (onSuccess) onSuccess();
       }
     } catch (err) {

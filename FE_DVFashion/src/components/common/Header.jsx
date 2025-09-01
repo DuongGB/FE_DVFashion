@@ -326,7 +326,7 @@ function LoginModal({ show, onClose }) {
         >
           &times;
         </button>
-        <LoginForm />
+        <LoginForm onSuccess={() => setShowLogin(false)} />
       </div>
     </div>
   );
@@ -340,26 +340,29 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Chỉ điều hướng khi vừa đăng nhập
-    if (
-      !wasAuthenticated &&
-      isAuthenticated &&
-      user?.roles &&
-      location.pathname === "/"
-    ) {
-      let defaultRoute = getDefaultRouteByRoles(user?.roles);
-      if (user?.roles?.includes("ROLE_CUSTOMER")) {
-        defaultRoute = "/customer";
-      }
-      navigate(defaultRoute);
-      setShowLogin(false);
-      setWasAuthenticated(true);
-    }
-    if (!isAuthenticated && wasAuthenticated) {
-      setWasAuthenticated(false);
-    }
-  }, [isAuthenticated, user, navigate, wasAuthenticated, location.pathname]);
+  // useEffect(() => {
+  //   // Chỉ điều hướng khi vừa đăng nhập
+  //   if (
+  //     !wasAuthenticated &&
+  //     isAuthenticated &&
+  //     user?.roles &&
+  //     location.pathname === "/"
+  //   ) {
+  //     let defaultRoute = getDefaultRouteByRoles(user?.roles);
+  //     if (user?.roles?.includes("ROLE_CUSTOMER")) {
+  //       defaultRoute = "/customer";
+  //     }
+  //     if (user?.roles?.includes("ROLE_STAFF")) {
+  //       defaultRoute = "/staff";
+  //     }
+  //     navigate(defaultRoute);
+  //     setShowLogin(false);
+  //     setWasAuthenticated(true);
+  //   }
+  //   if (!isAuthenticated && wasAuthenticated) {
+  //     setWasAuthenticated(false);
+  //   }
+  // }, [isAuthenticated, user, navigate, wasAuthenticated, location.pathname]);
 
   // Display modal show account if authenticated
   const handleUserClick = () => {
@@ -376,12 +379,12 @@ export default function Header() {
         onLoginClick={() => setShowLogin(true)}
         isAuthenticated={isAuthenticated}
         user={user}
-        onUserClick={() => handleUserClick}
+        onUserClick={handleUserClick}
       />
       <MainMenu
         isAuthenticated={isAuthenticated}
         user={user}
-        onUserClick={() => handleUserClick(true)}
+        onUserClick={handleUserClick}
       />
       <LoginModal show={showLogin} onClose={() => setShowLogin(false)} />
       <ModalAccount
