@@ -108,14 +108,7 @@ export default function Sidebar({ onClose }) {
   };
 
   const handleCustomerPageClick = () => {
-    // Nếu user có quyền ADMIN và muốn chuyển sang trang staff
-    if (hasAdminRole) {
-      navigate("/staff", { replace: true });
-      onClose?.(); // Đóng sidebar nếu có
-    } else {
-      // Nếu không có quyền thì mở tab mới
-      window.open("/staff", "_blank");
-    }
+    window.open("/customer", "_blank");
   };
 
   const handleStaffPageClick = () => {
@@ -297,7 +290,7 @@ export default function Sidebar({ onClose }) {
             >
               <li>
                 <button
-                  className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm"
+                  className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm cursor-pointer"
                   onClick={handleCustomerPageClick}
                 >
                   <IconHomeEdit size={16} />
@@ -306,7 +299,7 @@ export default function Sidebar({ onClose }) {
               </li>
               <li>
                 <button
-                  className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm"
+                  className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm cursor-pointer"
                   onClick={handleStaffPageClick}
                 >
                   <IconHomeEdit size={16} />

@@ -9,11 +9,12 @@ export default function CustomerDetailModal({ customer, open, onClose }) {
   const defaultAddress = customer.addresses?.find((a) => a.isDefault);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 "
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative"
+        className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative overflow-auto scrollbar-hide"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
