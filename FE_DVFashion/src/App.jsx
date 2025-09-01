@@ -23,9 +23,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Admin routes */}
+        {/* Admin routes - chỉ cho phép ROLE_ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
-          <Route path="/admin/*" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="products" element={<ProductPage />} />
@@ -39,9 +39,9 @@ function App() {
           </Route>
         </Route>
 
-        {/* Staff routes */}
+        {/* Staff routes - chỉ cho phép ROLE_STAFF */}
         <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
-          <Route path="/staff/*" element={<StaffLayout />}>
+          <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="categories" element={<CategoryPage />} />
@@ -58,7 +58,9 @@ function App() {
 
           <Route
             element={
-              <ProtectedRoute allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN"]} />
+              <ProtectedRoute
+                allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_STAFF"]}
+              />
             }
           >
             <Route path="/customer" element={<CustomerPage />} />
