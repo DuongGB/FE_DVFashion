@@ -201,10 +201,10 @@ export default function Sidebar({ onClose }) {
               menuKey="business"
             >
               <SubMenuItem
-                to="/admin/orders"
+                to="/admin/inventories"
                 icon={<IconTruckDelivery size={16} />}
               >
-                Đơn hàng
+                Kho hàng
               </SubMenuItem>
               <SubMenuItem to="/admin/products" icon={<IconShirt size={16} />}>
                 Sản phẩm
