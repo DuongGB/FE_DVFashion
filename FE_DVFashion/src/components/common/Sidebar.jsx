@@ -17,14 +17,51 @@ import { useAuth } from "../../hooks/useAuth";
 import EmployeeCard from "../common/EmployeeCard";
 
 export default function Sidebar({ onClose }) {
-  const { logout, isLogoutLoading, user } = useAuth();
+  const { logout, isLogoutLoading, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const defaultAvatar =
     "https://img.pikbest.com/png-images/20240806/3d-character-of-a-male-office-worker-wearing-white-shirt-and-tie_10659321.png!f305cw";
 
-  const roleDisplay = user?.roles?.[0] === "ROLE_ADMIN" ? "ADMIN" : "Nhân viên";
+  // Loading state
+  if (isLoading || !user) {
+    return (
+      <aside
+        style={{ backgroundColor: "#18202eff" }}
+        className="w-64 text-white flex flex-col py-8 px-6 h-full"
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">Loading...</div>
+        </div>
+      </aside>
+    );
+  }
+
+  // Xác định role dựa trên path hiện tại và roles của user
+  const userRoles = user?.roles || [];
+  const hasAdminRole = userRoles.includes("ROLE_ADMIN");
+  const hasStaffRole = userRoles.includes("ROLE_STAFF");
+
+  // Logic đơn giản: Có ADMIN thì hiển thị Admin sidebar, không thì hiển thị Staff sidebar
+  const showAdminSidebar = hasAdminRole;
+  const showStaffSidebar = !hasAdminRole && hasStaffRole;
+
+  let roleDisplay = "";
+  if (hasAdminRole) {
+    roleDisplay = "ADMIN";
+  } else if (hasStaffRole) {
+    roleDisplay = "STAFF";
+  }
+
+  console.log("Sidebar Debug:", {
+    userRoles,
+    hasAdminRole,
+    hasStaffRole,
+    showAdminSidebar,
+    showStaffSidebar,
+    roleDisplay,
+  });
 
   const handleLogout = async () => {
     try {
@@ -55,7 +92,7 @@ export default function Sidebar({ onClose }) {
       />
 
       {/* Navigation Links of ADMIN */}
-      {user?.roles?.[0] === "ROLE_ADMIN" && (
+      {showAdminSidebar && (
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
@@ -212,7 +249,7 @@ export default function Sidebar({ onClose }) {
       )}
 
       {/* Navigation Links of STAFF */}
-      {user?.roles?.[0] === "ROLE_STAFF" && (
+      {showStaffSidebar === "ROLE_STAFF" && (
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
