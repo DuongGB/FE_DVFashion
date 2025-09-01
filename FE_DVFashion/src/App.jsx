@@ -39,8 +39,12 @@ function App() {
           </Route>
         </Route>
 
-        {/* Staff routes - chỉ cho phép ROLE_STAFF */}
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_STAFF"]} />}>
+        {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
+          }
+        >
           <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffPage />} />
             <Route path="orders" element={<OrdersPage />} />
