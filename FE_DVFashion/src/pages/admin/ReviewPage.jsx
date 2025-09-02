@@ -596,6 +596,11 @@ export default function ReviewPage() {
         </div>
       </div>
 
+      {/* Results Summary */}
+      <div className="mb-4 text-sm text-gray-600">
+        {`Hiển thị ${paginatedReviews.length} trên tổng số ${filteredReviews.length} đánh giá`}
+      </div>
+
       {/* Reviews Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">

@@ -434,6 +434,13 @@ export default function PromotionPage() {
           Tạo khuyến mãi
         </button>
       </div>
+
+      {/* Results Summary */}
+      <div className="mb-4 text-sm text-gray-600">
+        {`Hiển thị ${paginatedPromotions.length} trên tổng số ${filteredPromotions.length} khuyến mãi`}
+      </div>
+
+      {/* Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>

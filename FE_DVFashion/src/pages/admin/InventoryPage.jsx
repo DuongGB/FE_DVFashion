@@ -232,6 +232,11 @@ export default function InventoryPage() {
         </div>
       </div>
 
+      {/* Results Summary */}
+      <div className="mb-4 text-sm text-gray-600">
+        {`Hiển thị ${paginatedInventories.length} trên tổng số ${filteredInventories.length} bản ghi`}
+      </div>
+
       {/* Inventory Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">

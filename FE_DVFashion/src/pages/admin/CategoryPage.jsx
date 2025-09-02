@@ -552,6 +552,13 @@ export default function CategoryPage() {
         </div>
       </div>
 
+      {/* Results Summary */}
+      <div className="mb-4 text-sm text-gray-600">
+        {language === "vi"
+          ? `Hiển thị ${paginatedCategories.length} trên tổng số ${filteredCategories.length} danh mục`
+          : `Showing ${paginatedCategories.length} of ${filteredCategories.length} categories`}
+      </div>
+
       {/* Categories Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
