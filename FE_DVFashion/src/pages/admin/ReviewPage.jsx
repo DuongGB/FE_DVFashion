@@ -253,7 +253,7 @@ export default function ReviewPage() {
   const [selectedReview, setSelectedReview] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [setLoading] = useState(false);
   const pageSize = 10;
 
   useEffect(() => {
@@ -263,7 +263,7 @@ export default function ReviewPage() {
       setReviews(mockReviews);
       setLoading(false);
     }, 500);
-  }, []);
+  }, [setLoading]);
 
   // Lọc theo các tiêu chí
   const filteredReviews = reviews.filter((review) => {
@@ -327,32 +327,56 @@ export default function ReviewPage() {
   const handleHide = async (reviewId) => {
     const review = reviews.find((r) => r.id === reviewId);
 
+    // Determine action based on current status
+    const isUnhiding = review.status === "HIDDEN";
+    const action = isUnhiding ? "hiển thị lại" : "ẩn";
+    const actionEn = isUnhiding ? "unhide" : "hide";
+
+    const confirmText = isUnhiding ? "Hiển thị lại" : "Ẩn đánh giá";
+    const cancelText = "Hủy";
+
+    const title = isUnhiding
+      ? "Xác nhận hiển thị lại đánh giá"
+      : "Xác nhận ẩn đánh giá";
+
+    const message = isUnhiding
+      ? `Bạn có chắc chắn muốn hiển thị lại đánh giá của khách hàng "${review?.user.fullName}" không? Đánh giá sẽ được hiển thị công khai trở lại.`
+      : `Bạn có chắc chắn muốn ẩn đánh giá của khách hàng "${review?.user.fullName}" không? Đánh giá sẽ không hiển thị cho khách hàng khác.`;
+
     showConfirmationToast({
-      title: "Xác nhận ẩn đánh giá",
-      message: `Bạn có chắc chắn muốn ẩn đánh giá của khách hàng "${review?.user.fullName}" không?`,
-      confirmText: "Ẩn đánh giá",
-      cancelText: "Hủy",
-      confirmButtonClass:
-        "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: isUnhiding
+        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
+        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
       onConfirm: async () => {
         try {
-          // API call to hide review
+          // API call to toggle review visibility
           setReviews((prev) =>
             prev.map((r) =>
               r.id === reviewId
                 ? {
                     ...r,
-                    status: "HIDDEN",
+                    status: isUnhiding ? "APPROVED" : "HIDDEN",
                     moderatedAt: new Date().toISOString(),
                     moderatedBy: "Current Admin",
+                    updatedAt: new Date().toISOString(),
                   }
                 : r
             )
           );
-          toast.success("Ẩn đánh giá thành công!");
+
+          const successMessage = isUnhiding
+            ? "Hiển thị lại đánh giá thành công!"
+            : "Ẩn đánh giá thành công!";
+
+          toast.success(successMessage);
         } catch (error) {
-          console.error("Error hiding review:", error);
-          toast.error("Có lỗi xảy ra khi ẩn đánh giá!");
+          console.error(`Error ${actionEn} review:`, error);
+          const errorMessage = `Có lỗi xảy ra khi ${action} đánh giá!`;
+          toast.error(errorMessage);
         }
       },
     });
@@ -724,41 +748,55 @@ export default function ReviewPage() {
                   </td>
 
                   <td className="p-3">
-                    <button
-                      onClick={() => handleViewDetail(review)}
-                      className="text-blue-600 hover:text-blue-800 mr-4 cursor-pointer"
-                    >
-                      <IconEye className="inline-block mr-1" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(review)}
-                      className="text-yellow-600 hover:text-yellow-800 mr-4 cursor-pointer"
-                    >
-                      <IconEdit className="inline-block mr-1" />
-                    </button>
-                    {review.status === "PENDING" && (
-                      <>
-                        <button
-                          onClick={() => handleApprove(review.id)}
-                          className="text-green-600 hover:text-green-800 mr-4 cursor-pointer"
-                        >
-                          <IconCheck className="inline-block mr-1" />
-                        </button>
-                        <button
-                          onClick={() => handleReject(review.id)}
-                          className="text-orange-600 hover:text-orange-800 mr-4 cursor-pointer"
-                        >
-                          <IconX className="inline-block mr-1" />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => handleHide(review.id)}
-                      className="text-red-600 hover:text-red-800 cursor-pointer"
-                      title="Ẩn đánh giá"
-                    >
-                      <IconTrash className="inline-block mr-1" />
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewDetail(review)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                        title="Xem chi tiết"
+                      >
+                        <IconEye size={24} />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(review)}
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
+                        title="Chỉnh sửa"
+                      >
+                        <IconEdit size={24} />
+                      </button>
+                      {review.status === "PENDING" && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(review.id)}
+                            className="text-green-600 hover:text-green-800 cursor-pointer"
+                            title="Duyệt đánh giá"
+                          >
+                            <IconCheck size={24} />
+                          </button>
+                          <button
+                            onClick={() => handleReject(review.id)}
+                            className="text-orange-600 hover:text-orange-800 cursor-pointer"
+                            title="Từ chối đánh giá"
+                          >
+                            <IconX size={24} />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => handleHide(review.id)}
+                        className={`cursor-pointer ${
+                          review.status === "HIDDEN"
+                            ? "text-green-600 hover:text-green-800"
+                            : "text-red-600 hover:text-red-800"
+                        }`}
+                        title={
+                          review.status === "HIDDEN"
+                            ? "Hiển thị lại đánh giá"
+                            : "Ẩn đánh giá"
+                        }
+                      >
+                        <IconTrash size={24} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

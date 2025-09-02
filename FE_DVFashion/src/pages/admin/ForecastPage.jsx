@@ -113,7 +113,7 @@ export default function ForecastPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showForecastForm, setShowForecastForm] = useState(false);
   const [editingForecast, setEditingForecast] = useState(null);
-  const [showTrendAnalysis, setShowTrendAnalysis] = useState(false);
+  const [setShowTrendAnalysis] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [filters, setFilters] = useState({
     dateFrom: "",

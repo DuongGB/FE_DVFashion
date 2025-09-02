@@ -267,17 +267,69 @@ export default function EmployeePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản lý nhân viên</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Quản lý nhân viên</h1>
+        <button
+          onClick={handleCreateEmployee}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+        >
+          <IconPlus size={20} />
+          Tạo nhân viên
+        </button>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Tổng số nhân viên
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {employees.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Đang hoạt động
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {employees.filter((e) => e.active).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Không hoạt động
+              </p>
+              <p className="text-2xl font-bold text-red-600">
+                {employees.filter((e) => !e.active).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Filters */}
-      <div className="flex justify-between mb-4 items-center gap-4">
+      <div className="flex justify-between mb-4 items-center gap-4 bg-white p-4 rounded-lg shadow border">
         <div className="flex gap-4 items-center flex-1">
           <input
             type="text"
             placeholder="Tìm kiếm nhân viên (tên, email, username, SĐT)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1"
+            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <select
@@ -286,7 +338,7 @@ export default function EmployeePage() {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="border rounded-lg px-4 py-2"
+            className="border rounded-lg px-4 py-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
@@ -299,7 +351,7 @@ export default function EmployeePage() {
               setRoleFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="border rounded-lg px-4 py-2"
+            className="border rounded-lg px-4 py-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tất cả vai trò</option>
             <option value="ADMIN">Quản trị viên</option>
@@ -307,20 +359,12 @@ export default function EmployeePage() {
             <option value="CUSTOMER">Khách hàng</option>
           </select>
         </div>
-
-        <button
-          onClick={handleCreateEmployee}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer"
-        >
-          <IconPlus size={16} />
-          Tạo nhân viên
-        </button>
       </div>
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        Hiển thị {paginatedEmployees.length} trong tổng số{" "}
-        {filteredEmployees.length} nhân viên
+        Hiển thị {paginatedEmployees.length} trên {filteredEmployees.length}{" "}
+        nhân viên
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">

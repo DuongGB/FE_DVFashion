@@ -4,6 +4,7 @@ import Pagination from "../../components/common/Pagination";
 import PromotionForm from "../../components/ui/promotion/PromotionForm";
 import PromotionDetailModal from "../../components/ui/promotion/PromotionDetailModal";
 import { toast } from "react-toastify";
+import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
 // Mock data theo hình
 const mockPromotions = [
@@ -290,7 +291,7 @@ export default function PromotionPage() {
   };
 
   // Xử lý xóa khuyến mãi (thực chất là deactivate)
-  const handleDeletePromotion = (promotionId) => {
+  const handleDeletePromotion = async (promotionId) => {
     const promotion = promotions.find((p) => p.id === promotionId);
 
     if (!promotion) {
@@ -298,113 +299,100 @@ export default function PromotionPage() {
       return;
     }
 
-    const confirmDelete = () => {
-      if (promotion.active) {
-        setPromotions((prev) =>
-          prev.map((p) => (p.id === promotionId ? { ...p, active: false } : p))
-        );
-        toast.success(`Đã vô hiệu hóa khuyến mãi "${promotion.name}"`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } else {
-        setPromotions((prev) =>
-          prev.map((p) => (p.id === promotionId ? { ...p, active: true } : p))
-        );
-        toast.success(`Đã kích hoạt lại khuyến mãi "${promotion.name}"`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
-    };
+    // Determine action based on current status
+    const isActivating = !promotion.active;
+    const action = isActivating ? "kích hoạt" : "vô hiệu hóa";
 
-    // Lưu toast ID để dismiss cụ thể
-    const warningToastId = toast.warn(
-      <div className="flex flex-col gap-3">
-        <div>
-          <strong>Xác nhận thao tác</strong>
-        </div>
-        <div>
-          Bạn có chắc chắn muốn{" "}
-          {promotion.active ? "vô hiệu hóa" : "kích hoạt lại"} khuyến mãi <br />
-          <strong>"{promotion.name}"</strong>?
-        </div>
-        <div className="flex gap-2 justify-end">
-          <button
-            onClick={() => {
-              confirmDelete();
-              toast.dismiss(warningToastId); // Dismiss chỉ toast warning này
-            }}
-            className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors"
-          >
-            Xác nhận
-          </button>
-          <button
-            onClick={() => toast.dismiss(warningToastId)} // Dismiss chỉ toast warning này
-            className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400 transition-colors"
-          >
-            Hủy
-          </button>
-        </div>
-      </div>,
-      {
-        position: "top-center",
-        autoClose: false,
-        closeOnClick: false,
-        closeButton: false,
-        draggable: false,
-        toastId: `warning-${promotionId}`, // Thêm ID duy nhất
-      }
-    );
+    const confirmText = isActivating ? "Kích hoạt" : "Vô hiệu hóa";
+    const cancelText = "Hủy";
+
+    const title = isActivating
+      ? "Xác nhận kích hoạt khuyến mãi"
+      : "Xác nhận vô hiệu hóa khuyến mãi";
+
+    const message = isActivating
+      ? `Bạn có chắc chắn muốn kích hoạt lại khuyến mãi "${promotion.name}" không? Khuyến mãi sẽ có hiệu lực và khách hàng có thể sử dụng.`
+      : `Bạn có chắc chắn muốn vô hiệu hóa khuyến mãi "${promotion.name}" không? Khuyến mãi sẽ không hiển thị và khách hàng không thể sử dụng.`;
+
+    showConfirmationToast({
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: isActivating
+        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
+        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      onConfirm: async () => {
+        try {
+          setPromotions((prev) =>
+            prev.map((p) =>
+              p.id === promotionId ? { ...p, active: !p.active } : p
+            )
+          );
+
+          const successMessage = isActivating
+            ? `Đã kích hoạt khuyến mãi "${promotion.name}" thành công!`
+            : `Đã vô hiệu hóa khuyến mãi "${promotion.name}" thành công!`;
+
+          toast.success(successMessage);
+        } catch (error) {
+          console.error("Error toggling promotion status:", error);
+          const errorMessage = `Có lỗi xảy ra khi ${action} khuyến mãi!`;
+          toast.error(errorMessage);
+        }
+      },
+    });
   };
 
   // Xử lý submit form (tạo mới hoặc cập nhật)
   const handleFormSubmit = (formData) => {
     console.log("Form submitted:", formData);
 
-    if (selectedPromotion) {
-      // Cập nhật promotion
-      setPromotions((prev) =>
-        prev.map((p) =>
-          p.id === selectedPromotion.id
-            ? {
-                ...p,
-                ...formData,
-                id: selectedPromotion.id,
-                // FIX: Chuyển đổi ID thành object có name
-                applicableProducts: mockProducts.filter((product) =>
-                  formData.applicableProducts.includes(product.id)
-                ),
-                applicableCategories: mockCategories.filter((category) =>
-                  formData.applicableCategories.includes(category.id)
-                ),
-              }
-            : p
-        )
-      );
-      toast.success("Cập nhật khuyến mãi thành công!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } else {
-      // Tạo promotion mới
-      const newPromotion = {
-        ...formData,
-        id: Math.max(...promotions.map((p) => p.id)) + 1,
-        currentUsage: 0,
-        applicableProducts: mockProducts.filter((p) =>
-          formData.applicableProducts.includes(p.id)
-        ),
-        applicableCategories: mockCategories.filter((c) =>
-          formData.applicableCategories.includes(c.id)
-        ),
-      };
-      setPromotions((prev) => [newPromotion, ...prev]);
-      console.log("Promotion created");
-    }
+    try {
+      if (selectedPromotion) {
+        // Cập nhật promotion
+        setPromotions((prev) =>
+          prev.map((p) =>
+            p.id === selectedPromotion.id
+              ? {
+                  ...p,
+                  ...formData,
+                  id: selectedPromotion.id,
+                  // FIX: Chuyển đổi ID thành object có name
+                  applicableProducts: mockProducts.filter((product) =>
+                    formData.applicableProducts.includes(product.id)
+                  ),
+                  applicableCategories: mockCategories.filter((category) =>
+                    formData.applicableCategories.includes(category.id)
+                  ),
+                }
+              : p
+          )
+        );
+        toast.success("Cập nhật khuyến mãi thành công!");
+      } else {
+        // Tạo promotion mới
+        const newPromotion = {
+          ...formData,
+          id: Math.max(...promotions.map((p) => p.id)) + 1,
+          currentUsage: 0,
+          applicableProducts: mockProducts.filter((p) =>
+            formData.applicableProducts.includes(p.id)
+          ),
+          applicableCategories: mockCategories.filter((c) =>
+            formData.applicableCategories.includes(c.id)
+          ),
+        };
+        setPromotions((prev) => [newPromotion, ...prev]);
+        toast.success("Tạo khuyến mãi mới thành công!");
+      }
 
-    setShowForm(false);
-    setSelectedPromotion(null);
+      setShowForm(false);
+      setSelectedPromotion(null);
+    } catch (error) {
+      console.error("Error submitting promotion:", error);
+      toast.error("Có lỗi xảy ra khi lưu khuyến mãi!");
+    }
   };
 
   // Đóng form
@@ -415,17 +403,9 @@ export default function PromotionPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản lý khuyến mãi</h1>
-      <div className="flex justify-between mb-4 items-center">
-        <div className="flex gap-4 w-2/3">
-          <input
-            type="text"
-            placeholder="Tìm kiếm khuyến mãi..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-2/3"
-          />
-        </div>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Quản lý Khuyến mãi</h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
           onClick={handleCreatePromotion}
@@ -433,6 +413,94 @@ export default function PromotionPage() {
           <IconPlus size={16} />
           Tạo khuyến mãi
         </button>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Tổng khuyến mãi
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {promotions.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Đang hoạt động
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {promotions.filter((p) => p.active).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Không hoạt động
+              </p>
+              <p className="text-2xl font-bold text-red-600">
+                {promotions.filter((p) => !p.active).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Hết hạn sử dụng
+              </p>
+              <p className="text-2xl font-bold text-orange-600">
+                {promotions.filter((p) => p.currentUsage >= p.maxUsage).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Basic filter */}
+      <div className="bg-white p-4 rounded-lg shadow border mb-4 flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex gap-4 w-2/3">
+          <input
+            type="text"
+            placeholder="Tìm kiếm khuyến mãi..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        {/* Lọc theo trạng thái */}
+        <select
+          className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "all") {
+              setPromotions(mockPromotions);
+            }
+            if (value === "active") {
+              setPromotions(mockPromotions.filter((p) => p.active));
+            }
+            if (value === "inactive") {
+              setPromotions(mockPromotions.filter((p) => !p.active));
+            }
+          }}
+        >
+          <option value="all">Tất cả</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Không hoạt động</option>
+        </select>
       </div>
 
       {/* Results Summary */}
@@ -502,25 +570,38 @@ export default function PromotionPage() {
                   <td className="p-2">
                     {promo.applicableProducts.map((p) => p.name).join(", ")}
                   </td>
-                  <td className="p-2 w-32">
-                    <button
-                      className="text-blue-600 hover:text-blue-800 mr-2 cursor-pointer"
-                      onClick={() => handleViewPromotion(promo)}
-                    >
-                      <IconEye className="inline-block mr-1" />
-                    </button>
-                    <button
-                      className="text-yellow-600 hover:text-yellow-800 mr-2 cursor-pointer"
-                      onClick={() => handleEditPromotion(promo)}
-                    >
-                      <IconEdit className="inline-block mr-1" />
-                    </button>
-                    <button
-                      className="text-red-600 hover:text-red-800 cursor-pointer"
-                      onClick={() => handleDeletePromotion(promo.id)}
-                    >
-                      <IconTrash className="inline-block mr-1" />
-                    </button>
+                  <td className="p-3">
+                    <div className="flex gap-1">
+                      <button
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1"
+                        onClick={() => handleViewPromotion(promo)}
+                        title="Xem chi tiết"
+                      >
+                        <IconEye size={24} />
+                      </button>
+                      <button
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1"
+                        onClick={() => handleEditPromotion(promo)}
+                        title="Chỉnh sửa"
+                      >
+                        <IconEdit size={24} />
+                      </button>
+                      <button
+                        className={`cursor-pointer p-1 ${
+                          promo.active
+                            ? "text-red-600 hover:text-red-800"
+                            : "text-green-600 hover:text-green-800"
+                        }`}
+                        onClick={() => handleDeletePromotion(promo.id)}
+                        title={
+                          promo.active
+                            ? "Vô hiệu hóa khuyến mãi"
+                            : "Kích hoạt khuyến mãi"
+                        }
+                      >
+                        <IconTrash size={24} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
