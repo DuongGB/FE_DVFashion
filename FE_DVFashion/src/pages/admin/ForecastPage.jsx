@@ -11,12 +11,22 @@ import {
   IconPlus,
   IconEdit,
   IconTrash,
+  IconFileSpreadsheet,
+  IconHistory,
+  IconChartBar,
+  IconTrendingDown,
+  IconCalendarStats,
 } from "@tabler/icons-react";
 import Pagination from "../../components/common/Pagination";
 import ForecastForm from "../../components/ui/forecast/ForecastForm";
 import ForecastDetailModal from "../../components/ui/forecast/ForecastDetailModal";
+import ForecastHistoryModal from "../../components/ui/forecast/ForecastHistoryModal";
 import { toast } from "react-toastify";
 import { showDeleteConfirmationToast } from "../../utils/showConfirmationToast";
+import {
+  exportData as exportUtils,
+  formatForecastDataForExport,
+} from "../../utils/exportUtils";
 
 // Mock data for SalesForecasting
 const mockForecasts = [
@@ -28,6 +38,7 @@ const mockForecasts = [
     model: "Linear Regression",
     accuracy: 96.67,
     generatedAt: "2024-08-28T10:00:00",
+    notes: "Dự báo cho ngày đầu tháng với promotion mạnh",
     factors: [
       { id: 1, factorName: "Seasonal Trend", weight: 0.4, value: "High" },
       { id: 2, factorName: "Weather", weight: 0.3, value: "Sunny" },
@@ -42,6 +53,7 @@ const mockForecasts = [
     model: "ARIMA",
     accuracy: 98.33,
     generatedAt: "2024-08-29T09:30:00",
+    notes: "Ngày thường, ít promotion",
     factors: [
       { id: 4, factorName: "Seasonal Trend", weight: 0.5, value: "Medium" },
       { id: 5, factorName: "Day of Week", weight: 0.2, value: "Monday" },
@@ -56,6 +68,7 @@ const mockForecasts = [
     model: "Neural Network",
     accuracy: null,
     generatedAt: "2024-09-01T14:15:00",
+    notes: "Dự báo với chiến dịch marketing mới",
     factors: [
       { id: 7, factorName: "Marketing Campaign", weight: 0.4, value: "Active" },
       { id: 8, factorName: "Economic Index", weight: 0.3, value: "Positive" },
@@ -70,6 +83,7 @@ const mockForecasts = [
     model: "Random Forest",
     accuracy: null,
     generatedAt: "2024-09-01T16:00:00",
+    notes: "Dự báo cuối tuần",
     factors: [
       { id: 10, factorName: "Holiday Effect", weight: 0.5, value: "None" },
       { id: 11, factorName: "Inventory Level", weight: 0.3, value: "High" },
@@ -99,6 +113,8 @@ export default function ForecastPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showForecastForm, setShowForecastForm] = useState(false);
   const [editingForecast, setEditingForecast] = useState(null);
+  const [showTrendAnalysis, setShowTrendAnalysis] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
@@ -251,16 +267,155 @@ export default function ForecastPage() {
   const handleDeleteForecast = (forecast) => {
     if (!forecast) {
       toast.error("Dự báo không tồn tại!");
+      return;
     }
+
     showDeleteConfirmationToast({
       itemName: `dự báo ngày ${formatDate(forecast.forecastDate)}`,
       itemType: "dự báo",
+      isActive: true, // Forecasts are always "active" for deletion
       onConfirm: () => {
         setForecasts((prev) => prev.filter((f) => f.id !== forecast.id));
-        toast.success("Xóa dự báo thành công!"),
-          { position: "top-right", autoClose: 3000 };
+        toast.success("Xóa dự báo thành công!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      },
+      onCancel: () => {
+        console.log("User đã hủy xóa dự báo");
       },
     });
+  };
+
+  // USE CASE: Xuất PDF/Excel - Export functionality
+  const handleExportData = async (format) => {
+    try {
+      // Format data for export
+      const formattedData = formatForecastDataForExport(
+        filteredForecasts,
+        formatCurrency,
+        formatDate,
+        formatDateTime
+      );
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `du-bao-doanh-thu-${timestamp}`;
+
+      // Export using utility function
+      const success = await exportUtils(formattedData, format, filename, {
+        includeHeaders: true,
+        showToast: true,
+      });
+
+      if (success) {
+        // Additional success handling if needed
+        console.log(`Export ${format} completed successfully`);
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Có lỗi xảy ra khi xuất dữ liệu!");
+    }
+  };
+
+  // USE CASE: Lấy dữ liệu lịch sử - Historical data
+  const handleViewHistory = () => {
+    setShowHistoryModal(true);
+  };
+
+  // Handle view forecast from history modal
+  const handleViewForecastFromHistory = (forecast) => {
+    setSelectedForecast(forecast);
+    setShowHistoryModal(false);
+    setShowDetailModal(true);
+  };
+
+  // USE CASE: Phân tích xu hướng - Trend analysis
+  const handleTrendAnalysis = (period) => {
+    try {
+      const now = new Date();
+      let startDate;
+
+      switch (period) {
+        case "week":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "month":
+          startDate = new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            now.getDate()
+          );
+          break;
+        case "year":
+          startDate = new Date(
+            now.getFullYear() - 1,
+            now.getMonth(),
+            now.getDate()
+          );
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      const trendData = forecasts.filter((f) => {
+        const forecastDate = new Date(f.forecastDate);
+        return (
+          forecastDate >= startDate && forecastDate <= now && f.actualRevenue
+        );
+      });
+
+      if (trendData.length < 2) {
+        toast.warning("Không đủ dữ liệu để phân tích xu hướng!");
+        return;
+      }
+
+      // Calculate trend
+      const avgAccuracy =
+        trendData.reduce((sum, f) => sum + (f.accuracy || 0), 0) /
+        trendData.length;
+      const totalPredicted = trendData.reduce(
+        (sum, f) => sum + f.predictedRevenue,
+        0
+      );
+      const totalActual = trendData.reduce(
+        (sum, f) => sum + f.actualRevenue,
+        0
+      );
+      const variance = (
+        ((totalActual - totalPredicted) / totalPredicted) *
+        100
+      ).toFixed(2);
+
+      const trendInfo = {
+        period: period,
+        dataPoints: trendData.length,
+        avgAccuracy: avgAccuracy.toFixed(2),
+        totalPredicted: formatCurrency(totalPredicted),
+        totalActual: formatCurrency(totalActual),
+        variance: variance,
+        trend: variance > 5 ? "Tăng" : variance < -5 ? "Giảm" : "Ổn định",
+      };
+
+      // Show trend analysis modal or toast
+      toast.success(
+        <div>
+          <strong>
+            Phân tích xu hướng{" "}
+            {period === "week" ? "tuần" : period === "month" ? "tháng" : "năm"}:
+          </strong>
+          <br />• Điểm dữ liệu: {trendInfo.dataPoints}
+          <br />• Độ chính xác TB: {trendInfo.avgAccuracy}%
+          <br />• Xu hướng: {trendInfo.trend} ({variance}%)
+        </div>,
+        { autoClose: 8000 }
+      );
+
+      setShowTrendAnalysis(true);
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi phân tích xu hướng!");
+      console.error("Trend analysis error:", error);
+    }
   };
 
   return (
@@ -278,9 +433,80 @@ export default function ForecastPage() {
             <IconPlus size={16} />
             Tạo dự báo mới
           </button>
+
+          {/* Export Dropdown */}
+          <div className="relative group">
+            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors cursor-pointer">
+              <IconDownload size={16} />
+              Xuất dữ liệu
+            </button>
+            <div className="absolute right-0 top-full mt-1 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+              <button
+                onClick={() => handleExportData("csv")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer border-b"
+              >
+                <IconFileSpreadsheet size={16} />
+                Xuất CSV
+              </button>
+              <button
+                onClick={() => handleExportData("excel")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer border-b"
+              >
+                <IconFileSpreadsheet size={16} />
+                Xuất Excel
+              </button>
+              <button
+                onClick={() => handleExportData("pdf")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
+              >
+                <IconDownload size={16} />
+                Xuất PDF
+              </button>
+            </div>
+          </div>
+
+          {/* Trend Analysis Dropdown */}
+          <div className="relative group">
+            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors cursor-pointer">
+              <IconChartBar size={16} />
+              Phân tích xu hướng
+            </button>
+            <div className="absolute right-0 top-full mt-1 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+              <button
+                onClick={() => handleTrendAnalysis("week")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
+              >
+                <IconCalendarStats size={16} />
+                Xu hướng theo tuần
+              </button>
+              <button
+                onClick={() => handleTrendAnalysis("month")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
+              >
+                <IconTrendingUp size={16} />
+                Xu hướng theo tháng
+              </button>
+              <button
+                onClick={() => handleTrendAnalysis("year")}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
+              >
+                <IconTrendingDown size={16} />
+                Xu hướng theo năm
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleViewHistory}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2 transition-colors cursor-pointer"
+          >
+            <IconHistory size={16} />
+            Lịch sử dự báo
+          </button>
+
           <button
             onClick={() => window.location.reload()}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors cursor-pointer"
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2 transition-colors cursor-pointer"
           >
             <IconRefresh size={16} />
             Làm mới
@@ -369,12 +595,14 @@ export default function ForecastPage() {
             <div>
               <p className="text-gray-600 text-sm">Độ chính xác trung bình</p>
               <p className="text-2xl font-bold text-green-600">
-                {(
-                  forecasts
-                    .filter((f) => f.accuracy)
-                    .reduce((sum, f) => sum + f.accuracy, 0) /
-                  forecasts.filter((f) => f.accuracy).length
-                ).toFixed(1)}
+                {forecasts.filter((f) => f.accuracy).length > 0
+                  ? (
+                      forecasts
+                        .filter((f) => f.accuracy)
+                        .reduce((sum, f) => sum + f.accuracy, 0) /
+                      forecasts.filter((f) => f.accuracy).length
+                    ).toFixed(1)
+                  : 0}
                 %
               </p>
             </div>
@@ -535,6 +763,14 @@ export default function ForecastPage() {
         forecast={selectedForecast}
         open={showDetailModal}
         onClose={handleCloseDetailModal}
+      />
+
+      {/* Forecast History Modal */}
+      <ForecastHistoryModal
+        forecasts={forecasts}
+        open={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onViewDetails={handleViewForecastFromHistory}
       />
     </div>
   );
