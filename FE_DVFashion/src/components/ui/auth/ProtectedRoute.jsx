@@ -19,17 +19,12 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
   console.log("ProtectedRoute - Allowed roles:", allowedRoles);
   console.log("ProtectedRoute - Current path:", location.pathname);
 
-  // Nếu user có ROLE_ADMIN và đang cố truy cập staff route, redirect về admin
-  if (
-    userRoles.includes("ROLE_ADMIN") &&
-    location.pathname.startsWith("/staff")
-  ) {
-    console.log("Admin trying to access staff route, redirecting to admin");
-    return <Navigate to="/admin" replace />;
-  }
+  // ADMIN có thể truy cập tất cả các routes (bao gồm cả staff routes)
+  const hasAdminRole = userRoles.includes("ROLE_ADMIN");
 
   // Kiểm tra quyền truy cập
-  const hasPermission = userRoles.some((role) => allowedRoles?.includes(role));
+  const hasPermission =
+    hasAdminRole || userRoles.some((role) => allowedRoles?.includes(role));
 
   if (!hasPermission) {
     console.log("No permission, redirecting to default route");
