@@ -467,48 +467,78 @@ export default function BrandPage() {
     });
   };
 
+  // Xử lý xóa thương hiệu (thực chất là vô hiệu hóa)
   const handleDelete = async (brandId) => {
     const brand = brands.find((b) => b.id === brandId);
     const translation = getTranslation(brand);
 
-    // Kiểm tra nếu thương hiệu đã bị vô hiệu hóa
-    if (!brand.active) {
-      const message =
-        language === "vi"
-          ? "Thương hiệu này đã được vô hiệu hóa!"
-          : "This brand is already deactivated!";
-      toast.warning(message);
-      return;
-    }
+    // Determine action based on current status
+    const isActivating = !brand.active;
+    const action = isActivating
+      ? language === "vi"
+        ? "kích hoạt"
+        : "activate"
+      : language === "vi"
+      ? "vô hiệu hóa"
+      : "deactivate";
+
+    const confirmText = isActivating
+      ? language === "vi"
+        ? "Kích hoạt"
+        : "Activate"
+      : language === "vi"
+      ? "Vô hiệu hóa"
+      : "Deactivate";
+
+    const cancelText = language === "vi" ? "Hủy" : "Cancel";
+
+    const title = isActivating
+      ? language === "vi"
+        ? "Xác nhận kích hoạt thương hiệu"
+        : "Confirm activate brand"
+      : language === "vi"
+      ? "Xác nhận vô hiệu hóa thương hiệu"
+      : "Confirm deactivate brand";
+
+    const message = isActivating
+      ? language === "vi"
+        ? `Bạn có chắc chắn muốn kích hoạt lại thương hiệu "${translation.name}" không?`
+        : `Are you sure you want to activate brand "${translation.name}"?`
+      : language === "vi"
+      ? `Bạn có chắc chắn muốn vô hiệu hóa thương hiệu "${translation.name}" không? Thương hiệu sẽ không hiển thị cho khách hàng.`
+      : `Are you sure you want to deactivate brand "${translation.name}"? The brand will not be visible to customers.`;
 
     showConfirmationToast({
-      title:
-        language === "vi" ? "Xác nhận xóa thương hiệu" : "Confirm delete brand",
-      message:
-        language === "vi"
-          ? `Bạn có chắc chắn muốn xóa thương hiệu "${translation.name}" không? Thương hiệu sẽ được chuyển sang trạng thái không hoạt động.`
-          : `Are you sure you want to delete brand "${translation.name}"? The brand will be deactivated.`,
-      confirmText: language === "vi" ? "Xóa" : "Delete",
-      cancelText: language === "vi" ? "Hủy" : "Cancel",
-      confirmButtonClass:
-        "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: isActivating
+        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
+        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
       onConfirm: async () => {
         try {
-          // API call to deactivate brand instead of deleting
           setBrands((prev) =>
-            prev.map((b) => (b.id === brandId ? { ...b, active: false } : b))
+            prev.map((b) =>
+              b.id === brandId ? { ...b, active: !b.active } : b
+            )
           );
-          const successMessage =
-            language === "vi"
-              ? "Vô hiệu hóa thương hiệu thành công!"
-              : "Brand deactivated successfully!";
+
+          const successMessage = isActivating
+            ? language === "vi"
+              ? "Kích hoạt thương hiệu thành công!"
+              : "Brand activated successfully!"
+            : language === "vi"
+            ? "Vô hiệu hóa thương hiệu thành công!"
+            : "Brand deactivated successfully!";
+
           toast.success(successMessage);
         } catch (error) {
-          console.error("Error deactivating brand:", error);
+          console.error("Error toggling brand status:", error);
           const errorMessage =
             language === "vi"
-              ? "Có lỗi xảy ra khi vô hiệu hóa thương hiệu!"
-              : "Error occurred while deactivating brand!";
+              ? `Có lỗi xảy ra khi ${action} thương hiệu!`
+              : `Error occurred while ${action} brand!`;
           toast.error(errorMessage);
         }
       },
@@ -789,18 +819,19 @@ export default function BrandPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(brand.id)}
-                          className={`text-red-600 hover:text-red-800 cursor-pointer ${
-                            !brand.active ? "opacity-50 cursor-not-allowed" : ""
+                          className={`cursor-pointer ${
+                            brand.active
+                              ? "text-red-600 hover:text-red-800"
+                              : "text-green-600 hover:text-green-800"
                           }`}
-                          disabled={!brand.active}
                           title={
                             language === "vi"
                               ? brand.active
                                 ? "Vô hiệu hóa thương hiệu"
-                                : "Thương hiệu đã bị vô hiệu hóa"
+                                : "Kích hoạt thương hiệu"
                               : brand.active
                               ? "Deactivate brand"
-                              : "Brand already deactivated"
+                              : "Activate brand"
                           }
                         >
                           <IconTrash size={24} />

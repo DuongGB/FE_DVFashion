@@ -357,38 +357,78 @@ export default function CategoryPage() {
     });
   };
 
+  // Xử lý xóa danh mục
   const handleDelete = async (categoryId) => {
     const category = categories.find((c) => c.id === categoryId);
     const translation = getTranslation(category);
 
+    // Determine action based on current status
+    const isActivating = !category.active;
+    const action = isActivating
+      ? language === "vi"
+        ? "kích hoạt"
+        : "activate"
+      : language === "vi"
+      ? "vô hiệu hóa"
+      : "deactivate";
+
+    const confirmText = isActivating
+      ? language === "vi"
+        ? "Kích hoạt"
+        : "Activate"
+      : language === "vi"
+      ? "Vô hiệu hóa"
+      : "Deactivate";
+
+    const cancelText = language === "vi" ? "Hủy" : "Cancel";
+
+    const title = isActivating
+      ? language === "vi"
+        ? "Xác nhận kích hoạt danh mục"
+        : "Confirm activate category"
+      : language === "vi"
+      ? "Xác nhận vô hiệu hóa danh mục"
+      : "Confirm deactivate category";
+
+    const message = isActivating
+      ? language === "vi"
+        ? `Bạn có chắc chắn muốn kích hoạt lại danh mục "${translation.name}" không?`
+        : `Are you sure you want to activate category "${translation.name}"?`
+      : language === "vi"
+      ? `Bạn có chắc chắn muốn vô hiệu hóa danh mục "${translation.name}" không? Danh mục sẽ không hiển thị cho khách hàng.`
+      : `Are you sure you want to deactivate category "${translation.name}"? The category will not be visible to customers.`;
+
     showConfirmationToast({
-      title:
-        language === "vi" ? "Xác nhận xóa danh mục" : "Confirm delete category",
-      message:
-        language === "vi"
-          ? `Bạn có chắc chắn muốn xóa danh mục "${translation.name}" không? Hành động này không thể hoàn tác.`
-          : `Are you sure you want to delete category "${translation.name}"? This action cannot be undone.`,
-      confirmText: language === "vi" ? "Xóa" : "Delete",
-      cancelText: language === "vi" ? "Hủy" : "Cancel",
-      confirmButtonClass:
-        "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: isActivating
+        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
+        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
       onConfirm: async () => {
         try {
-          // API call to delete category
           setCategories((prev) =>
-            prev.map((c) => (c.id === categoryId ? { ...c, active: false } : c))
+            prev.map((c) =>
+              c.id === categoryId ? { ...c, active: !c.active } : c
+            )
           );
-          const successMessage =
-            language === "vi"
-              ? "Xóa danh mục thành công!"
-              : "Category deleted successfully!";
+
+          const successMessage = isActivating
+            ? language === "vi"
+              ? "Kích hoạt danh mục thành công!"
+              : "Category activated successfully!"
+            : language === "vi"
+            ? "Vô hiệu hóa danh mục thành công!"
+            : "Category deactivated successfully!";
+
           toast.success(successMessage);
         } catch (error) {
-          console.error("Error deleting category:", error);
+          console.error("Error toggling category status:", error);
           const errorMessage =
             language === "vi"
-              ? "Có lỗi xảy ra khi xóa danh mục!"
-              : "Error occurred while deleting category!";
+              ? `Có lỗi xảy ra khi ${action} danh mục!`
+              : `Error occurred while ${action} category!`;
           toast.error(errorMessage);
         }
       },
@@ -671,8 +711,20 @@ export default function CategoryPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          className="text-red-600 hover:text-red-800 cursor-pointer"
-                          title={language === "vi" ? "Xóa" : "Delete"}
+                          className={`cursor-pointer ${
+                            category.active
+                              ? "text-red-600 hover:text-red-800"
+                              : "text-green-600 hover:text-green-800"
+                          }`}
+                          title={
+                            language === "vi"
+                              ? category.active
+                                ? "Vô hiệu hóa danh mục"
+                                : "Kích hoạt danh mục"
+                              : category.active
+                              ? "Deactivate category"
+                              : "Activate category"
+                          }
                         >
                           <IconTrash size={24} />
                         </button>
