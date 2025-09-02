@@ -3,6 +3,7 @@ import { IconEye, IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import Pagination from "../../components/common/Pagination";
 import EmployeeForm from "../../components/ui/employee/EmployeeForm";
 import { toast } from "react-toastify";
+import EmployeeDetailModal from "../../components/ui/employee/EmployeeDetailModal";
 
 // Mock data nhân viên - cập nhật theo database schema
 const mockEmployees = [
@@ -103,6 +104,8 @@ export default function EmployeePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const pageSize = 10;
 
   useEffect(() => {
@@ -180,6 +183,12 @@ export default function EmployeePage() {
     setEditingEmployee(null);
   };
 
+  // Xử lý xem chi tiết nhân viên
+  const handleViewEmployee = (employee) => {
+    setSelectedEmployee(employee);
+    setShowDetailModal(true);
+  };
+
   // Đóng form
   const handleCloseForm = () => {
     setShowForm(false);
@@ -188,24 +197,78 @@ export default function EmployeePage() {
 
   // Xử lý xóa nhân viên (soft delete)
   const handleDeleteEmployee = (employee) => {
-    if (
-      window.confirm(
-        `Bạn có chắc chắn muốn ${
-          employee.active ? "vô hiệu hóa" : "kích hoạt"
-        } nhân viên ${employee.fullName}?`
-      )
-    ) {
-      setEmployees((prev) =>
-        prev.map((e) =>
-          e.id === employee.id
-            ? { ...e, active: !e.active, updatedAt: new Date().toISOString() }
-            : e
-        )
-      );
-      toast.success(
-        `${employee.active ? "Vô hiệu hóa" : "Kích hoạt"} nhân viên thành công!`
-      );
+    if (!employee) {
+      toast.error("Nhân viên không tồn tại!");
+      return;
     }
+
+    const confirmDelete = () => {
+      if (employee.active) {
+        // Soft delete - chỉ thay đổi trạng thái active
+        setEmployees((prev) =>
+          prev.map((e) =>
+            e.id === employee.id
+              ? { ...e, active: false, updatedAt: new Date().toISOString() }
+              : e
+          )
+        );
+        toast.success("Vô hiệu hóa nhân viên thành công!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        // Reactivate employee
+        setEmployees((prev) =>
+          prev.map((e) =>
+            e.id === employee.id
+              ? { ...e, active: true, updatedAt: new Date().toISOString() }
+              : e
+          )
+        );
+        toast.success("Kích hoạt nhân viên thành công!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    };
+
+    // Tạo toast warning với confirmation
+    const warningToastId = toast.warn(
+      <div className="flex flex-col gap-3">
+        <div>
+          <strong>Xác nhận thao tác</strong>
+        </div>
+        <div>
+          Bạn có chắc chắn muốn {employee.active ? "vô hiệu hóa" : "kích hoạt"}{" "}
+          nhân viên "{employee.fullName}" không?
+        </div>
+        <div className="flex gap-2 justify-end">
+          <button
+            className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition-colors cursor-pointer"
+            onClick={() => toast.dismiss(warningToastId)}
+          >
+            Hủy
+          </button>
+          <button
+            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer"
+            onClick={() => {
+              confirmDelete();
+              toast.dismiss(warningToastId);
+            }}
+          >
+            Đồng ý
+          </button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+        toastId: `warning-${employee.id}`,
+      }
+    );
   };
 
   // Format date
@@ -345,6 +408,7 @@ export default function EmployeePage() {
                       <button
                         className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
                         title="Xem chi tiết"
+                        onClick={() => handleViewEmployee(e)}
                       >
                         <IconEye />
                       </button>
@@ -395,6 +459,16 @@ export default function EmployeePage() {
         onClose={handleCloseForm}
         onSubmit={handleFormSubmit}
         employee={editingEmployee}
+      />
+
+      {/* Employee Detail Modal */}
+      <EmployeeDetailModal
+        employee={selectedEmployee}
+        open={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedEmployee(null);
+        }}
       />
     </div>
   );
