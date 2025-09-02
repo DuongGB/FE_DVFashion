@@ -8,7 +8,6 @@ import {
 } from "@tabler/icons-react";
 import Pagination from "../../components/common/Pagination";
 import InventoryDetailModal from "../../components/ui/inventory/InventoryDetailModal";
-import { toast } from "react-toastify";
 
 // Mock data cho inventory
 const mockInventories = [
@@ -198,21 +197,78 @@ export default function InventoryPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Quản Lý Kho Hàng</h1>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {inventories.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Tồn kho bình thường
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {
+                  inventories.filter((inv) => inv.quantity > inv.minStockLevel)
+                    .length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Sắp hết hàng</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {
+                  inventories.filter(
+                    (inv) =>
+                      inv.quantity > 0 && inv.quantity <= inv.minStockLevel
+                  ).length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Hết hàng</p>
+              <p className="text-2xl font-bold text-red-600">
+                {inventories.filter((inv) => inv.quantity === 0).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
-      <div className="flex justify-between mb-4 items-center gap-4">
+      <div className="flex justify-between mb-4 items-center gap-4 bg-white p-4 rounded-lg shadow border">
         <div className="flex gap-4 items-center w-2/3">
           <input
             type="text"
             placeholder="Tìm kiếm theo tên, SKU hoặc ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1"
+            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value)}
-            className="border rounded-lg px-4 py-2"
+            className="border rounded-lg px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tất cả</option>
             <option value="low">Sắp hết hàng</option>

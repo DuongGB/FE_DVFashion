@@ -569,25 +569,118 @@ export default function ProductPage() {
     }
   };
 
+  // Statistics calculation
+  const stats = {
+    total: products.length,
+    active: products.filter((p) => p.status === "ACTIVE").length,
+    inactive: products.filter((p) => p.status === "INACTIVE").length,
+    outOfStock: products.filter((p) => p.status === "OUT_OF_STOCK").length,
+    onSale: products.filter((p) => p.on_sale).length,
+    totalValue: products.reduce((sum, p) => sum + (p.sale_price || p.price), 0),
+  };
+
+  // Get status label
+  const getStatusLabel = (type) => {
+    switch (type) {
+      case "total":
+        return "Tổng sản phẩm";
+      case "activeCount":
+        return "Đang hoạt động";
+      case "inactiveCount":
+        return "Không hoạt động";
+      case "outOfStock":
+        return "Hết hàng";
+      case "onSale":
+        return "Đang khuyến mãi";
+      case "totalValue":
+        return "Tổng giá trị";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm</h1>
+        <button
+          onClick={handleCreateProduct}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer"
+        >
+          <IconPlus size={16} />
+          Tạo sản phẩm
+        </button>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                {getStatusLabel("total")}
+              </p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                {getStatusLabel("activeCount")}
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.active}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                {getStatusLabel("inactiveCount")}
+              </p>
+              <p className="text-2xl font-bold text-red-600">
+                {stats.inactive}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                {getStatusLabel("onSale")}
+              </p>
+              <p className="text-2xl font-bold text-orange-600">
+                {stats.onSale}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Basic Filters */}
-      <div className="flex justify-between mb-4 items-center gap-4">
+      <div className="bg-white p-4 rounded-lg shadow border mb-4 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex gap-4 items-center flex-1">
           <input
             type="text"
             placeholder="Tìm kiếm theo tên hoặc mã sản phẩm..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1"
+            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border rounded-lg px-4 py-2"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
@@ -613,14 +706,6 @@ export default function ProductPage() {
             )}
           </button>
         </div>
-
-        <button
-          onClick={handleCreateProduct}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer"
-        >
-          <IconPlus size={16} />
-          Tạo sản phẩm
-        </button>
       </div>
 
       {/* Advanced Filters */}
