@@ -19,6 +19,7 @@ import EmployeePage from "./pages/admin/EmployeePage";
 import AnalystReportPage from "./pages/admin/AnalystReportPage";
 import InventoryPage from "./pages/admin/InventoryPage";
 import StaffLayout from "./layouts/StaffLayout";
+import ForecastPage from "./pages/admin/ForecastPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -39,6 +40,7 @@ function App() {
             <Route path="customers" element={<CustomerManagermentPage />} />
             <Route path="employees" element={<EmployeePage />} />
             <Route path="reports" element={<AnalystReportPage />} />
+            <Route path="forecasts" element={<ForecastPage />} />
           </Route>
         </Route>
 

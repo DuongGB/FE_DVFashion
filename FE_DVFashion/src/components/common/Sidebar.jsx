@@ -278,7 +278,13 @@ export default function Sidebar({ onClose }) {
                 to="/admin/reports"
                 icon={<IconDeviceAnalytics size={16} />}
               >
-                Phân tích báo cáo
+                Quản lý báo cáo
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/forecasts"
+                icon={<IconDeviceAnalytics size={16} />}
+              >
+                Dự báo doanh thu
               </SubMenuItem>
             </MenuWithSubmenu>
 

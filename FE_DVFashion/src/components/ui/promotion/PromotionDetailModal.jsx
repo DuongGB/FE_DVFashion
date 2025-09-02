@@ -44,7 +44,7 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xl cursor-pointer hover:bg-gray-800 transition-colors"
+          className="absolute top-4 right-4 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xl cursor-pointer hover:bg-gray-800 transition-colors cursor-pointer"
           onClick={onClose}
         >
           &times;
