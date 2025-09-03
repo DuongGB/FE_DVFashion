@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../../../utils/getDefaultRouteByRoles";
+import GoogleLoginButton from "../../../utils/GoogleLoginButon";
 import {
   IconMail,
   IconLock,
@@ -15,7 +16,13 @@ export default function LoginForm({
   onSwitchToRegister,
   onForgotPassword,
 }) {
-  const { login, isLoginLoading, loginError } = useAuth();
+  const {
+    login,
+    isLoginLoading,
+    loginError,
+    googleLogin,
+    isGoogleLoginLoading,
+  } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
@@ -147,9 +154,42 @@ export default function LoginForm({
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login clicked");
+  // Xử lý Google login
+  const handleGoogleLoginSuccess = async (googleResponse) => {
+    try {
+      console.log("Google login success:", googleResponse);
+
+      // Lấy roles từ response
+      const roles = googleResponse?.data?.roles || [];
+      console.log("Roles from Google login response:", roles);
+
+      // Xác định route mặc định dựa trên roles
+      const defaultRoute = getDefaultRouteByRoles(roles);
+      console.log("Default route determined:", defaultRoute);
+
+      // Set remember me if checked
+      if (rememberMe) {
+        localStorage.setItem("rememberLogin", "true");
+      }
+
+      // Chuyển hướng đến route tương ứng
+      navigate(defaultRoute, { replace: true });
+
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Google login navigation failed:", err);
+      setErrors({
+        general:
+          "Đăng nhập Google thành công nhưng có lỗi khi chuyển trang. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  const handleGoogleLoginError = (error) => {
+    console.error("Google login error:", error);
+    setErrors({
+      general: error.message || "Đăng nhập Google thất bại. Vui lòng thử lại.",
+    });
   };
 
   const handleForgotPassword = (e) => {
@@ -200,17 +240,11 @@ export default function LoginForm({
 
       {/* Social login */}
       <div className="flex justify-center gap-3 mb-3">
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="border rounded-full p-2 flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors duration-200"
-        >
-          <img
-            src="./src/assets/google.avif"
-            alt="Google"
-            className="w-6 h-6"
-          />
-        </button>
+        <GoogleLoginButton
+          onSuccess={handleGoogleLoginSuccess}
+          onError={handleGoogleLoginError}
+          disabled={isLoginLoading || isGoogleLoginLoading}
+        />
       </div>
 
       {/* Divider */}
