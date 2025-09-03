@@ -253,7 +253,7 @@ export default function ReviewPage() {
   const [selectedReview, setSelectedReview] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const pageSize = 10;
 
   useEffect(() => {

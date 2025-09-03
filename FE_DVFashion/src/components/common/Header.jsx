@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { useNavigate, useLocation } from "react-router-dom";
-import { getDefaultRouteByRoles } from "../../utils/getDefaultRouteByRoles";
+import { useState } from "react";
 import { ShoppingCart, User } from "react-feather";
-import LoginForm from "../ui/auth/LoginForm";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
+import { useAuthModal } from "../../hooks/useAuthModal";
+import AuthModal from "../ui/auth/AuthModal";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -307,76 +306,31 @@ function MegaMenu() {
   );
 }
 
-// Login modal component
-function LoginModal({ show, onClose }) {
-  const { isAuthenticated } = useAuth();
-  if (!show || isAuthenticated) return null;
-  return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 "
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-lg p-6 relative min-w-[350px]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        <LoginForm onSuccess={() => setShowLogin(false)} />
-      </div>
-    </div>
-  );
-}
-
 export default function Header() {
   const { isAuthenticated, user } = useAuth();
-  const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
-  const [wasAuthenticated, setWasAuthenticated] = useState(false);
+  const authModal = useAuthModal();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // useEffect(() => {
-  //   // Chỉ điều hướng khi vừa đăng nhập
-  //   if (
-  //     !wasAuthenticated &&
-  //     isAuthenticated &&
-  //     user?.roles &&
-  //     location.pathname === "/"
-  //   ) {
-  //     let defaultRoute = getDefaultRouteByRoles(user?.roles);
-  //     if (user?.roles?.includes("ROLE_CUSTOMER")) {
-  //       defaultRoute = "/customer";
-  //     }
-  //     if (user?.roles?.includes("ROLE_STAFF")) {
-  //       defaultRoute = "/staff";
-  //     }
-  //     navigate(defaultRoute);
-  //     setShowLogin(false);
-  //     setWasAuthenticated(true);
-  //   }
-  //   if (!isAuthenticated && wasAuthenticated) {
-  //     setWasAuthenticated(false);
-  //   }
-  // }, [isAuthenticated, user, navigate, wasAuthenticated, location.pathname]);
 
   // Display modal show account if authenticated
   const handleUserClick = () => {
     if (isAuthenticated && user?.roles) {
       setShowAccount(true);
     } else {
-      setShowLogin(true);
+      authModal.openLogin();
     }
+  };
+
+  // Handle login button click in TopBar
+  const handleLoginClick = () => {
+    authModal.openLogin();
   };
 
   return (
     <header className="bg-white shadow">
       <TopBar
-        onLoginClick={() => setShowLogin(true)}
+        onLoginClick={handleLoginClick}
         isAuthenticated={isAuthenticated}
         user={user}
         onUserClick={handleUserClick}
@@ -386,7 +340,15 @@ export default function Header() {
         user={user}
         onUserClick={handleUserClick}
       />
-      <LoginModal show={showLogin} onClose={() => setShowLogin(false)} />
+
+      {/* Auth Modal - Thay thế LoginModal cũ */}
+      <AuthModal
+        isOpen={authModal.isOpen}
+        onClose={authModal.close}
+        initialMode={authModal.mode}
+      />
+
+      {/* Account Modal - Giữ nguyên */}
       <ModalAccount
         show={showAccount}
         onClose={() => setShowAccount(false)}
