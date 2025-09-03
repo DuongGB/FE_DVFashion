@@ -50,6 +50,15 @@ export const useAuth = () => {
     },
   });
 
+  // Forget password
+  const forgotPasswordMutation = useMutation({
+    mutationFn: authAPI.forgotPassword,
+    onSuccess: (data) => {
+      console.log("Forgot password response:", data.data);
+      queryClient.invalidateQueries(["auth", "user"]);
+    },
+  });
+
   return {
     user,
     isLoading,
@@ -63,5 +72,8 @@ export const useAuth = () => {
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
     loginError: loginMutation.error,
+    forgotPassword: forgotPasswordMutation.mutateAsync,
+    isForgotPasswordLoading: forgotPasswordMutation.isPending,
+    forgotPasswordError: forgotPasswordMutation.error,
   };
 };

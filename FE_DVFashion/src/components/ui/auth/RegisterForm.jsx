@@ -290,7 +290,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
         <hr className="flex-1 border-gray-300" />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2 ">
         {/* Input Full Name */}
         <div className="relative">
           <input
@@ -307,19 +307,18 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <IconUser size={22} />
           </span>
-          {errors.fullName && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.fullName}
-            </p>
-          )}
         </div>
-
-        {/* Input Email */}
+        {errors.fullName && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.fullName}
+          </p>
+        )}
+        {/* Input Email  */}}
         <div className="relative">
           <input
             type="email"
             name="email"
-            placeholder="Email của bạn"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -330,22 +329,21 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <IconMail size={22} />
           </span>
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.email}
-            </p>
-          )}
         </div>
-
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.email}
+          </p>
+        )}
         {/* Input Phone */}
         <div className="relative">
           <input
-            type="tel"
+            type="text"
             name="phone"
             placeholder="Số điện thoại"
             value={formData.phone}
             onChange={handleChange}
-            className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.phone ? "border-red-500" : "border-gray-300"
             }`}
             required
@@ -353,13 +351,12 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <IconPhone size={22} />
           </span>
-          {errors.phone && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.phone}
-            </p>
-          )}
         </div>
-
+        {errors.phone && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.phone}
+          </p>
+        )}
         {/* Input Password */}
         <div className="relative">
           <input
@@ -368,7 +365,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             placeholder="Mật khẩu"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.password ? "border-red-500" : "border-gray-300"
             }`}
             required
@@ -378,19 +375,18 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           </span>
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
           >
             {showPassword ? <IconEyeOff size={22} /> : <IconEye size={22} />}
           </button>
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.password}
-            </p>
-          )}
         </div>
-
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.password}
+          </p>
+        )}
         {/* Input Confirm Password */}
         <div className="relative">
           <input
@@ -399,7 +395,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             placeholder="Xác nhận mật khẩu"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.confirmPassword ? "border-red-500" : "border-gray-300"
             }`}
             required
@@ -409,7 +405,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           </span>
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             onClick={() => setShowConfirmPassword((v) => !v)}
             tabIndex={-1}
           >
@@ -419,13 +415,12 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
               <IconEye size={22} />
             )}
           </button>
-          {errors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.confirmPassword}
-            </p>
-          )}
         </div>
-
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.confirmPassword}
+          </p>
+        )}
         {/* Terms and Conditions */}
         <div className="text-sm text-gray-600 mb-2">
           Bằng việc đăng ký, bạn đã đồng ý với{" "}
@@ -438,14 +433,12 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           </a>{" "}
           của DVFashion.
         </div>
-
         {/* General Error */}
         {(registerError || errors.general) && (
           <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200">
             {getErrorMessage()}
           </div>
         )}
-
         {/* Submit */}
         <button
           type="submit"

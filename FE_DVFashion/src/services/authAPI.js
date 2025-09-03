@@ -25,4 +25,9 @@ export const authAPI = {
   getCurrentUser: () => {
     return api.get("/auth/me");
   },
+
+  //Forget password
+  forgotPassword: (data) => {
+    return api.post("/auth/forgot-password", data);
+  },
 };

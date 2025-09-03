@@ -1,10 +1,13 @@
-import { useState } from "react";
 import { IconMail, IconPhone } from "@tabler/icons-react";
+import { useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 
 export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
+  const { forgotPassword, isForgotPasswordLoading, forgotPasswordError } =
+    useAuth();
   const [contact, setContact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [contactType, setContactType] = useState(""); // "email" or "phone"
 
@@ -39,7 +42,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   const handleContactChange = (e) => {
     const value = e.target.value;
     setContact(value);
-    setError("");
+    setErrors("");
 
     // Xác định loại contact đang nhập
     const type = detectContactType(value);
@@ -49,28 +52,67 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationError = validateContact(contact);
-    if (validationError) {
-      setError(validationError);
+    const validationErrors = validateContact(contact);
+    if (validationErrors) {
+      setErrors({ contact: validationErrors });
       return;
     }
 
-    setIsLoading(true);
-    setError("");
-
     try {
-      // TODO: Call API to send reset password email/SMS
-      console.log("Sending reset request for:", contact);
-      console.log("Contact type:", contactType);
+      const requestData = {
+        [contactType === "phone" ? "phone" : "email"]: contact.trim(),
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log("Sending forgot password request:", requestData);
 
-      setIsEmailSent(true);
+      const result = await forgotPassword(requestData);
+      console.log("Forgot password result:", result);
+
+      // Kiểm tra success dựa trên status code hoặc response
+      if (
+        result.status === 200 ||
+        result.status === 201 ||
+        result?.data?.success
+      ) {
+        console.log("Forgot password request successful!");
+        setErrors({});
+        setIsEmailSent(true);
+      } else {
+        setErrors({
+          general: "Không thể gửi yêu cầu. Vui lòng thử lại.",
+        });
+      }
     } catch (err) {
-      setError("Có lỗi xảy ra. Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
+      console.errors("Forgot password failed:", err);
+
+      // Xử lý lỗi và hiển thị thông báo user-friendly
+      let errorsMessage = "Có lỗi xảy ra. Vui lòng thử lại.";
+
+      if (err?.response?.status === 400) {
+        errorsMessage =
+          "Thông tin không hợp lệ. Vui lòng kiểm tra lại email hoặc số điện thoại.";
+      } else if (err?.response?.status === 404) {
+        errorsMessage =
+          contactType === "phone"
+            ? "Số điện thoại này chưa được đăng ký tài khoản."
+            : "Email này chưa được đăng ký tài khoản.";
+      } else if (err?.response?.status === 429) {
+        errorsMessage =
+          "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 5 phút.";
+      } else if (err?.response?.status >= 500) {
+        errorsMessage = "Hệ thống đang bảo trì. Vui lòng thử lại sau.";
+      } else if (err?.response?.data?.errors?.message) {
+        errorsMessage = err.response.data.errors.message;
+      } else if (
+        err?.code === "NETWORK_ERRORs" ||
+        err?.message?.includes("Network")
+      ) {
+        errorsMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
+      }
+
+      setErrors({
+        general: errorsMessage,
+      });
     }
   };
 
@@ -79,6 +121,13 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
     if (onSwitchToLogin) {
       onSwitchToLogin();
     }
+  };
+
+  const handleTryAgain = () => {
+    setIsEmailSent(false);
+    setContact("");
+    setContactType("");
+    setErrors({});
   };
 
   // Lấy icon phù hợp
@@ -122,7 +171,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             gửi link để đặt lại mật khẩu.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {/* Input Contact */}
             <div className="relative">
               <input
@@ -130,19 +179,18 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                 placeholder={getPlaceholder()}
                 value={contact}
                 onChange={handleContactChange}
-                className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  error ? "border-red-500" : "border-gray-300"
+                className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors ? "border-red-500" : "border-gray-300"
                 }`}
                 required
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200">
+              <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200">
                 {getContactIcon()}
               </span>
-
-              {error && (
-                <p className="text-red-500 text-sm mt-2 ml-4">{error}</p>
-              )}
             </div>
+            {errors && (
+              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">{errors}</p>
+            )}
 
             {/* Submit */}
             <button
@@ -202,7 +250,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                   setIsEmailSent(false);
                   setContact("");
                   setContactType("");
-                  setError("");
+                  setErrors("");
                 }}
                 className="w-full bg-gray-100 text-gray-700 rounded-full py-3 text-md font-semibold hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
               >

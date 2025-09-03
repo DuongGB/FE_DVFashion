@@ -74,6 +74,7 @@ export default function LoginForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -82,7 +83,14 @@ export default function LoginForm({
     }
 
     try {
-      const result = await login(formData);
+      const loginData = {
+        username: formData.username.trim(),
+        password: formData.password,
+      };
+
+      console.log("Sending login data:", loginData);
+
+      const result = await login(loginData);
       console.log("Login result:", result);
 
       if (result?.data?.success) {
@@ -106,6 +114,36 @@ export default function LoginForm({
       }
     } catch (err) {
       console.error("Login failed:", err);
+
+      // Xử lý lỗi và hiển thị thông báo user-friendly
+      let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
+
+      if (err?.response?.status === 400) {
+        errorMessage =
+          "Tài khoản hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.";
+      } else if (err?.response?.status === 401) {
+        errorMessage =
+          "Tài khoản hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.";
+      } else if (err?.response?.status === 403) {
+        errorMessage = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.";
+      } else if (err?.response?.status === 429) {
+        errorMessage =
+          "Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau.";
+      } else if (err?.response?.status >= 500) {
+        errorMessage = "Hệ thống đang bảo trì. Vui lòng thử lại sau.";
+      } else if (err?.response?.data?.error?.message) {
+        // Nếu server trả về message cụ thể
+        errorMessage = err.response.data.error.message;
+      } else if (
+        err?.code === "NETWORK_ERROR" ||
+        err?.message?.includes("Network")
+      ) {
+        errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
+      }
+
+      setErrors({
+        general: errorMessage,
+      });
     }
   };
 
@@ -118,9 +156,6 @@ export default function LoginForm({
     e.preventDefault();
     if (onForgotPassword) {
       onForgotPassword();
-    } else {
-      // Navigate to forgot password page
-      navigate("/forgot-password");
     }
   };
 
@@ -128,9 +163,6 @@ export default function LoginForm({
     e.preventDefault();
     if (onSwitchToRegister) {
       onSwitchToRegister();
-    } else {
-      // Navigate to register page
-      navigate("/register");
     }
   };
 
@@ -188,13 +220,13 @@ export default function LoginForm({
         <hr className="flex-1 border-gray-300" />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         {/* Input Email/Phone */}
         <div className="relative">
           <input
             type="text"
             name="username"
-            placeholder="Email/SĐT của bạn"
+            placeholder="Email hoặc số điện thoại"
             value={formData.username}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -203,15 +235,18 @@ export default function LoginForm({
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconMail size={20} className="sm:hidden" />
-            <IconMail size={22} className="hidden sm:block" />
+            {/^[0-9]{10,11}$/.test(formData.username) ? (
+              <IconPhone size={22} />
+            ) : (
+              <IconMail size={22} />
+            )}
           </span>
-          {errors.username && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.username}
-            </p>
-          )}
         </div>
+        {errors.username && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.username}
+          </p>
+        )}
 
         {/* Input Password */}
         <div className="relative">
@@ -227,8 +262,7 @@ export default function LoginForm({
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconLock size={20} className="sm:hidden" />
-            <IconLock size={22} className="hidden sm:block" />
+            <IconLock size={22} />
           </span>
           <button
             type="button"
@@ -236,24 +270,14 @@ export default function LoginForm({
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
           >
-            {showPassword ? (
-              <>
-                <IconEyeOff size={20} className="sm:hidden" />
-                <IconEyeOff size={22} className="hidden sm:block" />
-              </>
-            ) : (
-              <>
-                <IconEye size={20} className="sm:hidden" />
-                <IconEye size={22} className="hidden sm:block" />
-              </>
-            )}
+            {showPassword ? <IconEyeOff size={22} /> : <IconEye size={22} />}
           </button>
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
-              {errors.password}
-            </p>
-          )}
         </div>
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+            {errors.password}
+          </p>
+        )}
 
         {/* Remember Me */}
         <div className="flex items-center justify-between mb-2">
@@ -268,11 +292,11 @@ export default function LoginForm({
           </label>
         </div>
 
-        {/* Error */}
-        {loginError && (
-          <div className="text-red-500 text-sm mb-2 p-3 bg-red-50 rounded-lg border border-red-200">
-            {loginError.message ||
-              "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."}
+        {/* General Error */}
+        {errors.general && (
+          <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+            <span className="text-red-500 mt-0.5">⚠️</span>
+            <span>{errors.general}</span>
           </div>
         )}
 
