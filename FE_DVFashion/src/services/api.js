@@ -3,11 +3,18 @@ import { QueryClient } from "@tanstack/react-query";
 
 // Base API configuration
 const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_LOGIN_GOOGLE = "http://localhost:8080";
 
 // Create axios instance with base config
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // Enable sending cookies with requests
+});
+
+// Create axios instance for Google login
+export const apiGoogle = axios.create({
+  baseURL: API_LOGIN_GOOGLE,
+  withCredentials: true,
 });
 
 // Variable to avoid calling refresh multiple times in parallel
