@@ -10,6 +10,11 @@ import {
   IconEye,
   IconUserCheck,
   IconStar,
+  IconSettings,
+  IconPlus,
+  IconClipboardList,
+  IconDiscount,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { Chart } from "react-google-charts";
 
@@ -24,34 +29,65 @@ const AdminPage = () => {
     pendingOrders: 0,
     activeCustomers: 0,
     averageRating: 0,
+    dailyViews: 0,
   });
   const [revenueChartData, setRevenueChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - replace with actual API calls
+  // Fetch dashboard data
   useEffect(() => {
-    // Simulated API call
-    setDashboardData({
-      totalUsers: 1247,
-      totalProducts: 342,
-      totalOrders: 856,
-      totalRevenue: 125000,
-      monthlyRevenue: 28500,
-      pendingOrders: 23,
-      activeCustomers: 189,
-      averageRating: 4.8,
-    });
-    setRevenueChartData([
-      ["Tháng", "Doanh thu (VNĐ)", "Số đơn hàng"],
-      ["Tháng 1", 18500000, 120],
-      ["Tháng 2", 22000000, 145],
-      ["Tháng 3", 19800000, 132],
-      ["Tháng 4", 25200000, 168],
-      ["Tháng 5", 24800000, 162],
-      ["Tháng 6", 28500000, 189],
-    ]);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // TODO: Replace with actual API calls
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+
+        setDashboardData({
+          totalUsers: 1247,
+          totalProducts: 342,
+          totalOrders: 856,
+          totalRevenue: 125000000,
+          monthlyRevenue: 28500000,
+          pendingOrders: 23,
+          activeCustomers: 189,
+          averageRating: 4.8,
+          dailyViews: 2400,
+        });
+
+        setRevenueChartData([
+          ["Tháng", "Doanh thu (VNĐ)", "Số đơn hàng"],
+          ["Tháng 1", 18500000, 120],
+          ["Tháng 2", 22000000, 145],
+          ["Tháng 3", 19800000, 132],
+          ["Tháng 4", 25200000, 168],
+          ["Tháng 5", 24800000, 162],
+          ["Tháng 6", 28500000, 189],
+        ]);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  const StatCard = ({ icon: Icon, title, value, change, color = "blue" }) => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
+  const StatCard = ({
+    icon: Icon,
+    title,
+    value,
+    change,
+    color = "blue",
+    format = "number",
+  }) => {
     const colorClasses = {
       blue: "bg-blue-500",
       green: "bg-green-500",
@@ -61,19 +97,46 @@ const AdminPage = () => {
       indigo: "bg-indigo-500",
     };
 
+    const formatValue = (val) => {
+      if (format === "currency") return formatCurrency(val);
+      if (format === "rating") return val.toFixed(1);
+      if (format === "percentage") return `${val}%`;
+      return val.toLocaleString();
+    };
+
+    if (loading) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 animate-pulse">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+            <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            {change && (
+            <p className="text-2xl font-bold text-gray-900 mt-1">
+              {formatValue(value)}
+            </p>
+            {change !== undefined && (
               <p
-                className={`text-sm ${
+                className={`text-sm flex items-center mt-2 ${
                   change >= 0 ? "text-green-600" : "text-red-600"
-                } flex items-center`}
+                }`}
               >
-                <IconTrendingUp size={16} className="mr-1" />
+                <IconTrendingUp
+                  size={16}
+                  className={`mr-1 ${change < 0 ? "rotate-180" : ""}`}
+                />
                 {change >= 0 ? "+" : ""}
                 {change}% từ tháng trước
               </p>
@@ -87,72 +150,47 @@ const AdminPage = () => {
     );
   };
 
-  // Revenue Chart Component với Tailwind CSS
   const RevenueChart = () => {
     const options = {
       title: "Doanh thu và Đơn hàng theo tháng",
       titleTextStyle: {
-        color: "#374151", // gray-700
-        fontSize: 16,
+        color: "#374151",
+        fontSize: 18,
         fontName: "system-ui, -apple-system, sans-serif",
         bold: true,
       },
       backgroundColor: "transparent",
       hAxis: {
         title: "Tháng",
-        titleTextStyle: {
-          color: "#6B7280", // gray-500
-          fontSize: 12,
-        },
-        textStyle: {
-          color: "#6B7280", // gray-500
-          fontSize: 11,
-        },
-        gridlines: {
-          color: "#F3F4F6", // gray-100
-        },
+        titleTextStyle: { color: "#6B7280", fontSize: 12 },
+        textStyle: { color: "#6B7280", fontSize: 11 },
+        gridlines: { color: "#F3F4F6" },
       },
       vAxes: {
         0: {
           title: "Doanh thu (VNĐ)",
-          titleTextStyle: {
-            color: "#3B82F6", // blue-500
-            fontSize: 12,
-          },
-          textStyle: {
-            color: "#6B7280", // gray-500
-            fontSize: 11,
-          },
+          titleTextStyle: { color: "#3B82F6", fontSize: 12 },
+          textStyle: { color: "#6B7280", fontSize: 11 },
           format: "#,###",
-          gridlines: {
-            color: "#F3F4F6", // gray-100
-          },
+          gridlines: { color: "#F3F4F6" },
         },
         1: {
           title: "Số đơn hàng",
-          titleTextStyle: {
-            color: "#10B981", // green-500
-            fontSize: 12,
-          },
-          textStyle: {
-            color: "#6B7280", // gray-500
-            fontSize: 11,
-          },
-          gridlines: {
-            color: "transparent",
-          },
+          titleTextStyle: { color: "#10B981", fontSize: 12 },
+          textStyle: { color: "#6B7280", fontSize: 11 },
+          gridlines: { color: "transparent" },
         },
       },
       series: {
         0: {
           type: "columns",
           targetAxisIndex: 0,
-          color: "#3B82F6", // blue-500
+          color: "#3B82F6",
         },
         1: {
           type: "line",
           targetAxisIndex: 1,
-          color: "#10B981", // green-500
+          color: "#10B981",
           lineWidth: 3,
           pointSize: 5,
         },
@@ -160,10 +198,7 @@ const AdminPage = () => {
       legend: {
         position: "top",
         alignment: "start",
-        textStyle: {
-          color: "#6B7280", // gray-500
-          fontSize: 12,
-        },
+        textStyle: { color: "#6B7280", fontSize: 12 },
       },
       chartArea: {
         left: 80,
@@ -195,114 +230,126 @@ const AdminPage = () => {
     );
   };
 
-  const RecentActivity = () => (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Hoạt động gần đây
-      </h3>
-      <div className="space-y-4">
-        {[
-          {
-            action: "Đơn hàng mới",
-            detail: "#ORD-001234",
-            time: "5 phút trước",
-            type: "order",
-          },
-          {
-            action: "Khách hàng mới",
-            detail: "Nguyễn Văn A",
-            time: "10 phút trước",
-            type: "user",
-          },
-          {
-            action: "Sản phẩm cập nhật",
-            detail: "Áo thun nam basic",
-            time: "15 phút trước",
-            type: "product",
-          },
-          {
-            action: "Đánh giá mới",
-            detail: "5 sao - Áo sơ mi",
-            time: "20 phút trước",
-            type: "review",
-          },
-          {
-            action: "Thanh toán hoàn thành",
-            detail: "#PAY-005678",
-            time: "25 phút trước",
-            type: "payment",
-          },
-        ].map((activity, index) => (
-          <div
-            key={index}
-            className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg"
-          >
-            <div
-              className={`w-2 h-2 rounded-full ${
-                activity.type === "order"
-                  ? "bg-blue-500"
-                  : activity.type === "user"
-                  ? "bg-green-500"
-                  : activity.type === "product"
-                  ? "bg-yellow-500"
-                  : activity.type === "review"
-                  ? "bg-purple-500"
-                  : "bg-indigo-500"
-              }`}
-            ></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                {activity.action}
-              </p>
-              <p className="text-sm text-gray-600">{activity.detail}</p>
-            </div>
-            <span className="text-xs text-gray-500">{activity.time}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const RecentActivity = () => {
+    const activities = [
+      {
+        action: "Đơn hàng mới",
+        detail: "#ORD-001234",
+        time: "5 phút trước",
+        type: "order",
+      },
+      {
+        action: "Khách hàng mới",
+        detail: "Nguyễn Văn A",
+        time: "10 phút trước",
+        type: "user",
+      },
+      {
+        action: "Sản phẩm cập nhật",
+        detail: "Áo thun nam basic",
+        time: "15 phút trước",
+        type: "product",
+      },
+      {
+        action: "Đánh giá mới",
+        detail: "5 sao - Áo sơ mi",
+        time: "20 phút trước",
+        type: "review",
+      },
+      {
+        action: "Thanh toán hoàn thành",
+        detail: "#PAY-005678",
+        time: "25 phút trước",
+        type: "payment",
+      },
+    ];
 
-  const QuickActions = () => {
-    const handleActionClick = (actionType) => {
-      switch (actionType) {
-        case "addAccount":
-          navigate("/admin/users/add");
-          break;
-        case "manageOrders":
-          navigate("/admin/orders");
-          break;
-        case "viewReports":
-          navigate("/admin/reports");
-          break;
-        case "managePromotions":
-          navigate("/admin/promotions");
-          break;
-        default:
-          console.log("Unknown action:", actionType);
-      }
+    const getActivityColor = (type) => {
+      const colors = {
+        order: "bg-blue-500",
+        user: "bg-green-500",
+        product: "bg-yellow-500",
+        review: "bg-purple-500",
+        payment: "bg-indigo-500",
+      };
+      return colors[type] || "bg-gray-500";
     };
 
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Hoạt động gần đây
+        </h3>
+        <div className="space-y-4">
+          {activities.map((activity, index) => (
+            <div
+              key={index}
+              className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
+            >
+              <div
+                className={`w-2 h-2 rounded-full ${getActivityColor(
+                  activity.type
+                )}`}
+              ></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  {activity.action}
+                </p>
+                <p className="text-sm text-gray-600">{activity.detail}</p>
+              </div>
+              <span className="text-xs text-gray-500">{activity.time}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <button
+            onClick={() => navigate("/admin/activity-log")}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            Xem tất cả hoạt động →
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const QuickActions = () => {
     const actions = [
       {
-        label: "Thêm tài khoản",
+        label: "Quản lý sản phẩm",
+        icon: IconPackage,
         color: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-300",
-        type: "addAccount",
+        route: "/admin/products",
       },
       {
         label: "Quản lý đơn hàng",
+        icon: IconShoppingCart,
         color: "bg-green-500 hover:bg-green-600 focus:ring-green-300",
-        type: "manageOrders",
+        route: "/admin/orders",
       },
       {
-        label: "Xem báo cáo",
+        label: "Quản lý khách hàng",
+        icon: IconUsers,
         color: "bg-purple-500 hover:bg-purple-600 focus:ring-purple-300",
-        type: "viewReports",
+        route: "/admin/customers",
+      },
+      {
+        label: "Báo cáo phân tích",
+        icon: IconChartBar,
+        color: "bg-indigo-500 hover:bg-indigo-600 focus:ring-indigo-300",
+        route: "/admin/reports",
       },
       {
         label: "Quản lý khuyến mãi",
+        icon: IconDiscount,
         color: "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300",
-        type: "managePromotions",
+        route: "/admin/promotions",
+      },
+      {
+        label: "Quản lý nhân viên",
+        icon: IconUserCheck,
+        color: "bg-red-500 hover:bg-red-600 focus:ring-red-300",
+        route: "/admin/employees",
       },
     ];
 
@@ -315,10 +362,11 @@ const AdminPage = () => {
           {actions.map((action, index) => (
             <button
               key={index}
-              onClick={() => handleActionClick(action.type)}
-              className={`${action.color} text-white px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 active:scale-95 cursor-pointer`}
+              onClick={() => navigate(action.route)}
+              className={`${action.color} text-white px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center space-x-2`}
             >
-              {action.label}
+              <action.icon size={16} />
+              <span>{action.label}</span>
             </button>
           ))}
         </div>
@@ -326,51 +374,120 @@ const AdminPage = () => {
     );
   };
 
+  const TopProducts = () => {
+    const products = [
+      { name: "Áo thun nam basic", sales: 234, revenue: 4200000 },
+      { name: "Quần jeans slim fit", sales: 189, revenue: 3800000 },
+      { name: "Áo sơ mi công sở", sales: 156, revenue: 3100000 },
+      { name: "Giày sneaker trắng", sales: 143, revenue: 2900000 },
+      { name: "Áo hoodie unisex", sales: 128, revenue: 2500000 },
+    ];
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Sản phẩm bán chạy
+          </h3>
+          <button
+            onClick={() => navigate("/admin/products")}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            Xem tất cả →
+          </button>
+        </div>
+        <div className="space-y-4">
+          {products.map((product, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    #{index + 1}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{product.name}</p>
+                  <p className="text-sm text-gray-600">
+                    {product.sales} đã bán
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-green-600">
+                  {formatCurrency(product.revenue)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold mb-4"> Admin</h1>
-          <p className="text-gray-600 mb-2">
-            Chào mừng trở lại! Đây là tổng quan về hệ thống.
-          </p>
+        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Trang Quản Trị
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Chào mừng trở lại! Đây là tổng quan về hệ thống DVFashion.
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => navigate("/admin/settings")}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+              >
+                <IconSettings size={20} />
+                <span>Cài đặt</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Primary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={IconUsers}
             title="Tổng khách hàng"
-            value={dashboardData.totalUsers.toLocaleString()}
+            value={dashboardData.totalUsers}
             change={12}
             color="blue"
           />
           <StatCard
             icon={IconPackage}
             title="Tổng sản phẩm"
-            value={dashboardData.totalProducts.toLocaleString()}
+            value={dashboardData.totalProducts}
             change={5}
             color="green"
           />
           <StatCard
             icon={IconShoppingCart}
             title="Tổng đơn hàng"
-            value={dashboardData.totalOrders.toLocaleString()}
+            value={dashboardData.totalOrders}
             change={18}
             color="yellow"
           />
           <StatCard
             icon={IconCurrencyDollar}
             title="Doanh thu tháng"
-            value={`${(dashboardData.monthlyRevenue / 1000).toFixed(0)}K`}
+            value={dashboardData.monthlyRevenue}
             change={23}
             color="purple"
+            format="currency"
           />
         </div>
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={IconCalendar}
             title="Đơn hàng chờ xử lý"
@@ -388,23 +505,24 @@ const AdminPage = () => {
             title="Đánh giá trung bình"
             value={dashboardData.averageRating}
             color="yellow"
+            format="rating"
           />
           <StatCard
             icon={IconEye}
             title="Lượt xem hôm nay"
-            value="2.4K"
+            value={dashboardData.dailyViews}
             change={8}
             color="green"
           />
         </div>
 
-        {/* Charts and Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Charts and Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Chart */}
           <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
-                Doanh thu theo tháng
+                Biểu đồ doanh thu
               </h3>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center">
@@ -424,42 +542,10 @@ const AdminPage = () => {
           <QuickActions />
         </div>
 
-        {/* Recent Activity and Top Products */}
+        {/* Activity and Products */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentActivity />
-
-          {/* Top Products */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Sản phẩm bán chạy
-            </h3>
-            <div className="space-y-4">
-              {[
-                { name: "Áo thun nam basic", sales: 234, revenue: "4.2M" },
-                { name: "Quần jeans slim fit", sales: 189, revenue: "3.8M" },
-                { name: "Áo sơ mi công sở", sales: 156, revenue: "3.1M" },
-                { name: "Giày sneaker trắng", sales: 143, revenue: "2.9M" },
-                { name: "Áo hoodie unisex", sales: 128, revenue: "2.5M" },
-              ].map((product, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {product.sales} đã bán
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-green-600">
-                      {product.revenue}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <TopProducts />
         </div>
       </div>
     </div>

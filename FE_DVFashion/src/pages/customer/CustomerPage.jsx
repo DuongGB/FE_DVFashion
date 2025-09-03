@@ -61,14 +61,6 @@ const CustomerPage = () => {
 
       {/* Content */}
       <ProductCarousel />
-
-      {/* Hiển thị thông tin user */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-xl font-bold mb-2">Xin chào, {user?.email}</h2>
-          <p>Chào mừng bạn đến với trang khách hàng DVFashion!</p>
-        </div>
-      </div>
     </div>
   );
 };
