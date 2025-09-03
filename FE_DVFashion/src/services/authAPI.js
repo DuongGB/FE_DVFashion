@@ -1,4 +1,5 @@
 import api from "./api";
+import { apiGoogle } from "./api";
 
 export const authAPI = {
   // login
@@ -24,5 +25,18 @@ export const authAPI = {
   // Get current user information
   getCurrentUser: () => {
     return api.get("/auth/me");
+  },
+
+  //Forget password
+  forgotPassword: (data) => {
+    return api.post("/auth/forgot-password", data);
+  },
+
+  //Google login - chỉ gửi token từ Google lên server
+  loginWithGoogle: (googleToken) => {
+    return api.post("/oauth2/authorization/google", {
+      token: googleToken,
+      provider: "GOOGLE",
+    });
   },
 };

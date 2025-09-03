@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
-import { getCookie } from "../utils/cookies";
+import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
 import { data } from "react-router-dom";
 
 export const useAuth = () => {
@@ -36,7 +36,20 @@ export const useAuth = () => {
     mutationFn: authAPI.login,
     onSuccess: (data) => {
       console.log("Login response:", data.data);
+      setCookie("isAuthenticated", "true");
       queryClient.invalidateQueries(["auth", "user"]);
+    },
+  });
+
+  // Google login mutation
+  const googleLoginMutation = useMutation({
+    mutationFn: authAPI.loginWithGoogle,
+    onSuccess: (data) => {
+      console.log("Google Login response:", data.data);
+      if (data?.data?.success) {
+        setCookie("isAuthenticated", "true");
+        queryClient.invalidateQueries(["auth", "user"]);
+      }
     },
   });
 
@@ -45,23 +58,49 @@ export const useAuth = () => {
     mutationFn: authAPI.logout,
     onSuccess: () => {
       // Clear all caches
+      deleteCookie("isAuthenticated");
       queryClient.clear();
-      document.cookie = "isAuthenticated=false; path=/"; // Update cookie
+    },
+  });
+
+  // Forget password
+  const forgotPasswordMutation = useMutation({
+    mutationFn: authAPI.forgotPassword,
+    onSuccess: (data) => {
+      console.log("Forgot password response:", data.data);
+      queryClient.invalidateQueries(["auth", "user"]);
     },
   });
 
   return {
+    // User data
     user,
     isLoading,
     error,
     isAuthenticated: !!user,
+
+    // Login
     login: loginMutation.mutateAsync,
+    isLoginLoading: loginMutation.isPending,
+    loginError: loginMutation.error,
+
+    // Register
     register: registerMutation.mutateAsync,
     isRegisterLoading: registerMutation.isPending,
     registerError: registerMutation.error,
+
+    // Logout
     logout: logoutMutation.mutateAsync,
-    isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
-    loginError: loginMutation.error,
+
+    // Forget password
+    forgotPassword: forgotPasswordMutation.mutateAsync,
+    isForgotPasswordLoading: forgotPasswordMutation.isPending,
+    forgotPasswordError: forgotPasswordMutation.error,
+
+    // Google login
+    googleLogin: googleLoginMutation.mutateAsync,
+    isGoogleLoginLoading: googleLoginMutation.isPending,
+    googleLoginError: googleLoginMutation.error,
   };
 };
