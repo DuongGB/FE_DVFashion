@@ -201,21 +201,6 @@ export default function CategoryForm({ isOpen, onClose, category }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Language Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ngôn ngữ
-            </label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="VI">Tiếng Việt</option>
-              <option value="EN">English</option>
-            </select>
-          </div>
-
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Category Name */}
