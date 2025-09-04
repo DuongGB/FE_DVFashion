@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   IconEdit,
   IconTrash,
@@ -11,6 +11,7 @@ import Pagination from "../../components/common/Pagination";
 import CategoryForm from "../../components/ui/category/CategoryForm";
 import CategoryDetailModal from "../../components/ui/category/CategoryDetailModal";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import { useCategory } from "../../hooks/useCategory";
 
 // Translations for status labels
 const statusLabels = {
@@ -36,240 +37,90 @@ const statusLabels = {
   },
 };
 
-// Mock data với structure theo class diagram
-const mockCategories = [
-  {
-    id: 1,
-    image: "",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 1,
-        language: "vi",
-        name: "Áo",
-        description: "Các loại áo thời trang",
-        category: null,
-      },
-      {
-        id: 2,
-        language: "en",
-        name: "Shirts",
-        description: "Fashion shirts collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 2,
-    image: "",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 3,
-        language: "vi",
-        name: "Quần",
-        description: "Các loại quần thời trang",
-        category: null,
-      },
-      {
-        id: 4,
-        language: "en",
-        name: "Pants",
-        description: "Fashion pants collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 3,
-    image: "",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 5,
-        language: "vi",
-        name: "Váy",
-        description: "Các loại váy thời trang",
-        category: null,
-      },
-      {
-        id: 6,
-        language: "en",
-        name: "Dresses",
-        description: "Fashion dresses collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 4,
-    image: "",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 7,
-        language: "vi",
-        name: "Giày",
-        description: "Các loại giày thời trang",
-        category: null,
-      },
-      {
-        id: 8,
-        language: "en",
-        name: "Shoes",
-        description: "Fashion shoes collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 5,
-    image: "",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 9,
-        language: "vi",
-        name: "Phụ kiện",
-        description: "Các loại phụ kiện thời trang",
-        category: null,
-      },
-      {
-        id: 10,
-        language: "en",
-        name: "Accessories",
-        description: "Fashion accessories collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 6,
-    image: "",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 11,
-        language: "vi",
-        name: "Đồ lót",
-        description: "Các loại đồ lót",
-        category: null,
-      },
-      {
-        id: 12,
-        language: "en",
-        name: "Underwear",
-        description: "Underwear collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 7,
-    image: "",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 13,
-        language: "vi",
-        name: "Áo khoác",
-        description: "Các loại áo khoác",
-        category: null,
-      },
-      {
-        id: 14,
-        language: "en",
-        name: "Jackets",
-        description: "Jackets collection",
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 8,
-    image: "",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 15,
-        language: "vi",
-        name: "Đồ thể thao",
-        description: "Các loại đồ thể thao",
-        category: null,
-      },
-      {
-        id: 16,
-        language: "en",
-        name: "Sportswear",
-        description: "Sportswear collection",
-        category: null,
-      },
-    ],
-  },
-];
-
 export default function CategoryPage() {
-  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState("vi"); // Ngôn ngữ hiển thị
+  const [language, setLanguage] = useState("VI");
+  const [loadingItems, setLoadingItems] = useState({
+    status: null,
+    delete: null,
+  });
+  const [originalOrder, setOriginalOrder] = useState([]); // Store original order
   const pageSize = 10;
 
+  // Use the category hook
+  const { categories, isLoading, error, update, deleteCategory } =
+    useCategory(language);
+
+  // Store original order when categories first load
   useEffect(() => {
-    // Giả lập fetch API
-    setLoading(true);
-    setTimeout(() => {
-      setCategories(mockCategories);
-      setLoading(false);
-    }, 500);
-  }, []);
+    if (categories && categories.length > 0) {
+      setOriginalOrder((prev) => {
+        // Only set if empty or length changed significantly
+        if (
+          prev.length === 0 ||
+          Math.abs(prev.length - categories.length) > 1
+        ) {
+          return categories.map((cat) => cat.id);
+        }
+        return prev;
+      });
+    }
+  }, [categories]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Helper function to get translation by language
-  const getTranslation = (category, lang = language) => {
-    return (
-      category.translations.find((t) => t.language === lang) ||
-      category.translations[0]
-    );
-  };
-
   // Helper function to get status labels
   const getStatusLabel = (key) => {
-    return statusLabels[language][key] || statusLabels.vi[key];
+    const langKey = language === "VI" ? "vi" : "en";
+    return statusLabels[langKey][key] || statusLabels.vi[key];
   };
 
-  // Lọc danh mục
-  const filteredCategories = categories.filter((category) => {
-    const translation = getTranslation(category);
-    const matchesSearch =
-      translation.name.toLowerCase().includes(search.toLowerCase()) ||
-      translation.description.toLowerCase().includes(search.toLowerCase()) ||
-      category.id.toString().includes(search);
+  // Sort categories by original order to maintain position
+  const sortedCategories = useMemo(() => {
+    if (!categories || originalOrder.length === 0) return categories || [];
 
-    const matchesStatus =
-      !statusFilter ||
-      (statusFilter === "active" && category.active) ||
-      (statusFilter === "inactive" && !category.active);
+    return [...categories].sort((a, b) => {
+      const indexA = originalOrder.indexOf(a.id);
+      const indexB = originalOrder.indexOf(b.id);
 
-    return matchesSearch && matchesStatus;
-  });
+      // If both items are in original order
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+
+      // If only one is in original order, prioritize it
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
+      // If neither is in original order, sort by ID
+      return a.id - b.id;
+    });
+  }, [categories, originalOrder]);
+
+  // Filter categories with stable sorting
+  const filteredCategories = useMemo(() => {
+    return sortedCategories.filter((category) => {
+      const matchesSearch =
+        category.name.toLowerCase().includes(search.toLowerCase()) ||
+        category.description.toLowerCase().includes(search.toLowerCase()) ||
+        category.id.toString().includes(search);
+
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === "active" && category.active) ||
+        (statusFilter === "inactive" && !category.active);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [sortedCategories, search, statusFilter]);
 
   const totalPages = Math.ceil(filteredCategories.length / pageSize);
   const paginatedCategories = filteredCategories.slice(
@@ -293,209 +144,193 @@ export default function CategoryPage() {
     setShowEditModal(true);
   };
 
-  const handleToggleStatus = async (categoryId) => {
-    const category = categories.find((c) => c.id === categoryId);
-    const translation = getTranslation(category);
-    const action = category.active
-      ? language === "vi"
-        ? "vô hiệu hóa"
-        : "deactivate"
-      : language === "vi"
-      ? "kích hoạt"
-      : "activate";
-
-    const confirmText = category.active
-      ? language === "vi"
-        ? "Vô hiệu hóa"
-        : "Deactivate"
-      : language === "vi"
-      ? "Kích hoạt"
-      : "Activate";
-
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
-
-    showConfirmationToast({
-      title:
-        language === "vi"
-          ? `Xác nhận ${action} danh mục`
-          : `Confirm ${action} category`,
-      message:
-        language === "vi"
-          ? `Bạn có chắc chắn muốn ${action} danh mục "${translation.name}" không?`
-          : `Are you sure you want to ${action} category "${translation.name}"?`,
-      confirmText,
-      cancelText,
-      confirmButtonClass: category.active
-        ? "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer"
-        : "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer",
-      onConfirm: async () => {
-        try {
-          // API call to toggle status
-          setCategories((prev) =>
-            prev.map((c) =>
-              c.id === categoryId ? { ...c, active: !c.active } : c
-            )
-          );
-          const successMessage = category.active
-            ? language === "vi"
-              ? "Vô hiệu hóa danh mục thành công!"
-              : "Category deactivated successfully!"
-            : language === "vi"
-            ? "Kích hoạt danh mục thành công!"
-            : "Category activated successfully!";
-
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error toggling category status:", error);
-          const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${action} danh mục!`
-              : `Error occurred while ${action} category!`;
-          toast.error(errorMessage);
-        }
-      },
-    });
-  };
-
-  // Xử lý xóa danh mục
-  const handleDelete = async (categoryId) => {
-    const category = categories.find((c) => c.id === categoryId);
-    const translation = getTranslation(category);
-
-    // Determine action based on current status
-    const isActivating = !category.active;
-    const action = isActivating
-      ? language === "vi"
-        ? "kích hoạt"
+  // Handle toggle status with position preservation
+  const handleToggleStatus = async (category) => {
+    const newStatus = !category.active;
+    const langKey = language === "VI" ? "vi" : "en";
+    const actionText = newStatus
+      ? langKey === "vi"
+        ? "kích hoạt lại"
         : "activate"
-      : language === "vi"
+      : langKey === "vi"
       ? "vô hiệu hóa"
       : "deactivate";
 
-    const confirmText = isActivating
-      ? language === "vi"
+    const confirmText = newStatus
+      ? langKey === "vi"
         ? "Kích hoạt"
         : "Activate"
-      : language === "vi"
+      : langKey === "vi"
       ? "Vô hiệu hóa"
       : "Deactivate";
 
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
+    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
 
-    const title = isActivating
-      ? language === "vi"
-        ? "Xác nhận kích hoạt danh mục"
-        : "Confirm activate category"
-      : language === "vi"
-      ? "Xác nhận vô hiệu hóa danh mục"
-      : "Confirm deactivate category";
+    const title =
+      langKey === "vi"
+        ? `Xác nhận ${actionText} danh mục`
+        : `Confirm ${actionText} category`;
 
-    const message = isActivating
-      ? language === "vi"
-        ? `Bạn có chắc chắn muốn kích hoạt lại danh mục "${translation.name}" không?`
-        : `Are you sure you want to activate category "${translation.name}"?`
-      : language === "vi"
-      ? `Bạn có chắc chắn muốn vô hiệu hóa danh mục "${translation.name}" không? Danh mục sẽ không hiển thị cho khách hàng.`
-      : `Are you sure you want to deactivate category "${translation.name}"? The category will not be visible to customers.`;
+    const message =
+      langKey === "vi"
+        ? `Bạn có chắc chắn muốn ${actionText} danh mục "${category.name}" không?`
+        : `Are you sure you want to ${actionText} category "${category.name}"?`;
 
     showConfirmationToast({
       title,
       message,
       confirmText,
       cancelText,
-      confirmButtonClass: isActivating
-        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
-        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      confirmButtonClass: `${
+        newStatus
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-red-600 hover:bg-red-700"
+      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
       onConfirm: async () => {
+        // Set loading state
+        setLoadingItems((prev) => ({ ...prev, status: category.id }));
+
         try {
-          setCategories((prev) =>
-            prev.map((c) =>
-              c.id === categoryId ? { ...c, active: !c.active } : c
-            )
+          const categoryData = new FormData();
+          const categoryRequest = {
+            name: category.name,
+            description: category.description,
+            active: newStatus,
+          };
+
+          categoryData.append(
+            "category",
+            new Blob([JSON.stringify(categoryRequest)], {
+              type: "application/json",
+            })
           );
 
-          const successMessage = isActivating
-            ? language === "vi"
-              ? "Kích hoạt danh mục thành công!"
-              : "Category activated successfully!"
-            : language === "vi"
-            ? "Vô hiệu hóa danh mục thành công!"
-            : "Category deactivated successfully!";
+          await update({
+            categoryId: category.id,
+            categoryData,
+            lang: language,
+          });
+
+          const successMessage =
+            langKey === "vi"
+              ? `${
+                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
+                } danh mục thành công!`
+              : `Category ${
+                  newStatus ? "activated" : "deactivated"
+                } successfully!`;
 
           toast.success(successMessage);
         } catch (error) {
-          console.error("Error toggling category status:", error);
+          console.error("Error updating category status:", error);
           const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${action} danh mục!`
-              : `Error occurred while ${action} category!`;
+            langKey === "vi"
+              ? `Có lỗi xảy ra khi ${actionText} danh mục!`
+              : `Error occurred while ${actionText.replace(
+                  " ",
+                  "ing"
+                )} category!`;
           toast.error(errorMessage);
+        } finally {
+          // Clear loading state
+          setLoadingItems((prev) => ({ ...prev, status: null }));
         }
       },
     });
   };
 
-  const handleSubmitCategory = async (categoryData) => {
-    try {
-      if (selectedCategory) {
-        // Update existing category
-        setCategories((prev) =>
-          prev.map((c) =>
-            c.id === selectedCategory.id ? { ...c, ...categoryData } : c
-          )
-        );
-        const successMessage =
-          language === "vi"
-            ? "Cập nhật danh mục thành công!"
-            : "Category updated successfully!";
-        toast.success(successMessage);
-      } else {
-        // Create new category
-        const newCategory = {
-          id: Math.max(...categories.map((c) => c.id)) + 1,
-          ...categoryData,
-          products: [],
-        };
-        setCategories((prev) => [newCategory, ...prev]);
-        const successMessage =
-          language === "vi"
-            ? "Tạo danh mục thành công!"
-            : "Category created successfully!";
-        toast.success(successMessage);
-      }
-      setShowEditModal(false);
-      setSelectedCategory(null);
-    } catch (error) {
-      console.error("Error submitting category:", error);
-      const errorMessage =
-        language === "vi"
-          ? "Có lỗi xảy ra khi lưu danh mục!"
-          : "Error occurred while saving category!";
-      toast.error(errorMessage);
-      throw error;
-    }
+  // Handle delete
+  const handleDelete = async (categoryId) => {
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+
+    const langKey = language === "VI" ? "vi" : "en";
+    const confirmText = langKey === "vi" ? "Xóa" : "Delete";
+    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
+
+    const title =
+      langKey === "vi" ? "Xác nhận xóa danh mục" : "Confirm delete category";
+    const message =
+      langKey === "vi"
+        ? `Bạn có chắc chắn muốn xóa danh mục "${category.name}" không? Hành động này không thể hoàn tác.`
+        : `Are you sure you want to delete category "${category.name}"? This action cannot be undone.`;
+
+    showConfirmationToast({
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass:
+        "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      onConfirm: async () => {
+        setLoadingItems((prev) => ({ ...prev, delete: categoryId }));
+
+        try {
+          await deleteCategory(categoryId);
+
+          // Remove from original order when deleted
+          setOriginalOrder((prev) => prev.filter((id) => id !== categoryId));
+
+          const successMessage =
+            langKey === "vi"
+              ? "Xóa danh mục thành công!"
+              : "Category deleted successfully!";
+          toast.success(successMessage);
+        } catch (error) {
+          console.error("Error deleting category:", error);
+          const errorMessage =
+            langKey === "vi"
+              ? "Có lỗi xảy ra khi xóa danh mục!"
+              : "Error occurred while deleting category!";
+          toast.error(errorMessage);
+        } finally {
+          setLoadingItems((prev) => ({ ...prev, delete: null }));
+        }
+      },
+    });
   };
 
   // Calculate statistics
   const stats = {
-    total: categories.length,
-    active: categories.filter((c) => c.active).length,
-    inactive: categories.filter((c) => !c.active).length,
+    total: sortedCategories?.length || 0,
+    active: sortedCategories?.filter((c) => c.active).length || 0,
+    inactive: sortedCategories?.filter((c) => !c.active).length || 0,
   };
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">
+            {language === "VI"
+              ? "Có lỗi xảy ra khi tải danh sách danh mục"
+              : "Error loading categories"}
+          </p>
+          <p className="text-gray-500 mt-2">
+            {error.message ||
+              (language === "VI"
+                ? "Vui lòng thử lại sau"
+                : "Please try again later")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {language === "vi" ? "Quản lý danh mục" : "Category Management"}
+          {language === "VI" ? "Quản lý danh mục" : "Category Management"}
         </h1>
         <button
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <IconPlus size={20} />
-          {language === "vi" ? "Tạo danh mục" : "Create Category"}
+          {language === "VI" ? "Tạo danh mục" : "Create Category"}
         </button>
       </div>
 
@@ -552,7 +387,7 @@ export default function CategoryPage() {
               <input
                 type="text"
                 placeholder={
-                  language === "vi"
+                  language === "VI"
                     ? "Tìm kiếm theo tên, mô tả, ID..."
                     : "Search by name, description, ID..."
                 }
@@ -585,8 +420,8 @@ export default function CategoryPage() {
               onChange={(e) => setLanguage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="vi">{getStatusLabel("vietnamese")}</option>
-              <option value="en">{getStatusLabel("english")}</option>
+              <option value="VI">{getStatusLabel("vietnamese")}</option>
+              <option value="EN">{getStatusLabel("english")}</option>
             </select>
           </div>
         </div>
@@ -594,7 +429,7 @@ export default function CategoryPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {language === "vi"
+        {language === "VI"
           ? `Hiển thị ${paginatedCategories.length} trên tổng số ${filteredCategories.length} danh mục`
           : `Showing ${paginatedCategories.length} of ${filteredCategories.length} categories`}
       </div>
@@ -606,137 +441,153 @@ export default function CategoryPage() {
             <tr className="bg-gray-400">
               <th className="p-3">ID</th>
               <th className="p-3">
-                {language === "vi" ? "Hình ảnh" : "Image"}
+                {language === "VI" ? "Hình ảnh" : "Image"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Tên danh mục" : "Category Name"}
+                {language === "VI" ? "Tên danh mục" : "Category Name"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Mô tả" : "Description"}
+                {language === "VI" ? "Mô tả" : "Description"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Số sản phẩm" : "Products"}
+                {language === "VI" ? "Trạng thái" : "Status"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Trạng thái" : "Status"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Hành động" : "Actions"}
+                {language === "VI" ? "Hành động" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {isLoading ? (
               <tr>
-                <td colSpan={7} className="text-center text-gray-500 p-4">
-                  {language === "vi" ? "Đang tải..." : "Loading..."}
+                <td colSpan={6} className="text-center text-gray-500 p-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    {language === "VI" ? "Đang tải..." : "Loading..."}
+                  </div>
                 </td>
               </tr>
             ) : paginatedCategories.length > 0 ? (
-              paginatedCategories.map((category) => {
-                const translation = getTranslation(category);
-                return (
-                  <tr key={category.id} className="border-b hover:bg-gray-300">
-                    <td className="p-3">{category.id}</td>
+              paginatedCategories.map((category, index) => (
+                <tr
+                  key={`category-${category.id}-${index}`}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
+                  <td className="p-3">{category.id}</td>
 
-                    <td className="p-3">
+                  <td className="p-3">
+                    {category.imageUrl || category.image ? (
                       <img
-                        src={category.image || ""}
-                        alt={translation.name}
+                        src={category.imageUrl || category.image}
+                        alt={category.name}
                         className="w-10 h-10 rounded object-cover"
-                        onError={(e) => (e.target.src = "")}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
                       />
-                    </td>
+                    ) : null}
+                    <div
+                      className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+                      style={{
+                        display:
+                          category.imageUrl || category.image ? "none" : "flex",
+                      }}
+                    >
+                      No Image
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <div>
-                        <p className="font-semibold">{translation.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {getStatusLabel(
-                            language === "vi" ? "vietnamese" : "english"
-                          )}
-                        </p>
-                      </div>
-                    </td>
+                  <td className="p-3">
+                    <div>
+                      <p className="font-semibold">{category.name}</p>
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <div className="max-w-xs">
-                        <p
-                          className="text-sm truncate"
-                          title={translation.description}
-                        >
-                          {translation.description}
-                        </p>
-                      </div>
-                    </td>
-
-                    <td className="p-3">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {category.products.length}
-                      </span>
-                    </td>
-
-                    <td className="p-3">
-                      <button
-                        onClick={() => handleToggleStatus(category.id)}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                          category.active
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                        }`}
+                  <td className="p-3">
+                    <div className="max-w-xs">
+                      <p
+                        className="text-sm truncate"
+                        title={category.description}
                       >
-                        {category.active
-                          ? getStatusLabel("active")
-                          : getStatusLabel("inactive")}
-                      </button>
-                    </td>
+                        {category.description}
+                      </p>
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleViewDetail(category)}
-                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                          title={
-                            language === "vi" ? "Xem chi tiết" : "View Details"
-                          }
-                        >
-                          <IconEye size={24} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(category)}
-                          className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
-                          title={language === "vi" ? "Chỉnh sửa" : "Edit"}
-                        >
-                          <IconEdit size={24} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(category.id)}
-                          className={`cursor-pointer ${
-                            category.active
-                              ? "text-red-600 hover:text-red-800"
-                              : "text-green-600 hover:text-green-800"
-                          }`}
-                          title={
-                            language === "vi"
-                              ? category.active
-                                ? "Vô hiệu hóa danh mục"
-                                : "Kích hoạt danh mục"
-                              : category.active
-                              ? "Deactivate category"
-                              : "Activate category"
-                          }
-                        >
-                          <IconTrash size={24} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleToggleStatus(category)}
+                      disabled={loadingItems.status === category.id}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                        category.active
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                      }`}
+                      title={
+                        language === "VI"
+                          ? `Click để ${
+                              category.active ? "vô hiệu hóa" : "kích hoạt lại"
+                            }`
+                          : `Click to ${
+                              category.active ? "deactivate" : "activate"
+                            }`
+                      }
+                    >
+                      {loadingItems.status === category.id ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {category.active
+                            ? getStatusLabel("active")
+                            : getStatusLabel("inactive")}
+                        </>
+                      )}
+                    </button>
+                  </td>
+
+                  <td className="p-3">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewDetail(category)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                        title={
+                          language === "VI" ? "Xem chi tiết" : "View Details"
+                        }
+                      >
+                        <IconEye size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(category)}
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                        title={language === "VI" ? "Chỉnh sửa" : "Edit"}
+                      >
+                        <IconEdit size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category.id)}
+                        disabled={loadingItems.delete === category.id}
+                        className="text-red-600 hover:text-red-800 cursor-pointer disabled:opacity-50 p-1 rounded hover:bg-red-50 transition-colors"
+                        title={
+                          language === "VI" ? "Xóa danh mục" : "Delete category"
+                        }
+                      >
+                        {loadingItems.delete === category.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                        ) : (
+                          <IconTrash size={18} />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center text-gray-500 p-4">
-                  {language === "vi"
+                <td colSpan={6} className="text-center text-gray-500 p-4">
+                  {language === "VI"
                     ? "Không có danh mục nào."
                     : "No categories found."}
                 </td>
@@ -770,7 +621,6 @@ export default function CategoryPage() {
           setShowEditModal(false);
           setSelectedCategory(null);
         }}
-        onSubmit={handleSubmitCategory}
         category={selectedCategory}
       />
     </div>
