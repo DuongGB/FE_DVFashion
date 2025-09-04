@@ -6,73 +6,63 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 import { toast } from "react-toastify";
+import { useBrand } from "../../../hooks/useBrand";
 
-export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
+export default function BrandForm({ isOpen, onClose, brand }) {
   const [formData, setFormData] = useState({
-    logo: "",
+    name: "",
+    description: "",
     active: true,
-    translations: [
-      {
-        language: "vi",
-        name: "",
-        description: "",
-      },
-      {
-        language: "en",
-        name: "",
-        description: "",
-      },
-    ],
   });
-  const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState("VI");
+  const [logoFile, setLogoFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
-  const [logoPreview, setLogoPreview] = useState("");
+
+  const { createBrand, updateBrand, isCreating, isUpdating } = useBrand();
+
+  const loading = isCreating || isUpdating;
 
   useEffect(() => {
     if (brand) {
       // Edit mode - populate form with existing data
       setFormData({
-        logo: brand.logo || "",
-        active: brand.active,
-        translations: brand.translations || [
-          { language: "vi", name: "", description: "" },
-          { language: "en", name: "", description: "" },
-        ],
+        name: brand.name || "",
+        description: brand.description || "",
+        active: brand.active !== undefined ? brand.active : true,
       });
-      setLogoPreview(brand.logo || "");
+      setImagePreview(brand.image || "");
+      setLogoFile(null);
     } else {
       // Create mode - reset form
       setFormData({
-        logo: "",
+        name: "",
+        description: "",
         active: true,
-        translations: [
-          { language: "vi", name: "", description: "" },
-          { language: "en", name: "", description: "" },
-        ],
       });
-      setLogoPreview("");
+      setImagePreview("");
+      setLogoFile(null);
     }
     setErrors({});
+    setLanguage("VI");
   }, [brand, isOpen]);
 
-  const handleTranslationChange = (language, field, value) => {
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
-      translations: prev.translations.map((t) =>
-        t.language === language ? { ...t, [field]: value } : t
-      ),
+      [field]: value,
     }));
 
     // Clear errors
-    if (errors[`${language}_${field}`]) {
+    if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
-        [`${language}_${field}`]: "",
+        [field]: "",
       }));
     }
   };
 
-  const handleLogoChange = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
@@ -89,43 +79,27 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        const logoUrl = e.target.result;
-        setLogoPreview(logoUrl);
-        setFormData((prev) => ({ ...prev, logo: logoUrl }));
+        setImagePreview(e.target.result);
+        setLogoFile(file);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleLogoUrlChange = (e) => {
-    const url = e.target.value;
-    setFormData((prev) => ({ ...prev, logo: url }));
-    setLogoPreview(url);
+  const removeImage = () => {
+    setImagePreview("");
+    setLogoFile(null);
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate Vietnamese translation
-    const viTranslation = formData.translations.find(
-      (t) => t.language === "vi"
-    );
-    if (!viTranslation?.name.trim()) {
-      newErrors.vi_name = "Tên thương hiệu tiếng Việt là bắt buộc";
-    }
-    if (!viTranslation?.description.trim()) {
-      newErrors.vi_description = "Mô tả tiếng Việt là bắt buộc";
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên thương hiệu là bắt buộc";
     }
 
-    // Validate English translation
-    const enTranslation = formData.translations.find(
-      (t) => t.language === "en"
-    );
-    if (!enTranslation?.name.trim()) {
-      newErrors.en_name = "Tên thương hiệu tiếng Anh là bắt buộc";
-    }
-    if (!enTranslation?.description.trim()) {
-      newErrors.en_description = "Mô tả tiếng Anh là bắt buộc";
+    if (!formData.description.trim()) {
+      newErrors.description = "Mô tả thương hiệu là bắt buộc";
     }
 
     setErrors(newErrors);
@@ -140,14 +114,55 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
       return;
     }
 
-    setLoading(true);
     try {
-      await onSubmit(formData);
+      // Prepare form data for multipart/form-data
+      const brandData = new FormData();
+
+      // Add brand JSON data
+      const brandRequest = {
+        name: formData.name,
+        description: formData.description,
+        active: formData.active,
+      };
+
+      brandData.append(
+        "brand",
+        new Blob([JSON.stringify(brandRequest)], {
+          type: "application/json",
+        })
+      );
+
+      // Add image file if exists
+      if (logoFile) {
+        brandData.append("logoFile", logoFile);
+      }
+
+      if (brand) {
+        // Update existing brand
+        await updateBrand({
+          brandId: brand.id,
+          brandData,
+          lang: language,
+        });
+        toast.success("Cập nhật thương hiệu thành công!");
+      } else {
+        // Create new brand
+        await createBrand({
+          brandData,
+          lang: language,
+        });
+        toast.success("Tạo thương hiệu thành công!");
+      }
+
       onClose();
     } catch (error) {
       console.error("Error submitting brand:", error);
-    } finally {
-      setLoading(false);
+      const errorMessage =
+        error.response?.data?.message ||
+        (brand
+          ? "Có lỗi xảy ra khi cập nhật thương hiệu!"
+          : "Có lỗi xảy ra khi tạo thương hiệu!");
+      toast.error(errorMessage);
     }
   };
 
@@ -159,18 +174,13 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
 
   if (!isOpen) return null;
 
-  const viTranslation =
-    formData.translations.find((t) => t.language === "vi") || {};
-  const enTranslation =
-    formData.translations.find((t) => t.language === "en") || {};
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide"
         onClick={(e) => e.stopPropagation()}
         style={{
           scrollbarWidth: "none",
@@ -198,75 +208,23 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Logo Upload */}
+            {/* Brand Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconBrandAndroid size={16} className="inline mr-1" />
-                Logo thương hiệu
+                Tên thương hiệu <span className="text-red-500">*</span>
               </label>
-
-              {/* Logo URL Input */}
-              <div className="mb-4">
-                <input
-                  type="url"
-                  value={formData.logo}
-                  onChange={handleLogoUrlChange}
-                  placeholder="Nhập URL logo hoặc tải lên file..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Logo Preview/Upload */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 relative">
-                {logoPreview ? (
-                  <div className="relative">
-                    <div className="flex items-center justify-center h-40 bg-white rounded-lg border">
-                      <img
-                        src={logoPreview}
-                        alt="Logo Preview"
-                        className="max-h-32 max-w-full object-contain"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
-                      />
-                      <div className="hidden items-center justify-center h-32 text-gray-500">
-                        <IconBrandAndroid size={48} />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLogoPreview("");
-                        setFormData((prev) => ({ ...prev, logo: "" }));
-                      }}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <IconX size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <IconUpload
-                      size={48}
-                      className="mx-auto text-gray-400 mb-2"
-                    />
-                    <p className="text-sm text-gray-600 mb-2">
-                      Kéo thả hoặc click để tải logo lên
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, SVG (tối đa 5MB)
-                    </p>
-                  </div>
-                )}
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </div>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Nhập tên thương hiệu..."
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
             </div>
 
             {/* Status */}
@@ -280,9 +238,7 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
                     type="radio"
                     name="active"
                     checked={formData.active === true}
-                    onChange={() =>
-                      setFormData((prev) => ({ ...prev, active: true }))
-                    }
+                    onChange={() => handleInputChange("active", true)}
                     className="mr-3"
                   />
                   <span className="text-green-600 font-medium">Hoạt động</span>
@@ -292,9 +248,7 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
                     type="radio"
                     name="active"
                     checked={formData.active === false}
-                    onChange={() =>
-                      setFormData((prev) => ({ ...prev, active: false }))
-                    }
+                    onChange={() => handleInputChange("active", false)}
                     className="mr-3"
                   />
                   <span className="text-red-600 font-medium">
@@ -305,142 +259,69 @@ export default function BrandForm({ isOpen, onClose, onSubmit, brand }) {
             </div>
           </div>
 
-          {/* Translations */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Thông tin đa ngôn ngữ
-            </h3>
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Mô tả <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              rows={4}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.description ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Nhập mô tả thương hiệu..."
+            />
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+            )}
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Vietnamese Translation */}
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center mb-4">
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <IconBrandAndroid size={16} className="inline mr-1" />
+              Logo thương hiệu
+            </label>
+
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 relative">
+              {imagePreview ? (
+                <div className="relative">
                   <img
-                    src="https://flagcdn.com/w20/vn.png"
-                    alt="Vietnamese"
-                    className="w-5 h-3 mr-2"
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-40 object-cover rounded-lg"
                   />
-                  <h4 className="font-semibold text-gray-800">Tiếng Việt</h4>
-                  <span className="text-red-500 ml-1">*</span>
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  >
+                    <IconX size={16} />
+                  </button>
                 </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tên thương hiệu <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={viTranslation.name || ""}
-                      onChange={(e) =>
-                        handleTranslationChange("vi", "name", e.target.value)
-                      }
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.vi_name ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="Nhập tên thương hiệu..."
-                    />
-                    {errors.vi_name && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.vi_name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mô tả <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      value={viTranslation.description || ""}
-                      onChange={(e) =>
-                        handleTranslationChange(
-                          "vi",
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      rows={3}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.vi_description
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Nhập mô tả thương hiệu..."
-                    />
-                    {errors.vi_description && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.vi_description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* English Translation */}
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center mb-4">
-                  <img
-                    src="https://flagcdn.com/w20/us.png"
-                    alt="English"
-                    className="w-5 h-3 mr-2"
+              ) : (
+                <div className="text-center">
+                  <IconUpload
+                    size={48}
+                    className="mx-auto text-gray-400 mb-2"
                   />
-                  <h4 className="font-semibold text-gray-800">English</h4>
-                  <span className="text-red-500 ml-1">*</span>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Kéo thả hoặc click để tải logo lên
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF (tối đa 5MB)
+                  </p>
                 </div>
+              )}
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Brand Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={enTranslation.name || ""}
-                      onChange={(e) =>
-                        handleTranslationChange("en", "name", e.target.value)
-                      }
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.en_name ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="Enter brand name..."
-                    />
-                    {errors.en_name && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.en_name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      value={enTranslation.description || ""}
-                      onChange={(e) =>
-                        handleTranslationChange(
-                          "en",
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      rows={3}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.en_description
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Enter brand description..."
-                    />
-                    {errors.en_description && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.en_description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </div>
           </div>
 

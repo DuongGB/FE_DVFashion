@@ -72,7 +72,7 @@ api.interceptors.response.use(
           return api(originalRequest); // Retry original request
         } catch (err) {
           isRefreshing = false;
-          QueryClient.clear(); // Clear cache when token refresh fails
+          // QueryClient.clear(); // Clear cache when token refresh fails
           document.cookie = "isAuthenticated=false; path=/;"; // clear flag
           return Promise.reject(err);
         }

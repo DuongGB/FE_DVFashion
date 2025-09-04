@@ -313,7 +313,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.fullName}
           </p>
         )}
-        {/* Input Email  */}}
+        {/* Input Email  */}
         <div className="relative">
           <input
             type="email"
