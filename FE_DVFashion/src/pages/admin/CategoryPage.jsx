@@ -1,11 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import {
-  IconEdit,
-  IconTrash,
-  IconPlus,
-  IconSearch,
-  IconEye,
-} from "@tabler/icons-react";
+import { IconEdit, IconPlus, IconSearch, IconEye } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import CategoryForm from "../../components/ui/category/CategoryForm";
@@ -234,57 +228,6 @@ export default function CategoryPage() {
         } finally {
           // Clear loading state
           setLoadingItems((prev) => ({ ...prev, status: null }));
-        }
-      },
-    });
-  };
-
-  // Handle delete
-  const handleDelete = async (categoryId) => {
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) return;
-
-    const langKey = language === "VI" ? "vi" : "en";
-    const confirmText = langKey === "vi" ? "Xóa" : "Delete";
-    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
-
-    const title =
-      langKey === "vi" ? "Xác nhận xóa danh mục" : "Confirm delete category";
-    const message =
-      langKey === "vi"
-        ? `Bạn có chắc chắn muốn xóa danh mục "${category.name}" không? Hành động này không thể hoàn tác.`
-        : `Are you sure you want to delete category "${category.name}"? This action cannot be undone.`;
-
-    showConfirmationToast({
-      title,
-      message,
-      confirmText,
-      cancelText,
-      confirmButtonClass:
-        "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
-      onConfirm: async () => {
-        setLoadingItems((prev) => ({ ...prev, delete: categoryId }));
-
-        try {
-          await deleteCategory(categoryId);
-
-          // Remove from original order when deleted
-          setOriginalOrder((prev) => prev.filter((id) => id !== categoryId));
-
-          const successMessage =
-            langKey === "vi"
-              ? "Xóa danh mục thành công!"
-              : "Category deleted successfully!";
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error deleting category:", error);
-          const errorMessage =
-            langKey === "vi"
-              ? "Có lỗi xảy ra khi xóa danh mục!"
-              : "Error occurred while deleting category!";
-          toast.error(errorMessage);
-        } finally {
-          setLoadingItems((prev) => ({ ...prev, delete: null }));
         }
       },
     });
@@ -557,28 +500,14 @@ export default function CategoryPage() {
                           language === "VI" ? "Xem chi tiết" : "View Details"
                         }
                       >
-                        <IconEye size={18} />
+                        <IconEye size={24} />
                       </button>
                       <button
                         onClick={() => handleEdit(category)}
                         className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
                         title={language === "VI" ? "Chỉnh sửa" : "Edit"}
                       >
-                        <IconEdit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category.id)}
-                        disabled={loadingItems.delete === category.id}
-                        className="text-red-600 hover:text-red-800 cursor-pointer disabled:opacity-50 p-1 rounded hover:bg-red-50 transition-colors"
-                        title={
-                          language === "VI" ? "Xóa danh mục" : "Delete category"
-                        }
-                      >
-                        {loadingItems.delete === category.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                        ) : (
-                          <IconTrash size={18} />
-                        )}
+                        <IconEdit size={24} />
                       </button>
                     </div>
                   </td>
