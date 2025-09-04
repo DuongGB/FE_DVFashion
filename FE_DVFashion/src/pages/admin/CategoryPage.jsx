@@ -47,8 +47,7 @@ export default function CategoryPage() {
   const pageSize = 10;
 
   // Use the category hook
-  const { categories, isLoading, error, update, deleteCategory } =
-    useCategory(language);
+  const { categories, isLoading, error, update } = useCategory(language);
 
   // Store original order when categories first load
   useEffect(() => {
@@ -79,25 +78,10 @@ export default function CategoryPage() {
 
   // Sort categories by original order to maintain position
   const sortedCategories = useMemo(() => {
-    if (!categories || originalOrder.length === 0) return categories || [];
+    if (!categories) return [];
 
-    return [...categories].sort((a, b) => {
-      const indexA = originalOrder.indexOf(a.id);
-      const indexB = originalOrder.indexOf(b.id);
-
-      // If both items are in original order
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      }
-
-      // If only one is in original order, prioritize it
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-
-      // If neither is in original order, sort by ID
-      return a.id - b.id;
-    });
-  }, [categories, originalOrder]);
+    return [...categories].sort((a, b) => a.id - b.id);
+  }, [categories]);
 
   // Filter categories with stable sorting
   const filteredCategories = useMemo(() => {
@@ -414,7 +398,7 @@ export default function CategoryPage() {
               paginatedCategories.map((category, index) => (
                 <tr
                   key={`category-${category.id}-${index}`}
-                  className="border-b hover:bg-gray-50 transition-colors"
+                  className="border-b hover:bg-gray-300 transition-colors"
                 >
                   <td className="p-3">{category.id}</td>
 
