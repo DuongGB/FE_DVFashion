@@ -22,79 +22,78 @@ import StaffLayout from "./layouts/StaffLayout";
 import ForecastPage from "./pages/admin/ForecastPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import OAuth2RedirectHandler from "./components/ui/auth/OAuth2RedirectHandler";
 
 function App() {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Router>
-        <Routes>
-          {/* Admin routes - chỉ cho phép ROLE_ADMIN */}
-          <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminPage />} />
-              <Route path="inventories" element={<InventoryPage />} />
-              <Route path="products" element={<ProductPage />} />
-              <Route path="categories" element={<CategoryPage />} />
-              <Route path="brands" element={<BrandPage />} />
-              <Route path="reviews" element={<ReviewPage />} />
-              <Route path="promotions" element={<PromotionPage />} />
-              <Route path="customers" element={<CustomerManagermentPage />} />
-              <Route path="employees" element={<EmployeePage />} />
-              <Route path="reports" element={<AnalystReportPage />} />
-              <Route path="forecasts" element={<ForecastPage />} />
-            </Route>
-          </Route>
+    <Router>
+      <Routes>
+        {/* OAuth2 redirect handler */}
+        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-          {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
+        {/* Admin routes - chỉ cho phép ROLE_ADMIN */}
+        <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminPage />} />
+            <Route path="inventories" element={<InventoryPage />} />
+            <Route path="products" element={<ProductPage />} />
+            <Route path="categories" element={<CategoryPage />} />
+            <Route path="brands" element={<BrandPage />} />
+            <Route path="reviews" element={<ReviewPage />} />
+            <Route path="promotions" element={<PromotionPage />} />
+            <Route path="customers" element={<CustomerManagermentPage />} />
+            <Route path="employees" element={<EmployeePage />} />
+            <Route path="reports" element={<AnalystReportPage />} />
+            <Route path="forecasts" element={<ForecastPage />} />
+          </Route>
+        </Route>
+
+        {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
+          }
+        >
+          <Route path="/staff" element={<StaffLayout />}>
+            <Route index element={<StaffPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="categories" element={<CategoryPage />} />
+            <Route path="reviews" element={<ReviewPage />} />
+            <Route path="promotions" element={<PromotionPage />} />
+            <Route path="customers" element={<CustomerManagermentPage />} />
+          </Route>
+        </Route>
+
+        {/* Main layout routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<BlogPage />} />
+
           <Route
             element={
-              <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
+              <ProtectedRoute
+                allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_STAFF"]}
+              />
             }
           >
-            <Route path="/staff" element={<StaffLayout />}>
-              <Route index element={<StaffPage />} />
-              <Route path="orders" element={<OrdersPage />} />
-              <Route path="categories" element={<CategoryPage />} />
-              <Route path="reviews" element={<ReviewPage />} />
-              <Route path="promotions" element={<PromotionPage />} />
-              <Route path="customers" element={<CustomerManagermentPage />} />
-            </Route>
+            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/account" element={<AccountPage />} />
           </Route>
-
-          {/* Main layout routes */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/blog" element={<BlogPage />} />
-
-            <Route
-              element={
-                <ProtectedRoute
-                  allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_STAFF"]}
-                />
-              }
-            >
-              <Route path="/customer" element={<CustomerPage />} />
-              <Route path="/account" element={<AccountPage />} />
-            </Route>
-          </Route>
-        </Routes>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      </Router>
-    </GoogleOAuthProvider>
+        </Route>
+      </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </Router>
   );
 }
 
