@@ -1,9 +1,11 @@
 import {
   IconX,
   IconBrandAndroid,
-  IconLanguage,
   IconTag,
   IconPackage,
+  IconCalendar,
+  IconInfoCircle,
+  IconCheck,
 } from "@tabler/icons-react";
 
 export default function BrandDetailModal({ brand, open, onClose }) {
@@ -15,188 +17,315 @@ export default function BrandDetailModal({ brand, open, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-hide"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gray-50">
-          <div className="flex items-center gap-3">
-            <IconBrandAndroid size={24} className="text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">
-              Chi tiết thương hiệu
-            </h2>
-          </div>
+        {/* Header với gradient background */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
           <button
             onClick={onClose}
-            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="absolute top-4 right-4 bg-black backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-gray-800 transition-all duration-200 cursor-pointer"
           >
             <IconX size={20} />
           </button>
+
+          <div className="flex items-start gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+              <IconBrandAndroid size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">Chi tiết thương hiệu</h2>
+              <p className="text-blue-100 opacity-90">
+                Xem thông tin chi tiết của thương hiệu {brand.name}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Brand Logo */}
-            <div className="lg:col-span-1">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                  <IconBrandAndroid size={18} />
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Basic Info Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Brand Logo Section */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                  <IconBrandAndroid size={20} className="text-purple-600" />
                   Logo thương hiệu
                 </h3>
-                <div className="border rounded-lg p-4 text-center bg-white">
+
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                   {brand.image || brand.logo ? (
-                    <div className="flex items-center justify-center h-48">
-                      <img
-                        src={brand.image || brand.logo}
-                        alt={brand.name}
-                        className="max-h-40 max-w-full object-contain"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
-                      />
-                      <div className="hidden items-center justify-center h-40 text-gray-500">
-                        <IconBrandAndroid size={48} />
-                        <p className="mt-2">Logo không khả dụng</p>
+                    <img
+                      src={brand.image || brand.logo}
+                      alt={brand.name}
+                      className="w-full h-64 object-contain rounded-lg shadow-md bg-white p-4"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className={`${
+                      brand.image || brand.logo ? "hidden" : "flex"
+                    } items-center justify-center h-64 bg-gray-100 rounded-lg`}
+                  >
+                    <div className="text-center text-gray-500">
+                      <div className="bg-gray-200 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <IconBrandAndroid size={32} className="text-gray-400" />
                       </div>
+                      <p className="text-lg font-medium text-gray-600">
+                        Không có logo
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Chưa tải lên logo cho thương hiệu này
+                      </p>
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg">
-                      <div className="text-center text-gray-500">
-                        <IconBrandAndroid size={48} className="mx-auto mb-2" />
-                        <p>Không có logo</p>
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Basic Details */}
-            <div className="lg:col-span-1">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                  <IconTag size={18} />
+              {/* Basic Details Section */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                  <IconTag size={20} className="text-blue-600" />
                   Thông tin cơ bản
                 </h3>
+
                 <div className="space-y-4">
-                  <div>
-                    <strong className="text-gray-600">ID thương hiệu:</strong>
-                    <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">
-                      #{brand.id}
-                    </span>
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="bg-blue-100 rounded-full p-1">
+                      <IconInfoCircle size={16} className="text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <strong className="text-blue-800 text-sm font-medium">
+                        ID thương hiệu:
+                      </strong>
+                      <div className="mt-1">
+                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full font-mono text-sm">
+                          #{brand.id}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <strong className="text-gray-600">Tên thương hiệu:</strong>
-                    <p className="mt-1 text-gray-900 font-medium text-lg">
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <strong className="text-gray-700 text-sm font-medium">
+                      Tên thương hiệu:
+                    </strong>
+                    <p className="mt-2 text-gray-900 font-semibold text-lg">
                       {brand.name}
                     </p>
                   </div>
 
-                  <div>
-                    <strong className="text-gray-600">Trạng thái:</strong>
-                    <span
-                      className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
-                        brand.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {brand.active ? "Đang hoạt động" : "Không hoạt động"}
-                    </span>
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <strong className="text-gray-700 text-sm font-medium">
+                      Mô tả:
+                    </strong>
+                    <p className="mt-2 text-gray-800 leading-relaxed">
+                      {brand.description || "Không có mô tả"}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <strong className="text-gray-700 text-sm font-medium">
+                      Trạng thái:
+                    </strong>
+                    <div className="mt-2">
+                      <span
+                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium ${
+                          brand.active
+                            ? "bg-green-100 text-green-800 border border-green-200"
+                            : "bg-red-100 text-red-800 border border-red-200"
+                        }`}
+                      >
+                        {brand.active ? (
+                          <>
+                            <IconCheck size={16} />
+                            Đang hoạt động
+                          </>
+                        ) : (
+                          <>
+                            <IconX size={16} />
+                            Không hoạt động
+                          </>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Description */}
-          <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-              <IconLanguage size={18} />
-              Mô tả thương hiệu
-            </h3>
-            <div className="bg-white p-4 rounded-lg border">
-              <p className="text-gray-700 leading-relaxed">
-                {brand.description || "Chưa có mô tả cho thương hiệu này."}
-              </p>
-            </div>
-          </div>
-
-          {/* Products Preview (if available) */}
-          {brand.productCount !== undefined && (
-            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconPackage size={18} />
+            {/* Products Information */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconPackage size={20} className="text-green-600" />
                 Thông tin sản phẩm
               </h3>
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 p-3 rounded-full">
-                    <IconPackage size={24} className="text-blue-600" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-100 rounded-full p-2">
+                      <IconPackage size={20} className="text-green-600" />
+                    </div>
+                    <div>
+                      <strong className="text-green-800 text-sm font-medium">
+                        Số lượng sản phẩm:
+                      </strong>
+                      <p className="text-green-700 font-semibold text-lg">
+                        {brand.productCount || 0} sản phẩm
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-semibold text-gray-800">
-                      {brand.productCount || 0} sản phẩm
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Tổng số sản phẩm thuộc thương hiệu này
-                    </p>
+                </div>
+
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 rounded-full p-2">
+                      <IconTag size={20} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <strong className="text-blue-800 text-sm font-medium">
+                        Tỷ lệ sản phẩm:
+                      </strong>
+                      <p className="text-blue-700 font-semibold text-lg">
+                        {brand.productCount
+                          ? "Có sản phẩm"
+                          : "Chưa có sản phẩm"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Additional Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-              <IconTag size={18} />
-              Thông tin thêm
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-lg border">
-                <strong className="text-gray-600">Độ dài tên:</strong>
-                <span className="ml-2 text-gray-800">
-                  {brand.name?.length || 0} ký tự
-                </span>
-              </div>
+            {/* Timeline Information */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconCalendar size={20} className="text-orange-600" />
+                Thông tin thời gian
+              </h3>
 
-              <div className="bg-white p-4 rounded-lg border">
-                <strong className="text-gray-600">Độ dài mô tả:</strong>
-                <span className="ml-2 text-gray-800">
-                  {brand.description?.length || 0} ký tự
-                </span>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {brand.createdAt && (
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="bg-green-100 rounded-full p-1">
+                        <IconCalendar size={16} className="text-green-600" />
+                      </div>
+                      <strong className="text-green-800 text-sm font-medium">
+                        Ngày tạo:
+                      </strong>
+                    </div>
+                    <p className="text-green-700 font-semibold">
+                      {new Date(brand.createdAt).toLocaleDateString("vi-VN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                )}
 
-              <div className="bg-white p-4 rounded-lg border">
-                <strong className="text-gray-600">Có logo:</strong>
-                <span className="ml-2 text-gray-800">
-                  {brand.image || brand.logo ? "Có" : "Không"}
-                </span>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg border">
-                <strong className="text-gray-600">ID định dạng:</strong>
-                <span className="ml-2 text-gray-800 font-mono">
-                  BRAND_{String(brand.id).padStart(4, "0")}
-                </span>
+                {brand.updatedAt && (
+                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="bg-yellow-100 rounded-full p-1">
+                        <IconCalendar size={16} className="text-yellow-600" />
+                      </div>
+                      <strong className="text-yellow-800 text-sm font-medium">
+                        Cập nhật lần cuối:
+                      </strong>
+                    </div>
+                    <p className="text-yellow-700 font-semibold">
+                      {new Date(brand.updatedAt).toLocaleDateString("vi-VN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="mt-6 flex justify-end gap-3 pt-6 border-t">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
-            >
-              Đóng
-            </button>
+            {/* Additional Information */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconInfoCircle size={20} className="text-purple-600" />
+                Thông tin bổ sung
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <strong className="text-purple-800 text-sm font-medium">
+                    Mã thương hiệu:
+                  </strong>
+                  <p className="mt-1 text-purple-700 font-mono font-semibold">
+                    BRAND-{brand.id.toString().padStart(4, "0")}
+                  </p>
+                </div>
+
+                {brand.slug && (
+                  <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <strong className="text-indigo-800 text-sm font-medium">
+                      Slug:
+                    </strong>
+                    <p className="mt-1 text-indigo-700 font-mono font-semibold">
+                      {brand.slug}
+                    </p>
+                  </div>
+                )}
+
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <strong className="text-gray-700 text-sm font-medium">
+                    Độ dài tên:
+                  </strong>
+                  <p className="mt-1 text-gray-800 font-semibold">
+                    {brand.name?.length || 0} ký tự
+                  </p>
+                </div>
+
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <strong className="text-gray-700 text-sm font-medium">
+                    Có logo:
+                  </strong>
+                  <p className="mt-1 text-gray-800 font-semibold">
+                    {brand.image || brand.logo ? "Có" : "Không"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detailed Description */}
+              {brand.description && (
+                <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <h4 className="flex items-center gap-2 font-semibold text-gray-800 mb-3">
+                    <IconInfoCircle size={18} className="text-blue-600" />
+                    Mô tả chi tiết:
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap bg-white p-3 rounded border">
+                    {brand.description}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       </div>
