@@ -1,16 +1,11 @@
-import { useState, useEffect } from "react";
-import {
-  IconEdit,
-  IconTrash,
-  IconPlus,
-  IconSearch,
-  IconEye,
-} from "@tabler/icons-react";
+import { useState, useEffect, useMemo } from "react";
+import { IconEdit, IconPlus, IconSearch, IconEye } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import BrandForm from "../../components/ui/brand/BrandForm";
 import BrandDetailModal from "../../components/ui/brand/BrandDetailModal";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import { useBrand } from "../../hooks/useBrand";
 
 // Translations for status labels
 const statusLabels = {
@@ -36,350 +31,71 @@ const statusLabels = {
   },
 };
 
-// Mock data theo cấu trúc class diagram
-const mockBrands = [
-  {
-    id: 1,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 1,
-        language: "vi",
-        name: "Nike",
-        description: "Thương hiệu thể thao nổi tiếng",
-        brand: null,
-      },
-      {
-        id: 2,
-        language: "en",
-        name: "Nike",
-        description: "Famous sports brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 2,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 3,
-        language: "vi",
-        name: "Adidas",
-        description: "Thương hiệu thời trang thể thao",
-        brand: null,
-      },
-      {
-        id: 4,
-        language: "en",
-        name: "Adidas",
-        description: "Sports fashion brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 3,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Gucci_logo.png",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 5,
-        language: "vi",
-        name: "Gucci",
-        description: "Thương hiệu thời trang cao cấp",
-        brand: null,
-      },
-      {
-        id: 6,
-        language: "en",
-        name: "Gucci",
-        description: "Luxury fashion brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 4,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 7,
-        language: "vi",
-        name: "Zara",
-        description: "Thời trang nhanh",
-        brand: null,
-      },
-      {
-        id: 8,
-        language: "en",
-        name: "Zara",
-        description: "Fast fashion",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 5,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/UNIQLO_logo.svg/772px-UNIQLO_logo.svg.png",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 9,
-        language: "vi",
-        name: "Uniqlo",
-        description: "Thời trang Nhật Bản",
-        brand: null,
-      },
-      {
-        id: 10,
-        language: "en",
-        name: "Uniqlo",
-        description: "Japanese fashion",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 6,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/5/53/H%26M-Logo.svg",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 11,
-        language: "vi",
-        name: "H&M",
-        description: "Thời trang nhanh toàn cầu",
-        brand: null,
-      },
-      {
-        id: 12,
-        language: "en",
-        name: "H&M",
-        description: "Global fast fashion",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 7,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/7/76/Louis_Vuitton_logo_and_wordmark.svg",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 13,
-        language: "vi",
-        name: "Louis Vuitton",
-        description: "Thương hiệu xa xỉ",
-        brand: null,
-      },
-      {
-        id: 14,
-        language: "en",
-        name: "Louis Vuitton",
-        description: "Luxury brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 8,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIYZoN-v60qelJBrnr9iXZPNLjfta92YHTkA&s",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 15,
-        language: "vi",
-        name: "Puma",
-        description: "Thương hiệu thể thao và thời trang",
-        brand: null,
-      },
-      {
-        id: 16,
-        language: "en",
-        name: "Puma",
-        description: "Sports and fashion brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 9,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsjNwYqUfsd2OhUfcQo0XSEollFpf-0W1HlA&s",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 17,
-        language: "vi",
-        name: "Reebok",
-        description: "Thương hiệu thể thao và giày dép",
-        brand: null,
-      },
-      {
-        id: 18,
-        language: "en",
-        name: "Reebok",
-        description: "Sports and footwear brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 10,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/e/e1/The_North_Face.png",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 19,
-        language: "vi",
-        name: "The North Face",
-        description: "Thời trang và thiết bị ngoài trời",
-        brand: null,
-      },
-      {
-        id: 20,
-        language: "en",
-        name: "The North Face",
-        description: "Outdoor fashion and equipment",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 11,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Under_armour_logo.svg",
-    active: false,
-    products: [],
-    translations: [
-      {
-        id: 21,
-        language: "vi",
-        name: "Under Armour",
-        description: "Thương hiệu thể thao và đồ tập luyện",
-        brand: null,
-      },
-      {
-        id: 22,
-        language: "en",
-        name: "Under Armour",
-        description: "Sports and training apparel brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 12,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/2560px-New_Balance_logo.svg.png",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 23,
-        language: "vi",
-        name: "New Balance",
-        description: "Thương hiệu giày dép và thể thao",
-        brand: null,
-      },
-      {
-        id: 24,
-        language: "en",
-        name: "New Balance",
-        description: "Footwear and sports brand",
-        brand: null,
-      },
-    ],
-  },
-  {
-    id: 13,
-    logo: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Logomarca_da_VANS.png",
-    active: true,
-    products: [],
-    translations: [
-      {
-        id: 25,
-        language: "vi",
-        name: "Vans",
-        description: "Thương hiệu giày dép và thời trang đường phố",
-        brand: null,
-      },
-      {
-        id: 26,
-        language: "en",
-        name: "Vans",
-        description: "Footwear and streetwear brand",
-        brand: null,
-      },
-    ],
-  },
-];
-
 export default function BrandPage() {
-  const [brands, setBrands] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState("vi");
+  const [language, setLanguage] = useState("VI");
+  const [loadingItems, setLoadingItems] = useState({
+    status: null,
+    delete: null,
+  });
+  const [originalOrder, setOriginalOrder] = useState([]); // Store original order
   const pageSize = 10;
 
+  // Use the brand hook
+  const { brands, isLoading, error, updateBrand } = useBrand(language);
+
+  // Store original order when brands first load
   useEffect(() => {
-    // Giả lập fetch API
-    setLoading(true);
-    setTimeout(() => {
-      setBrands(mockBrands);
-      setLoading(false);
-    }, 500);
-  }, []);
+    if (brands && brands.length > 0) {
+      setOriginalOrder((prev) => {
+        // Only set if empty or length changed significantly
+        if (prev.length === 0 || Math.abs(prev.length - brands.length) > 1) {
+          return brands.map((brand) => brand.id);
+        }
+        return prev;
+      });
+    }
+  }, [brands]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Helper function to get translation by language
-  const getTranslation = (brand, lang = language) => {
-    return (
-      brand.translations.find((t) => t.language === lang) ||
-      brand.translations[0]
-    );
-  };
-
   // Helper function to get status labels
   const getStatusLabel = (key) => {
-    return statusLabels[language][key] || statusLabels.vi[key];
+    const langKey = language === "VI" ? "vi" : "en";
+    return statusLabels[langKey][key] || statusLabels.vi[key];
   };
 
-  // Lọc thương hiệu
-  const filteredBrands = brands.filter((brand) => {
-    const translation = getTranslation(brand);
-    const matchesSearch =
-      translation.name.toLowerCase().includes(search.toLowerCase()) ||
-      translation.description.toLowerCase().includes(search.toLowerCase()) ||
-      brand.id.toString().includes(search);
+  // Sort brands by original order to maintain position
+  const sortedBrands = useMemo(() => {
+    if (!brands) return [];
 
-    const matchesStatus =
-      !statusFilter ||
-      (statusFilter === "active" && brand.active) ||
-      (statusFilter === "inactive" && !brand.active);
+    return [...brands].sort((a, b) => a.id - b.id);
+  }, [brands]);
 
-    return matchesSearch && matchesStatus;
-  });
+  // Filter brands with stable sorting
+  const filteredBrands = useMemo(() => {
+    return sortedBrands.filter((brand) => {
+      const matchesSearch =
+        brand.name.toLowerCase().includes(search.toLowerCase()) ||
+        brand.description.toLowerCase().includes(search.toLowerCase()) ||
+        brand.id.toString().includes(search);
+
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === "active" && brand.active) ||
+        (statusFilter === "inactive" && !brand.active);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [sortedBrands, search, statusFilter]);
 
   const totalPages = Math.ceil(filteredBrands.length / pageSize);
   const paginatedBrands = filteredBrands.slice(
@@ -403,209 +119,139 @@ export default function BrandPage() {
     setShowEditModal(true);
   };
 
-  const handleToggleStatus = async (brandId) => {
-    const brand = brands.find((b) => b.id === brandId);
-    const translation = getTranslation(brand);
-    const action = brand.active
-      ? language === "vi"
-        ? "vô hiệu hóa"
-        : "deactivate"
-      : language === "vi"
-      ? "kích hoạt"
-      : "activate";
-
-    const confirmText = brand.active
-      ? language === "vi"
-        ? "Vô hiệu hóa"
-        : "Deactivate"
-      : language === "vi"
-      ? "Kích hoạt"
-      : "Activate";
-
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
-
-    showConfirmationToast({
-      title:
-        language === "vi"
-          ? `Xác nhận ${action} thương hiệu`
-          : `Confirm ${action} brand`,
-      message:
-        language === "vi"
-          ? `Bạn có chắc chắn muốn ${action} thương hiệu "${translation.name}" không?`
-          : `Are you sure you want to ${action} brand "${translation.name}"?`,
-      confirmText,
-      cancelText,
-      confirmButtonClass: brand.active
-        ? "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer"
-        : "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer",
-      onConfirm: async () => {
-        try {
-          // API call to toggle status
-          setBrands((prev) =>
-            prev.map((b) =>
-              b.id === brandId ? { ...b, active: !b.active } : b
-            )
-          );
-          const successMessage = brand.active
-            ? language === "vi"
-              ? "Vô hiệu hóa thương hiệu thành công!"
-              : "Brand deactivated successfully!"
-            : language === "vi"
-            ? "Kích hoạt thương hiệu thành công!"
-            : "Brand activated successfully!";
-
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error toggling brand status:", error);
-          const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${action} thương hiệu!`
-              : `Error occurred while ${action} brand!`;
-          toast.error(errorMessage);
-        }
-      },
-    });
-  };
-
-  // Xử lý xóa thương hiệu (thực chất là vô hiệu hóa)
-  const handleDelete = async (brandId) => {
-    const brand = brands.find((b) => b.id === brandId);
-    const translation = getTranslation(brand);
-
-    // Determine action based on current status
-    const isActivating = !brand.active;
-    const action = isActivating
-      ? language === "vi"
-        ? "kích hoạt"
+  // Handle toggle status with position preservation
+  const handleToggleStatus = async (brand) => {
+    const newStatus = !brand.active;
+    const langKey = language === "VI" ? "vi" : "en";
+    const actionText = newStatus
+      ? langKey === "vi"
+        ? "kích hoạt lại"
         : "activate"
-      : language === "vi"
+      : langKey === "vi"
       ? "vô hiệu hóa"
       : "deactivate";
 
-    const confirmText = isActivating
-      ? language === "vi"
+    const confirmText = newStatus
+      ? langKey === "vi"
         ? "Kích hoạt"
         : "Activate"
-      : language === "vi"
+      : langKey === "vi"
       ? "Vô hiệu hóa"
       : "Deactivate";
 
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
+    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
 
-    const title = isActivating
-      ? language === "vi"
-        ? "Xác nhận kích hoạt thương hiệu"
-        : "Confirm activate brand"
-      : language === "vi"
-      ? "Xác nhận vô hiệu hóa thương hiệu"
-      : "Confirm deactivate brand";
+    const title =
+      langKey === "vi"
+        ? `Xác nhận ${actionText} thương hiệu`
+        : `Confirm ${actionText} brand`;
 
-    const message = isActivating
-      ? language === "vi"
-        ? `Bạn có chắc chắn muốn kích hoạt lại thương hiệu "${translation.name}" không?`
-        : `Are you sure you want to activate brand "${translation.name}"?`
-      : language === "vi"
-      ? `Bạn có chắc chắn muốn vô hiệu hóa thương hiệu "${translation.name}" không? Thương hiệu sẽ không hiển thị cho khách hàng.`
-      : `Are you sure you want to deactivate brand "${translation.name}"? The brand will not be visible to customers.`;
+    const message =
+      langKey === "vi"
+        ? `Bạn có chắc chắn muốn ${actionText} thương hiệu "${brand.name}" không?`
+        : `Are you sure you want to ${actionText} brand "${brand.name}"?`;
 
     showConfirmationToast({
       title,
       message,
       confirmText,
       cancelText,
-      confirmButtonClass: isActivating
-        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
-        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      confirmButtonClass: `${
+        newStatus
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-red-600 hover:bg-red-700"
+      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
       onConfirm: async () => {
+        // Set loading state
+        setLoadingItems((prev) => ({ ...prev, status: brand.id }));
+
         try {
-          setBrands((prev) =>
-            prev.map((b) =>
-              b.id === brandId ? { ...b, active: !b.active } : b
-            )
+          const brandData = new FormData();
+          const brandRequest = {
+            name: brand.name,
+            description: brand.description,
+            active: newStatus,
+          };
+
+          brandData.append(
+            "brand",
+            new Blob([JSON.stringify(brandRequest)], {
+              type: "application/json",
+            })
           );
 
-          const successMessage = isActivating
-            ? language === "vi"
-              ? "Kích hoạt thương hiệu thành công!"
-              : "Brand activated successfully!"
-            : language === "vi"
-            ? "Vô hiệu hóa thương hiệu thành công!"
-            : "Brand deactivated successfully!";
+          await updateBrand({
+            brandId: brand.id,
+            brandData,
+            lang: language,
+          });
+
+          const successMessage =
+            langKey === "vi"
+              ? `${
+                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
+                } thương hiệu thành công!`
+              : `Brand ${
+                  newStatus ? "activated" : "deactivated"
+                } successfully!`;
 
           toast.success(successMessage);
         } catch (error) {
-          console.error("Error toggling brand status:", error);
+          console.error("Error updating brand status:", error);
           const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${action} thương hiệu!`
-              : `Error occurred while ${action} brand!`;
+            langKey === "vi"
+              ? `Có lỗi xảy ra khi ${actionText} thương hiệu!`
+              : `Error occurred while ${actionText.replace(" ", "ing")} brand!`;
           toast.error(errorMessage);
+        } finally {
+          // Clear loading state
+          setLoadingItems((prev) => ({ ...prev, status: null }));
         }
       },
     });
   };
 
-  const handleSubmitBrand = async (brandData) => {
-    try {
-      if (selectedBrand) {
-        // Update existing brand
-        setBrands((prev) =>
-          prev.map((b) =>
-            b.id === selectedBrand.id ? { ...b, ...brandData } : b
-          )
-        );
-        const successMessage =
-          language === "vi"
-            ? "Cập nhật thương hiệu thành công!"
-            : "Brand updated successfully!";
-        toast.success(successMessage);
-      } else {
-        // Create new brand
-        const newBrand = {
-          id: Math.max(...brands.map((b) => b.id)) + 1,
-          ...brandData,
-          products: [],
-        };
-        setBrands((prev) => [newBrand, ...prev]);
-        const successMessage =
-          language === "vi"
-            ? "Tạo thương hiệu thành công!"
-            : "Brand created successfully!";
-        toast.success(successMessage);
-      }
-      setShowEditModal(false);
-      setSelectedBrand(null);
-    } catch (error) {
-      console.error("Error submitting brand:", error);
-      const errorMessage =
-        language === "vi"
-          ? "Có lỗi xảy ra khi lưu thương hiệu!"
-          : "Error occurred while saving brand!";
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
-
   // Calculate statistics
   const stats = {
-    total: brands.length,
-    active: brands.filter((b) => b.active).length,
-    inactive: brands.filter((b) => !b.active).length,
+    total: sortedBrands?.length || 0,
+    active: sortedBrands?.filter((b) => b.active).length || 0,
+    inactive: sortedBrands?.filter((b) => !b.active).length || 0,
   };
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">
+            {language === "VI"
+              ? "Có lỗi xảy ra khi tải danh sách thương hiệu"
+              : "Error loading brands"}
+          </p>
+          <p className="text-gray-500 mt-2">
+            {error.message ||
+              (language === "VI"
+                ? "Vui lòng thử lại sau"
+                : "Please try again later")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {language === "vi" ? "Quản lý thương hiệu" : "Brand Management"}
+          {language === "VI" ? "Quản lý thương hiệu" : "Brand Management"}
         </h1>
         <button
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <IconPlus size={20} />
-          {language === "vi" ? "Tạo thương hiệu" : "Create Brand"}
+          {language === "VI" ? "Tạo thương hiệu" : "Create Brand"}
         </button>
       </div>
 
@@ -662,7 +308,7 @@ export default function BrandPage() {
               <input
                 type="text"
                 placeholder={
-                  language === "vi"
+                  language === "VI"
                     ? "Tìm kiếm theo tên, mô tả, ID..."
                     : "Search by name, description, ID..."
                 }
@@ -695,8 +341,8 @@ export default function BrandPage() {
               onChange={(e) => setLanguage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="vi">{getStatusLabel("vietnamese")}</option>
-              <option value="en">{getStatusLabel("english")}</option>
+              <option value="VI">{getStatusLabel("vietnamese")}</option>
+              <option value="EN">{getStatusLabel("english")}</option>
             </select>
           </div>
         </div>
@@ -704,7 +350,7 @@ export default function BrandPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {language === "vi"
+        {language === "VI"
           ? `Hiển thị ${paginatedBrands.length} trên tổng số ${filteredBrands.length} thương hiệu`
           : `Showing ${paginatedBrands.length} of ${filteredBrands.length} brands`}
       </div>
@@ -715,136 +361,134 @@ export default function BrandPage() {
           <thead>
             <tr className="bg-gray-400">
               <th className="p-3">ID</th>
-              <th className="p-3">{language === "vi" ? "Logo" : "Logo"}</th>
+              <th className="p-3">{language === "VI" ? "Logo" : "Logo"}</th>
               <th className="p-3">
-                {language === "vi" ? "Tên thương hiệu" : "Brand Name"}
+                {language === "VI" ? "Tên thương hiệu" : "Brand Name"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Mô tả" : "Description"}
+                {language === "VI" ? "Mô tả" : "Description"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Số sản phẩm" : "Products"}
+                {language === "VI" ? "Trạng thái" : "Status"}
               </th>
               <th className="p-3">
-                {language === "vi" ? "Trạng thái" : "Status"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Hành động" : "Actions"}
+                {language === "VI" ? "Hành động" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {isLoading ? (
               <tr>
-                <td colSpan={7} className="text-center text-gray-500 p-4">
-                  {language === "vi" ? "Đang tải..." : "Loading..."}
+                <td colSpan={6} className="text-center text-gray-500 p-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    {language === "VI" ? "Đang tải..." : "Loading..."}
+                  </div>
                 </td>
               </tr>
             ) : paginatedBrands.length > 0 ? (
-              paginatedBrands.map((brand) => {
-                const translation = getTranslation(brand);
-                return (
-                  <tr key={brand.id} className="border-b hover:bg-gray-300">
-                    <td className="p-3">{brand.id}</td>
+              paginatedBrands.map((brand, index) => (
+                <tr
+                  key={`brand-${brand.id}-${index}`}
+                  className="border-b hover:bg-gray-300 transition-colors"
+                >
+                  <td className="p-3">{brand.id}</td>
 
-                    <td className="p-3">
+                  <td className="p-3">
+                    {brand.logo ? (
                       <img
-                        src={brand.logo || ""}
-                        alt={translation.name}
+                        src={brand.logo}
+                        alt={brand.name}
                         className="h-8 w-auto object-contain"
-                        onError={(e) => (e.target.style.display = "none")}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
                       />
-                    </td>
+                    ) : null}
+                    <div
+                      className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+                      style={{
+                        display: brand.logo ? "none" : "flex",
+                      }}
+                    >
+                      No Logo
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <div>
-                        <p className="font-semibold">{translation.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {getStatusLabel(
-                            language === "vi" ? "vietnamese" : "english"
-                          )}
-                        </p>
-                      </div>
-                    </td>
+                  <td className="p-3">
+                    <div>
+                      <p className="font-semibold">{brand.name}</p>
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <div className="max-w-xs">
-                        <p
-                          className="text-sm truncate"
-                          title={translation.description}
-                        >
-                          {translation.description}
-                        </p>
-                      </div>
-                    </td>
+                  <td className="p-3">
+                    <div className="max-w-xs">
+                      <p className="text-sm truncate" title={brand.description}>
+                        {brand.description}
+                      </p>
+                    </div>
+                  </td>
 
-                    <td className="p-3">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {brand.products.length}
-                      </span>
-                    </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleToggleStatus(brand)}
+                      disabled={loadingItems.status === brand.id}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                        brand.active
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                      }`}
+                      title={
+                        language === "VI"
+                          ? `Click để ${
+                              brand.active ? "vô hiệu hóa" : "kích hoạt lại"
+                            }`
+                          : `Click to ${
+                              brand.active ? "deactivate" : "activate"
+                            }`
+                      }
+                    >
+                      {loadingItems.status === brand.id ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {brand.active
+                            ? getStatusLabel("active")
+                            : getStatusLabel("inactive")}
+                        </>
+                      )}
+                    </button>
+                  </td>
 
-                    <td className="p-3">
+                  <td className="p-3">
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleToggleStatus(brand.id)}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                          brand.active
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                        }`}
+                        onClick={() => handleViewDetail(brand)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                        title={
+                          language === "VI" ? "Xem chi tiết" : "View Details"
+                        }
                       >
-                        {brand.active
-                          ? getStatusLabel("active")
-                          : getStatusLabel("inactive")}
+                        <IconEye size={24} />
                       </button>
-                    </td>
-
-                    <td className="p-3">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleViewDetail(brand)}
-                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                          title={
-                            language === "vi" ? "Xem chi tiết" : "View Details"
-                          }
-                        >
-                          <IconEye size={24} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(brand)}
-                          className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
-                          title={language === "vi" ? "Chỉnh sửa" : "Edit"}
-                        >
-                          <IconEdit size={24} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(brand.id)}
-                          className={`cursor-pointer ${
-                            brand.active
-                              ? "text-red-600 hover:text-red-800"
-                              : "text-green-600 hover:text-green-800"
-                          }`}
-                          title={
-                            language === "vi"
-                              ? brand.active
-                                ? "Vô hiệu hóa thương hiệu"
-                                : "Kích hoạt thương hiệu"
-                              : brand.active
-                              ? "Deactivate brand"
-                              : "Activate brand"
-                          }
-                        >
-                          <IconTrash size={24} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+                      <button
+                        onClick={() => handleEdit(brand)}
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                        title={language === "VI" ? "Chỉnh sửa" : "Edit"}
+                      >
+                        <IconEdit size={24} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center text-gray-500 p-4">
-                  {language === "vi"
+                <td colSpan={6} className="text-center text-gray-500 p-4">
+                  {language === "VI"
                     ? "Không có thương hiệu nào."
                     : "No brands found."}
                 </td>
@@ -878,7 +522,6 @@ export default function BrandPage() {
           setShowEditModal(false);
           setSelectedBrand(null);
         }}
-        onSubmit={handleSubmitBrand}
         brand={selectedBrand}
       />
     </div>
