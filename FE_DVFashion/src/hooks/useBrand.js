@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { brandAPI } from "../services/BrandAPI";
+import { brandAPI } from "../services/brandAPI";
 
 export const useBrand = (lang = "VI") => {
   const queryClient = useQueryClient();
