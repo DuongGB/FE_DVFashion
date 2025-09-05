@@ -1,5 +1,4 @@
 import api from "./api";
-import { apiGoogle } from "./api";
 
 export const authAPI = {
   // login
@@ -30,13 +29,5 @@ export const authAPI = {
   //Forget password
   forgotPassword: (data) => {
     return api.post("/auth/forgot-password", data);
-  },
-
-  //Google login - chỉ gửi token từ Google lên server
-  loginWithGoogle: (googleToken) => {
-    return api.post("/oauth2/authorization/google", {
-      token: googleToken,
-      provider: "GOOGLE",
-    });
   },
 };

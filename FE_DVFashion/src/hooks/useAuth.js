@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
 import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
-import { data } from "react-router-dom";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -26,7 +25,7 @@ export const useAuth = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: authAPI.register,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(["auth", "user"]);
     },
   });
@@ -36,20 +35,7 @@ export const useAuth = () => {
     mutationFn: authAPI.login,
     onSuccess: (data) => {
       console.log("Login response:", data.data);
-      setCookie("isAuthenticated", "true");
       queryClient.invalidateQueries(["auth", "user"]);
-    },
-  });
-
-  // Google login mutation
-  const googleLoginMutation = useMutation({
-    mutationFn: authAPI.loginWithGoogle,
-    onSuccess: (data) => {
-      console.log("Google Login response:", data.data);
-      if (data?.data?.success) {
-        setCookie("isAuthenticated", "true");
-        queryClient.invalidateQueries(["auth", "user"]);
-      }
     },
   });
 
@@ -69,6 +55,20 @@ export const useAuth = () => {
     onSuccess: (data) => {
       console.log("Forgot password response:", data.data);
       queryClient.invalidateQueries(["auth", "user"]);
+    },
+  });
+
+  // Complete Google login (fetch user info after Google OAuth)
+  const loginGoogleCompleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await authAPI.getCurrentUser();
+      return response.data.data;
+    },
+    onSuccess: (userData) => {
+      if (userData) {
+        setCookie("isAuthenticated", "true");
+        queryClient.invalidateQueries(["auth", "user"]);
+      }
     },
   });
 
@@ -98,9 +98,9 @@ export const useAuth = () => {
     isForgotPasswordLoading: forgotPasswordMutation.isPending,
     forgotPasswordError: forgotPasswordMutation.error,
 
-    // Google login
-    googleLogin: googleLoginMutation.mutateAsync,
-    isGoogleLoginLoading: googleLoginMutation.isPending,
-    googleLoginError: googleLoginMutation.error,
+    // Google login complete
+    loginGoogleComplete: loginGoogleCompleteMutation.mutateAsync,
+    isLoginGoogleCompleteLoading: loginGoogleCompleteMutation.isPending,
+    loginGoogleCompleteError: loginGoogleCompleteMutation.error,
   };
 };
