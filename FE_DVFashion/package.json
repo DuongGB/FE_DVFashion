@@ -17,6 +17,7 @@
     "@tanstack/react-query-devtools": "^5.85.3",
     "axios": "^1.11.0",
     "feather-icons": "^4.29.2",
+    "firebase": "^12.2.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
     "react": "^19.1.1",
