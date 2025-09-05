@@ -1,16 +1,10 @@
-import { useState, useEffect } from "react";
-import {
-  IconEye,
-  IconEdit,
-  IconTrash,
-  IconPlus,
-  IconSearch,
-  IconUsers,
-} from "@tabler/icons-react";
+import { IconEdit, IconEye, IconSearch, IconUsers } from "@tabler/icons-react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
+import Pagination from "../../components/common/Pagination";
 import CustomerDetailModal from "../../components/ui/customer/CustomerDetailModal";
 import CustomerForm from "../../components/ui/customer/CustomerForm";
-import Pagination from "../../components/common/Pagination";
+import { useUser } from "../../hooks/useUser";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
 // Enums theo class diagram
@@ -65,328 +59,10 @@ const genderLabels = {
   OTHER: "Khác",
 };
 
-// Mock data theo cấu trúc class diagram User
-const mockCustomers = [
-  {
-    id: 1,
-    userName: "john.doe",
-    email: "john.doe@email.com",
-    fullName: "John Doe",
-    lastName: "Doe",
-    phone: "0901234567",
-    gender: Gender.MALE,
-    dob: new Date("1990-01-01"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-01-01T10:00"),
-    updatedAt: new Date("2024-06-01T12:00"),
-    addresses: [
-      {
-        id: 101,
-        street: "12 Nguyễn Trãi",
-        ward: "Phường 1",
-        district: "Quận 1",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: true,
-        user: null,
-      },
-      {
-        id: 102,
-        street: "45 Lê Lợi",
-        ward: "Phường 2",
-        district: "Quận 3",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: false,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 2,
-    userName: "jane.smith",
-    email: "jane.smith@email.com",
-    fullName: "Jane Smith",
-    lastName: "Smith",
-    phone: "0912345678",
-    gender: Gender.FEMALE,
-    dob: new Date("1992-05-12"),
-    role: UserRole.CUSTOMER,
-    active: false,
-    createdAt: new Date("2024-02-10T09:00"),
-    updatedAt: new Date("2024-06-02T14:00"),
-    addresses: [
-      {
-        id: 103,
-        street: "88 Trần Hưng Đạo",
-        ward: "Phường 5",
-        district: "Quận 5",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 3,
-    userName: "michael.j",
-    email: "michael.j@email.com",
-    fullName: "Michael Johnson",
-    lastName: "Johnson",
-    phone: "0987654321",
-    gender: Gender.MALE,
-    dob: new Date("1988-09-20"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-03-15T11:00"),
-    updatedAt: new Date("2024-06-03T16:00"),
-    addresses: [],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 4,
-    userName: "davidbeckham",
-    email: "davidbeckham@gmail.com",
-    fullName: "David Beckham",
-    lastName: "Beckham",
-    phone: "0978123456",
-    gender: Gender.MALE,
-    dob: new Date("1975-05-02"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-04-20T10:30"),
-    updatedAt: new Date("2024-06-04T15:45"),
-    addresses: [
-      {
-        id: 104,
-        street: "123 London Road",
-        ward: "Chelsea",
-        district: "London",
-        city: "London",
-        country: "UK",
-        zipCode: "SW3 6LY",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 5,
-    userName: "sontungmtp",
-    email: "sontungmtp@gmail.com",
-    fullName: "Sơn Tùng M-TP",
-    lastName: "M-TP",
-    phone: "0935123456",
-    gender: Gender.MALE,
-    dob: new Date("1994-07-05"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-05-10T09:15"),
-    updatedAt: new Date("2024-06-05T14:20"),
-    addresses: [
-      {
-        id: 105,
-        street: "456 Cầu Giấy",
-        ward: "Dịch Vọng Hậu",
-        district: "Cầu Giấy",
-        city: "Hà Nội",
-        country: "Việt Nam",
-        zipCode: "100000",
-        isDefault: true,
-        user: null,
-      },
-      {
-        id: 106,
-        street: "789 Hoàng Hoa Thám",
-        ward: "Liễu Giai",
-        district: "Ba Đình",
-        city: "Hà Nội",
-        country: "Việt Nam",
-        zipCode: "100000",
-        isDefault: false,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 6,
-    userName: "lionel",
-    email: "lionel@gmail.com",
-    fullName: "Lionel Messi",
-    lastName: "Messi",
-    phone: "0916123456",
-    gender: Gender.MALE,
-    dob: new Date("1987-06-24"),
-    role: UserRole.CUSTOMER,
-    active: false,
-    createdAt: new Date("2024-06-01T08:45"),
-    updatedAt: new Date("2024-06-06T13:30"),
-    addresses: [
-      {
-        id: 107,
-        street: "10 Barcelona St",
-        ward: "Eixample",
-        district: "Barcelona",
-        city: "Barcelona",
-        country: "Spain",
-        zipCode: "08007",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 7,
-    userName: "mytam",
-    email: "mytam@gmail.com",
-    fullName: "Mỹ Tâm",
-    lastName: "Tâm",
-    phone: "0905123456",
-    gender: Gender.FEMALE,
-    dob: new Date("1981-01-16"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-06-05T10:00"),
-    updatedAt: new Date("2024-06-07T12:15"),
-    addresses: [
-      {
-        id: 108,
-        street: "789 Lê Lợi",
-        ward: "Phường 1",
-        district: "Quận 3",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 8,
-    userName: "chipu",
-    email: "chipu@gmail.com",
-    fullName: "Chi Pu",
-    lastName: "Pu",
-    phone: "0989123456",
-    gender: Gender.FEMALE,
-    dob: new Date("1993-06-14"),
-    role: UserRole.CUSTOMER,
-    active: false,
-    createdAt: new Date("2024-06-10T09:30"),
-    updatedAt: new Date("2024-06-08T11:45"),
-    addresses: [],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 9,
-    userName: "jack",
-    email: "jack@gmail.com",
-    fullName: "Jack",
-    lastName: "Jack",
-    phone: "0979123456",
-    gender: Gender.MALE,
-    dob: new Date("1997-04-12"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-06-12T08:00"),
-    updatedAt: new Date("2024-06-09T10:20"),
-    addresses: [
-      {
-        id: 109,
-        street: "321 Trần Phú",
-        ward: "Phường 5",
-        district: "Quận 5",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 10,
-    userName: "thienan",
-    email: "thienan@gmail.com",
-    fullName: "Thiên An",
-    lastName: "An",
-    phone: "0969123456",
-    gender: Gender.FEMALE,
-    dob: new Date("1998-11-03"),
-    role: UserRole.CUSTOMER,
-    active: true,
-    createdAt: new Date("2024-06-15T07:30"),
-    updatedAt: new Date("2024-06-10T09:50"),
-    addresses: [
-      {
-        id: 110,
-        street: "654 Phan Đình Phùng",
-        ward: "Phường 2",
-        district: "Quận Phú Nhuận",
-        city: "TP.HCM",
-        country: "Việt Nam",
-        zipCode: "700000",
-        isDefault: true,
-        user: null,
-      },
-    ],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-  {
-    id: 11,
-    userName: "domixi",
-    email: "domixi@gmail.com",
-    fullName: "Độ Mixi",
-    lastName: "Mixi",
-    phone: "095912345",
-    gender: Gender.MALE,
-    dob: new Date("1989-03-07"),
-    role: UserRole.CUSTOMER,
-    active: false,
-    createdAt: new Date("2024-06-18T11:15"),
-    updatedAt: new Date("2024-06-11T13:40"),
-    addresses: [],
-    cart: null,
-    reviews: [],
-    wishlist: [],
-  },
-];
-
 export default function CustomerManagementPage() {
-  const [customers, setCustomers] = useState([]);
+  const { users, isLoadingUsers, usersError, updateUser, updateUserError } =
+    useUser();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
@@ -394,14 +70,22 @@ export default function CustomerManagementPage() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [loading] = useState(false);
   const [language, setLanguage] = useState("vi");
+  const [loadingItems, setLoadingItems] = useState({
+    status: null,
+  });
+  const [originalOrder, setOriginalOrder] = useState([]); // Store original order
   const pageSize = 10;
 
+  // Store original order when users first load
   useEffect(() => {
-    // Simulate API fetch
-    setCustomers(mockCustomers);
-  }, []);
+    if (users && users.length > 0 && originalOrder.length === 0) {
+      const customerIds = users
+        .filter((user) => user.role === "CUSTOMER")
+        .map((customer) => customer.id);
+      setOriginalOrder(customerIds);
+    }
+  }, [users, originalOrder.length]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -419,23 +103,32 @@ export default function CustomerManagementPage() {
     return new Date(date).toLocaleDateString("vi-VN");
   };
 
-  // Filter customers
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      customer.email.toLowerCase().includes(search.toLowerCase()) ||
-      customer.userName.toLowerCase().includes(search.toLowerCase()) ||
-      customer.phone.includes(search);
+  // Filter customers with stable sorting (similar to BrandPage)
+  const customers = useMemo(() => {
+    if (!users) return [];
+    return users
+      .filter((user) => user.role === "CUSTOMER")
+      .sort((a, b) => a.id - b.id);
+  }, [users]);
 
-    const matchesStatus =
-      !statusFilter ||
-      (statusFilter === "active" && customer.active) ||
-      (statusFilter === "inactive" && !customer.active);
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((customer) => {
+      const matchesSearch =
+        customer.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        customer.email?.toLowerCase().includes(search.toLowerCase()) ||
+        customer.userName?.toLowerCase().includes(search.toLowerCase()) ||
+        customer.phone?.includes(search);
 
-    const matchesGender = !genderFilter || customer.gender === genderFilter;
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === "active" && customer.active) ||
+        (statusFilter === "inactive" && !customer.active);
 
-    return matchesSearch && matchesStatus && matchesGender;
-  });
+      const matchesGender = !genderFilter || customer.gender === genderFilter;
+
+      return matchesSearch && matchesStatus && matchesGender;
+    });
+  }, [customers, search, statusFilter, genderFilter]);
 
   const totalPages = Math.ceil(filteredCustomers.length / pageSize);
   const paginatedCustomers = filteredCustomers.slice(
@@ -454,87 +147,25 @@ export default function CustomerManagementPage() {
     setShowEditModal(true);
   };
 
-  const handleCreate = () => {
-    setSelectedCustomer(null);
-    setShowEditModal(true);
-  };
-
-  const handleToggleStatus = async (customerId) => {
-    const customer = customers.find((c) => c.id === customerId);
-    const action = customer.active
-      ? language === "vi"
-        ? "vô hiệu hóa"
-        : "deactivate"
-      : language === "vi"
-      ? "kích hoạt"
-      : "activate";
-
-    const confirmText = customer.active
-      ? language === "vi"
-        ? "Vô hiệu hóa"
-        : "Deactivate"
-      : language === "vi"
-      ? "Kích hoạt"
-      : "Activate";
-
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
-
-    showConfirmationToast({
-      title:
-        language === "vi"
-          ? `Xác nhận ${action} khách hàng`
-          : `Confirm ${action} customer`,
-      message:
-        language === "vi"
-          ? `Bạn có chắc chắn muốn ${action} khách hàng "${customer.fullName}" không?`
-          : `Are you sure you want to ${action} customer "${customer.fullName}"?`,
-      confirmText,
-      cancelText,
-      confirmButtonClass: customer.active
-        ? "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer"
-        : "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer",
-      onConfirm: async () => {
-        try {
-          setCustomers((prev) =>
-            prev.map((c) =>
-              c.id === customerId ? { ...c, active: !c.active } : c
-            )
-          );
-          const successMessage = customer.active
-            ? language === "vi"
-              ? "Vô hiệu hóa khách hàng thành công!"
-              : "Customer deactivated successfully!"
-            : language === "vi"
-            ? "Kích hoạt khách hàng thành công!"
-            : "Customer activated successfully!";
-
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error toggling customer status:", error);
-          const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${action} khách hàng!`
-              : `Error occurred while ${action} customer!`;
-          toast.error(errorMessage);
-        }
-      },
+  // Handle toggle status with position preservation (similar to BrandPage)
+  const handleToggleStatus = async (customer) => {
+    const newStatus = !customer.active;
+    console.log("🔄 Toggle status for customer:", {
+      customerId: customer.id,
+      currentStatus: customer.active,
+      newStatus: newStatus,
+      customerData: customer,
     });
-  };
 
-  const handleDelete = async (customerId) => {
-    const customer = customers.find((c) => c.id === customerId);
-
-    // Determine action based on current status
-    const isActivating = !customer.active;
-    const action = isActivating
+    const actionText = newStatus
       ? language === "vi"
-        ? "kích hoạt"
+        ? "kích hoạt lại"
         : "activate"
       : language === "vi"
       ? "vô hiệu hóa"
       : "deactivate";
 
-    const confirmText = isActivating
+    const confirmText = newStatus
       ? language === "vi"
         ? "Kích hoạt"
         : "Activate"
@@ -544,107 +175,77 @@ export default function CustomerManagementPage() {
 
     const cancelText = language === "vi" ? "Hủy" : "Cancel";
 
-    const title = isActivating
-      ? language === "vi"
-        ? "Xác nhận kích hoạt khách hàng"
-        : "Confirm activate customer"
-      : language === "vi"
-      ? "Xác nhận vô hiệu hóa khách hàng"
-      : "Confirm deactivate customer";
+    const title =
+      language === "vi"
+        ? `Xác nhận ${actionText} khách hàng`
+        : `Confirm ${actionText} customer`;
 
-    const message = isActivating
-      ? language === "vi"
-        ? `Bạn có chắc chắn muốn kích hoạt lại khách hàng "${customer.fullName}" không?`
-        : `Are you sure you want to activate customer "${customer.fullName}"?`
-      : language === "vi"
-      ? `Bạn có chắc chắn muốn vô hiệu hóa khách hàng "${customer.fullName}" không? Khách hàng sẽ không thể đăng nhập và sử dụng dịch vụ.`
-      : `Are you sure you want to deactivate customer "${customer.fullName}"? The customer will not be able to login and use services.`;
+    const message =
+      language === "vi"
+        ? `Bạn có chắc chắn muốn ${actionText} khách hàng "${customer.fullName}" không?`
+        : `Are you sure you want to ${actionText} customer "${customer.fullName}"?`;
 
     showConfirmationToast({
       title,
       message,
       confirmText,
       cancelText,
-      confirmButtonClass: isActivating
-        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
-        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
+      confirmButtonClass: `${
+        newStatus
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-red-600 hover:bg-red-700"
+      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
       onConfirm: async () => {
-        try {
-          setCustomers((prev) =>
-            prev.map((c) =>
-              c.id === customerId
-                ? { ...c, active: !c.active, updatedAt: new Date() }
-                : c
-            )
-          );
+        console.log("✅ User confirmed the action");
+        // Set loading state
+        setLoadingItems((prev) => ({ ...prev, status: customer.id }));
 
-          const successMessage = isActivating
-            ? language === "vi"
-              ? "Kích hoạt khách hàng thành công!"
-              : "Customer activated successfully!"
-            : language === "vi"
-            ? "Vô hiệu hóa khách hàng thành công!"
-            : "Customer deactivated successfully!";
+        try {
+          console.log("📤 Sending update request:", {
+            userId: customer.id,
+            userData: { active: newStatus },
+          });
+
+          const response = await updateUser({
+            userId: customer.id,
+            userData: { active: newStatus },
+          });
+
+          console.log("📥 Update response:", response);
+
+          const successMessage =
+            language === "vi"
+              ? `${
+                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
+                } khách hàng thành công!`
+              : `Customer ${
+                  newStatus ? "activated" : "deactivated"
+                } successfully!`;
 
           toast.success(successMessage);
         } catch (error) {
-          console.error("Error toggling customer status:", error);
+          console.error("❌ Error updating customer status:", error);
+          console.error("Error details:", {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+          });
+
           const errorMessage =
             language === "vi"
-              ? `Có lỗi xảy ra khi ${action} khách hàng!`
-              : `Error occurred while ${action} customer!`;
+              ? `Có lỗi xảy ra khi ${actionText} khách hàng!`
+              : `Error occurred while ${actionText.replace(
+                  " ",
+                  "ing"
+                )} customer!`;
           toast.error(errorMessage);
+        } finally {
+          console.log("🔄 Clearing loading state");
+          // Clear loading state
+          setLoadingItems((prev) => ({ ...prev, status: null }));
         }
       },
     });
-  };
-
-  const handleSubmitCustomer = async (customerData) => {
-    try {
-      if (selectedCustomer) {
-        // Update existing customer
-        setCustomers((prev) =>
-          prev.map((c) =>
-            c.id === selectedCustomer.id
-              ? { ...c, ...customerData, updatedAt: new Date() }
-              : c
-          )
-        );
-        const successMessage =
-          language === "vi"
-            ? "Cập nhật khách hàng thành công!"
-            : "Customer updated successfully!";
-        toast.success(successMessage);
-      } else {
-        // Create new customer
-        const newCustomer = {
-          id: Math.max(...customers.map((c) => c.id)) + 1,
-          ...customerData,
-          role: UserRole.CUSTOMER,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          cart: null,
-          reviews: [],
-          wishlist: [],
-        };
-        setCustomers((prev) => [newCustomer, ...prev]);
-        const successMessage =
-          language === "vi"
-            ? "Tạo khách hàng thành công!"
-            : "Customer created successfully!";
-        toast.success(successMessage);
-      }
-      setShowEditModal(false);
-      setSelectedCustomer(null);
-    } catch (error) {
-      console.error("Error submitting customer:", error);
-      const errorMessage =
-        language === "vi"
-          ? "Có lỗi xảy ra khi lưu khách hàng!"
-          : "Error occurred while saving customer!";
-      toast.error(errorMessage);
-      throw error;
-    }
   };
 
   // Calculate statistics
@@ -654,6 +255,48 @@ export default function CustomerManagementPage() {
     inactive: customers.filter((c) => !c.active).length,
   };
 
+  // Show error if any
+  useEffect(() => {
+    if (usersError) {
+      toast.error(
+        usersError.message || "Có lỗi xảy ra khi tải dữ liệu khách hàng"
+      );
+    }
+  }, [usersError]);
+
+  useEffect(() => {
+    if (updateUserError) {
+      toast.error(
+        updateUserError.message || "Có lỗi xảy ra khi cập nhật khách hàng"
+      );
+    }
+  }, [updateUserError]);
+
+  // Handle error state
+  if (usersError && !users) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-red-500 text-center">
+          <h3 className="text-lg font-semibold mb-2">
+            {language === "vi" ? "Lỗi tải dữ liệu" : "Error Loading Data"}
+          </h3>
+          <p className="text-sm">
+            {usersError.message ||
+              (language === "vi"
+                ? "Không thể tải danh sách khách hàng"
+                : "Unable to load customer list")}
+          </p>
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          {language === "vi" ? "Thử lại" : "Try Again"}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -661,13 +304,6 @@ export default function CustomerManagementPage() {
         <h1 className="text-2xl font-bold text-gray-800">
           {language === "vi" ? "Quản lý khách hàng" : "Customer Management"}
         </h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-        >
-          <IconPlus size={20} />
-          {language === "vi" ? "Tạo khách hàng" : "Create Customer"}
-        </button>
       </div>
 
       {/* Statistics Cards */}
@@ -798,66 +434,94 @@ export default function CustomerManagementPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-2">ID</th>
-              <th className="p-2">
+              <th className="p-3">ID</th>
+              <th className="p-3">
                 {language === "vi" ? "Họ tên" : "Full Name"}
               </th>
-              <th className="p-2">Email</th>
-              <th className="p-2">{language === "vi" ? "SĐT" : "Phone"}</th>
-              <th className="p-2">
+              <th className="p-3">Email</th>
+              <th className="p-3">{language === "vi" ? "SĐT" : "Phone"}</th>
+              <th className="p-3">
                 {language === "vi" ? "Giới tính" : "Gender"}
               </th>
-              <th className="p-2">
+              <th className="p-3">
                 {language === "vi" ? "Ngày sinh" : "Date of Birth"}
               </th>
-              <th className="p-2">
+              <th className="p-3">
                 {language === "vi" ? "Trạng thái" : "Status"}
               </th>
-              <th className="p-2">
+              <th className="p-3">
                 {language === "vi" ? "Địa chỉ" : "Address"}
               </th>
-              <th className="p-2">
+              <th className="p-3">
                 {language === "vi" ? "Ngày tạo" : "Created At"}
               </th>
-              <th className="p-2">
+              <th className="p-3">
                 {language === "vi" ? "Hành động" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {isLoadingUsers ? (
               <tr>
-                <td colSpan={11} className="text-center text-gray-500 p-4">
-                  {language === "vi" ? "Đang tải..." : "Loading..."}
+                <td colSpan={10} className="text-center text-gray-500 p-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    {language === "vi" ? "Đang tải..." : "Loading..."}
+                  </div>
                 </td>
               </tr>
             ) : paginatedCustomers.length > 0 ? (
-              paginatedCustomers.map((customer) => (
-                <tr key={customer.id} className="border-b hover:bg-gray-300">
-                  <td className="p-2">{customer.id}</td>
-                  <td className="p-2 font-semibold">{customer.fullName}</td>
-                  <td className="p-2">{customer.email}</td>
-                  <td className="p-2">{customer.phone}</td>
-                  <td className="p-2">
+              paginatedCustomers.map((customer, index) => (
+                <tr
+                  key={`customer-${customer.id}-${index}`}
+                  className="border-b hover:bg-gray-300 transition-colors"
+                >
+                  <td className="p-3">{customer.id}</td>
+                  <td className="p-3 font-semibold">
+                    {customer.fullName || "N/A"}
+                  </td>
+                  <td className="p-3">{customer.email}</td>
+                  <td className="p-3">{customer.phone || "N/A"}</td>
+                  <td className="p-3">
                     {genderLabels[customer.gender] || "Khác"}
                   </td>
-                  <td className="p-2">{formatDate(customer.dob)}</td>
-                  <td className="p-2">
+                  <td className="p-3">
+                    {customer.dob ? formatDate(customer.dob) : "N/A"}
+                  </td>
+                  <td className="p-3">
                     <button
-                      onClick={() => handleToggleStatus(customer.id)}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      onClick={() => handleToggleStatus(customer)}
+                      disabled={loadingItems.status === customer.id}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
                         customer.active
                           ? "bg-green-100 text-green-800 hover:bg-green-200"
                           : "bg-red-100 text-red-800 hover:bg-red-200"
                       }`}
+                      title={
+                        language === "vi"
+                          ? `Click để ${
+                              customer.active ? "vô hiệu hóa" : "kích hoạt lại"
+                            }`
+                          : `Click to ${
+                              customer.active ? "deactivate" : "activate"
+                            }`
+                      }
                     >
-                      {customer.active
-                        ? getStatusLabel("active")
-                        : getStatusLabel("inactive")}
+                      {loadingItems.status === customer.id ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {customer.active
+                            ? getStatusLabel("active")
+                            : getStatusLabel("inactive")}
+                        </>
+                      )}
                     </button>
                   </td>
-                  <td className="p-2">
-                    {customer.addresses.length > 0 ? (
+                  <td className="p-3">
+                    {customer.addresses && customer.addresses.length > 0 ? (
                       (() => {
                         const defaultAddress = customer.addresses.find(
                           (a) => a.isDefault
@@ -887,14 +551,14 @@ export default function CustomerManagementPage() {
                       </span>
                     )}
                   </td>
-                  <td className="p-2 text-sm text-gray-600">
-                    {formatDate(customer.createdAt)}
+                  <td className="p-3 text-sm text-gray-600">
+                    {formatDate(customer.createAt)}
                   </td>
-                  <td className="p-2">
+                  <td className="p-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleViewDetail(customer)}
-                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         title={
                           language === "vi" ? "Xem chi tiết" : "View Details"
                         }
@@ -903,29 +567,10 @@ export default function CustomerManagementPage() {
                       </button>
                       <button
                         onClick={() => handleEdit(customer)}
-                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
                         title={language === "vi" ? "Chỉnh sửa" : "Edit"}
                       >
                         <IconEdit size={24} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(customer.id)}
-                        className={`cursor-pointer ${
-                          customer.active
-                            ? "text-red-600 hover:text-red-800"
-                            : "text-green-600 hover:text-green-800"
-                        }`}
-                        title={
-                          language === "vi"
-                            ? customer.active
-                              ? "Vô hiệu hóa khách hàng"
-                              : "Kích hoạt khách hàng"
-                            : customer.active
-                            ? "Deactivate customer"
-                            : "Activate customer"
-                        }
-                      >
-                        <IconTrash size={24} />
                       </button>
                     </div>
                   </td>
@@ -933,7 +578,7 @@ export default function CustomerManagementPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={11} className="text-center text-gray-500 p-4">
+                <td colSpan={10} className="text-center text-gray-500 p-4">
                   {language === "vi"
                     ? "Không có khách hàng nào."
                     : "No customers found."}
@@ -968,7 +613,6 @@ export default function CustomerManagementPage() {
           setShowEditModal(false);
           setSelectedCustomer(null);
         }}
-        onSubmit={handleSubmitCustomer}
         customer={selectedCustomer}
       />
     </div>

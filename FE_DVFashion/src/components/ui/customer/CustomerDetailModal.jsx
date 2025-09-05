@@ -9,6 +9,9 @@ import {
   IconShoppingCart,
   IconHeart,
   IconStar,
+  IconInfoCircle,
+  IconActivity,
+  IconSettings,
 } from "@tabler/icons-react";
 
 export default function CustomerDetailModal({ customer, open, onClose }) {
@@ -64,329 +67,428 @@ export default function CustomerDetailModal({ customer, open, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto scrollbar-hide"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="bg-white rounded-xl shadow-2xl w-full max-w-6xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gray-50">
-          <div className="flex items-center gap-3">
-            <IconUser size={24} className="text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">
-              Chi tiết khách hàng
-            </h2>
-          </div>
+        {/* Header với gradient background giống CustomerForm */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
           <button
             onClick={onClose}
-            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="absolute top-4 right-4 bg-black backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-gray-800 transition-all duration-200 cursor-pointer"
           >
             <IconX size={20} />
           </button>
+
+          <div className="flex items-start gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+              <IconUser size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">Chi tiết khách hàng</h2>
+              <p className="text-blue-100 opacity-90">
+                Thông tin chi tiết về khách hàng {customer.fullName}
+              </p>
+              <div className="flex items-center gap-4 mt-3">
+                <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                  ID: #{customer.id}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    customer.active
+                      ? "bg-green-500/20 text-green-100 border border-green-400/30"
+                      : "bg-red-500/20 text-red-100 border border-red-400/30"
+                  }`}
+                >
+                  {customer.active ? "🟢 Hoạt động" : "🔴 Không hoạt động"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Personal Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconUser size={18} />
-                Thông tin cá nhân
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Basic Information Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconInfoCircle size={20} className="text-blue-600" />
+                Thông tin cơ bản
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <strong className="text-gray-600">ID khách hàng:</strong>
-                  <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">
-                    #{customer.id}
-                  </span>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal Info */}
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Username
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <IconUser size={16} className="text-gray-400" />
+                      <span className="font-mono text-gray-900 bg-white px-3 py-1 rounded border">
+                        {customer.userName}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Họ và tên
+                    </label>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {customer.fullName}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Email
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <IconMail size={16} className="text-gray-400" />
+                      <a
+                        href={`mailto:${customer.email}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                      >
+                        {customer.email}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Số điện thoại
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <IconPhone size={16} className="text-gray-400" />
+                      <a
+                        href={`tel:${customer.phone}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                      >
+                        {customer.phone || "Chưa có"}
+                      </a>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <strong className="text-gray-600">Username:</strong>
-                  <span className="ml-2 text-gray-800 font-mono">
-                    {customer.userName}
-                  </span>
-                </div>
+                {/* Additional Details */}
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Giới tính
+                    </label>
+                    <span className="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {getGenderLabel(customer.gender)}
+                    </span>
+                  </div>
 
-                <div>
-                  <strong className="text-gray-600">Họ và tên:</strong>
-                  <p className="mt-1 text-gray-900 font-medium text-lg">
-                    {customer.fullName}
-                  </p>
-                </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Ngày sinh
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <IconCalendar size={16} className="text-gray-400" />
+                      <span className="text-gray-900">
+                        {formatDate(customer.dob)}
+                      </span>
+                      {calculateAge(customer.dob) && (
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                          {calculateAge(customer.dob)} tuổi
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                <div>
-                  <strong className="text-gray-600">Họ:</strong>
-                  <span className="ml-2 text-gray-800">
-                    {customer.lastName}
-                  </span>
-                </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Vai trò
+                    </label>
+                    <span className="inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {getRoleLabel(customer.role)}
+                    </span>
+                  </div>
 
-                <div className="flex items-center">
-                  <IconMail size={16} className="text-gray-500 mr-2" />
-                  <strong className="text-gray-600">Email:</strong>
-                  <a
-                    href={`mailto:${customer.email}`}
-                    className="ml-2 text-blue-600 hover:underline"
-                  >
-                    {customer.email}
-                  </a>
-                </div>
-
-                <div className="flex items-center">
-                  <IconPhone size={16} className="text-gray-500 mr-2" />
-                  <strong className="text-gray-600">Số điện thoại:</strong>
-                  <a
-                    href={`tel:${customer.phone}`}
-                    className="ml-2 text-blue-600 hover:underline"
-                  >
-                    {customer.phone}
-                  </a>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Thời gian tham gia
+                    </label>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Tạo:</span>
+                        <span className="text-sm text-gray-700">
+                          {formatDateTime(customer.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Cập nhật:</span>
+                        <span className="text-sm text-gray-700">
+                          {formatDateTime(customer.updatedAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Additional Details */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconCalendar size={18} />
-                Thông tin bổ sung
+            {/* Addresses Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconMapPin size={20} className="text-purple-600" />
+                Địa chỉ ({customer.addresses?.length || 0})
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <strong className="text-gray-600">Giới tính:</strong>
-                  <span className="ml-2 bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
-                    {getGenderLabel(customer.gender)}
-                  </span>
+
+              {customer.addresses && customer.addresses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {customer.addresses.map((address, index) => (
+                    <div
+                      key={address.id}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                          <IconMapPin size={16} className="text-purple-600" />
+                          Địa chỉ #{index + 1}
+                        </h4>
+                        {address.isDefault && (
+                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                            Mặc định
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="bg-white p-3 rounded border border-gray-100">
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            ID Địa chỉ
+                          </label>
+                          <span className="font-mono text-sm text-gray-700">
+                            #{address.id}
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-3 rounded border border-gray-100">
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Địa chỉ chi tiết
+                          </label>
+                          <p className="text-sm text-gray-800 leading-relaxed">
+                            {address.street}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white p-2 rounded border border-gray-100">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                              Phường/Xã
+                            </label>
+                            <span className="text-sm text-gray-800">
+                              {address.ward}
+                            </span>
+                          </div>
+                          <div className="bg-white p-2 rounded border border-gray-100">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                              Quận/Huyện
+                            </label>
+                            <span className="text-sm text-gray-800">
+                              {address.district}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white p-2 rounded border border-gray-100">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                              Thành phố
+                            </label>
+                            <span className="text-sm text-gray-800">
+                              {address.city}
+                            </span>
+                          </div>
+                          <div className="bg-white p-2 rounded border border-gray-100">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                              Quốc gia
+                            </label>
+                            <span className="text-sm text-gray-800">
+                              {address.country}
+                            </span>
+                          </div>
+                        </div>
+
+                        {address.zipCode && (
+                          <div className="bg-white p-3 rounded border border-gray-100">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                              Mã bưu điện
+                            </label>
+                            <span className="font-mono text-sm text-gray-800">
+                              {address.zipCode}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <IconMapPin size={32} className="text-gray-400" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    Chưa có địa chỉ nào
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Khách hàng chưa thêm địa chỉ vào tài khoản
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Activity Summary */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconActivity size={20} className="text-green-600" />
+                Hoạt động & Thống kê
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Shopping Cart */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-blue-600 p-3 rounded-lg">
+                      <IconShoppingCart size={24} className="text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-blue-900">
+                        {customer.cart ? "1" : "0"}
+                      </p>
+                      <p className="text-sm text-blue-600">Giỏ hàng</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-blue-700">
+                    {customer.cart ? "Có sản phẩm trong giỏ" : "Giỏ hàng trống"}
+                  </p>
                 </div>
 
-                <div>
-                  <strong className="text-gray-600">Ngày sinh:</strong>
-                  <div className="mt-1">
-                    <span className="text-gray-800">
-                      {formatDate(customer.dob)}
+                {/* Reviews */}
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-yellow-600 p-3 rounded-lg">
+                      <IconStar size={24} className="text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-yellow-900">
+                        {customer.reviews?.length || 0}
+                      </p>
+                      <p className="text-sm text-yellow-600">Đánh giá</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-yellow-700">
+                    Số lượng đánh giá đã thực hiện
+                  </p>
+                </div>
+
+                {/* Wishlist */}
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-pink-600 p-3 rounded-lg">
+                      <IconHeart size={24} className="text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-pink-900">
+                        {customer.wishlist?.length || 0}
+                      </p>
+                      <p className="text-sm text-pink-600">Yêu thích</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-pink-700">
+                    Sản phẩm trong danh sách yêu thích
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* System Information */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconSettings size={20} className="text-gray-600" />
+                Thông tin hệ thống
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Tổng số địa chỉ
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <IconMapPin size={16} className="text-gray-400" />
+                    <span className="text-lg font-semibold text-gray-900">
+                      {customer.addresses?.length || 0}
                     </span>
-                    {calculateAge(customer.dob) && (
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({calculateAge(customer.dob)} tuổi)
-                      </span>
-                    )}
+                    <span className="text-sm text-gray-500">địa chỉ</span>
                   </div>
                 </div>
 
-                <div>
-                  <strong className="text-gray-600">Vai trò:</strong>
-                  <span className="ml-2 bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-sm">
-                    {getRoleLabel(customer.role)}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Địa chỉ mặc định
+                  </label>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      customer.addresses?.find((a) => a.isDefault)
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {customer.addresses?.find((a) => a.isDefault)
+                      ? "✓ Đã thiết lập"
+                      : "Chưa thiết lập"}
                   </span>
                 </div>
 
-                <div>
-                  <strong className="text-gray-600">Trạng thái:</strong>
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Thời gian hoạt động
+                  </label>
+                  <span className="text-lg font-semibold text-gray-900">
+                    {customer.createdAt && customer.updatedAt
+                      ? `${Math.max(
+                          1,
+                          Math.ceil(
+                            (new Date(customer.updatedAt) -
+                              new Date(customer.createdAt)) /
+                              (1000 * 60 * 60 * 24)
+                          )
+                        )}`
+                      : "0"}
+                  </span>
+                  <span className="text-sm text-gray-500 ml-1">ngày</span>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Trạng thái tài khoản
+                  </label>
                   <span
-                    className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                       customer.active
                         ? "bg-green-100 text-green-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {customer.active ? "Đang hoạt động" : "Không hoạt động"}
+                    {customer.active ? "🟢 Kích hoạt" : "🔴 Vô hiệu hóa"}
                   </span>
                 </div>
-
-                <div>
-                  <strong className="text-gray-600">Ngày tạo:</strong>
-                  <p className="mt-1 text-sm text-gray-700">
-                    {formatDateTime(customer.createdAt)}
-                  </p>
-                </div>
-
-                <div>
-                  <strong className="text-gray-600">Cập nhật cuối:</strong>
-                  <p className="mt-1 text-sm text-gray-700">
-                    {formatDateTime(customer.updatedAt)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Addresses */}
-          <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-              <IconMapPin size={18} />
-              Địa chỉ ({customer.addresses?.length || 0})
-            </h3>
-
-            {customer.addresses && customer.addresses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {customer.addresses.map((address, index) => (
-                  <div
-                    key={address.id}
-                    className="bg-white p-4 rounded-lg border"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-gray-800">
-                        Địa chỉ #{index + 1}
-                      </h4>
-                      {address.isDefault && (
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-                          Mặc định
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <strong className="text-gray-600">ID:</strong>
-                        <span className="ml-2 font-mono">#{address.id}</span>
-                      </div>
-                      <div>
-                        <strong className="text-gray-600">Địa chỉ:</strong>
-                        <p className="mt-1 text-gray-800">{address.street}</p>
-                      </div>
-                      <div>
-                        <strong className="text-gray-600">Phường/Xã:</strong>
-                        <span className="ml-2 text-gray-800">
-                          {address.ward}
-                        </span>
-                      </div>
-                      <div>
-                        <strong className="text-gray-600">Quận/Huyện:</strong>
-                        <span className="ml-2 text-gray-800">
-                          {address.district}
-                        </span>
-                      </div>
-                      <div>
-                        <strong className="text-gray-600">Thành phố:</strong>
-                        <span className="ml-2 text-gray-800">
-                          {address.city}
-                        </span>
-                      </div>
-                      <div>
-                        <strong className="text-gray-600">Quốc gia:</strong>
-                        <span className="ml-2 text-gray-800">
-                          {address.country}
-                        </span>
-                      </div>
-                      {address.zipCode && (
-                        <div>
-                          <strong className="text-gray-600">
-                            Mã bưu điện:
-                          </strong>
-                          <span className="ml-2 text-gray-800 font-mono">
-                            {address.zipCode}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <IconMapPin size={48} className="mx-auto mb-2 text-gray-300" />
-                <p>Khách hàng chưa có địa chỉ nào</p>
-              </div>
-            )}
-          </div>
-
-          {/* Activity Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Shopping Cart */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconShoppingCart size={18} />
-                Giỏ hàng
-              </h3>
-              <div className="text-center py-4">
-                <IconShoppingCart
-                  size={32}
-                  className="mx-auto mb-2 text-gray-300"
-                />
-                <p className="text-gray-500 text-sm">
-                  {customer.cart ? "Có sản phẩm trong giỏ" : "Giỏ hàng trống"}
-                </p>
               </div>
             </div>
 
-            {/* Reviews */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconStar size={18} />
-                Đánh giá
-              </h3>
-              <div className="text-center py-4">
-                <IconStar size={32} className="mx-auto mb-2 text-gray-300" />
-                <p className="text-2xl font-bold text-gray-900">
-                  {customer.reviews?.length || 0}
-                </p>
-                <p className="text-gray-500 text-sm">đánh giá</p>
-              </div>
-            </div>
-
-            {/* Wishlist */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconHeart size={18} />
-                Yêu thích
-              </h3>
-              <div className="text-center py-4">
-                <IconHeart size={32} className="mx-auto mb-2 text-gray-300" />
-                <p className="text-2xl font-bold text-gray-900">
-                  {customer.wishlist?.length || 0}
-                </p>
-                <p className="text-gray-500 text-sm">sản phẩm</p>
-              </div>
-            </div>
-          </div>
-
-          {/* System Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-              <IconUsers size={18} />
-              Thông tin hệ thống
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <strong className="text-gray-600">Tổng số địa chỉ:</strong>
-                <span className="ml-2 text-gray-800">
-                  {customer.addresses?.length || 0} địa chỉ
-                </span>
-              </div>
-              <div>
-                <strong className="text-gray-600">Địa chỉ mặc định:</strong>
-                <span className="ml-2 text-gray-800">
-                  {customer.addresses?.find((a) => a.isDefault)
-                    ? "Có"
-                    : "Chưa thiết lập"}
-                </span>
-              </div>
-              <div>
-                <strong className="text-gray-600">Thời gian hoạt động:</strong>
-                <span className="ml-2 text-gray-800">
-                  {customer.createdAt && customer.updatedAt
-                    ? `${Math.ceil(
-                        (new Date(customer.updatedAt) -
-                          new Date(customer.createdAt)) /
-                          (1000 * 60 * 60 * 24)
-                      )} ngày`
-                    : "Không xác định"}
-                </span>
-              </div>
-              <div>
-                <strong className="text-gray-600">Trạng thái tài khoản:</strong>
-                <span
-                  className={`ml-2 inline-block px-2 py-1 rounded text-xs font-medium ${
-                    customer.active
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {customer.active ? "Kích hoạt" : "Vô hiệu hóa"}
-                </span>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
+              >
+                Đóng
+              </button>
             </div>
           </div>
         </div>
