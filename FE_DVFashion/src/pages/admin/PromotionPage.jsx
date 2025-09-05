@@ -1,276 +1,170 @@
-import { useState, useEffect } from "react";
-import { IconEdit, IconTrash, IconEye, IconPlus } from "@tabler/icons-react";
+import { useState, useEffect, useMemo } from "react";
+import { IconEdit, IconEye, IconPlus, IconSearch } from "@tabler/icons-react";
+import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import PromotionForm from "../../components/ui/promotion/PromotionForm";
 import PromotionDetailModal from "../../components/ui/promotion/PromotionDetailModal";
-import { toast } from "react-toastify";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
-
-// Mock data theo hình
-const mockPromotions = [
-  {
-    id: 1,
-    name: "Giảm 10% cho đơn từ 500k",
-    code: "PROMO10",
-    description: "Áp dụng cho đơn hàng từ 500,000 VND trở lên",
-    type: "PERCENT",
-    value: 10,
-    minOrderAmount: 500000,
-    maxUsage: 100,
-    currentUsage: 25,
-    startDate: "2024-08-01T00:00",
-    endDate: "2024-09-01T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 1, name: "Áo Thun Nam" },
-      { id: 2, name: "Quần Jeans" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Giảm 50k cho đơn từ 300k",
-    code: "PROMO50K",
-    description: "Giảm trực tiếp 50,000 VND cho đơn từ 300,000 VND",
-    type: "AMOUNT",
-    value: 50000,
-    minOrderAmount: 300000,
-    maxUsage: 50,
-    currentUsage: 10,
-    startDate: "2024-08-15T00:00",
-    endDate: "2024-09-15T23:59",
-    active: false,
-    applicableProducts: [
-      { id: 3, name: "Giày Puma" },
-      { id: 4, name: "Áo khoác Zara" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Giảm 20% cho tất cả sản phẩm",
-    code: "SUMMER20",
-    description: "Khuyến mãi mùa hè, giảm 20% cho tất cả sản phẩm",
-    type: "PERCENT",
-    value: 20,
-    minOrderAmount: 0,
-    maxUsage: 200,
-    currentUsage: 150,
-    startDate: "2024-06-01T00:00",
-    endDate: "2024-08-31T23:59",
-    active: true,
-    applicableProducts: [],
-  },
-  {
-    id: 4,
-    name: "Giảm 100k cho đơn từ 1 triệu",
-    code: "BIGSALE100K",
-    description: "Giảm trực tiếp 100,000 VND cho đơn từ 1,000,000 VND",
-    type: "AMOUNT",
-    value: 100000,
-    minOrderAmount: 1000000,
-    maxUsage: 30,
-    currentUsage: 5,
-    startDate: "2024-09-01T00:00",
-    endDate: "2024-09-30T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 5, name: "Đồng hồ Casio" },
-      { id: 6, name: "Túi xách Gucci" },
-    ],
-  },
-  {
-    id: 5,
-    name: "Giảm 15% cho đơn từ 700k",
-    code: "FALL15",
-    description: "Khuyến mãi mùa thu, giảm 15% cho đơn từ 700,000 VND",
-    type: "PERCENT",
-    value: 15,
-    minOrderAmount: 700000,
-    maxUsage: 80,
-    currentUsage: 20,
-    startDate: "2024-10-01T00:00",
-    endDate: "2024-10-31T23:59",
-    active: false,
-    applicableProducts: [],
-  },
-  {
-    id: 6,
-    name: "Giảm 30k cho đơn từ 200k",
-    code: "SAVE30K",
-    description: "Giảm trực tiếp 30,000 VND cho đơn từ 200,000 VND",
-    type: "AMOUNT",
-    value: 30000,
-    minOrderAmount: 200000,
-    maxUsage: 150,
-    currentUsage: 60,
-    startDate: "2024-07-01T00:00",
-    endDate: "2024-07-31T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 7, name: "Mũ lưỡi trai" },
-      { id: 8, name: "Kính râm Ray-Ban" },
-    ],
-  },
-  {
-    id: 7,
-    name: "Giảm 25% cho đơn từ 800k",
-    code: "DISCOUNT25",
-    description: "Giảm 25% cho đơn hàng từ 800,000 VND trở lên",
-    type: "PERCENT",
-    value: 25,
-    minOrderAmount: 800000,
-    maxUsage: 60,
-    currentUsage: 15,
-    startDate: "2024-11-01T00:00",
-    endDate: "2024-11-30T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 9, name: "Váy maxi" },
-      { id: 10, name: "Đầm dạ hội" },
-    ],
-  },
-  {
-    id: 8,
-    name: "Giảm 40k cho đơn từ 400k",
-    code: "LESS40K",
-    description: "Giảm trực tiếp 40,000 VND cho đơn từ 400,000 VND",
-    type: "AMOUNT",
-    value: 40000,
-    minOrderAmount: 400000,
-    maxUsage: 70,
-    currentUsage: 30,
-    startDate: "2024-12-01T00:00",
-    endDate: "2024-12-31T23:59",
-    active: false,
-    applicableProducts: [
-      { id: 11, name: "Áo len" },
-      { id: 12, name: "Quần tây" },
-    ],
-  },
-  {
-    id: 9,
-    name: "Giảm 5% cho tất cả sản phẩm",
-    code: "WELCOME5",
-    description: "Khuyến mãi chào mừng, giảm 5% cho tất cả sản phẩm",
-    type: "PERCENT",
-    value: 5,
-    minOrderAmount: 0,
-    maxUsage: 500,
-    currentUsage: 300,
-    startDate: "2024-01-01T00:00",
-    endDate: "2024-12-31T23:59",
-    active: true,
-    applicableProducts: [],
-  },
-  {
-    id: 10,
-    name: "Giảm 75k cho đơn từ 600k",
-    code: "SUPER75K",
-    description: "Giảm trực tiếp 75,000 VND cho đơn từ 600,000 VND",
-    type: "AMOUNT",
-    value: 75000,
-    minOrderAmount: 600000,
-    maxUsage: 40,
-    currentUsage: 12,
-    startDate: "2024-05-01T00:00",
-    endDate: "2024-05-31T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 13, name: "Áo sơ mi" },
-      { id: 14, name: "Chân váy" },
-    ],
-  },
-  {
-    id: 11,
-    name: "Giảm 12% cho đơn từ 900k",
-    code: "EXTRA12",
-    description: "Giảm 12% cho đơn hàng từ 900,000 VND trở lên",
-    type: "PERCENT",
-    value: 12,
-    minOrderAmount: 900000,
-    maxUsage: 90,
-    currentUsage: 40,
-    startDate: "2024-03-01T00:00",
-    endDate: "2024-03-31T23:59",
-    active: false,
-    applicableProducts: [
-      { id: 15, name: "Áo khoác da" },
-      { id: 16, name: "Boots da" },
-    ],
-  },
-  {
-    id: 12,
-    name: "Giảm 20k cho đơn từ 150k",
-    code: "QUICK20K",
-    description: "Giảm trực tiếp 20,000 VND cho đơn từ 150,000 VND",
-    type: "AMOUNT",
-    value: 20000,
-    minOrderAmount: 150000,
-    maxUsage: 120,
-    currentUsage: 45,
-    startDate: "2024-02-01T00:00",
-    endDate: "2024-02-28T23:59",
-    active: true,
-    applicableProducts: [
-      { id: 17, name: "T-shirt nữ" },
-      { id: 18, name: "Shorts jean" },
-    ],
-  },
-];
-
-// Mock data cho products và categories
-const mockProducts = [
-  { id: 1, name: "Áo Thun Nam" },
-  { id: 2, name: "Quần Jeans" },
-  { id: 3, name: "Giày Puma" },
-  { id: 4, name: "Áo khoác Zara" },
-  { id: 5, name: "Đồng hồ Casio" },
-  { id: 6, name: "Túi xách Gucci" },
-  { id: 7, name: "Mũ lưỡi trai" },
-  { id: 8, name: "Kính râm Ray-Ban" },
-  { id: 9, name: "Váy maxi" },
-  { id: 10, name: "Đầm dạ hội" },
-];
-
-const mockCategories = [
-  { id: 1, name: "Thời trang nam" },
-  { id: 2, name: "Thời trang nữ" },
-  { id: 3, name: "Phụ kiện" },
-  { id: 4, name: "Giày dép" },
-  { id: 5, name: "Túi xách" },
-];
+import { usePromotion } from "../../hooks/usePromotion";
 
 const typeLabels = {
-  PERCENT: "Phần trăm",
-  AMOUNT: "Tiền mặt",
+  PERCENTAGE: "Phần trăm",
+  FIXED_AMOUNT: "Tiền mặt",
+  FREE_SHIPPING: "Miễn phí vận chuyển",
+  BUY_ONE_GET_ONE: "Mua 1 tặng 1",
+};
+
+// Translations for status labels
+const statusLabels = {
+  vi: {
+    active: "Hoạt động",
+    inactive: "Không hoạt động",
+    total: "Tổng khuyến mãi",
+    activeCount: "Đang hoạt động",
+    inactiveCount: "Không hoạt động",
+    expired: "Hết hạn sử dụng",
+    allStatus: "Tất cả trạng thái",
+    vietnamese: "Tiếng Việt",
+    english: "Tiếng Anh",
+    managePromotions: "Quản lý Khuyến mãi",
+    createPromotion: "Tạo khuyến mãi",
+    searchPlaceholder: "Tìm kiếm theo tên, mô tả, ID...",
+    showing: "Hiển thị",
+    of: "trên tổng số",
+    promotions: "khuyến mãi",
+    noPromotions: "Không có khuyến mãi nào.",
+    loading: "Đang tải...",
+    viewDetails: "Xem chi tiết",
+    edit: "Chỉnh sửa",
+    id: "ID",
+    name: "Tên",
+    description: "Mô tả",
+    type: "Loại",
+    value: "Giá trị",
+    minOrder: "Min Đơn",
+    maxUsage: "Max Lượt",
+    startDate: "Bắt đầu",
+    endDate: "Kết thúc",
+    status: "Trạng thái",
+    actions: "Hành động",
+  },
+  en: {
+    active: "Active",
+    inactive: "Inactive",
+    total: "Total Promotions",
+    activeCount: "Active",
+    inactiveCount: "Inactive",
+    expired: "Expired",
+    allStatus: "All Status",
+    vietnamese: "Vietnamese",
+    english: "English",
+    managePromotions: "Manage Promotions",
+    createPromotion: "Create Promotion",
+    searchPlaceholder: "Search by name, description, ID...",
+    showing: "Showing",
+    of: "of",
+    promotions: "promotions",
+    noPromotions: "No promotions found.",
+    loading: "Loading...",
+    viewDetails: "View Details",
+    edit: "Edit",
+    id: "ID",
+    name: "Name",
+    description: "Description",
+    type: "Type",
+    value: "Value",
+    minOrder: "Min Order",
+    maxUsage: "Max Usage",
+    startDate: "Start Date",
+    endDate: "End Date",
+    status: "Status",
+    actions: "Actions",
+  },
 };
 
 export default function PromotionPage() {
-  const [promotions, setPromotions] = useState([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDetailPromotion, setSelectedDetailPromotion] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [language, setLanguage] = useState("VI");
+  const [loadingItems, setLoadingItems] = useState({
+    status: null,
+  });
+  const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
 
-  useEffect(() => {
-    setPromotions(mockPromotions);
-  }, []);
+  // Use promotion hook
+  const { promotions, isLoading, error, updatePromotion } =
+    usePromotion(language);
 
-  // Lọc theo tên, code hoặc id
-  const filteredPromotions = promotions.filter(
-    (promo) =>
-      promo.name.toLowerCase().includes(search.toLowerCase()) ||
-      promo.code.toLowerCase().includes(search.toLowerCase()) ||
-      promo.id.toString().includes(search)
-  );
+  // Store original order when promotions first load
+  useEffect(() => {
+    if (promotions && promotions.length > 0) {
+      setOriginalOrder((prev) => {
+        if (
+          prev.length === 0 ||
+          Math.abs(prev.length - promotions.length) > 1
+        ) {
+          return promotions.map((promotion) => promotion.id);
+        }
+        return prev;
+      });
+    }
+  }, [promotions]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  // Helper function to get status labels
+  const getStatusLabel = (key) => {
+    const langKey = language === "VI" ? "vi" : "en";
+    return statusLabels[langKey][key] || statusLabels.vi[key];
+  };
+
+  // Sort promotions by original order to maintain position
+  const sortedPromotions = useMemo(() => {
+    if (!promotions) return [];
+    return [...promotions].sort((a, b) => a.id - b.id);
+  }, [promotions]);
+
+  // Lọc theo tên và trạng thái
+  const filteredPromotions = useMemo(() => {
+    return sortedPromotions.filter((promo) => {
+      const matchesSearch =
+        promo.name?.toLowerCase().includes(search.toLowerCase()) ||
+        promo.description?.toLowerCase().includes(search.toLowerCase()) ||
+        promo.id?.toString().includes(search);
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && promo.active) ||
+        (statusFilter === "inactive" && !promo.active);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [sortedPromotions, search, statusFilter]);
 
   const totalPages = Math.ceil(filteredPromotions.length / pageSize);
   const paginatedPromotions = filteredPromotions.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  // Calculate statistics
+  const stats = {
+    total: sortedPromotions?.length || 0,
+    active: sortedPromotions?.filter((p) => p.active).length || 0,
+    inactive: sortedPromotions?.filter((p) => !p.active).length || 0,
+    expired:
+      sortedPromotions?.filter((p) => p.currentUsage >= p.maxUsages).length ||
+      0,
+  };
 
   // Xử lý tạo khuyến mãi mới
   const handleCreatePromotion = () => {
@@ -290,142 +184,201 @@ export default function PromotionPage() {
     setShowDetailModal(true);
   };
 
-  // Xử lý xóa khuyến mãi (thực chất là deactivate)
-  const handleDeletePromotion = async (promotionId) => {
-    const promotion = promotions.find((p) => p.id === promotionId);
-
-    if (!promotion) {
-      toast.error("Không tìm thấy khuyến mãi!");
-      return;
-    }
-
-    // Determine action based on current status
-    const isActivating = !promotion.active;
-    const action = isActivating ? "kích hoạt" : "vô hiệu hóa";
-
-    const confirmText = isActivating ? "Kích hoạt" : "Vô hiệu hóa";
-    const cancelText = "Hủy";
-
-    const title = isActivating
-      ? "Xác nhận kích hoạt khuyến mãi"
-      : "Xác nhận vô hiệu hóa khuyến mãi";
-
-    const message = isActivating
-      ? `Bạn có chắc chắn muốn kích hoạt lại khuyến mãi "${promotion.name}" không? Khuyến mãi sẽ có hiệu lực và khách hàng có thể sử dụng.`
-      : `Bạn có chắc chắn muốn vô hiệu hóa khuyến mãi "${promotion.name}" không? Khuyến mãi sẽ không hiển thị và khách hàng không thể sử dụng.`;
-
-    showConfirmationToast({
-      title,
-      message,
-      confirmText,
-      cancelText,
-      confirmButtonClass: isActivating
-        ? "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer"
-        : "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
-      onConfirm: async () => {
-        try {
-          setPromotions((prev) =>
-            prev.map((p) =>
-              p.id === promotionId ? { ...p, active: !p.active } : p
-            )
-          );
-
-          const successMessage = isActivating
-            ? `Đã kích hoạt khuyến mãi "${promotion.name}" thành công!`
-            : `Đã vô hiệu hóa khuyến mãi "${promotion.name}" thành công!`;
-
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error toggling promotion status:", error);
-          const errorMessage = `Có lỗi xảy ra khi ${action} khuyến mãi!`;
-          toast.error(errorMessage);
-        }
-      },
-    });
-  };
-
-  // Xử lý submit form (tạo mới hoặc cập nhật)
-  const handleFormSubmit = (formData) => {
-    console.log("Form submitted:", formData);
-
-    try {
-      if (selectedPromotion) {
-        // Cập nhật promotion
-        setPromotions((prev) =>
-          prev.map((p) =>
-            p.id === selectedPromotion.id
-              ? {
-                  ...p,
-                  ...formData,
-                  id: selectedPromotion.id,
-                  // FIX: Chuyển đổi ID thành object có name
-                  applicableProducts: mockProducts.filter((product) =>
-                    formData.applicableProducts.includes(product.id)
-                  ),
-                  applicableCategories: mockCategories.filter((category) =>
-                    formData.applicableCategories.includes(category.id)
-                  ),
-                }
-              : p
-          )
-        );
-        toast.success("Cập nhật khuyến mãi thành công!");
-      } else {
-        // Tạo promotion mới
-        const newPromotion = {
-          ...formData,
-          id: Math.max(...promotions.map((p) => p.id)) + 1,
-          currentUsage: 0,
-          applicableProducts: mockProducts.filter((p) =>
-            formData.applicableProducts.includes(p.id)
-          ),
-          applicableCategories: mockCategories.filter((c) =>
-            formData.applicableCategories.includes(c.id)
-          ),
-        };
-        setPromotions((prev) => [newPromotion, ...prev]);
-        toast.success("Tạo khuyến mãi mới thành công!");
-      }
-
-      setShowForm(false);
-      setSelectedPromotion(null);
-    } catch (error) {
-      console.error("Error submitting promotion:", error);
-      toast.error("Có lỗi xảy ra khi lưu khuyến mãi!");
-    }
-  };
-
   // Đóng form
   const handleCloseForm = () => {
     setShowForm(false);
     setSelectedPromotion(null);
   };
 
+  // Handle status filter change
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  // Helper function: dùng để làm sạch và chuẩn hóa dữ liệu khuyến mãi trước khi gửi lên API
+  const cleanPromotionData = (promotion, newStatus = null) => {
+    // Helper function để format date
+    const formatDateForAPI = (dateString) => {
+      if (!dateString) return null;
+      // Nếu đã có format yyyy-MM-dd thì return luôn
+      if (dateString.includes("T")) {
+        return dateString.split("T")[0];
+      }
+      return dateString;
+    };
+
+    return {
+      name: promotion.name,
+      description: promotion.description || null,
+      type: promotion.type,
+      value: promotion.value,
+      minOrderAmount: promotion.minOrderAmount || null,
+      maxUsages: promotion.maxUsages || null,
+      startDate: formatDateForAPI(promotion.startDate),
+      endDate: formatDateForAPI(promotion.endDate),
+      active: newStatus !== null ? newStatus : promotion.active,
+    };
+  };
+
+  // Handle toggle status with position preservation
+  const handleToggleStatus = async (promotion) => {
+    const newStatus = !promotion.active;
+    const langKey = language === "VI" ? "vi" : "en";
+    const actionText = newStatus
+      ? langKey === "vi"
+        ? "kích hoạt lại"
+        : "activate"
+      : langKey === "vi"
+      ? "vô hiệu hóa"
+      : "deactivate";
+
+    const confirmText = newStatus
+      ? langKey === "vi"
+        ? "Kích hoạt"
+        : "Activate"
+      : langKey === "vi"
+      ? "Vô hiệu hóa"
+      : "Deactivate";
+
+    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
+
+    const title =
+      langKey === "vi"
+        ? `Xác nhận ${actionText} khuyến mãi`
+        : `Confirm ${actionText} promotion`;
+
+    const message =
+      langKey === "vi"
+        ? `Bạn có chắc chắn muốn ${actionText} khuyến mãi "${promotion.name}" không?`
+        : `Are you sure you want to ${actionText} promotion "${promotion.name}"?`;
+
+    showConfirmationToast({
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: `${
+        newStatus
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-red-600 hover:bg-red-700"
+      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
+      onConfirm: async () => {
+        // Set loading state
+        setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
+
+        try {
+          // Sử dụng helper function để clean data
+          const promotionData = cleanPromotionData(promotion, newStatus);
+
+          console.log("Toggle status - Original promotion:", promotion);
+          console.log("Toggle status - Cleaned data:", promotionData);
+
+          await updatePromotion({
+            promotionId: promotion.id,
+            promotionData,
+            lang: language,
+          });
+
+          const successMessage =
+            langKey === "vi"
+              ? `${
+                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
+                } khuyến mãi thành công!`
+              : `Promotion ${
+                  newStatus ? "activated" : "deactivated"
+                } successfully!`;
+
+          toast.success(successMessage);
+        } catch (error) {
+          console.error("Error updating promotion status:", error);
+
+          // Log chi tiết lỗi để debug
+          if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+          }
+
+          let errorMessage = "Có lỗi xảy ra!";
+
+          if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+          } else if (error.response?.data) {
+            // Nếu response.data là string
+            errorMessage =
+              typeof error.response.data === "string"
+                ? error.response.data
+                : JSON.stringify(error.response.data);
+          } else if (error.message) {
+            errorMessage = error.message;
+          } else {
+            errorMessage =
+              langKey === "vi"
+                ? `Có lỗi xảy ra khi ${actionText} khuyến mãi!`
+                : `Error occurred while ${actionText.replace(
+                    " ",
+                    "ing"
+                  )} promotion!`;
+          }
+
+          toast.error(errorMessage);
+        } finally {
+          // Clear loading state
+          setLoadingItems((prev) => ({ ...prev, status: null }));
+        }
+      },
+    });
+  };
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">
+            {language === "VI"
+              ? "Có lỗi xảy ra khi tải danh sách khuyến mãi"
+              : "Error loading promotions"}
+          </p>
+          <p className="text-gray-500 mt-2">
+            {error.message ||
+              (language === "VI"
+                ? "Vui lòng thử lại sau"
+                : "Please try again later")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý Khuyến mãi</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {getStatusLabel("managePromotions")}
+        </h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
           onClick={handleCreatePromotion}
         >
           <IconPlus size={16} />
-          Tạo khuyến mãi
+          {getStatusLabel("createPromotion")}
         </button>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Tổng khuyến mãi
+                {getStatusLabel("total")}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {promotions.length}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
         </div>
@@ -434,10 +387,10 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Đang hoạt động
+                {getStatusLabel("activeCount")}
               </p>
               <p className="text-2xl font-bold text-green-600">
-                {promotions.filter((p) => p.active).length}
+                {stats.active}
               </p>
             </div>
           </div>
@@ -447,10 +400,10 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Không hoạt động
+                {getStatusLabel("inactiveCount")}
               </p>
               <p className="text-2xl font-bold text-red-600">
-                {promotions.filter((p) => !p.active).length}
+                {stats.inactive}
               </p>
             </div>
           </div>
@@ -460,52 +413,72 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Hết hạn sử dụng
+                {getStatusLabel("expired")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
-                {promotions.filter((p) => p.currentUsage >= p.maxUsage).length}
+                {stats.expired}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Basic filter */}
-      <div className="bg-white p-4 rounded-lg shadow border mb-4 flex flex-col md:flex-row md:items-center gap-4">
-        <div className="flex gap-4 w-2/3">
-          <input
-            type="text"
-            placeholder="Tìm kiếm khuyến mãi..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="md:col-span-2">
+            <div className="relative">
+              <IconSearch
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={16}
+              />
+              <input
+                type="text"
+                placeholder={getStatusLabel("searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">{getStatusLabel("allStatus")}</option>
+              <option value="active">{getStatusLabel("activeCount")}</option>
+              <option value="inactive">
+                {getStatusLabel("inactiveCount")}
+              </option>
+            </select>
+          </div>
+
+          {/* Language Filter */}
+          <div>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="VI">{getStatusLabel("vietnamese")}</option>
+              <option value="EN">{getStatusLabel("english")}</option>
+            </select>
+          </div>
         </div>
-        {/* Lọc theo trạng thái */}
-        <select
-          className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "all") {
-              setPromotions(mockPromotions);
-            }
-            if (value === "active") {
-              setPromotions(mockPromotions.filter((p) => p.active));
-            }
-            if (value === "inactive") {
-              setPromotions(mockPromotions.filter((p) => !p.active));
-            }
-          }}
-        >
-          <option value="all">Tất cả</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Không hoạt động</option>
-        </select>
       </div>
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {`Hiển thị ${paginatedPromotions.length} trên tổng số ${filteredPromotions.length} khuyến mãi`}
+        {`${getStatusLabel("showing")} ${
+          paginatedPromotions.length
+        } ${getStatusLabel("of")} ${filteredPromotions.length} ${getStatusLabel(
+          "promotions"
+        )}`}
       </div>
 
       {/* Table */}
@@ -513,93 +486,123 @@ export default function PromotionPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-2">ID</th>
-              <th className="p-2">Tên</th>
-              <th className="p-2">Code</th>
-              <th className="p-2">Mô tả</th>
-              <th className="p-2">Loại</th>
-              <th className="p-2">Giá trị</th>
-              <th className="p-2">Min Đơn</th>
-              <th className="p-2">Max Lượt</th>
-              <th className="p-2">Đã dùng</th>
-              <th className="p-2">Bắt đầu</th>
-              <th className="p-2">Kết thúc</th>
-              <th className="p-2">Trạng thái</th>
-              <th className="p-2">Sản phẩm áp dụng</th>
-              <th className="p-2">Hành động</th>
+              <th className="p-2">{getStatusLabel("id")}</th>
+              <th className="p-2">{getStatusLabel("name")}</th>
+              <th className="p-2">{getStatusLabel("description")}</th>
+              <th className="p-2">{getStatusLabel("type")}</th>
+              <th className="p-2">{getStatusLabel("value")}</th>
+              <th className="p-2">{getStatusLabel("minOrder")}</th>
+              <th className="p-2">{getStatusLabel("maxUsage")}</th>
+              <th className="p-2">{getStatusLabel("startDate")}</th>
+              <th className="p-2">{getStatusLabel("endDate")}</th>
+              <th className="p-2">{getStatusLabel("status")}</th>
+              <th className="p-2">{getStatusLabel("actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedPromotions.length > 0 ? (
-              paginatedPromotions.map((promo) => (
-                <tr key={promo.id} className="border-b hover:bg-gray-300">
+            {isLoading ? (
+              <tr>
+                <td colSpan={11} className="text-center text-gray-500 p-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    {getStatusLabel("loading")}
+                  </div>
+                </td>
+              </tr>
+            ) : paginatedPromotions.length > 0 ? (
+              paginatedPromotions.map((promo, index) => (
+                <tr
+                  key={`promotion-${promo.id}-${index}`}
+                  className="border-b hover:bg-gray-300 transition-colors"
+                >
                   <td className="p-2">{promo.id}</td>
                   <td className="p-2 font-semibold">{promo.name}</td>
-                  <td className="p-2">{promo.code}</td>
                   <td className="p-2">
-                    {promo.description.length > 40
-                      ? promo.description.slice(0, 40) + "..."
-                      : promo.description}
+                    <div className="max-w-xs">
+                      <p className="text-sm truncate" title={promo.description}>
+                        {promo.description?.length > 40
+                          ? promo.description.slice(0, 40) + "..."
+                          : promo.description ||
+                            (language === "VI"
+                              ? "Không có mô tả"
+                              : "No description")}
+                      </p>
+                    </div>
                   </td>
                   <td className="p-2">
                     {typeLabels[promo.type] || promo.type}
                   </td>
                   <td className="p-2">
-                    {promo.type === "PERCENT"
+                    {promo.type === "PERCENTAGE"
                       ? `${promo.value}%`
-                      : `${promo.value.toLocaleString()} VND`}
+                      : promo.type === "FIXED_AMOUNT"
+                      ? `${promo.value?.toLocaleString()} VND`
+                      : promo.type === "FREE_SHIPPING"
+                      ? language === "VI"
+                        ? "Miễn phí ship"
+                        : "Free shipping"
+                      : promo.type === "BUY_ONE_GET_ONE"
+                      ? language === "VI"
+                        ? "Mua 1 tặng 1"
+                        : "Buy 1 Get 1"
+                      : promo.value}
                   </td>
                   <td className="p-2">
-                    {promo.minOrderAmount.toLocaleString()} VND
+                    {promo.minOrderAmount?.toLocaleString() || 0} VND
                   </td>
-                  <td className="p-2">{promo.maxUsage}</td>
-                  <td className="p-2">{promo.currentUsage}</td>
+                  <td className="p-2">
+                    {promo.maxUsages ||
+                      (language === "VI" ? "Không giới hạn" : "Unlimited")}
+                  </td>
                   <td className="p-2">{promo.startDate}</td>
                   <td className="p-2">{promo.endDate}</td>
                   <td className="p-2">
-                    {promo.active ? (
-                      <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
-                        Active
-                      </span>
-                    ) : (
-                      <span className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs">
-                        Inactive
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {promo.applicableProducts.map((p) => p.name).join(", ")}
+                    <button
+                      onClick={() => handleToggleStatus(promo)}
+                      disabled={loadingItems.status === promo.id}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                        promo.active
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                      }`}
+                      title={
+                        language === "VI"
+                          ? `Click để ${
+                              promo.active ? "vô hiệu hóa" : "kích hoạt lại"
+                            }`
+                          : `Click to ${
+                              promo.active ? "deactivate" : "activate"
+                            }`
+                      }
+                    >
+                      {loadingItems.status === promo.id ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {promo.active
+                            ? getStatusLabel("active")
+                            : getStatusLabel("inactive")}
+                        </>
+                      )}
+                    </button>
                   </td>
                   <td className="p-3">
                     <div className="flex gap-1">
                       <button
-                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1"
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         onClick={() => handleViewPromotion(promo)}
-                        title="Xem chi tiết"
+                        title={getStatusLabel("viewDetails")}
                       >
                         <IconEye size={24} />
                       </button>
                       <button
-                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1"
+                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
                         onClick={() => handleEditPromotion(promo)}
-                        title="Chỉnh sửa"
+                        title={getStatusLabel("edit")}
                       >
                         <IconEdit size={24} />
-                      </button>
-                      <button
-                        className={`cursor-pointer p-1 ${
-                          promo.active
-                            ? "text-red-600 hover:text-red-800"
-                            : "text-green-600 hover:text-green-800"
-                        }`}
-                        onClick={() => handleDeletePromotion(promo.id)}
-                        title={
-                          promo.active
-                            ? "Vô hiệu hóa khuyến mãi"
-                            : "Kích hoạt khuyến mãi"
-                        }
-                      >
-                        <IconTrash size={24} />
                       </button>
                     </div>
                   </td>
@@ -607,14 +610,15 @@ export default function PromotionPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={14} className="text-center py-6 text-gray-500">
-                  Không có khuyến mãi nào.
+                <td colSpan={11} className="text-center py-6 text-gray-500">
+                  {getStatusLabel("noPromotions")}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
       <Pagination
         currentPage={currentPage}
         totalItems={filteredPromotions.length}
@@ -627,12 +631,10 @@ export default function PromotionPage() {
         <PromotionForm
           isOpen={showForm}
           promotion={selectedPromotion}
-          products={mockProducts}
-          categories={mockCategories}
           onClose={handleCloseForm}
-          onSubmit={handleFormSubmit}
         />
       )}
+
       {showDetailModal && (
         <PromotionDetailModal
           open={showDetailModal}

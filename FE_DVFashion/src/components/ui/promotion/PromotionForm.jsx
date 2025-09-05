@@ -4,73 +4,64 @@ import {
   IconCalendar,
   IconPercentage,
   IconCurrencyDollar,
-  IconPackage,
   IconTag,
   IconDiscount,
   IconCheck,
-  IconChevronDown,
-  IconChevronUp,
+  IconTruck,
+  IconGift,
+  IconLoader2,
+  IconInfoCircle,
 } from "@tabler/icons-react";
+import { toast } from "react-toastify";
+import { usePromotion } from "../../../hooks/usePromotion";
 
-const PromotionForm = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  promotion = null,
-  products = [],
-  categories = [],
-}) => {
+const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const [formData, setFormData] = useState({
     name: "",
-    code: "",
     description: "",
-    type: "PERCENTAGE", // PERCENTAGE hoặc FIXED_AMOUNT
+    type: "PERCENTAGE", // PERCENTAGE, FIXED_AMOUNT, FREE_SHIPPING, BUY_ONE_GET_ONE
     value: "",
     minOrderAmount: "",
-    maxUsage: "",
+    maxUsages: "",
     startDate: "",
     endDate: "",
     active: true,
-    applicableProducts: [],
-    applicableCategories: [],
   });
 
   const [errors, setErrors] = useState({});
-  const [showProductSelector, setShowProductSelector] = useState(false);
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
+
+  // Use promotion hook
+  const { createPromotion, isCreating, updatePromotion, isUpdating } =
+    usePromotion();
+
+  const isSubmitting = isCreating || isUpdating;
 
   // Load dữ liệu khi edit promotion
   useEffect(() => {
-    if (promotion) {
+    if (promotion && isOpen) {
       setFormData({
         name: promotion.name || "",
-        code: promotion.code || "",
         description: promotion.description || "",
         type: promotion.type || "PERCENTAGE",
         value: promotion.value || "",
         minOrderAmount: promotion.minOrderAmount || "",
-        maxUsage: promotion.maxUsage || "",
+        maxUsages: promotion.maxUsages || "",
         startDate: promotion.startDate ? promotion.startDate.split("T")[0] : "",
         endDate: promotion.endDate ? promotion.endDate.split("T")[0] : "",
         active: promotion.active !== undefined ? promotion.active : true,
-        applicableProducts: promotion.applicableProducts || [],
-        applicableCategories: promotion.applicableCategories || [],
       });
-    } else {
+    } else if (!promotion && isOpen) {
       // Reset form cho create mới
       setFormData({
         name: "",
-        code: "",
         description: "",
         type: "PERCENTAGE",
         value: "",
         minOrderAmount: "",
-        maxUsage: "",
+        maxUsages: "",
         startDate: "",
         endDate: "",
         active: true,
-        applicableProducts: [],
-        applicableCategories: [],
       });
     }
     setErrors({});
@@ -89,47 +80,35 @@ const PromotionForm = ({
     }
   };
 
-  const handleProductToggle = (product) => {
-    setFormData((prev) => ({
-      ...prev,
-      applicableProducts: prev.applicableProducts.find(
-        (p) => p.id === product.id
-      )
-        ? prev.applicableProducts.filter((p) => p.id !== product.id)
-        : [...prev.applicableProducts, product],
-    }));
-  };
-
-  const handleCategoryToggle = (category) => {
-    setFormData((prev) => ({
-      ...prev,
-      applicableCategories: prev.applicableCategories.find(
-        (c) => c.id === category.id
-      )
-        ? prev.applicableCategories.filter((c) => c.id !== category.id)
-        : [...prev.applicableCategories, category],
-    }));
-  };
-
   const validateForm = () => {
     const newErrors = {};
 
+    // Validate required fields
     if (!formData.name.trim()) {
       newErrors.name = "Tên khuyến mãi là bắt buộc";
     }
 
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã khuyến mãi là bắt buộc";
+    if (!formData.type.trim()) {
+      newErrors.type = "Loại khuyến mãi là bắt buộc";
     }
 
-    if (!formData.value || formData.value <= 0) {
-      newErrors.value = "Giá trị khuyến mãi phải lớn hơn 0";
+    // Validation cho value dựa trên type
+    if (formData.type === "FREE_SHIPPING") {
+      // FREE_SHIPPING không cần value
+    } else if (formData.type === "BUY_ONE_GET_ONE") {
+      // BUY_ONE_GET_ONE có thể không cần value
+    } else {
+      // PERCENTAGE và FIXED_AMOUNT cần value
+      if (!formData.value || parseFloat(formData.value) <= 0) {
+        newErrors.value = "Giá trị khuyến mãi phải > 0";
+      }
+
+      if (formData.type === "PERCENTAGE" && parseFloat(formData.value) > 100) {
+        newErrors.value = "Phần trăm giảm không được vượt quá 100%";
+      }
     }
 
-    if (formData.type === "PERCENTAGE" && formData.value > 100) {
-      newErrors.value = "Phần trăm giảm không được vượt quá 100%";
-    }
-
+    // Validate dates
     if (!formData.startDate) {
       newErrors.startDate = "Ngày bắt đầu là bắt buộc";
     }
@@ -146,36 +125,212 @@ const PromotionForm = ({
       newErrors.endDate = "Ngày kết thúc phải sau ngày bắt đầu";
     }
 
-    if (formData.minOrderAmount && formData.minOrderAmount < 0) {
-      newErrors.minOrderAmount = "Giá trị đơn hàng tối thiểu không được âm";
+    // Validate optional numeric fields
+    if (formData.minOrderAmount && parseFloat(formData.minOrderAmount) < 0) {
+      newErrors.minOrderAmount = "Giá trị đơn hàng tối thiểu phải >= 0";
     }
 
-    if (formData.maxUsage && formData.maxUsage <= 0) {
-      newErrors.maxUsage = "Số lần sử dụng tối đa phải lớn hơn 0";
+    if (formData.maxUsages && parseInt(formData.maxUsages) <= 0) {
+      newErrors.maxUsages = "Số lần sử dụng tối đa phải > 0";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      // Format data trước khi submit
-      const submitData = {
-        ...formData,
-        value: parseFloat(formData.value),
-        minOrderAmount: formData.minOrderAmount
-          ? parseFloat(formData.minOrderAmount)
-          : null,
-        maxUsage: formData.maxUsage ? parseInt(formData.maxUsage) : null,
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString(),
-        applicableProducts: formData.applicableProducts.map((p) => p.id),
-        applicableCategories: formData.applicableCategories.map((c) => c.id),
-      };
-      onSubmit(submitData);
+  // Helper function để xử lý value dựa trên type
+  const getValueForType = (type, value) => {
+    switch (type) {
+      case "FREE_SHIPPING":
+        return 0; // Backend cần value = 0 cho FREE_SHIPPING
+      case "BUY_ONE_GET_ONE":
+        return parseFloat(value) || 1; // Default = 1 cho BUY_ONE_GET_ONE
+      case "PERCENTAGE":
+      case "FIXED_AMOUNT":
+        return parseFloat(value);
+      default:
+        return parseFloat(value) || 0;
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    // Format data theo PromotionRequest
+    const submitData = {
+      name: formData.name.trim(),
+      description: formData.description?.trim() || null,
+      type: formData.type,
+      value: getValueForType(formData.type, formData.value),
+      minOrderAmount: formData.minOrderAmount
+        ? parseFloat(formData.minOrderAmount)
+        : null,
+      maxUsages: formData.maxUsages ? parseInt(formData.maxUsages) : null,
+      startDate: formData.startDate, // Format yyyy-MM-dd
+      endDate: formData.endDate, // Format yyyy-MM-dd
+      active: formData.active,
+    };
+
+    try {
+      if (promotion) {
+        // Cập nhật promotion
+        await updatePromotion({
+          promotionId: promotion.id,
+          promotionData: submitData,
+          lang: "VI",
+        });
+        toast.success("Cập nhật khuyến mãi thành công!");
+      } else {
+        // Tạo promotion mới
+        await createPromotion({
+          promotionData: submitData,
+          lang: "VI",
+        });
+        toast.success("Tạo khuyến mãi mới thành công!");
+      }
+
+      // Đóng form sau khi thành công
+      onClose();
+    } catch (error) {
+      console.error("Error submitting promotion:", error);
+
+      // Improved error handling
+      let errorMessage = "Có lỗi xảy ra!";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = promotion
+          ? "Có lỗi xảy ra khi cập nhật khuyến mãi!"
+          : "Có lỗi xảy ra khi tạo khuyến mãi!";
+      }
+
+      toast.error(errorMessage);
+    }
+  };
+
+  // Function để render icon dựa trên type
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case "PERCENTAGE":
+        return <IconPercentage size={16} className="text-gray-400" />;
+      case "FIXED_AMOUNT":
+        return <IconCurrencyDollar size={16} className="text-gray-400" />;
+      case "FREE_SHIPPING":
+        return <IconTruck size={16} className="text-gray-400" />;
+      case "BUY_ONE_GET_ONE":
+        return <IconGift size={16} className="text-gray-400" />;
+      default:
+        return <IconPercentage size={16} className="text-gray-400" />;
+    }
+  };
+
+  // Function để render value input dựa trên type
+  const renderValueInput = () => {
+    if (formData.type === "FREE_SHIPPING") {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Miễn phí vận chuyển
+          </label>
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-600 p-2 rounded-lg">
+                <IconTruck size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-purple-800">
+                  Áp dụng miễn phí vận chuyển
+                </p>
+                <p className="text-xs text-purple-600">
+                  Không tính phí vận chuyển cho đơn hàng
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (formData.type === "BUY_ONE_GET_ONE") {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Mua 1 tặng 1
+          </label>
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-600 p-2 rounded-lg">
+                <IconGift size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-orange-800">
+                  Mua 1 tặng 1 sản phẩm
+                </p>
+                <p className="text-xs text-orange-600">
+                  Khách hàng sẽ nhận được 1 sản phẩm miễn phí
+                </p>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="value" value="1" />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Giá trị *
+        </label>
+        <div className="relative">
+          <input
+            type="number"
+            name="value"
+            value={formData.value}
+            onChange={handleChange}
+            disabled={isSubmitting}
+            min="0"
+            step="0.01"
+            max={formData.type === "PERCENTAGE" ? "100" : undefined}
+            className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+              errors.value
+                ? "border-red-500 bg-red-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+            placeholder="0"
+            required
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            {getTypeIcon(formData.type)}
+          </div>
+        </div>
+        {formData.type === "PERCENTAGE" && (
+          <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+            <IconInfoCircle size={12} />
+            Nhập phần trăm (0-100%)
+          </p>
+        )}
+        {formData.type === "FIXED_AMOUNT" && (
+          <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+            <IconInfoCircle size={12} />
+            Nhập số tiền giảm (VNĐ)
+          </p>
+        )}
+        {errors.value && (
+          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <IconX size={12} />
+            {errors.value}
+          </p>
+        )}
+      </div>
+    );
   };
 
   if (!isOpen) return null;
@@ -186,414 +341,311 @@ const PromotionForm = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          scrollbarWidth: "none" /* Firefox */,
-          msOverflowStyle: "none" /* Internet Explorer 10+ */,
-        }}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <div className="flex items-center gap-3">
-            <IconDiscount size={24} className="text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">
-              {promotion ? "Chỉnh sửa khuyến mãi" : "Tạo khuyến mãi mới"}
-            </h2>
-          </div>
+        {/* Header với gradient background */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
           <button
             onClick={onClose}
-            className="p-2 bg-black text-white rounded-full transition-colors cursor-pointer hover:bg-gray-800"
+            disabled={isSubmitting}
+            className="absolute top-4 right-4 bg-black backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-gray-800 transition-all duration-200 cursor-pointer"
           >
             <IconX size={20} />
           </button>
+
+          <div className="flex items-start gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+              <IconDiscount size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">
+                {promotion ? "Chỉnh sửa khuyến mãi" : "Tạo khuyến mãi mới"}
+              </h2>
+              <p className="text-blue-100 opacity-90">
+                {promotion
+                  ? "Cập nhật thông tin khuyến mãi hiện tại"
+                  : "Thiết lập thông tin cho khuyến mãi mới"}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Tên khuyến mãi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconTag size={16} className="inline mr-1" />
-                Tên khuyến mãi *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Nhập tên khuyến mãi"
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
-            </div>
+        {/* Form Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Information Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconTag size={20} className="text-blue-600" />
+                Thông tin cơ bản
+              </h3>
 
-            {/* Mã khuyến mãi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconDiscount size={16} className="inline mr-1" />
-                Mã khuyến mãi *
-              </label>
-              <input
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.code ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Nhập mã khuyến mãi"
-              />
-              {errors.code && (
-                <p className="text-red-500 text-sm mt-1">{errors.code}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Mô tả */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mô tả
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nhập mô tả khuyến mãi"
-            />
-          </div>
-
-          {/* Loại và giá trị khuyến mãi */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Loại khuyến mãi *
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="PERCENTAGE">Phần trăm (%)</option>
-                <option value="FIXED_AMOUNT">Số tiền cố định (VNĐ)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Giá trị *
-              </label>
-              <div className="relative">
+              {/* Tên khuyến mãi */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tên khuyến mãi *
+                </label>
                 <input
-                  type="number"
-                  name="value"
-                  value={formData.value}
+                  type="text"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  min="0"
-                  max={formData.type === "PERCENTAGE" ? "100" : undefined}
-                  className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.value ? "border-red-500" : "border-gray-300"
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                    errors.name
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder="0"
+                  placeholder="Nhập tên khuyến mãi"
+                  required
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  {formData.type === "PERCENTAGE" ? (
-                    <IconPercentage size={16} className="text-gray-400" />
-                  ) : (
-                    <IconCurrencyDollar size={16} className="text-gray-400" />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <IconX size={12} />
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Mô tả */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mô tả
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
+                  placeholder="Nhập mô tả khuyến mãi"
+                />
+              </div>
+            </div>
+
+            {/* Promotion Type & Value Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconPercentage size={20} className="text-green-600" />
+                Loại và giá trị khuyến mãi
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Loại khuyến mãi *
+                  </label>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
+                    required
+                  >
+                    <option value="PERCENTAGE">📊 Phần trăm (%)</option>
+                    <option value="FIXED_AMOUNT">
+                      💰 Số tiền cố định (VNĐ)
+                    </option>
+                    <option value="FREE_SHIPPING">
+                      🚚 Miễn phí vận chuyển
+                    </option>
+                    <option value="BUY_ONE_GET_ONE">🎁 Mua 1 tặng 1</option>
+                  </select>
+                  {errors.type && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <IconX size={12} />
+                      {errors.type}
+                    </p>
+                  )}
+                </div>
+
+                {renderValueInput()}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Đơn hàng tối thiểu (VNĐ)
+                  </label>
+                  <input
+                    type="number"
+                    name="minOrderAmount"
+                    value={formData.minOrderAmount}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    min="0"
+                    step="1000"
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                      errors.minOrderAmount
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <IconInfoCircle size={12} />
+                    Để trống = không yêu cầu tối thiểu
+                  </p>
+                  {errors.minOrderAmount && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <IconX size={12} />
+                      {errors.minOrderAmount}
+                    </p>
                   )}
                 </div>
               </div>
-              {errors.value && (
-                <p className="text-red-500 text-sm mt-1">{errors.value}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Đơn hàng tối thiểu (VNĐ)
-              </label>
-              <input
-                type="number"
-                name="minOrderAmount"
-                value={formData.minOrderAmount}
-                onChange={handleChange}
-                min="0"
-                step="1000"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.minOrderAmount ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="0"
-              />
-              {errors.minOrderAmount && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.minOrderAmount}
-                </p>
-              )}
-            </div>
-          </div>
+            {/* Time & Limits Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconCalendar size={20} className="text-purple-600" />
+                Thời gian và giới hạn
+              </h3>
 
-          {/* Thời gian và giới hạn */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconCalendar size={16} className="inline mr-1" />
-                Ngày bắt đầu *
-              </label>
-              <input
-                type="date"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.startDate ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.startDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconCalendar size={16} className="inline mr-1" />
-                Ngày kết thúc *
-              </label>
-              <input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.endDate ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.endDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Số lần sử dụng tối đa
-              </label>
-              <input
-                type="number"
-                name="maxUsage"
-                value={formData.maxUsage}
-                onChange={handleChange}
-                min="1"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.maxUsage ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Không giới hạn"
-              />
-              {errors.maxUsage && (
-                <p className="text-red-500 text-sm mt-1">{errors.maxUsage}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Áp dụng cho sản phẩm */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <IconPackage size={16} className="inline mr-1" />
-              Áp dụng cho sản phẩm
-            </label>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setShowProductSelector(!showProductSelector)}
-                className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <IconPackage size={16} />
-                  <span>
-                    Chọn sản phẩm ({formData.applicableProducts.length})
-                  </span>
-                </div>
-                {showProductSelector ? (
-                  <IconChevronUp size={16} />
-                ) : (
-                  <IconChevronDown size={16} />
-                )}
-              </button>
-
-              {formData.applicableProducts.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.applicableProducts.map((product) => (
-                    <span
-                      key={product.id}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-md"
-                    >
-                      {product.name}
-                      <button
-                        type="button"
-                        onClick={() => handleProductToggle(product)}
-                        className="hover:bg-blue-200 rounded-full p-0.5"
-                      >
-                        <IconX size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {showProductSelector && (
-                <div className="border border-gray-200 rounded-md p-4 max-h-48 overflow-y-auto">
-                  {products.length > 0 ? (
-                    products.map((product) => (
-                      <label
-                        key={product.id}
-                        className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 rounded px-2"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={
-                            formData.applicableProducts.find(
-                              (p) => p.id === product.id
-                            ) !== undefined
-                          }
-                          onChange={() => handleProductToggle(product)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{product.name}</span>
-                      </label>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm text-center py-4">
-                      Không có sản phẩm nào
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ngày bắt đầu *
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                      errors.startDate
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    required
+                  />
+                  {errors.startDate && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <IconX size={12} />
+                      {errors.startDate}
                     </p>
                   )}
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Áp dụng cho danh mục */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <IconTag size={16} className="inline mr-1" />
-              Áp dụng cho danh mục
-            </label>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setShowCategorySelector(!showCategorySelector)}
-                className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <IconTag size={16} />
-                  <span>
-                    Chọn danh mục ({formData.applicableCategories.length})
-                  </span>
-                </div>
-                {showCategorySelector ? (
-                  <IconChevronUp size={16} />
-                ) : (
-                  <IconChevronDown size={16} />
-                )}
-              </button>
-
-              {formData.applicableCategories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.applicableCategories.map((category) => (
-                    <span
-                      key={category.id}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-sm rounded-md"
-                    >
-                      {category.name}
-                      <button
-                        type="button"
-                        onClick={() => handleCategoryToggle(category)}
-                        className="hover:bg-green-200 rounded-full p-0.5"
-                      >
-                        <IconX size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {showCategorySelector && (
-                <div className="border border-gray-200 rounded-md p-4 max-h-48 overflow-y-auto">
-                  {categories.length > 0 ? (
-                    categories.map((category) => (
-                      <label
-                        key={category.id}
-                        className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 rounded px-2"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={
-                            formData.applicableCategories.find(
-                              (c) => c.id === category.id
-                            ) !== undefined
-                          }
-                          onChange={() => handleCategoryToggle(category)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{category.name}</span>
-                      </label>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm text-center py-4">
-                      Không có danh mục nào
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ngày kết thúc *
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                      errors.endDate
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    required
+                  />
+                  {errors.endDate && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <IconX size={12} />
+                      {errors.endDate}
                     </p>
                   )}
                 </div>
-              )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Số lần sử dụng tối đa
+                  </label>
+                  <input
+                    type="number"
+                    name="maxUsages"
+                    value={formData.maxUsages}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    min="1"
+                    step="1"
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                      errors.maxUsages
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    placeholder="Không giới hạn"
+                  />
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <IconInfoCircle size={12} />
+                    Để trống = không giới hạn số lần sử dụng
+                  </p>
+                  {errors.maxUsages && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <IconX size={12} />
+                      {errors.maxUsages}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Trạng thái */}
-          <div className="bg-gray-50 p-4 rounded-md">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="active"
-                checked={formData.active}
-                onChange={handleChange}
-                className="rounded"
-              />
-              <IconCheck size={16} className="text-green-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Kích hoạt khuyến mãi
-              </span>
-            </label>
-            <p className="text-xs text-gray-500 mt-1 ml-6">
-              Khuyến mãi sẽ có hiệu lực ngay khi được tạo và trong khoảng thời
-              gian đã thiết lập
-            </p>
-          </div>
+            {/* Status Section */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconCheck size={20} className="text-green-600" />
+                Trạng thái khuyến mãi
+              </h3>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-            >
-              <IconCheck size={16} />
-              {promotion ? "Cập nhật" : "Tạo mới"}
-            </button>
-          </div>
-        </form>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed transition-all duration-200"
+                />
+                <div>
+                  <span className="text-sm font-medium text-green-800">
+                    Kích hoạt khuyến mãi ngay lập tức
+                  </span>
+                  <p className="text-xs text-green-600 mt-1">
+                    Khuyến mãi sẽ có hiệu lực ngay khi được tạo và trong khoảng
+                    thời gian đã thiết lập
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              >
+                {isSubmitting ? (
+                  <>
+                    <IconLoader2 size={16} className="animate-spin" />
+                    {promotion ? "Đang cập nhật..." : "Đang tạo..."}
+                  </>
+                ) : (
+                  <>
+                    <IconCheck size={16} />
+                    {promotion ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
