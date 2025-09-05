@@ -72,6 +72,14 @@ export const useAuth = () => {
     },
   });
 
+  // Verify OTP for sign up
+  const verifyOtpForSignUpMutation = useMutation({
+    mutationFn: authAPI.verifyOtpForSignUp,
+    onSuccess: () => {
+      console.log("OTP verified successfully");
+    },
+  });
+
   return {
     // User data
     user,
@@ -102,5 +110,10 @@ export const useAuth = () => {
     loginGoogleComplete: loginGoogleCompleteMutation.mutateAsync,
     isLoginGoogleCompleteLoading: loginGoogleCompleteMutation.isPending,
     loginGoogleCompleteError: loginGoogleCompleteMutation.error,
+
+    // Verify OTP for sign up
+    verifyOtpForSignUp: verifyOtpForSignUpMutation.mutateAsync,
+    isVerifyOtpForSignUp: verifyOtpForSignUpMutation.isPending,
+    verifyOtpForSignUpError: verifyOtpForSignUpMutation.error,
   };
 };

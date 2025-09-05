@@ -9,8 +9,11 @@ import {
   IconEye,
   IconEyeOff,
 } from "@tabler/icons-react";
+import { useFirebaseOtp } from "../../../hooks/useFirebaseOtp";
+import OtpForm from "./OtpForm";
 
 export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
+  const { sendOtp, verifyOtp } = useFirebaseOtp();
   const { register, isRegisterLoading, registerError } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -23,7 +26,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [step, setStep] = useState("form");
 
   const handleChange = (e) => {
     setFormData({
@@ -86,7 +89,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Xử lý submit form
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -95,61 +98,36 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
     }
 
     try {
-      const registerData = {
+      // Send OTP to Firebase
+      const res = await sendOtp(formData.phone.trim());
+
+      if (!res.success) {
+        setErrors({ general: "Không thể gửi OTP. Vui lòng thử lại." });
+        return;
+      }
+
+      // Proceed to OTP step
+      setStep("otp");
+    } catch (err) {
+      console.error("Gửi OTP thất bại:", err);
+      setErrors({ general: "Không thể gửi OTP. Vui lòng thử lại." });
+    }
+  };
+
+  // Callback when OTP is verified successfully
+  const handleOtpSuccess = async () => {
+    try {
+      await register({
         fullName: formData.fullName.trim(),
         email: formData.email.trim().toLowerCase(),
         phone: formData.phone.trim(),
         password: formData.password,
-      };
+      });
 
-      //   console.log("Sending register data:", registerData);
-
-      const result = await register(registerData);
-      //   console.log("Register result:", result);
-
-      // Kiểm tra success dựa trên status code
-      if (result.status === 200 || result.status === 201) {
-        // console.log("Register success detected!");
-
-        // Clear any existing errors
-        setErrors({});
-
-        // Set success state - CHỈ hiển thị success screen
-        setIsSuccess(true);
-
-        // KHÔNG tự động chuyển trang hay đóng modal
-        // User phải click button để tiếp tục
-      } else {
-        console.log("Register failed - unexpected status:", result.status);
-        setErrors({
-          general: "Đăng ký không thành công. Vui lòng thử lại.",
-        });
-      }
+      setStep("success");
     } catch (err) {
       console.error("Register failed:", err);
-
-      // Extract specific error message from server response
-      if (err?.response?.data?.error) {
-        const serverError = err.response.data.error;
-
-        // Handle specific field errors
-        if (serverError.field) {
-          setErrors({
-            [serverError.field]:
-              serverError.message || "Có lỗi xảy ra với trường này",
-          });
-        } else {
-          // General error message
-          setErrors({
-            general:
-              serverError.message || "Đăng ký thất bại. Vui lòng thử lại.",
-          });
-        }
-      } else {
-        setErrors({
-          general: "Đăng ký thất bại. Vui lòng thử lại.",
-        });
-      }
+      setErrors({ general: "Đăng ký thất bại. Vui lòng thử lại." });
     }
   };
 
@@ -185,8 +163,21 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
     return "Đăng ký thất bại. Vui lòng thử lại.";
   };
 
+  // OTP step
+  if (step === "otp") {
+    return (
+      <OtpForm
+        verifyOtp={verifyOtp}
+        onSuccess={handleOtpSuccess}
+        phoneNumber={formData.phone}
+        onBack={() => setStep("form")}
+        onResend={() => sendOtp(formData.phone)}
+      />
+    );
+  }
+
   // Success state
-  if (isSuccess) {
+  if (step === "success") {
     return (
       <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] min-h-[500px] flex flex-col relative">
         {/* Logo */}
@@ -455,6 +446,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           )}
         </button>
       </form>
+      <div id="recaptcha-container"></div>
 
       {/* Links */}
       <div className="flex justify-center mt-4 text-sm">
