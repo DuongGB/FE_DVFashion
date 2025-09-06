@@ -119,7 +119,7 @@ export const useUser = () => {
         // Handle dob conversion
         dob: userData.dob ? userData.dob.toISOString().split("T")[0] : null,
       };
-      return userAPI.createUser(backendData);
+      return userAPI.createStaff(backendData);
     },
     onSuccess: (data) => {
       console.log("User created successfully:", data);
@@ -127,26 +127,6 @@ export const useUser = () => {
     },
     onError: (error) => {
       console.error("Error creating user:", error);
-    },
-  });
-
-  // Create staff mutation
-  const createStaffMutation = useMutation({
-    mutationFn: (staffData) => {
-      console.log("Creating staff with data:", staffData);
-      const backendData = {
-        ...staffData,
-        roles: ["ROLE_STAFF"],
-        dob: staffData.dob ? staffData.dob.toISOString().split("T")[0] : null,
-      };
-      return userAPI.createStaff(backendData);
-    },
-    onSuccess: (data) => {
-      console.log("Staff created successfully:", data);
-      queryClient.invalidateQueries(["users", "all"]);
-    },
-    onError: (error) => {
-      console.error("Error creating staff:", error);
     },
   });
 
@@ -158,7 +138,12 @@ export const useUser = () => {
       const backendData = {
         ...userData,
         roles: userData.role ? [`ROLE_${userData.role}`] : undefined,
-        dob: userData.dob ? userData.dob.toISOString().split("T")[0] : null,
+        // Handle both string and Date object for dob
+        dob: userData.dob
+          ? typeof userData.dob === "string"
+            ? userData.dob // Already in YYYY-MM-DD format from date input
+            : userData.dob.toISOString().split("T")[0] // Convert Date to YYYY-MM-DD
+          : null,
       };
       return userAPI.updateUser(userId, backendData);
     },
@@ -213,11 +198,6 @@ export const useUser = () => {
     isCreatingUser: createUserMutation.isPending,
     createUserError: createUserMutation.error,
 
-    // Staff creation
-    createStaff: createStaffMutation.mutateAsync,
-    isCreatingStaff: createStaffMutation.isPending,
-    createStaffError: createStaffMutation.error,
-
     // User update
     updateUser: updateUserMutation.mutateAsync,
     isUpdatingUser: updateUserMutation.isPending,
@@ -233,52 +213,4 @@ export const useUser = () => {
     isChangingPassword: changePasswordMutation.isPending,
     changePasswordError: changePasswordMutation.error,
   };
-};
-
-// Hook riêng để get user by ID
-export const useUserById = (id) => {
-  return useQuery({
-    queryKey: ["users", "detail", id],
-    queryFn: async () => {
-      try {
-        const res = await userAPI.getUserById(id);
-        console.log("User detail response:", res.data);
-        const user = res.data.data || res.data;
-
-        return {
-          ...user,
-          role:
-            user.roles && user.roles.length > 0
-              ? user.roles[0].replace("ROLE_", "")
-              : "CUSTOMER",
-          active: user.active !== undefined ? user.active : true,
-          dob: user.dob ? new Date(user.dob) : null,
-          userName: user.userName || user.email?.split("@")[0] || "",
-          lastName: user.lastName || "",
-          addresses: user.addresses || [],
-          cart: user.cart || null,
-          reviews: user.reviews || [],
-          wishlist: user.wishlist || [],
-          createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
-          updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
-        };
-      } catch (error) {
-        console.error("Error fetching user detail:", error);
-        if (error.response?.status === 401) {
-          throw new Error("Bạn cần đăng nhập để xem thông tin người dùng");
-        }
-        if (error.response?.status === 403) {
-          throw new Error("Bạn không có quyền truy cập thông tin này");
-        }
-        throw error;
-      }
-    },
-    enabled: !!id,
-    retry: (failureCount, error) => {
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        return false;
-      }
-      return failureCount < 2;
-    },
-  });
 };
