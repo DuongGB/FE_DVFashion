@@ -271,9 +271,6 @@ export default function PromotionPage() {
           // Sử dụng helper function để clean data
           const promotionData = cleanPromotionData(promotion, newStatus);
 
-          console.log("Toggle status - Original promotion:", promotion);
-          console.log("Toggle status - Cleaned data:", promotionData);
-
           await updatePromotion({
             promotionId: promotion.id,
             promotionData,
