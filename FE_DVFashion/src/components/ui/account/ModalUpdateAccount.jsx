@@ -159,7 +159,13 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
         const errorMessage =
           error.response?.data?.message || "Dữ liệu không hợp lệ";
         toast.error(errorMessage);
-      } else if (error.response?.status === 409) {
+      } else if (
+        error.response?.data?.error?.message === "Phone number already exists"
+      ) {
+        toast.error("Số điện thoại đã được sử dụng bởi tài khoản khác!");
+      } else if (
+        error.response?.data?.error?.message === "Email already exists"
+      ) {
         toast.error("Email đã được sử dụng bởi tài khoản khác!");
       } else {
         toast.error("Có lỗi xảy ra khi cập nhật thông tin!");

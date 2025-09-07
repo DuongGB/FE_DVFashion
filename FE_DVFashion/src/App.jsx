@@ -49,7 +49,7 @@ function App() {
         </Route>
 
         {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
-        <Route
+        {/* <Route
           element={
             <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
           }
@@ -61,8 +61,8 @@ function App() {
             <Route path="reviews" element={<ReviewPage />} />
             <Route path="promotions" element={<PromotionPage />} />
             <Route path="customers" element={<CustomerManagermentPage />} />
-          </Route>
-        </Route>
+          </Route> */}
+        {/* </Route> */}
 
         {/* Main layout routes */}
         <Route element={<MainLayout />}>
