@@ -1,16 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePublicCategories } from "../../hooks/useCategory";
 import { useNavigate } from "react-router-dom";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"; // Import icons
 
 export default function Category({ language = "VI" }) {
   const navigate = useNavigate();
   const { categories, isLoading, error } = usePublicCategories(language);
 
-  // Filter only active categories
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 6;
+
   const activeCategories = categories?.filter((cat) => cat.active) || [];
+  const paginatedCategories = activeCategories.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handleNextPage = () => {
+    if ((currentPage + 1) * itemsPerPage < activeCategories.length) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleCategoryClick = (category) => {
-    // Navigate to products page with category filter
     navigate(`/products?category=${category.id}`);
   };
 
@@ -53,16 +71,15 @@ export default function Category({ language = "VI" }) {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-10">
+    <div className="w-full max-w-7xl mx-auto px-4 py-10 relative">
+      {/* Danh sách danh mục */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {categories.map((cat) => (
+        {paginatedCategories.map((cat) => (
           <div key={cat.id} className="text-center">
-            {/* Khung Category */}
             <div
               className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-orange-400 to-red-600 p-4 cursor-pointer hover:from-orange-500 hover:to-red-700 transition-all duration-300 transform hover:scale-105"
               onClick={() => handleCategoryClick(cat)}
             >
-              {/* Hình ảnh */}
               <div className="w-full h-60 flex items-center justify-center">
                 {cat.imageUrl || cat.image ? (
                   <img
@@ -75,8 +92,6 @@ export default function Category({ language = "VI" }) {
                     }}
                   />
                 ) : null}
-
-                {/* Fallback image */}
                 <div
                   className={`${
                     cat.imageUrl || cat.image ? "hidden" : "flex"
@@ -88,27 +103,40 @@ export default function Category({ language = "VI" }) {
                   </div>
                 </div>
               </div>
-
-              {/* Banner nhỏ ở dưới */}
               <div className="absolute bottom-0 left-0 right-0 bg-orange-500 text-white text-xs font-semibold py-1 flex justify-center gap-2">
                 <span>↠ Tự do vươn mình ↞</span>
               </div>
             </div>
-
-            {/* Tên Category */}
             <h3 className="mt-3 text-base font-bold text-gray-800 hover:text-orange-600 transition-colors">
               {cat.name}
             </h3>
-
-            {/* Description (optional) */}
-            {cat.description && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                {cat.description}
-              </p>
-            )}
           </div>
         ))}
       </div>
+
+      {/* Nút điều hướng */}
+      <button
+        onClick={handlePreviousPage}
+        disabled={currentPage === 0}
+        className={`absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-90 text-white p-1 rounded-full shadow-lg cursor-pointer ${
+          currentPage === 0
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-gray-900"
+        }`}
+      >
+        <IconChevronLeft size={16} />
+      </button>
+      <button
+        onClick={handleNextPage}
+        disabled={(currentPage + 1) * itemsPerPage >= activeCategories.length}
+        className={`absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-90 text-white p-1 rounded-full shadow-lg cursor-pointer ${
+          (currentPage + 1) * itemsPerPage >= activeCategories.length
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-gray-900"
+        }`}
+      >
+        <IconChevronRight size={16} />
+      </button>
     </div>
   );
 }

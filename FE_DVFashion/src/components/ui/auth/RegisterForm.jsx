@@ -131,11 +131,6 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
     }
   };
 
-  const handleGoogleRegister = () => {
-    // TODO: Implement Google OAuth for register
-    console.log("Google register clicked");
-  };
-
   const handleSwitchToLogin = (e) => {
     e.preventDefault();
     console.log("Switching to login manually...");
@@ -257,21 +252,6 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <span className="text-lg sm:text-xl">💸</span>
           <span className="text-xs text-center">Hoàn tiền DVFcash</span>
         </div>
-      </div>
-
-      {/* Social register */}
-      <div className="flex justify-center gap-3 mb-3">
-        <button
-          type="button"
-          onClick={handleGoogleRegister}
-          className="border rounded-full p-2 flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors duration-200"
-        >
-          <img
-            src="./src/assets/google.avif"
-            alt="Google"
-            className="w-6 h-6"
-          />
-        </button>
       </div>
 
       {/* Divider */}

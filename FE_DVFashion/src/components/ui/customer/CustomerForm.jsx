@@ -486,16 +486,12 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vai trò
                   </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => handleInputChange("role", e.target.value)}
-                    disabled={loading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
-                  >
-                    <option value={UserRole.CUSTOMER}>Khách hàng</option>
-                    <option value={UserRole.STAFF}>Nhân viên</option>
-                    <option value={UserRole.ADMIN}>Quản trị viên</option>
-                  </select>
+                  <input
+                    type="text"
+                    value="Khách hàng"
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                  />
                 </div>
               </div>
 

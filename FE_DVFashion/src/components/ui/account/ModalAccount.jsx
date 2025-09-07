@@ -108,7 +108,7 @@ export default function ModalAccount({ show, onClose, user }) {
           ĐI ĐẾN TÀI KHOẢN
         </button>
         <button
-          className="w-full bg-red-500 text-white font-bold py-3 rounded-lg mt-2"
+          className="w-full bg-red-500 text-white font-bold py-3 rounded-lg mt-2 cursor-pointer"
           onClick={handleLogout}
           disabled={isLogoutLoading}
         >
