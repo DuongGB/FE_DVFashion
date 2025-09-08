@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IconLock, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useUser } from "../../../hooks/useUser";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
 export default function ModalChangePassword({ show, onClose }) {
@@ -15,6 +16,20 @@ export default function ModalChangePassword({ show, onClose }) {
   const [errors, setErrors] = useState({});
 
   const { changePassword, isChangingPassword } = useUser();
+  const { t, i18n } = useTranslation();
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Validate form data
   const validateForm = () => {
@@ -22,26 +37,35 @@ export default function ModalChangePassword({ show, onClose }) {
 
     // Current password validation
     if (!form.oldPassword.trim()) {
-      newErrors.oldPassword = "Mật khẩu hiện tại là bắt buộc";
+      newErrors.oldPassword = t(
+        "modal_change_password.errors.current_password_required"
+      );
     }
 
     // New password validation
     if (!form.newPassword.trim()) {
-      newErrors.newPassword = "Mật khẩu mới là bắt buộc";
+      newErrors.newPassword = t(
+        "modal_change_password.errors.new_password_required"
+      );
     } else {
       // Pattern validation: at least one letter, one number, minimum 8 characters
       const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
       if (!passwordRegex.test(form.newPassword)) {
-        newErrors.newPassword =
-          "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái và 1 chữ số";
+        newErrors.newPassword = t(
+          "modal_change_password.errors.new_password_invalid"
+        );
       }
     }
 
     // Confirm password validation
     if (!form.confirmPassword.trim()) {
-      newErrors.confirmPassword = "Vui lòng nhập lại mật khẩu mới";
+      newErrors.confirmPassword = t(
+        "modal_change_password.errors.confirm_password_required"
+      );
     } else if (form.newPassword !== form.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu nhập lại không khớp";
+      newErrors.confirmPassword = t(
+        "modal_change_password.errors.confirm_password_mismatch"
+      );
     }
 
     // Check if new password is same as old password
@@ -50,7 +74,7 @@ export default function ModalChangePassword({ show, onClose }) {
       form.newPassword &&
       form.oldPassword === form.newPassword
     ) {
-      newErrors.newPassword = "Mật khẩu mới phải khác mật khẩu hiện tại";
+      newErrors.newPassword = t("modal_change_password.errors.password_same");
     }
 
     setErrors(newErrors);
@@ -62,7 +86,7 @@ export default function ModalChangePassword({ show, onClose }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra lại thông tin!");
+      toast.error(t("modal_change_password.errors.check_info"));
       return;
     }
 
@@ -76,7 +100,7 @@ export default function ModalChangePassword({ show, onClose }) {
 
       await changePassword(passwordData);
 
-      toast.success("Đổi mật khẩu thành công!");
+      toast.success(t("modal_change_password.errors.change_success"));
 
       // Reset form
       setForm({
@@ -95,18 +119,22 @@ export default function ModalChangePassword({ show, onClose }) {
 
         // Handle specific backend validation errors
         if (errorMessage?.includes("Current password")) {
-          toast.error("Mật khẩu hiện tại không đúng!");
+          toast.error(t("modal_change_password.errors.current_password_wrong"));
         } else if (errorMessage?.includes("New password")) {
-          toast.error("Mật khẩu mới không hợp lệ!");
+          toast.error(
+            t("modal_change_password.errors.new_password_invalid_backend")
+          );
         } else {
-          toast.error(errorMessage || "Dữ liệu không hợp lệ");
+          toast.error(
+            errorMessage || t("modal_change_password.errors.invalid_data")
+          );
         }
       } else if (error.response?.status === 401) {
-        toast.error("Phiên đăng nhập đã hết hạn!");
+        toast.error(t("modal_change_password.errors.session_expired"));
       } else if (error.response?.status === 403) {
-        toast.error("Bạn không có quyền thực hiện thao tác này!");
+        toast.error(t("modal_change_password.errors.no_permission"));
       } else {
-        toast.error("Có lỗi xảy ra khi đổi mật khẩu!");
+        toast.error(t("modal_change_password.errors.change_failed"));
       }
     }
   };
@@ -154,7 +182,9 @@ export default function ModalChangePassword({ show, onClose }) {
           &times;
         </button>
 
-        <h2 className="text-2xl font-bold mb-8 text-center">Đổi mật khẩu</h2>
+        <h2 className="text-2xl font-bold mb-8 text-center">
+          {t("modal_change_password.title")}
+        </h2>
 
         <form onSubmit={handleSubmit}>
           {/* Old password */}
@@ -164,7 +194,7 @@ export default function ModalChangePassword({ show, onClose }) {
               className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.oldPassword ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Mật khẩu hiện tại"
+              placeholder={t("modal_change_password.current_password")}
               value={form.oldPassword}
               onChange={(e) => handleInputChange("oldPassword", e.target.value)}
               disabled={isChangingPassword}
@@ -198,7 +228,7 @@ export default function ModalChangePassword({ show, onClose }) {
               className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.newPassword ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Mật khẩu mới"
+              placeholder={t("modal_change_password.new_password")}
               value={form.newPassword}
               onChange={(e) => handleInputChange("newPassword", e.target.value)}
               disabled={isChangingPassword}
@@ -236,7 +266,7 @@ export default function ModalChangePassword({ show, onClose }) {
                       : "text-red-500"
                   }
                 >
-                  ✓ Ít nhất 8 ký tự
+                  ✓ {t("modal_change_password.strength_indicators.min_length")}
                 </p>
                 <p
                   className={
@@ -245,7 +275,7 @@ export default function ModalChangePassword({ show, onClose }) {
                       : "text-red-500"
                   }
                 >
-                  ✓ Ít nhất 1 chữ cái
+                  ✓ {t("modal_change_password.strength_indicators.min_letter")}
                 </p>
                 <p
                   className={
@@ -254,7 +284,7 @@ export default function ModalChangePassword({ show, onClose }) {
                       : "text-red-500"
                   }
                 >
-                  ✓ Ít nhất 1 chữ số
+                  ✓ {t("modal_change_password.strength_indicators.min_number")}
                 </p>
               </div>
             </div>
@@ -267,7 +297,7 @@ export default function ModalChangePassword({ show, onClose }) {
               className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.confirmPassword ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Nhập lại mật khẩu mới"
+              placeholder={t("modal_change_password.confirm_password")}
               value={form.confirmPassword}
               onChange={(e) =>
                 handleInputChange("confirmPassword", e.target.value)
@@ -304,7 +334,7 @@ export default function ModalChangePassword({ show, onClose }) {
               disabled={isChangingPassword}
               className="flex-1 bg-gray-200 text-gray-700 rounded-full py-4 text-lg font-bold hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer "
             >
-              HỦY BỎ
+              {t("modal_change_password.cancel")}
             </button>
             <button
               type="submit"
@@ -314,10 +344,10 @@ export default function ModalChangePassword({ show, onClose }) {
               {isChangingPassword ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ĐANG ĐỔI...
+                  {t("modal_change_password.updating")}
                 </>
               ) : (
-                <>CẬP NHẬT MẬT KHẨU</>
+                <>{t("modal_change_password.update")}</>
               )}
             </button>
           </div>

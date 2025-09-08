@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { usePublicCategories } from "../../hooks/useCategory";
 import { useNavigate } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"; // Import icons
+import { useTranslation } from "react-i18next"; // Import useTranslation
 
 export default function Category({ language = "VI" }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { categories, isLoading, error } = usePublicCategories(language);
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -54,7 +56,7 @@ export default function Category({ language = "VI" }) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-10">
         <div className="text-center text-red-500">
-          <p>Không thể tải danh mục. Vui lòng thử lại sau.</p>
+          <p>{t("category.error_loading")}</p>
         </div>
       </div>
     );
@@ -64,7 +66,7 @@ export default function Category({ language = "VI" }) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-10">
         <div className="text-center text-gray-500">
-          <p>Không có danh mục nào để hiển thị.</p>
+          <p>{t("category.no_categories")}</p>
         </div>
       </div>
     );
@@ -104,7 +106,7 @@ export default function Category({ language = "VI" }) {
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-orange-500 text-white text-xs font-semibold py-1 flex justify-center gap-2">
-                <span>↠ Tự do vươn mình ↞</span>
+                <span>{t("category.tagline")}</span>
               </div>
             </div>
             <h3 className="mt-3 text-base font-bold text-gray-800 hover:text-orange-600 transition-colors">

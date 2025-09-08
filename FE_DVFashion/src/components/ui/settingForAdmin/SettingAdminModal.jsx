@@ -20,6 +20,11 @@ export default function SettingAdminModal({ show, onClose }) {
   // Lấy thông tin người dùng hiện tại từ hook useAuth
   const { user: currentUser } = useAuth();
 
+  const handleLanguageChange = (lang) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem("i18nextLng", lang);
+  };
+
   if (!show) return null;
 
   return (
@@ -54,7 +59,7 @@ export default function SettingAdminModal({ show, onClose }) {
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
-              onClick={() => i18n.changeLanguage("VI")}
+              onClick={() => handleLanguageChange("VI")}
             >
               VI
             </button>
@@ -64,7 +69,7 @@ export default function SettingAdminModal({ show, onClose }) {
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
-              onClick={() => i18n.changeLanguage("EN")}
+              onClick={() => handleLanguageChange("EN")}
             >
               EN
             </button>

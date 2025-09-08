@@ -5,14 +5,24 @@ import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
 import Banner from "../components/common/Banner";
 import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
+import { useTranslation } from "react-i18next";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
-  console.log("HomePage user:", user);
-  console.log("HomePage isAuthenticated:", isAuthenticated);
-
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
+    if (isAuthenticated && user?.preferredLanguage) {
+      i18n.changeLanguage(user.preferredLanguage);
+      localStorage.setItem("i18nextLng", user.preferredLanguage); // Lưu vào localStorage
+    } else {
+      const savedLanguage = localStorage.getItem("i18nextLng") || "VI";
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [isAuthenticated, user, i18n]);
 
   useEffect(() => {
     // Chỉ redirect nếu đang ở trang chủ "/"
@@ -36,24 +46,21 @@ export default function HomePage() {
   const ads = [
     {
       id: 1,
-      title: "MEN WEAR",
-      subtitle: "Nhập COOLNEW Giảm 30K đơn đầu tiên từ 199k",
+      title: t("ads.men_wear.title"),
+      subtitle: t("ads.men_wear.subtitle"),
       image: "./src/assets/ads_home_1.avif",
-      button: "KHÁM PHÁ",
+      button: t("ads.men_wear.button"),
     },
     {
       id: 2,
-      title: "WOMEN ACTIVE",
-      subtitle: "Tặng phụ kiện cho đơn từ 399k | Freeship",
+      title: t("ads.women_active.title"),
+      subtitle: t("ads.women_active.subtitle"),
       image: "./src/assets/ads_home_2.avif",
-      button: "KHÁM PHÁ",
+      button: t("ads.women_active.button"),
     },
   ];
 
   return (
-    // <div className="flex flex-col items-center justify-center h-screen gap-4">
-    //   {!isAuthenticated && <LoginForm />}
-    // </div>
     <div className="font-sans">
       {/* Banner */}
       <Banner />

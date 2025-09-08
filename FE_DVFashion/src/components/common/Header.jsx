@@ -6,6 +6,7 @@ import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
 import { useAuthModal } from "../../hooks/useAuthModal";
 import AuthModal from "../ui/auth/AuthModal";
+import { useTranslation } from "react-i18next";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -89,11 +90,15 @@ const megaMenuItems = [
 
 // Top bar component
 function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const [lang, setLang] = useState("VI");
+  const [lang, setLang] = useState(i18n.language || "VI");
 
   const handleLangChange = () => {
-    setLang((v) => (v === "VI" ? "EN" : "VI"));
+    const newLang = lang === "VI" ? "EN" : "VI";
+    setLang(newLang);
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("i18nextLng", newLang);
   };
   return (
     <div className="bg-gray-500 text-white flex justify-between px-8 py-2 text-sm">
