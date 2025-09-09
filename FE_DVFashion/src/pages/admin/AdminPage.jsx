@@ -430,29 +430,6 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Trang Quản Trị
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Chào mừng trở lại! Đây là tổng quan về hệ thống DVFashion.
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => navigate("/admin/settings")}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-              >
-                <IconSettings size={20} />
-                <span>Cài đặt</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Primary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard

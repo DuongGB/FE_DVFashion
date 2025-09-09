@@ -12,6 +12,7 @@ import {
   IconStar,
   IconHelp,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next"; // Import translation hook
 
 const SidebarItem = ({ icon, text, active }) => {
   return (
@@ -42,6 +43,7 @@ export default function AccountPage() {
   const { user } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="flex bg-gray-100 min-h-screen">
@@ -51,54 +53,65 @@ export default function AccountPage() {
           <SidebarItem
             active
             icon={<IconUser size={24} />}
-            text="Thông tin tài khoản"
+            text={t("account.sidebar.account_info")}
           />
           <SidebarItem
             icon={<IconUsers size={24} />}
-            text="Giới thiệu bạn bè"
+            text={t("account.sidebar.refer_friends")}
           />
           <SidebarItem
             icon={<IconShoppingCart size={24} />}
-            text="Lịch sử đơn hàng"
+            text={t("account.sidebar.order_history")}
           />
-          <SidebarItem icon={<IconCoin size={24} />} text="Lịch sử DVFCash" />
-          <SidebarItem icon={<IconTicket size={24} />} text="Ví Voucher" />
-          <SidebarItem icon={<IconHome size={24} />} text="Sổ địa chỉ" />
+          <SidebarItem
+            icon={<IconCoin size={24} />}
+            text={t("account.sidebar.dvf_cash_history")}
+          />
+          <SidebarItem
+            icon={<IconTicket size={24} />}
+            text={t("account.sidebar.voucher_wallet")}
+          />
+          <SidebarItem
+            icon={<IconHome size={24} />}
+            text={t("account.sidebar.address_book")}
+          />
           <SidebarItem
             icon={<IconStar size={24} />}
-            text="Đánh giá và phản hồi"
+            text={t("account.sidebar.reviews_feedback")}
           />
           <SidebarItem
             icon={<IconHelp size={24} />}
-            text="Chính sách & Câu hỏi thường gặp"
+            text={t("account.sidebar.policies_faq")}
           />
         </div>
       </div>
       {/* Main content */}
       <div className="flex-1 p-10 bg-white rounded-lg m-6">
-        <h2 className="text-3xl font-bold mb-8">Thông tin tài khoản</h2>
+        <h2 className="text-3xl font-bold mb-8">
+          {t("account.main.account_info")}
+        </h2>
         <div className="mb-8">
           <InfoRow
-            label="Họ và tên"
-            value={user?.fullName || "Chưa cập nhật"}
+            label={t("account.main.full_name")}
+            value={user?.fullName || t("account.main.not_updated")}
           />
           <InfoRow
-            label="Số điện thoại"
-            value={user?.phone || "Chưa cập nhật"}
+            label={t("account.main.phone")}
+            value={user?.phone || t("account.main.not_updated")}
           />
-          <InfoRow label="Giới tính" value={user?.gender || "Chưa cập nhật"} />
           <InfoRow
-            label="Ngày sinh"
-            value={
-              user?.dob ||
-              "Hãy cập nhật ngày sinh để DVFashion gửi cho bạn 1 phần quà đặc biệt nhé"
-            }
+            label={t("account.main.gender")}
+            value={user?.gender || t("account.main.not_updated")}
+          />
+          <InfoRow
+            label={t("account.main.dob")}
+            value={user?.dob || t("account.main.dob_placeholder")}
           />
           <button
             className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
             onClick={() => setShowUpdateModal(true)}
           >
-            CẬP NHẬT
+            {t("account.main.update")}
           </button>
           <ModalUpdateAccount
             show={showUpdateModal}
@@ -106,14 +119,19 @@ export default function AccountPage() {
             user={user}
           />
         </div>
-        <h3 className="text-xl font-bold mb-4">Thông tin đăng nhập</h3>
-        <InfoRow label="Email" value={user?.email || "Chưa cập nhật"} />
-        <InfoRow label="Mật khẩu" value="************" />
+        <h3 className="text-xl font-bold mb-4">
+          {t("account.main.login_info")}
+        </h3>
+        <InfoRow
+          label={t("account.main.email")}
+          value={user?.email || t("account.main.not_updated")}
+        />
+        <InfoRow label={t("account.main.password")} value="************" />
         <button
           className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
           onClick={() => setShowModal(true)}
         >
-          CẬP NHẬT
+          {t("account.main.update")}
         </button>
         <ModalChangePassword
           show={showModal}

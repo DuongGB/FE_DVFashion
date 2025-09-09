@@ -6,6 +6,7 @@ import {
   IconMail,
 } from "@tabler/icons-react";
 import { useUser } from "../../../hooks/useUser";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
 export default function ModalUpdateAccount({ show, onClose, user }) {
@@ -23,6 +24,20 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
 
   const [errors, setErrors] = useState({});
   const { updateUser, isUpdatingUser } = useUser();
+  const { t, i18n } = useTranslation();
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Load user data when modal opens
   useEffect(() => {
@@ -78,18 +93,20 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
 
     // Full name validation
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ và tên là bắt buộc";
+      newErrors.fullName = t("modal_update_account.errors.full_name_required");
     } else if (formData.fullName.trim().length < 6) {
-      newErrors.fullName = "Họ và tên phải có ít nhất 6 ký tự";
+      newErrors.fullName = t(
+        "modal_update_account.errors.full_name_min_length"
+      );
     }
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
+      newErrors.email = t("modal_update_account.errors.email_required");
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email.trim())) {
-        newErrors.email = "Email không hợp lệ";
+        newErrors.email = t("modal_update_account.errors.email_invalid");
       }
     }
 
@@ -97,7 +114,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
     if (formData.phone.trim()) {
       const phoneRegex = /^[0-9]{10,11}$/;
       if (!phoneRegex.test(formData.phone.trim().replace(/\s+/g, ""))) {
-        newErrors.phone = "Số điện thoại phải có 10-11 chữ số";
+        newErrors.phone = t("modal_update_account.errors.phone_invalid");
       }
     }
 
@@ -105,18 +122,18 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
     const { day, month, year } = formData.dob;
     if (day || month || year) {
       if (!day || !month || !year) {
-        newErrors.dob = "Vui lòng chọn đầy đủ ngày, tháng, năm sinh";
+        newErrors.dob = t("modal_update_account.errors.dob_incomplete");
       } else {
         const dobDate = new Date(year, month - 1, day);
         const today = new Date();
 
         if (dobDate > today) {
-          newErrors.dob = "Ngày sinh không thể là ngày trong tương lai";
+          newErrors.dob = t("modal_update_account.errors.dob_future");
         }
 
         const age = today.getFullYear() - dobDate.getFullYear();
         if (age < 13 || age > 120) {
-          newErrors.dob = "Tuổi phải từ 13 đến 120";
+          newErrors.dob = t("modal_update_account.errors.dob_age_range");
         }
       }
     }
@@ -130,7 +147,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra lại thông tin!");
+      toast.error(t("modal_update_account.errors.check_info"));
       return;
     }
 
@@ -150,19 +167,26 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
         userData: updateData,
       });
 
-      toast.success("Cập nhật thông tin thành công!");
+      toast.success(t("modal_update_account.errors.update_success"));
       onClose();
     } catch (error) {
       console.error("Error updating user:", error);
 
       if (error.response?.status === 400) {
         const errorMessage =
-          error.response?.data?.message || "Dữ liệu không hợp lệ";
+          error.response?.data?.message ||
+          t("modal_update_account.errors.invalid_data");
         toast.error(errorMessage);
-      } else if (error.response?.status === 409) {
-        toast.error("Email đã được sử dụng bởi tài khoản khác!");
+      } else if (
+        error.response?.data?.error?.message === "Phone number already exists"
+      ) {
+        toast.error(t("modal_update_account.errors.phone_exists"));
+      } else if (
+        error.response?.data?.error?.message === "Email already exists"
+      ) {
+        toast.error(t("modal_update_account.errors.email_exists"));
       } else {
-        toast.error("Có lỗi xảy ra khi cập nhật thông tin!");
+        toast.error(t("modal_update_account.errors.update_failed"));
       }
     }
   };
@@ -220,7 +244,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
         </button>
 
         <h2 className="text-2xl font-bold mb-8 text-center">
-          Chỉnh sửa thông tin tài khoản
+          {t("modal_update_account.title")}
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -231,7 +255,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
               className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.fullName ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Họ và tên"
+              placeholder={t("modal_update_account.full_name")}
               value={formData.fullName}
               onChange={(e) => handleInputChange("fullName", e.target.value)}
               disabled={isUpdatingUser}
@@ -256,7 +280,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
               className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Email"
+              placeholder={t("modal_update_account.email")}
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               disabled={isUpdatingUser}
@@ -286,7 +310,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   onChange={(e) => handleDobChange("day", e.target.value)}
                   disabled={isUpdatingUser}
                 >
-                  <option value="">Ngày</option>
+                  <option value="">{t("modal_update_account.day")}</option>
                   {[...Array(31)].map((_, i) => (
                     <option key={i + 1} value={i + 1}>
                       {i + 1}
@@ -307,12 +331,14 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   onChange={(e) => handleDobChange("month", e.target.value)}
                   disabled={isUpdatingUser}
                 >
-                  <option value="">Tháng</option>
+                  <option value="">{t("modal_update_account.month")}</option>
                   {Array.from({ length: 12 }, (_, i) => {
                     const monthNum = i + 1;
                     return (
                       <option key={monthNum} value={monthNum}>
-                        Tháng {monthNum}
+                        {t("modal_update_account.month_label", {
+                          number: monthNum,
+                        })}
                       </option>
                     );
                   })}
@@ -331,7 +357,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   onChange={(e) => handleDobChange("year", e.target.value)}
                   disabled={isUpdatingUser}
                 >
-                  <option value="">Năm</option>
+                  <option value="">{t("modal_update_account.year")}</option>
                   {Array.from({ length: 70 }, (_, i) => 2025 - i).map(
                     (year) => (
                       <option key={year} value={year}>
@@ -357,7 +383,9 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
 
           {/* Giới tính */}
           <div className="mb-6">
-            <p className="text-gray-700 font-medium mb-3">Giới tính:</p>
+            <p className="text-gray-700 font-medium mb-3">
+              {t("modal_update_account.gender")}
+            </p>
             <div className="flex gap-8 items-center">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -369,7 +397,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   disabled={isUpdatingUser}
                   className="w-4 h-4 text-blue-600"
                 />
-                Nam
+                {t("modal_update_account.male")}
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -381,7 +409,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   disabled={isUpdatingUser}
                   className="w-4 h-4 text-pink-600"
                 />
-                Nữ
+                {t("modal_update_account.female")}
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -393,7 +421,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                   disabled={isUpdatingUser}
                   className="w-4 h-4 text-gray-600"
                 />
-                Khác
+                {t("modal_update_account.other")}
               </label>
             </div>
           </div>
@@ -405,7 +433,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
               className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.phone ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Số điện thoại (tùy chọn)"
+              placeholder={t("modal_update_account.phone")}
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               disabled={isUpdatingUser}
@@ -431,7 +459,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
               disabled={isUpdatingUser}
               className="flex-1 bg-gray-200 text-gray-700 rounded-full py-4 text-lg font-bold hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer "
             >
-              HỦY BỎ
+              {t("modal_update_account.cancel")}
             </button>
             <button
               type="submit"
@@ -441,10 +469,10 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
               {isUpdatingUser ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ĐANG CẬP NHẬT...
+                  {t("modal_update_account.updating")}
                 </>
               ) : (
-                <>CẬP NHẬT THÔNG TIN</>
+                <>{t("modal_update_account.update")}</>
               )}
             </button>
           </div>

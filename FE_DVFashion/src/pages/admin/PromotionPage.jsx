@@ -101,6 +101,21 @@ export default function PromotionPage() {
   const { promotions, isLoading, error, updatePromotion } =
     usePromotion(language);
 
+  // Helper function: Chuyển đổi định dạng ngày tháng
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "";
+    const date = new Date(dateTimeString);
+    const time = date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Months are zero-based
+    const year = date.getFullYear();
+    return `${time} ${day}/${month}/${year}`;
+  };
+
   // Store original order when promotions first load
   useEffect(() => {
     if (promotions && promotions.length > 0) {
@@ -213,7 +228,7 @@ export default function PromotionPage() {
       description: promotion.description || null,
       type: promotion.type,
       value: promotion.value,
-      minOrderAmount: promotion.minOrderAmount || null,
+      minOrderAmount: promotion.minOrderAmount || 0,
       maxUsages: promotion.maxUsages || null,
       startDate: formatDateForAPI(promotion.startDate),
       endDate: formatDateForAPI(promotion.endDate),
@@ -551,8 +566,8 @@ export default function PromotionPage() {
                     {promo.maxUsages ||
                       (language === "VI" ? "Không giới hạn" : "Unlimited")}
                   </td>
-                  <td className="p-2">{promo.startDate}</td>
-                  <td className="p-2">{promo.endDate}</td>
+                  <td className="p-2">{formatDateTime(promo.startDate)}</td>
+                  <td className="p-2">{formatDateTime(promo.endDate)}</td>
                   <td className="p-2">
                     <button
                       onClick={() => handleToggleStatus(promo)}

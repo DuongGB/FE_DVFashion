@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart, User } from "react-feather";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -6,6 +6,7 @@ import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
 import { useAuthModal } from "../../hooks/useAuthModal";
 import AuthModal from "../ui/auth/AuthModal";
+import { useTranslation } from "react-i18next";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -89,37 +90,53 @@ const megaMenuItems = [
 
 // Top bar component
 function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [lang, setLang] = useState("VI");
+  const [lang, setLang] = useState(i18n.language || "VI");
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setLang(i18n.language);
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   const handleLangChange = () => {
-    setLang((v) => (v === "VI" ? "EN" : "VI"));
+    const newLang = lang === "VI" ? "EN" : "VI";
+    setLang(newLang);
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("i18nextLng", newLang);
   };
   return (
     <div className="bg-gray-500 text-white flex justify-between px-8 py-2 text-sm">
-      <Link to="/">VỀ DVFASHION</Link>
+      <Link to="/">{t("header.about_dvfashion")}</Link>
       <div className="flex gap-4">
         {/* Nút chuyển đổi ngôn ngữ */}
         <LangSwitchButton lang={lang} onLangChange={handleLangChange} />
-        <Link to="#">DVFclub</Link>
+        <Link to="#">{t("header.dvfclub")}</Link>
         <button
           className="hover:underline cursor-pointer"
           onClick={() => navigate("/blog")}
         >
-          Blog
+          {t("header.blog")}
         </button>
         <button
           className="hover:underline cursor-pointer"
           onClick={() => navigate("/help")}
         >
-          CSKH
+          {t("header.customer_service")}
         </button>
         {!isAuthenticated && (
           <button
             className="hover:underline cursor-pointer"
             onClick={onLoginClick}
           >
-            Đăng nhập
+            {t("header.login")}
           </button>
         )}
         {isAuthenticated && (
@@ -140,6 +157,7 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
 
 // Main menu component
 function MainMenu({ isAuthenticated, user, onUserClick }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
       {/* Logo */}
@@ -159,28 +177,28 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             to="/"
             className="cursor-pointer w-full text-center text-blue-600"
           >
-            NEW
+            {t("header.navigation.new")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-blue-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
           <Link to="/" className="cursor-pointer w-full text-center">
-            NAM
+            {t("header.navigation.men")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
           <Link to="/" className="cursor-pointer w-full text-center">
-            NỮ
+            {t("header.navigation.women")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
           <Link to="/" className="cursor-pointer w-full text-center">
-            THỂ THAO
+            {t("header.navigation.sports")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
@@ -190,14 +208,14 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             to="/"
             className="flex flex-col items-center text-red-600 font-bold w-full text-center"
           >
-            SALE
+            {t("header.navigation.sale")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-red-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
         </div>
         <div className="group relative w-[110px] flex justify-center">
           <Link to="/" className="cursor-pointer w-full text-center">
-            C&S
+            {t("header.navigation.cs")}
           </Link>
           <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
           <MegaMenu />
@@ -207,7 +225,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       <div className="flex items-center gap-4">
         <input
           type="text"
-          placeholder="Tìm kiếm..."
+          placeholder={t("header.search_placeholder")}
           className="border rounded-full px-4 py-1"
         />
         <div
@@ -216,7 +234,9 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         >
           <User size={24} />
           <span className="text-sm font-semibold" onClick={onUserClick}>
-            {isAuthenticated ? getLastName(user?.fullName) : "Tài khoản"}
+            {isAuthenticated
+              ? getLastName(user?.fullName)
+              : t("header.account")}
           </span>
         </div>
         <div className="relative cursor-pointer">

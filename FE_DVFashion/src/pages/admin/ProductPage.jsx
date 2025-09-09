@@ -10,239 +10,248 @@ import {
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
 import ProductForm from "../../components/ui/product/ProductForm";
 import { toast } from "react-toastify";
+import { useProduct } from "../../hooks/useProduct";
+import { useBrand } from "../../hooks/useBrand";
+import { useCategory } from "../../hooks/useCategory";
 
-const mockProducts = [
-  {
-    id: 1,
-    code: "SP001",
-    name: "Áo Thun Nam Basic",
-    description: "Áo thun cotton thoáng mát, thiết kế đơn giản",
-    price: 150000,
-    sale_price: 120000,
-    on_sale: true,
-    review_count: 12,
-    status: "ACTIVE",
-    created_at: "2024-04-01T08:00:00",
-    updated_at: "2024-04-10T15:30:00",
-    brand: { id: 1, name: "Nike", code: "NIKE" },
-    category: { id: 2, name: "Áo thun nam", code: "ATNAM" },
-    gender: "Nam", // Thêm trường giới tính
-    images: [{ id: 1, url: "/src/assets/product.avif", alt: "Áo thun nam" }],
-    variants: [
-      {
-        id: 1,
-        name: "Áo Thun Nam - Đỏ - Size M",
-        sku: "SP001-RED-M",
-        price: 150000,
-        sale_price: 120000,
-        stock_quantity: 50,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 1,
-        attributes: [
-          { name: "Màu sắc", value: "Đỏ" },
-          { name: "Kích thước", value: "M" },
-        ],
-      },
-      {
-        id: 11,
-        name: "Áo Thun Nam - Xanh - Size L",
-        sku: "SP001-BLUE-L",
-        price: 150000,
-        sale_price: 120000,
-        stock_quantity: 30,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 1,
-        attributes: [
-          { name: "Màu sắc", value: "Xanh" },
-          { name: "Kích thước", value: "L" },
-        ],
-      },
-    ],
-    specifications: [
-      { key: "Chất liệu", value: "Cotton 100%" },
-      { key: "Xuất xứ", value: "Việt Nam" },
-    ],
-  },
-  {
-    id: 2,
-    code: "SP002",
-    name: "Quần Jeans Slim Fit",
-    description: "Quần jeans nam cao cấp, form slim fit",
-    price: 350000,
-    sale_price: 350000,
-    on_sale: false,
-    review_count: 8,
-    status: "ACTIVE",
-    created_at: "2024-04-02T09:15:00",
-    updated_at: "2024-04-11T16:45:00",
-    brand: { id: 2, name: "Levi's", code: "LEVIS" },
-    category: { id: 3, name: "Quần jean nam", code: "QJNAM" },
-    gender: "Nam",
-    images: [{ id: 2, url: "/src/assets/product.avif", alt: "Quần jeans" }],
-    variants: [
-      {
-        id: 2,
-        name: "Quần Jeans - Xanh - Size 32",
-        sku: "SP002-BLUE-32",
-        price: 350000,
-        sale_price: 350000,
-        stock_quantity: 30,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 2,
-        attributes: [
-          { name: "Màu sắc", value: "Xanh" },
-          { name: "Kích thước", value: "32" },
-        ],
-      },
-      {
-        id: 12,
-        name: "Quần Jeans - Đen - Size 34",
-        sku: "SP002-BLACK-34",
-        price: 350000,
-        sale_price: 350000,
-        stock_quantity: 20,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 2,
-        attributes: [
-          { name: "Màu sắc", value: "Đen" },
-          { name: "Kích thước", value: "34" },
-        ],
-      },
-    ],
-    specifications: [
-      { key: "Chất liệu", value: "Denim 98% cotton, 2% spandex" },
-      { key: "Kiểu dáng", value: "Slim fit" },
-    ],
-  },
-  {
-    id: 3,
-    code: "SP003",
-    name: "Váy Maxi Nữ",
-    description: "Váy maxi nữ thanh lịch, phù hợp dạo phố",
-    price: 280000,
-    sale_price: 250000,
-    on_sale: true,
-    review_count: 15,
-    status: "ACTIVE",
-    created_at: "2024-04-03T10:30:00",
-    updated_at: "2024-04-12T14:20:00",
-    brand: { id: 3, name: "Zara", code: "ZARA" },
-    category: { id: 4, name: "Váy nữ", code: "VAYNU" },
-    gender: "Nữ",
-    images: [{ id: 3, url: "/src/assets/product.avif", alt: "Váy maxi" }],
-    variants: [
-      {
-        id: 3,
-        name: "Váy Maxi - Hồng - Size S",
-        sku: "SP003-PINK-S",
-        price: 280000,
-        sale_price: 250000,
-        stock_quantity: 25,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 3,
-        attributes: [
-          { name: "Màu sắc", value: "Hồng" },
-          { name: "Kích thước", value: "S" },
-        ],
-      },
-      {
-        id: 13,
-        name: "Váy Maxi - Trắng - Size M",
-        sku: "SP003-WHITE-M",
-        price: 280000,
-        sale_price: 250000,
-        stock_quantity: 15,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 3,
-        attributes: [
-          { name: "Màu sắc", value: "Trắng" },
-          { name: "Kích thước", value: "M" },
-        ],
-      },
-    ],
-    specifications: [
-      { key: "Chất liệu", value: "Polyester 100%" },
-      { key: "Xuất xứ", value: "Việt Nam" },
-    ],
-  },
-  {
-    id: 4,
-    code: "SP004",
-    name: "Giày Sneaker Unisex",
-    description: "Giày sneaker thời trang, phù hợp cho mọi giới tính",
-    price: 750000,
-    sale_price: 650000,
-    on_sale: true,
-    review_count: 22,
-    status: "ACTIVE",
-    created_at: "2024-04-04T11:15:00",
-    updated_at: "2024-04-13T16:30:00",
-    brand: { id: 1, name: "Nike", code: "NIKE" },
-    category: { id: 5, name: "Giày dép", code: "GIAYDEP" },
-    gender: "Unisex",
-    images: [{ id: 4, url: "/src/assets/product.avif", alt: "Giày sneaker" }],
-    variants: [
-      {
-        id: 4,
-        name: "Giày Sneaker - Trắng - Size 42",
-        sku: "SP004-WHITE-42",
-        price: 750000,
-        sale_price: 650000,
-        stock_quantity: 12,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 4,
-        attributes: [
-          { name: "Màu sắc", value: "Trắng" },
-          { name: "Kích thước", value: "42" },
-        ],
-      },
-      {
-        id: 14,
-        name: "Giày Sneaker - Đen - Size 40",
-        sku: "SP004-BLACK-40",
-        price: 750000,
-        sale_price: 650000,
-        stock_quantity: 8,
-        additional_price: 0,
-        status: "ACTIVE",
-        product_id: 4,
-        attributes: [
-          { name: "Màu sắc", value: "Đen" },
-          { name: "Kích thước", value: "40" },
-        ],
-      },
-    ],
-    specifications: [
-      { key: "Chất liệu", value: "Da tổng hợp" },
-      { key: "Xuất xứ", value: "Việt Nam" },
-    ],
-  },
-];
+// const mockProducts = [
+//   {
+//     id: 1,
+//     code: "SP001",
+//     name: "Áo Thun Nam Basic",
+//     description: "Áo thun cotton thoáng mát, thiết kế đơn giản",
+//     price: 150000,
+//     sale_price: 120000,
+//     on_sale: true,
+//     review_count: 12,
+//     status: "ACTIVE",
+//     created_at: "2024-04-01T08:00:00",
+//     updated_at: "2024-04-10T15:30:00",
+//     brand: { id: 1, name: "Nike", code: "NIKE" },
+//     category: { id: 2, name: "Áo thun nam", code: "ATNAM" },
+//     gender: "Nam", // Thêm trường giới tính
+//     images: [{ id: 1, url: "/src/assets/product.avif", alt: "Áo thun nam" }],
+//     variants: [
+//       {
+//         id: 1,
+//         name: "Áo Thun Nam - Đỏ - Size M",
+//         sku: "SP001-RED-M",
+//         price: 150000,
+//         sale_price: 120000,
+//         stock_quantity: 50,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 1,
+//         attributes: [
+//           { name: "Màu sắc", value: "Đỏ" },
+//           { name: "Kích thước", value: "M" },
+//         ],
+//       },
+//       {
+//         id: 11,
+//         name: "Áo Thun Nam - Xanh - Size L",
+//         sku: "SP001-BLUE-L",
+//         price: 150000,
+//         sale_price: 120000,
+//         stock_quantity: 30,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 1,
+//         attributes: [
+//           { name: "Màu sắc", value: "Xanh" },
+//           { name: "Kích thước", value: "L" },
+//         ],
+//       },
+//     ],
+//     specifications: [
+//       { key: "Chất liệu", value: "Cotton 100%" },
+//       { key: "Xuất xứ", value: "Việt Nam" },
+//     ],
+//   },
+//   {
+//     id: 2,
+//     code: "SP002",
+//     name: "Quần Jeans Slim Fit",
+//     description: "Quần jeans nam cao cấp, form slim fit",
+//     price: 350000,
+//     sale_price: 350000,
+//     on_sale: false,
+//     review_count: 8,
+//     status: "ACTIVE",
+//     created_at: "2024-04-02T09:15:00",
+//     updated_at: "2024-04-11T16:45:00",
+//     brand: { id: 2, name: "Levi's", code: "LEVIS" },
+//     category: { id: 3, name: "Quần jean nam", code: "QJNAM" },
+//     gender: "Nam",
+//     images: [{ id: 2, url: "/src/assets/product.avif", alt: "Quần jeans" }],
+//     variants: [
+//       {
+//         id: 2,
+//         name: "Quần Jeans - Xanh - Size 32",
+//         sku: "SP002-BLUE-32",
+//         price: 350000,
+//         sale_price: 350000,
+//         stock_quantity: 30,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 2,
+//         attributes: [
+//           { name: "Màu sắc", value: "Xanh" },
+//           { name: "Kích thước", value: "32" },
+//         ],
+//       },
+//       {
+//         id: 12,
+//         name: "Quần Jeans - Đen - Size 34",
+//         sku: "SP002-BLACK-34",
+//         price: 350000,
+//         sale_price: 350000,
+//         stock_quantity: 20,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 2,
+//         attributes: [
+//           { name: "Màu sắc", value: "Đen" },
+//           { name: "Kích thước", value: "34" },
+//         ],
+//       },
+//     ],
+//     specifications: [
+//       { key: "Chất liệu", value: "Denim 98% cotton, 2% spandex" },
+//       { key: "Kiểu dáng", value: "Slim fit" },
+//     ],
+//   },
+//   {
+//     id: 3,
+//     code: "SP003",
+//     name: "Váy Maxi Nữ",
+//     description: "Váy maxi nữ thanh lịch, phù hợp dạo phố",
+//     price: 280000,
+//     sale_price: 250000,
+//     on_sale: true,
+//     review_count: 15,
+//     status: "ACTIVE",
+//     created_at: "2024-04-03T10:30:00",
+//     updated_at: "2024-04-12T14:20:00",
+//     brand: { id: 3, name: "Zara", code: "ZARA" },
+//     category: { id: 4, name: "Váy nữ", code: "VAYNU" },
+//     gender: "Nữ",
+//     images: [{ id: 3, url: "/src/assets/product.avif", alt: "Váy maxi" }],
+//     variants: [
+//       {
+//         id: 3,
+//         name: "Váy Maxi - Hồng - Size S",
+//         sku: "SP003-PINK-S",
+//         price: 280000,
+//         sale_price: 250000,
+//         stock_quantity: 25,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 3,
+//         attributes: [
+//           { name: "Màu sắc", value: "Hồng" },
+//           { name: "Kích thước", value: "S" },
+//         ],
+//       },
+//       {
+//         id: 13,
+//         name: "Váy Maxi - Trắng - Size M",
+//         sku: "SP003-WHITE-M",
+//         price: 280000,
+//         sale_price: 250000,
+//         stock_quantity: 15,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 3,
+//         attributes: [
+//           { name: "Màu sắc", value: "Trắng" },
+//           { name: "Kích thước", value: "M" },
+//         ],
+//       },
+//     ],
+//     specifications: [
+//       { key: "Chất liệu", value: "Polyester 100%" },
+//       { key: "Xuất xứ", value: "Việt Nam" },
+//     ],
+//   },
+//   {
+//     id: 4,
+//     code: "SP004",
+//     name: "Giày Sneaker Unisex",
+//     description: "Giày sneaker thời trang, phù hợp cho mọi giới tính",
+//     price: 750000,
+//     sale_price: 650000,
+//     on_sale: true,
+//     review_count: 22,
+//     status: "ACTIVE",
+//     created_at: "2024-04-04T11:15:00",
+//     updated_at: "2024-04-13T16:30:00",
+//     brand: { id: 1, name: "Nike", code: "NIKE" },
+//     category: { id: 5, name: "Giày dép", code: "GIAYDEP" },
+//     gender: "Unisex",
+//     images: [{ id: 4, url: "/src/assets/product.avif", alt: "Giày sneaker" }],
+//     variants: [
+//       {
+//         id: 4,
+//         name: "Giày Sneaker - Trắng - Size 42",
+//         sku: "SP004-WHITE-42",
+//         price: 750000,
+//         sale_price: 650000,
+//         stock_quantity: 12,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 4,
+//         attributes: [
+//           { name: "Màu sắc", value: "Trắng" },
+//           { name: "Kích thước", value: "42" },
+//         ],
+//       },
+//       {
+//         id: 14,
+//         name: "Giày Sneaker - Đen - Size 40",
+//         sku: "SP004-BLACK-40",
+//         price: 750000,
+//         sale_price: 650000,
+//         stock_quantity: 8,
+//         additional_price: 0,
+//         status: "ACTIVE",
+//         product_id: 4,
+//         attributes: [
+//           { name: "Màu sắc", value: "Đen" },
+//           { name: "Kích thước", value: "40" },
+//         ],
+//       },
+//     ],
+//     specifications: [
+//       { key: "Chất liệu", value: "Da tổng hợp" },
+//       { key: "Xuất xứ", value: "Việt Nam" },
+//     ],
+//   },
+// ];
 
 // Mock data cho brands và categories
-const mockBrands = [
-  { id: 1, name: "Nike", code: "NIKE", active: true },
-  { id: 2, name: "Adidas", code: "ADIDAS", active: true },
-  { id: 3, name: "Levi's", code: "LEVIS", active: true },
-  { id: 4, name: "Zara", code: "ZARA", active: true },
-];
+// const mockBrands = [
+//   { id: 1, name: "Nike", code: "NIKE", active: true },
+//   { id: 2, name: "Adidas", code: "ADIDAS", active: true },
+//   { id: 3, name: "Levi's", code: "LEVIS", active: true },
+//   { id: 4, name: "Zara", code: "ZARA", active: true },
+// ];
 
-const mockCategories = [
-  { id: 1, name: "Thời trang nam", code: "TTNAM", active: true },
-  { id: 2, name: "Áo thun nam", code: "ATNAM", active: true },
-  { id: 3, name: "Quần jean nam", code: "QJNAM", active: true },
-  { id: 4, name: "Váy nữ", code: "VAYNU", active: true },
-  { id: 5, name: "Giày dép", code: "GIAYDEP", active: true },
-];
+// const mockCategories = [
+//   { id: 1, name: "Thời trang nam", code: "TTNAM", active: true },
+//   { id: 2, name: "Áo thun nam", code: "ATNAM", active: true },
+//   { id: 3, name: "Quần jean nam", code: "QJNAM", active: true },
+//   { id: 4, name: "Váy nữ", code: "VAYNU", active: true },
+//   { id: 5, name: "Giày dép", code: "GIAYDEP", active: true },
+// ];
 
 export default function ProductPage() {
+  const { products: getAllProducts, isLoading: isLoadingProducts } =
+    useProduct();
+  const { brands: getAllBrands, isLoading: isLoadingBrands } = useBrand();
+  const { categories: getAllCategories, isLoading: isLoadingCategories } =
+    useCategory();
+
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -269,10 +278,10 @@ export default function ProductPage() {
 
   useEffect(() => {
     // Giả lập fetch API
-    setProducts(mockProducts);
-    setBrands(mockBrands);
-    setCategories(mockCategories);
-  }, []);
+    setProducts(getAllProducts || []);
+    setBrands(getAllBrands || []);
+    setCategories(getAllCategories || []);
+  }, [isLoadingBrands, isLoadingCategories, isLoadingProducts]);
 
   // Lấy danh sách màu sắc từ variants
   const getAvailableColors = () => {
@@ -598,6 +607,10 @@ export default function ProductPage() {
         return "";
     }
   };
+
+  if (isLoadingProducts || isLoadingBrands || isLoadingCategories) {
+    return <div>Đang tải dữ liệu...</div>;
+  }
 
   return (
     <div>

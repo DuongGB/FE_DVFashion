@@ -1,15 +1,30 @@
 import { IconMail, IconPhone } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   const { forgotPassword, isForgotPasswordLoading, forgotPasswordError } =
     useAuth();
+  const { t, i18n } = useTranslation();
   const [contact, setContact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [contactType, setContactType] = useState(""); // "email" or "phone"
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Xác định loại input (email hoặc phone)
   const detectContactType = (value) => {
@@ -26,14 +41,14 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
 
   const validateContact = (value) => {
     if (!value.trim()) {
-      return "Email hoặc số điện thoại không được để trống";
+      return t("auth.forgot_password.errors.contact_required");
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10,11}$/;
 
     if (!emailRegex.test(value) && !phoneRegex.test(value)) {
-      return "Vui lòng nhập email hợp lệ hoặc số điện thoại (10-11 chữ số)";
+      return t("auth.forgot_password.errors.contact_invalid");
     }
 
     return "";
@@ -79,35 +94,33 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
         setIsEmailSent(true);
       } else {
         setErrors({
-          general: "Không thể gửi yêu cầu. Vui lòng thử lại.",
+          general: t("auth.forgot_password.errors.request_failed"),
         });
       }
     } catch (err) {
-      console.errors("Forgot password failed:", err);
+      console.error("Forgot password failed:", err);
 
       // Xử lý lỗi và hiển thị thông báo user-friendly
-      let errorsMessage = "Có lỗi xảy ra. Vui lòng thử lại.";
+      let errorsMessage = t("auth.forgot_password.errors.general_error");
 
       if (err?.response?.status === 400) {
-        errorsMessage =
-          "Thông tin không hợp lệ. Vui lòng kiểm tra lại email hoặc số điện thoại.";
+        errorsMessage = t("auth.forgot_password.errors.invalid_data");
       } else if (err?.response?.status === 404) {
         errorsMessage =
           contactType === "phone"
-            ? "Số điện thoại này chưa được đăng ký tài khoản."
-            : "Email này chưa được đăng ký tài khoản.";
+            ? t("auth.forgot_password.errors.phone_not_found")
+            : t("auth.forgot_password.errors.email_not_found");
       } else if (err?.response?.status === 429) {
-        errorsMessage =
-          "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 5 phút.";
+        errorsMessage = t("auth.forgot_password.errors.too_many_requests");
       } else if (err?.response?.status >= 500) {
-        errorsMessage = "Hệ thống đang bảo trì. Vui lòng thử lại sau.";
+        errorsMessage = t("auth.forgot_password.errors.server_error");
       } else if (err?.response?.data?.errors?.message) {
         errorsMessage = err.response.data.errors.message;
       } else if (
-        err?.code === "NETWORK_ERRORs" ||
+        err?.code === "NETWORK_ERROR" ||
         err?.message?.includes("Network")
       ) {
-        errorsMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
+        errorsMessage = t("auth.forgot_password.errors.network_error");
       }
 
       setErrors({
@@ -141,15 +154,15 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   // Lấy placeholder phù hợp
   const getPlaceholder = () => {
     if (contactType === "phone") {
-      return "Số điện thoại (10-11 chữ số)";
+      return t("auth.forgot_password.placeholder.phone");
     } else if (contactType === "email") {
-      return "Email của bạn";
+      return t("auth.forgot_password.placeholder.email");
     }
-    return "Email hoặc số điện thoại";
+    return t("auth.forgot_password.placeholder.default");
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px]  flex flex-col relative">
+    <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-6 w-20 h-10">
         <img
@@ -163,12 +176,11 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
         <>
           {/* Title */}
           <h2 className="text-2xl font-bold mb-4 leading-tight">
-            Quên mật khẩu?
+            {t("auth.forgot_password.title")}
           </h2>
 
           <p className="text-gray-600 mb-8 leading-relaxed">
-            Đừng lo lắng! Nhập email hoặc số điện thoại của bạn và chúng tôi sẽ
-            gửi link để đặt lại mật khẩu.
+            {t("auth.forgot_password.description")}
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
@@ -192,6 +204,14 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
               <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">{errors}</p>
             )}
 
+            {/* General Error */}
+            {errors.general && (
+              <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+                <span className="text-red-500 mt-0.5">⚠️</span>
+                <span>{errors.general}</span>
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
@@ -201,10 +221,10 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Đang gửi...
+                  {t("auth.forgot_password.sending")}
                 </div>
               ) : (
-                "GỬI YÊU CẦU"
+                t("auth.forgot_password.submit_button")
               )}
             </button>
           </form>
@@ -218,18 +238,20 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             </div>
 
             <h2 className="text-2xl font-bold mb-4 text-green-600">
-              {contactType === "phone" ? "Kiểm tra tin nhắn" : "Kiểm tra email"}
+              {contactType === "phone"
+                ? t("auth.forgot_password.success.phone_title")
+                : t("auth.forgot_password.success.email_title")}
             </h2>
 
             <p className="text-gray-600 mb-6 leading-relaxed">
               {contactType === "phone" ? (
                 <>
-                  Chúng tôi đã gửi mã xác nhận đến số điện thoại{" "}
+                  {t("auth.forgot_password.success.phone_message")}{" "}
                   <span className="font-semibold text-black">{contact}</span>
                 </>
               ) : (
                 <>
-                  Chúng tôi đã gửi link đặt lại mật khẩu đến{" "}
+                  {t("auth.forgot_password.success.email_message")}{" "}
                   <span className="font-semibold text-black">{contact}</span>
                 </>
               )}
@@ -238,8 +260,8 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 w-full">
               <p className="text-sm text-blue-800">
                 {contactType === "phone"
-                  ? "📱 Không nhận được SMS? Kiểm tra lại số điện thoại hoặc thử lại sau 60 giây."
-                  : "📧 Không thấy email? Kiểm tra thư mục spam hoặc thử lại sau 60 giây."}
+                  ? t("auth.forgot_password.success.phone_help")
+                  : t("auth.forgot_password.success.email_help")}
               </p>
             </div>
 
@@ -254,7 +276,9 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                 }}
                 className="w-full bg-gray-100 text-gray-700 rounded-full py-3 text-md font-semibold hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
               >
-                Thử {contactType === "phone" ? "số khác" : "email khác"}
+                {contactType === "phone"
+                  ? t("auth.forgot_password.success.try_other_phone")
+                  : t("auth.forgot_password.success.try_other_email")}
               </button>
             </div>
           </div>
@@ -269,7 +293,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             onClick={handleSwitchToLogin}
             className="text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors duration-200 flex items-center gap-1 cursor-pointer"
           >
-            ← Quay lại đăng nhập
+            {t("auth.forgot_password.back_to_login")}
           </button>
         </div>
       </div>
