@@ -1,4 +1,22 @@
 {
+  "header": {
+    "about_dvfashion": "ABOUT DVFASHION",
+    "dvfclub": "DVFclub",
+    "blog": "Blog",
+    "customer_service": "Customer Service",
+    "login": "Login",
+    "account": "Account",
+    "search_placeholder": "Search...",
+    "cart_items": "items",
+    "navigation": {
+      "new": "NEW",
+      "men": "MEN",
+      "women": "WOMEN",
+      "sports": "SPORTS",
+      "sale": "SALE",
+      "cs": "C&S"
+    }
+  },
   "settings": "Settings",
   "language": "Language",
   "change_password": "Change Password",
@@ -171,6 +189,119 @@
       "session_expired": "Session has expired!",
       "no_permission": "You don't have permission to perform this action!",
       "change_failed": "An error occurred while changing password!"
+    }
+  },
+  "auth": {
+    "google_login": "Login with Google",
+    "forgot_password": {
+      "title": "Forgot Password?",
+      "description": "Don't worry! Enter your email or phone number and we'll send you a link to reset your password.",
+      "placeholder": {
+        "default": "Email or phone number",
+        "email": "Your email",
+        "phone": "Phone number (10-11 digits)"
+      },
+      "submit_button": "SEND REQUEST",
+      "sending": "Sending...",
+      "back_to_login": "← Back to login",
+      "success": {
+        "email_title": "Check your email",
+        "phone_title": "Check your messages",
+        "email_message": "We have sent a password reset link to",
+        "phone_message": "We have sent a verification code to phone number",
+        "email_help": "📧 Don't see the email? Check your spam folder or try again after 60 seconds.",
+        "phone_help": "📱 Didn't receive SMS? Check your phone number or try again after 60 seconds.",
+        "try_other_email": "Try another email",
+        "try_other_phone": "Try another number"
+      },
+      "errors": {
+        "contact_required": "Email or phone number cannot be empty",
+        "contact_invalid": "Please enter a valid email or phone number (10-11 digits)",
+        "invalid_data": "Invalid information. Please check your email or phone number again.",
+        "email_not_found": "This email is not registered to any account.",
+        "phone_not_found": "This phone number is not registered to any account.",
+        "too_many_requests": "You have sent too many requests. Please try again after 5 minutes.",
+        "server_error": "System is under maintenance. Please try again later.",
+        "network_error": "Network connection error. Please check your internet connection.",
+        "request_failed": "Unable to send request. Please try again.",
+        "general_error": "An error occurred. Please try again."
+      }
+    },
+    "login": {
+      "title": "Many shopping privileges and benefits are waiting for you",
+      "benefits": {
+        "voucher": "Discount vouchers",
+        "gifts": "Exclusive gifts",
+        "cashback": "DVFcash cashback"
+      },
+      "username_placeholder": "Email or phone number",
+      "password_placeholder": "Password",
+      "remember_me": "Remember login",
+      "login_button": "LOGIN",
+      "logging_in": "Logging in...",
+      "register_link": "Register new account",
+      "forgot_password_link": "Forgot password?",
+      "or": "Or",
+      "terms_text": "By logging in, you agree to",
+      "terms_link": "Terms of Use",
+      "privacy_link": "Privacy Policy",
+      "and": "and",
+      "of_dvfashion": "of DVFashion.",
+      "errors": {
+        "username_required": "Email or phone number cannot be empty",
+        "username_invalid": "Invalid email or phone number",
+        "password_required": "Password cannot be empty",
+        "password_invalid": "Password must have at least 8 characters and include letters and numbers",
+        "invalid_credentials": "Incorrect account or password. Please check again.",
+        "account_locked": "Your account has been locked. Please contact support.",
+        "too_many_attempts": "You have tried to login too many times. Please try again later.",
+        "server_error": "System is under maintenance. Please try again later.",
+        "network_error": "Network connection error. Please check your internet connection.",
+        "login_failed": "Login failed. Please try again."
+      }
+    },
+    "register": {
+      "title": "Many shopping privileges and benefits are waiting for you",
+      "benefits": {
+        "voucher": "Discount vouchers",
+        "gifts": "Exclusive gifts",
+        "cashback": "DVFcash cashback"
+      },
+      "full_name_placeholder": "Full Name",
+      "email_placeholder": "Email",
+      "phone_placeholder": "Phone Number",
+      "password_placeholder": "Password",
+      "confirm_password_placeholder": "Confirm Password",
+      "register_button": "REGISTER",
+      "registering": "Registering...",
+      "login_link": "Login now",
+      "already_have_account": "Already have an account?",
+      "or": "Or",
+      "terms_text": "By registering, you agree to",
+      "terms_link": "Terms of Use",
+      "privacy_link": "Privacy Policy",
+      "and": "and",
+      "of_dvfashion": "of DVFashion.",
+      "success": {
+        "title": "Registration Successful!",
+        "welcome_message": "Welcome {name} to DVFashion!",
+        "account_created": "Your account has been created successfully.",
+        "enjoy_shopping": "🎉 Enjoy shopping with us",
+        "login_now": "Login now"
+      },
+      "errors": {
+        "full_name_required": "Full name cannot be empty",
+        "email_required": "Email cannot be empty",
+        "email_invalid": "Invalid email",
+        "phone_required": "Phone number cannot be empty",
+        "phone_invalid": "Invalid phone number",
+        "password_required": "Password cannot be empty",
+        "password_invalid": "Password must have at least 8 characters and include letters and numbers",
+        "confirm_password_required": "Please confirm password",
+        "confirm_password_mismatch": "Confirm password does not match",
+        "otp_send_failed": "Unable to send OTP. Please try again.",
+        "register_failed": "Registration failed. Please try again."
+      }
     }
   }
 }

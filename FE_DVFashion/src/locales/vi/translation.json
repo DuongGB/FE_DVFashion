@@ -1,4 +1,22 @@
 {
+  "header": {
+    "about_dvfashion": "VỀ DVFASHION",
+    "dvfclub": "DVFclub",
+    "blog": "Blog",
+    "customer_service": "CSKH",
+    "login": "Đăng nhập",
+    "account": "T.Khoản",
+    "search_placeholder": "Tìm kiếm...",
+    "cart_items": "sản phẩm",
+    "navigation": {
+      "new": "NEW",
+      "men": "NAM",
+      "women": "NỮ",
+      "sports": "THỂ THAO",
+      "sale": "SALE",
+      "cs": "C&S"
+    }
+  },
   "settings": "Cài đặt",
   "language": "Ngôn ngữ",
   "change_password": "Đổi mật khẩu",
@@ -171,6 +189,119 @@
       "session_expired": "Phiên đăng nhập đã hết hạn!",
       "no_permission": "Bạn không có quyền thực hiện thao tác này!",
       "change_failed": "Có lỗi xảy ra khi đổi mật khẩu!"
+    }
+  },
+  "auth": {
+    "google_login": "Đăng nhập với Google",
+    "forgot_password": {
+      "title": "Quên mật khẩu?",
+      "description": "Đừng lo lắng! Nhập email hoặc số điện thoại của bạn và chúng tôi sẽ gửi link để đặt lại mật khẩu.",
+      "placeholder": {
+        "default": "Email hoặc số điện thoại",
+        "email": "Email của bạn",
+        "phone": "Số điện thoại (10-11 chữ số)"
+      },
+      "submit_button": "GỬI YÊU CẦU",
+      "sending": "Đang gửi...",
+      "back_to_login": "← Quay lại đăng nhập",
+      "success": {
+        "email_title": "Kiểm tra email",
+        "phone_title": "Kiểm tra tin nhắn",
+        "email_message": "Chúng tôi đã gửi link đặt lại mật khẩu đến",
+        "phone_message": "Chúng tôi đã gửi mã xác nhận đến số điện thoại",
+        "email_help": "📧 Không thấy email? Kiểm tra thư mục spam hoặc thử lại sau 60 giây.",
+        "phone_help": "📱 Không nhận được SMS? Kiểm tra lại số điện thoại hoặc thử lại sau 60 giây.",
+        "try_other_email": "Thử email khác",
+        "try_other_phone": "Thử số khác"
+      },
+      "errors": {
+        "contact_required": "Email hoặc số điện thoại không được để trống",
+        "contact_invalid": "Vui lòng nhập email hợp lệ hoặc số điện thoại (10-11 chữ số)",
+        "invalid_data": "Thông tin không hợp lệ. Vui lòng kiểm tra lại email hoặc số điện thoại.",
+        "email_not_found": "Email này chưa được đăng ký tài khoản.",
+        "phone_not_found": "Số điện thoại này chưa được đăng ký tài khoản.",
+        "too_many_requests": "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 5 phút.",
+        "server_error": "Hệ thống đang bảo trì. Vui lòng thử lại sau.",
+        "network_error": "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.",
+        "request_failed": "Không thể gửi yêu cầu. Vui lòng thử lại.",
+        "general_error": "Có lỗi xảy ra. Vui lòng thử lại."
+      }
+    },
+    "login": {
+      "title": "Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn",
+      "benefits": {
+        "voucher": "Voucher ưu đãi",
+        "gifts": "Quà tặng độc quyền",
+        "cashback": "Hoàn tiền DVFcash"
+      },
+      "username_placeholder": "Email hoặc số điện thoại",
+      "password_placeholder": "Mật khẩu",
+      "remember_me": "Ghi nhớ đăng nhập",
+      "login_button": "ĐĂNG NHẬP",
+      "logging_in": "Đang đăng nhập...",
+      "register_link": "Đăng ký tài khoản mới",
+      "forgot_password_link": "Quên mật khẩu?",
+      "or": "Hoặc",
+      "terms_text": "Bằng việc đăng nhập, bạn đồng ý với",
+      "terms_link": "Điều khoản sử dụng",
+      "privacy_link": "Chính sách bảo mật",
+      "and": "và",
+      "of_dvfashion": "của DVFashion.",
+      "errors": {
+        "username_required": "Email hoặc số điện thoại không được để trống",
+        "username_invalid": "Email hoặc số điện thoại không hợp lệ",
+        "password_required": "Mật khẩu không được để trống",
+        "password_invalid": "Mật khẩu phải có ít nhất 8 ký tự và bao gồm chữ và số",
+        "invalid_credentials": "Tài khoản hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.",
+        "account_locked": "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.",
+        "too_many_attempts": "Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau.",
+        "server_error": "Hệ thống đang bảo trì. Vui lòng thử lại sau.",
+        "network_error": "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.",
+        "login_failed": "Đăng nhập thất bại. Vui lòng thử lại."
+      }
+    },
+    "register": {
+      "title": "Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn",
+      "benefits": {
+        "voucher": "Voucher ưu đãi",
+        "gifts": "Quà tặng độc quyền",
+        "cashback": "Hoàn tiền DVFcash"
+      },
+      "full_name_placeholder": "Họ và tên",
+      "email_placeholder": "Email",
+      "phone_placeholder": "Số điện thoại",
+      "password_placeholder": "Mật khẩu",
+      "confirm_password_placeholder": "Xác nhận mật khẩu",
+      "register_button": "ĐĂNG KÝ",
+      "registering": "Đang đăng ký...",
+      "login_link": "Đăng nhập ngay",
+      "already_have_account": "Đã có tài khoản?",
+      "or": "Hoặc",
+      "terms_text": "Bằng việc đăng ký, bạn đã đồng ý với",
+      "terms_link": "Điều khoản sử dụng",
+      "privacy_link": "Chính sách bảo mật",
+      "and": "và",
+      "of_dvfashion": "của DVFashion.",
+      "success": {
+        "title": "Đăng ký thành công!",
+        "welcome_message": "Chào mừng {name} đến với DVFashion!",
+        "account_created": "Tài khoản của bạn đã được tạo thành công.",
+        "enjoy_shopping": "🎉 Hãy mua sắm một cách vui vẻ với chúng tôi",
+        "login_now": "Đăng nhập ngay"
+      },
+      "errors": {
+        "full_name_required": "Họ và tên không được để trống",
+        "email_required": "Email không được để trống",
+        "email_invalid": "Email không hợp lệ",
+        "phone_required": "Số điện thoại không được để trống",
+        "phone_invalid": "Số điện thoại không hợp lệ",
+        "password_required": "Mật khẩu không được để trống",
+        "password_invalid": "Mật khẩu phải có ít nhất 8 ký tự và bao gồm chữ và số",
+        "confirm_password_required": "Vui lòng xác nhận mật khẩu",
+        "confirm_password_mismatch": "Mật khẩu xác nhận không khớp",
+        "otp_send_failed": "Không thể gửi OTP. Vui lòng thử lại.",
+        "register_failed": "Đăng ký thất bại. Vui lòng thử lại."
+      }
     }
   }
 }
