@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const featuredPost = [
   {
@@ -144,6 +145,7 @@ const dailyPosts = [
 ];
 
 export default function BlogPage() {
+  const { t } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(6);
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -182,25 +184,25 @@ export default function BlogPage() {
       <img
         className="w-full mb-6 rounded-xl"
         src="./src/assets/banner_blog.avif"
-        alt="Blog Banner"
+        alt={t("blog_banner_alt")}
       />
 
       {/* Search & Category */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
         <input
           type="text"
-          placeholder="Tìm kiếm bài viết..."
+          placeholder={t("search_blog_placeholder")}
           className="border rounded-full px-4 py-2 w-full md:w-1/2"
         />
         <div className="flex gap-2">
           <button className="bg-gray-200 rounded-full px-6 py-2 font-semibold">
-            Mặc đẹp
+            {t("fashion_tips")}
           </button>
           <button className="bg-gray-200 rounded-full px-6 py-2 font-semibold">
-            Sống Chất
+            {t("lifestyle")}
           </button>
           <button className="bg-gray-200 rounded-full px-6 py-2 font-semibold">
-            DVFahsion có gì mới?
+            {t("whats_new")}
           </button>
         </div>
       </div>

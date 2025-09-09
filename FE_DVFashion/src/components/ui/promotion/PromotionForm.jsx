@@ -168,8 +168,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       value: getValueForType(formData.type, formData.value),
       minOrderAmount: formData.minOrderAmount
         ? parseFloat(formData.minOrderAmount)
-        : null,
-      maxUsages: formData.maxUsages ? parseInt(formData.maxUsages) : null,
+        : 0,
+      maxUsages: formData.maxUsages ? parseInt(formData.maxUsages) : 100000,
       startDate: formData.startDate, // Format yyyy-MM-dd
       endDate: formData.endDate, // Format yyyy-MM-dd
       active: formData.active,
@@ -572,11 +572,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Không giới hạn"
+                    placeholder="100 000"
                   />
                   <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     <IconInfoCircle size={12} />
-                    Để trống = không giới hạn số lần sử dụng
+                    Để trống = 100 000 lần sử dụng
                   </p>
                   {errors.maxUsages && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">

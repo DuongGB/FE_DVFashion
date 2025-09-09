@@ -6,6 +6,7 @@ const OtpForm = ({ onSuccess, verifyOtp, phoneNumber, onBack, onResend }) => {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [error, setError] = useState(null);
   const inputRefs = useRef([]);
 
   const { verifyOtpForSignUp, isVerifyOtpForSignUp, verifyOtpForSignUpError } =
@@ -83,7 +84,11 @@ const OtpForm = ({ onSuccess, verifyOtp, phoneNumber, onBack, onResend }) => {
       // Success callback
       onSuccess?.();
     } catch (error) {
-      console.error("OTP verification failed:", error);
+      if (error?.response?.data?.error?.code === "CONFLICT_ERROR") {
+        setError("Số điện thoại đã tồn tại!");
+        return;
+      }
+      setError("Mã OTP không chính xác hoặc đã hết hạn");
     }
   };
 
@@ -96,7 +101,14 @@ const OtpForm = ({ onSuccess, verifyOtp, phoneNumber, onBack, onResend }) => {
       // Wait a bit to ensure DOM is ready
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      await onResend?.();
+      // Check phone đã tồn tại
+      const response = await onResend?.();
+      // Check if the phone number already exists
+      if (response?.error?.code === "CONFLICT_ERROR") {
+        setError("Số điện thoại đã tồn tại!");
+        return;
+      }
+
       setCountdown(60);
       setCanResend(false);
       setOtp(["", "", "", "", "", ""]);
@@ -164,12 +176,9 @@ const OtpForm = ({ onSuccess, verifyOtp, phoneNumber, onBack, onResend }) => {
         </div>
 
         {/* Error Message */}
-        {verifyOtpForSignUpError && (
+        {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm text-center">
-              {verifyOtpForSignUpError?.message ||
-                "Mã OTP không chính xác hoặc đã hết hạn"}
-            </p>
+            <p className="text-red-600 text-sm text-center">{error}</p>
           </div>
         )}
 

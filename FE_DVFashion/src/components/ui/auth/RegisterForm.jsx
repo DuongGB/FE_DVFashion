@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import {
@@ -11,11 +11,13 @@ import {
 } from "@tabler/icons-react";
 import { useFirebaseOtp } from "../../../hooks/useFirebaseOtp";
 import OtpForm from "./OtpForm";
+import { useTranslation } from "react-i18next";
 
 export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const { sendOtp, verifyOtp } = useFirebaseOtp();
   const { register, isRegisterLoading, registerError } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -27,6 +29,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState("form");
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   const handleChange = (e) => {
     setFormData({
@@ -47,42 +62,45 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
 
     // Validate full name
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ và tên không được để trống";
+      newErrors.fullName = t("auth.register.errors.full_name_required");
     }
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
-      newErrors.email = "Email không được để trống";
+      newErrors.email = t("auth.register.errors.email_required");
     } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = t("auth.register.errors.email_invalid");
     }
 
     // Validate phone
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại không được để trống";
+      newErrors.phone = t("auth.register.errors.phone_required");
     } else if (!phoneRegex.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
+      newErrors.phone = t("auth.register.errors.phone_invalid");
     }
 
     // Validate password
     if (!formData.password) {
-      newErrors.password = "Mật khẩu không được để trống";
+      newErrors.password = t("auth.register.errors.password_required");
     } else if (
       formData.password.length < 8 ||
       !/\d/.test(formData.password) ||
       !/[a-zA-Z]/.test(formData.password)
     ) {
-      newErrors.password =
-        "Mật khẩu phải có ít nhất 8 ký tự và bao gồm chữ và số";
+      newErrors.password = t("auth.register.errors.password_invalid");
     }
 
     // Validate confirm password
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+      newErrors.confirmPassword = t(
+        "auth.register.errors.confirm_password_required"
+      );
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+      newErrors.confirmPassword = t(
+        "auth.register.errors.confirm_password_mismatch"
+      );
     }
 
     setErrors(newErrors);
@@ -102,7 +120,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
       const res = await sendOtp(formData.phone.trim());
 
       if (!res.success) {
-        setErrors({ general: "Không thể gửi OTP. Vui lòng thử lại." });
+        setErrors({ general: t("auth.register.errors.otp_send_failed") });
         return;
       }
 
@@ -110,7 +128,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
       setStep("otp");
     } catch (err) {
       console.error("Gửi OTP thất bại:", err);
-      setErrors({ general: "Không thể gửi OTP. Vui lòng thử lại." });
+      setErrors({ general: t("auth.register.errors.otp_send_failed") });
     }
   };
 
@@ -127,13 +145,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
       setStep("success");
     } catch (err) {
       console.error("Register failed:", err);
-      setErrors({ general: "Đăng ký thất bại. Vui lòng thử lại." });
+      setErrors({ general: t("auth.register.errors.register_failed") });
     }
-  };
-
-  const handleGoogleRegister = () => {
-    // TODO: Implement Google OAuth for register
-    console.log("Google register clicked");
   };
 
   const handleSwitchToLogin = (e) => {
@@ -160,7 +173,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
       return registerError.message;
     }
 
-    return "Đăng ký thất bại. Vui lòng thử lại.";
+    return t("auth.register.errors.register_failed");
   };
 
   // OTP step
@@ -198,21 +211,22 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
 
           {/* Title */}
           <h2 className="text-2xl font-bold mb-4 text-green-600">
-            Đăng ký thành công!
+            {t("auth.register.success.title")}
           </h2>
 
           {/* Message */}
           <p className="text-gray-600 mb-6 leading-relaxed">
-            Chào mừng <span className="font-semibold">{formData.fullName}</span>{" "}
-            đến với DVFashion!
+            {t("auth.register.success.welcome_message", {
+              name: formData.fullName,
+            })}
             <br />
-            Tài khoản của bạn đã được tạo thành công.
+            {t("auth.register.success.account_created")}
           </p>
 
           {/* Additional Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 w-full">
             <p className="text-sm text-blue-800">
-              🎉 Hãy mua sắm một cách vui vẻ với chúng tôi
+              {t("auth.register.success.enjoy_shopping")}
             </p>
           </div>
 
@@ -221,7 +235,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             onClick={handleSwitchToLogin}
             className="bg-black text-white rounded-full px-8 py-3 text-lg font-bold hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
           >
-            Đăng nhập ngay
+            {t("auth.register.success.login_now")}
           </button>
         </div>
       </div>
@@ -240,44 +254,35 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
 
       {/* Title */}
       <h2 className="text-xl sm:text-2xl font-bold mb-2 leading-tight">
-        Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn
+        {t("auth.register.title")}
       </h2>
 
       {/* Benefits */}
       <div className="flex gap-3 sm:gap-4 mb-3 justify-center">
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">%</span>
-          <span className="text-xs text-center">Voucher ưu đãi</span>
+          <span className="text-xs text-center">
+            {t("auth.register.benefits.voucher")}
+          </span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">🎁</span>
-          <span className="text-xs text-center">Quà tặng độc quyền</span>
+          <span className="text-xs text-center">
+            {t("auth.register.benefits.gifts")}
+          </span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">💸</span>
-          <span className="text-xs text-center">Hoàn tiền DVFcash</span>
+          <span className="text-xs text-center">
+            {t("auth.register.benefits.cashback")}
+          </span>
         </div>
-      </div>
-
-      {/* Social register */}
-      <div className="flex justify-center gap-3 mb-3">
-        <button
-          type="button"
-          onClick={handleGoogleRegister}
-          className="border rounded-full p-2 flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors duration-200"
-        >
-          <img
-            src="./src/assets/google.avif"
-            alt="Google"
-            className="w-6 h-6"
-          />
-        </button>
       </div>
 
       {/* Divider */}
       <div className="flex items-center gap-2 mb-4">
         <hr className="flex-1 border-gray-300" />
-        <span className="text-sm text-gray-500">Hoặc</span>
+        <span className="text-sm text-gray-500">{t("auth.register.or")}</span>
         <hr className="flex-1 border-gray-300" />
       </div>
 
@@ -287,7 +292,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input
             type="text"
             name="fullName"
-            placeholder="Họ và tên"
+            placeholder={t("auth.register.full_name_placeholder")}
             value={formData.fullName}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -309,7 +314,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder={t("auth.register.email_placeholder")}
             value={formData.email}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -331,7 +336,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input
             type="text"
             name="phone"
-            placeholder="Số điện thoại"
+            placeholder={t("auth.register.phone_placeholder")}
             value={formData.phone}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -353,7 +358,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input
             type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Mật khẩu"
+            placeholder={t("auth.register.password_placeholder")}
             value={formData.password}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -383,7 +388,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input
             type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
-            placeholder="Xác nhận mật khẩu"
+            placeholder={t("auth.register.confirm_password_placeholder")}
             value={formData.confirmPassword}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -414,15 +419,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
         )}
         {/* Terms and Conditions */}
         <div className="text-sm text-gray-600 mb-2">
-          Bằng việc đăng ký, bạn đã đồng ý với{" "}
+          {t("auth.register.terms_text")}{" "}
           <a href="/terms" className="text-blue-600 hover:underline">
-            Điều khoản sử dụng
+            {t("auth.register.terms_link")}
           </a>{" "}
-          và{" "}
+          {t("auth.register.and")}{" "}
           <a href="/privacy" className="text-blue-600 hover:underline">
-            Chính sách bảo mật
+            {t("auth.register.privacy_link")}
           </a>{" "}
-          của DVFashion.
+          {t("auth.register.of_dvfashion")}
         </div>
         {/* General Error */}
         {(registerError || errors.general) && (
@@ -439,10 +444,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           {isRegisterLoading ? (
             <div className="flex items-center justify-center gap-2">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              Đang đăng ký...
+              {t("auth.register.registering")}
             </div>
           ) : (
-            "ĐĂNG KÝ"
+            t("auth.register.register_button")
           )}
         </button>
       </form>
@@ -450,13 +455,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
 
       {/* Links */}
       <div className="flex justify-center mt-4 text-sm">
-        <span className="text-gray-600">Đã có tài khoản?</span>
+        <span className="text-gray-600">
+          {t("auth.register.already_have_account")}
+        </span>
         <button
           type="button"
           onClick={handleSwitchToLogin}
           className="text-blue-600 hover:text-blue-800 hover:underline font-bold ml-1 transition-colors duration-200 cursor-pointer"
         >
-          Đăng nhập ngay
+          {t("auth.register.login_link")}
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../../../utils/getDefaultRouteByRoles";
@@ -10,6 +10,7 @@ import {
   IconEyeOff,
   IconPhone,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export default function LoginForm({
   onSuccess,
@@ -18,6 +19,7 @@ export default function LoginForm({
 }) {
   const { login, isLoginLoading, loginError } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -25,6 +27,18 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   const handleChange = (e) => {
     setFormData({
@@ -45,7 +59,7 @@ export default function LoginForm({
 
     // Validate username (email or phone)
     if (!formData.username.trim()) {
-      newErrors.username = "Email hoặc số điện thoại không được để trống";
+      newErrors.username = t("auth.login.errors.username_required");
     } else {
       // Check if it's email or phone
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,20 +69,19 @@ export default function LoginForm({
         !emailRegex.test(formData.username) &&
         !phoneRegex.test(formData.username)
       ) {
-        newErrors.username = "Email hoặc số điện thoại không hợp lệ";
+        newErrors.username = t("auth.login.errors.username_invalid");
       }
     }
 
     // Validate password
     if (!formData.password) {
-      newErrors.password = "Mật khẩu không được để trống";
+      newErrors.password = t("auth.login.errors.password_required");
     } else if (
       formData.password.length < 8 ||
       !/\d/.test(formData.password) ||
       !/[a-zA-Z]/.test(formData.password)
     ) {
-      newErrors.password =
-        "Mật khẩu phải có ít nhất 8 ký tự và bao gồm chữ và số";
+      newErrors.password = t("auth.login.errors.password_invalid");
     }
 
     setErrors(newErrors);
@@ -139,7 +152,7 @@ export default function LoginForm({
         err?.code === "NETWORK_ERROR" ||
         err?.message?.includes("Network")
       ) {
-        errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
+        errorMessage = t("auth.login.errors.network_error");
       }
 
       setErrors({
@@ -175,22 +188,28 @@ export default function LoginForm({
 
       {/* Title */}
       <h2 className="text-xl sm:text-2xl font-bold mb-2 leading-tight">
-        Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn
+        {t("auth.login.title")}
       </h2>
 
       {/* Benefits */}
       <div className="flex gap-3 sm:gap-4 mb-3 justify-center">
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">%</span>
-          <span className="text-xs text-center">Voucher ưu đãi</span>
+          <span className="text-xs text-center">
+            {t("auth.login.benefits.voucher")}
+          </span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">🎁</span>
-          <span className="text-xs text-center">Quà tặng độc quyền</span>
+          <span className="text-xs text-center">
+            {t("auth.login.benefits.gifts")}
+          </span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-lg sm:text-xl">💸</span>
-          <span className="text-xs text-center">Hoàn tiền DVFcash</span>
+          <span className="text-xs text-center">
+            {t("auth.login.benefits.cashback")}
+          </span>
         </div>
       </div>
 
@@ -202,7 +221,7 @@ export default function LoginForm({
       {/* Divider */}
       <div className="flex items-center gap-2 mb-4">
         <hr className="flex-1 border-gray-300" />
-        <span className="text-sm text-gray-500">Hoặc</span>
+        <span className="text-sm text-gray-500">{t("auth.login.or")}</span>
         <hr className="flex-1 border-gray-300" />
       </div>
 
@@ -212,7 +231,7 @@ export default function LoginForm({
           <input
             type="text"
             name="username"
-            placeholder="Email hoặc số điện thoại"
+            placeholder={t("auth.login.username_placeholder")}
             value={formData.username}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -239,7 +258,7 @@ export default function LoginForm({
           <input
             type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Mật khẩu"
+            placeholder={t("auth.login.password_placeholder")}
             value={formData.password}
             onChange={handleChange}
             className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -274,7 +293,9 @@ export default function LoginForm({
               onChange={(e) => setRememberMe(e.target.checked)}
               className="mr-2 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-600">Ghi nhớ đăng nhập</span>
+            <span className="text-sm text-gray-600">
+              {t("auth.login.remember_me")}
+            </span>
           </label>
         </div>
 
@@ -295,10 +316,10 @@ export default function LoginForm({
           {isLoginLoading ? (
             <div className="flex items-center justify-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-              Đang đăng nhập...
+              {t("auth.login.logging_in")}
             </div>
           ) : (
-            "ĐĂNG NHẬP"
+            t("auth.login.login_button")
           )}
         </button>
       </form>
@@ -310,29 +331,29 @@ export default function LoginForm({
           onClick={handleSwitchToRegister}
           className="text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors duration-200 text-center sm:text-left cursor-pointer"
         >
-          Đăng ký tài khoản mới
+          {t("auth.login.register_link")}
         </button>
         <button
           type="button"
           onClick={handleForgotPassword}
           className="text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors duration-200 text-center sm:text-right cursor-pointer"
         >
-          Quên mật khẩu?
+          {t("auth.login.forgot_password_link")}
         </button>
       </div>
 
       {/* Additional Features */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <p className="text-xs text-gray-500 text-center leading-relaxed">
-          Bằng việc đăng nhập, bạn đồng ý với{" "}
+          {t("auth.login.terms_text")}{" "}
           <a href="/terms" className="text-blue-600 hover:underline">
-            Điều khoản sử dụng
+            {t("auth.login.terms_link")}
           </a>{" "}
-          và{" "}
+          {t("auth.login.and")}{" "}
           <a href="/privacy" className="text-blue-600 hover:underline">
-            Chính sách bảo mật
+            {t("auth.login.privacy_link")}
           </a>{" "}
-          của DVFashion.
+          {t("auth.login.of_dvfashion")}
         </p>
       </div>
     </div>
