@@ -298,6 +298,7 @@
       }
     }
   },
+
   "admin": {
     "settings": {
       "title": "Settings",
@@ -403,6 +404,100 @@
         "has_logo": "Has Logo",
         "yes": "Yes",
         "no": "No",
+        "detailed_description": "Detailed Description",
+        "close": "Close"
+      }
+    },
+    "category": {
+      "title": "Category Management",
+      "create_category": "Create Category",
+      "search_placeholder": "Search by name, description, ID...",
+      "no_categories": "No categories found.",
+      "loading": "Loading...",
+      "total_categories": "Total Categories",
+      "active_categories": "Active",
+      "inactive_categories": "Inactive",
+      "all_status": "All Status",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "view_details": "View Details",
+        "edit": "Edit",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "confirm": "Confirm",
+        "confirm_message": "Are you sure you want to change the status of this category?",
+        "success": "successfully",
+        "error": "failed"
+      },
+      "columns": {
+        "id": "ID",
+        "image": "Image",
+        "name": "Category Name",
+        "description": "Description",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "showing_results": "Showing {{current}} of {{total}} categories",
+      "form": {
+        "edit_title": "Edit Category",
+        "create_title": "Create New Category",
+        "edit_description": "Update current category information",
+        "create_description": "Set up information for new category",
+        "basic_info": "Basic Information",
+        "category_name": "Category Name",
+        "category_name_placeholder": "Enter category name...",
+        "category_name_required": "Category name is required",
+        "status": "Status",
+        "status_active": "🟢 Active",
+        "status_inactive": "🔴 Inactive",
+        "description": "Description",
+        "description_placeholder": "Enter category description...",
+        "description_required": "Category description is required",
+        "image_section": "Category Image",
+        "image_upload": "Upload Image",
+        "image_drag_drop": "Drag & drop or click to upload image",
+        "image_format": "PNG, JPG, GIF (max 5MB)",
+        "image_error": "Please select an image file!",
+        "image_size_error": "File size cannot exceed 5MB!",
+        "cancel": "Cancel",
+        "create_button": "Create New Category",
+        "update_button": "Update Category",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "validation_error": "Please fill in all required information!",
+        "create_success": "Category created successfully!",
+        "update_success": "Category updated successfully!",
+        "create_error": "An error occurred while creating category!",
+        "update_error": "An error occurred while updating category!"
+      },
+      "detail": {
+        "title": "Category Details",
+        "description": "View detailed information of category {{name}}",
+        "image_section": "Category Image",
+        "no_image": "No Image",
+        "no_image_desc": "No image uploaded for this category",
+        "basic_info": "Basic Information",
+        "category_id": "Category ID",
+        "category_name": "Category Name",
+        "category_description": "Description",
+        "no_description": "No description",
+        "category_status": "Status",
+        "status_active": "Active",
+        "status_inactive": "Inactive",
+        "timeline_info": "Timeline Information",
+        "created_date": "Created Date",
+        "updated_date": "Last Updated",
+        "additional_info": "Additional Information",
+        "category_code": "Category Code",
+        "slug": "Slug",
+        "category_type": "Category Type",
+        "category_type_value": "Product Category",
+        "visibility": "Visibility",
+        "visibility_public": "Public",
+        "visibility_private": "Private",
         "detailed_description": "Detailed Description",
         "close": "Close"
       }

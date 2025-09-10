@@ -10,21 +10,36 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import { useCategory } from "../../../hooks/useCategory";
+import { useTranslation } from "react-i18next";
 
 export default function CategoryForm({ isOpen, onClose, category }) {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     active: true,
   });
-  const [language, setLanguage] = useState("VI");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
 
-  const { create, update, isCreating, isUpdating } = useCategory();
+  const language = i18n.language || "VI";
+  const { create, update, isCreating, isUpdating } = useCategory(language);
 
   const loading = isCreating || isUpdating;
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   useEffect(() => {
     if (category) {
@@ -34,7 +49,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
         description: category.description || "",
         active: category.active !== undefined ? category.active : true,
       });
-      setImagePreview(category.image || "");
+      setImagePreview(category.image || category.imageUrl || "");
       setImageFile(null);
     } else {
       // Create mode - reset form
@@ -47,7 +62,6 @@ export default function CategoryForm({ isOpen, onClose, category }) {
       setImageFile(null);
     }
     setErrors({});
-    setLanguage("VI");
   }, [category, isOpen]);
 
   const handleInputChange = (field, value) => {
@@ -70,13 +84,13 @@ export default function CategoryForm({ isOpen, onClose, category }) {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn file hình ảnh!");
+        toast.error(t("admin.category.form.image_error"));
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước file không được vượt quá 5MB!");
+        toast.error(t("admin.category.form.image_size_error"));
         return;
       }
 
@@ -98,11 +112,11 @@ export default function CategoryForm({ isOpen, onClose, category }) {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Tên danh mục là bắt buộc";
+      newErrors.name = t("admin.category.form.category_name_required");
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Mô tả danh mục là bắt buộc";
+      newErrors.description = t("admin.category.form.description_required");
     }
 
     setErrors(newErrors);
@@ -113,7 +127,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      toast.error(t("admin.category.form.validation_error"));
       return;
     }
 
@@ -147,14 +161,14 @@ export default function CategoryForm({ isOpen, onClose, category }) {
           categoryData,
           lang: language,
         });
-        toast.success("Cập nhật danh mục thành công!");
+        toast.success(t("admin.category.form.update_success"));
       } else {
         // Create new category
         await create({
           categoryData,
           lang: language,
         });
-        toast.success("Tạo danh mục thành công!");
+        toast.success(t("admin.category.form.create_success"));
       }
 
       onClose();
@@ -163,8 +177,8 @@ export default function CategoryForm({ isOpen, onClose, category }) {
       const errorMessage =
         error.response?.data?.message ||
         (category
-          ? "Có lỗi xảy ra khi cập nhật danh mục!"
-          : "Có lỗi xảy ra khi tạo danh mục!");
+          ? t("admin.category.form.update_error")
+          : t("admin.category.form.create_error"));
       toast.error(errorMessage);
     }
   };
@@ -202,12 +216,14 @@ export default function CategoryForm({ isOpen, onClose, category }) {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">
-                {category ? "Chỉnh sửa danh mục" : "Tạo danh mục mới"}
+                {category
+                  ? t("admin.category.form.edit_title")
+                  : t("admin.category.form.create_title")}
               </h2>
               <p className="text-blue-100 opacity-90">
                 {category
-                  ? "Cập nhật thông tin danh mục hiện tại"
-                  : "Thiết lập thông tin cho danh mục mới"}
+                  ? t("admin.category.form.edit_description")
+                  : t("admin.category.form.create_description")}
               </p>
             </div>
           </div>
@@ -220,14 +236,14 @@ export default function CategoryForm({ isOpen, onClose, category }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconTag size={20} className="text-blue-600" />
-                Thông tin cơ bản
+                {t("admin.category.form.basic_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Category Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tên danh mục *
+                    {t("admin.category.form.category_name")} *
                   </label>
                   <input
                     type="text"
@@ -239,7 +255,9 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Nhập tên danh mục..."
+                    placeholder={t(
+                      "admin.category.form.category_name_placeholder"
+                    )}
                     required
                   />
                   {errors.name && (
@@ -253,7 +271,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                 {/* Status */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Trạng thái
+                    {t("admin.category.form.status")}
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center cursor-pointer group">
@@ -266,7 +284,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                         className="w-4 h-4 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed transition-all duration-200"
                       />
                       <span className="ml-3 text-sm font-medium text-green-600">
-                        🟢 Hoạt động
+                        {t("admin.category.form.status_active")}
                       </span>
                     </label>
                     <label className="flex items-center cursor-pointer group">
@@ -279,7 +297,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                         className="w-4 h-4 text-red-600 focus:ring-red-500 disabled:cursor-not-allowed transition-all duration-200"
                       />
                       <span className="ml-3 text-sm font-medium text-red-600">
-                        🔴 Không hoạt động
+                        {t("admin.category.form.status_inactive")}
                       </span>
                     </label>
                   </div>
@@ -289,7 +307,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
               {/* Description */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mô tả *
+                  {t("admin.category.form.description")} *
                 </label>
                 <textarea
                   value={formData.description}
@@ -303,7 +321,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder="Nhập mô tả danh mục..."
+                  placeholder={t("admin.category.form.description_placeholder")}
                   required
                 />
                 {errors.description && (
@@ -319,7 +337,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconPhoto size={20} className="text-purple-600" />
-                Hình ảnh danh mục
+                {t("admin.category.form.image_section")}
               </h3>
 
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 relative hover:border-gray-400 transition-all duration-200">
@@ -347,14 +365,14 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                       <IconUpload size={32} className="text-gray-400" />
                     </div>
                     <p className="text-lg font-medium text-gray-700 mb-2">
-                      Tải ảnh lên
+                      {t("admin.category.form.image_upload")}
                     </p>
                     <p className="text-sm text-gray-500 mb-2">
-                      Kéo thả hoặc click để tải ảnh lên
+                      {t("admin.category.form.image_drag_drop")}
                     </p>
                     <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
                       <IconInfoCircle size={12} />
-                      PNG, JPG, GIF (tối đa 5MB)
+                      {t("admin.category.form.image_format")}
                     </p>
                   </div>
                 )}
@@ -377,7 +395,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                 disabled={loading}
                 className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Hủy bỏ
+                {t("admin.category.form.cancel")}
               </button>
               <button
                 type="submit"
@@ -387,12 +405,16 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                 {loading ? (
                   <>
                     <IconLoader2 size={16} className="animate-spin" />
-                    {category ? "Đang cập nhật..." : "Đang tạo..."}
+                    {category
+                      ? t("admin.category.form.updating")
+                      : t("admin.category.form.creating")}
                   </>
                 ) : (
                   <>
                     <IconCheck size={16} />
-                    {category ? "Cập nhật danh mục" : "Tạo danh mục mới"}
+                    {category
+                      ? t("admin.category.form.update_button")
+                      : t("admin.category.form.create_button")}
                   </>
                 )}
               </button>
