@@ -7,8 +7,25 @@ import {
   IconInfoCircle,
   IconCheck,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 export default function BrandDetailModal({ brand, open, onClose }) {
+  const { t, i18n } = useTranslation();
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
+
   if (!open || !brand) return null;
 
   return (
@@ -34,9 +51,11 @@ export default function BrandDetailModal({ brand, open, onClose }) {
               <IconBrandAndroid size={24} className="text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">Chi tiết thương hiệu</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {t("admin.brand.detail.title")}
+              </h2>
               <p className="text-blue-100 opacity-90">
-                Xem thông tin chi tiết của thương hiệu {brand.name}
+                {t("admin.brand.detail.description", { name: brand.name })}
               </p>
             </div>
           </div>
@@ -51,7 +70,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconBrandAndroid size={20} className="text-purple-600" />
-                  Logo thương hiệu
+                  {t("admin.brand.detail.logo_section")}
                 </h3>
 
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
@@ -76,10 +95,10 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                         <IconBrandAndroid size={32} className="text-gray-400" />
                       </div>
                       <p className="text-lg font-medium text-gray-600">
-                        Không có logo
+                        {t("admin.brand.detail.no_logo")}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        Chưa tải lên logo cho thương hiệu này
+                        {t("admin.brand.detail.no_logo_desc")}
                       </p>
                     </div>
                   </div>
@@ -90,7 +109,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconTag size={20} className="text-blue-600" />
-                  Thông tin cơ bản
+                  {t("admin.brand.detail.basic_info")}
                 </h3>
 
                 <div className="space-y-4">
@@ -100,7 +119,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                     </div>
                     <div className="flex-1">
                       <strong className="text-blue-800 text-sm font-medium">
-                        ID thương hiệu:
+                        {t("admin.brand.detail.brand_id")}:
                       </strong>
                       <div className="mt-1">
                         <span className="bg-blue-600 text-white px-3 py-1 rounded-full font-mono text-sm">
@@ -112,7 +131,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
 
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <strong className="text-gray-700 text-sm font-medium">
-                      Tên thương hiệu:
+                      {t("admin.brand.detail.brand_name")}:
                     </strong>
                     <p className="mt-2 text-gray-900 font-semibold text-lg">
                       {brand.name}
@@ -121,16 +140,17 @@ export default function BrandDetailModal({ brand, open, onClose }) {
 
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <strong className="text-gray-700 text-sm font-medium">
-                      Mô tả:
+                      {t("admin.brand.detail.brand_description")}:
                     </strong>
                     <p className="mt-2 text-gray-800 leading-relaxed">
-                      {brand.description || "Không có mô tả"}
+                      {brand.description ||
+                        t("admin.brand.detail.no_description")}
                     </p>
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <strong className="text-gray-700 text-sm font-medium">
-                      Trạng thái:
+                      {t("admin.brand.detail.brand_status")}:
                     </strong>
                     <div className="mt-2">
                       <span
@@ -143,12 +163,12 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                         {brand.active ? (
                           <>
                             <IconCheck size={16} />
-                            Đang hoạt động
+                            {t("admin.brand.detail.status_active")}
                           </>
                         ) : (
                           <>
                             <IconX size={16} />
-                            Không hoạt động
+                            {t("admin.brand.detail.status_inactive")}
                           </>
                         )}
                       </span>
@@ -162,7 +182,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconPackage size={20} className="text-green-600" />
-                Thông tin sản phẩm
+                {t("admin.brand.detail.products_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,10 +193,11 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                     </div>
                     <div>
                       <strong className="text-green-800 text-sm font-medium">
-                        Số lượng sản phẩm:
+                        {t("admin.brand.detail.product_count")}:
                       </strong>
                       <p className="text-green-700 font-semibold text-lg">
-                        {brand.productCount || 0} sản phẩm
+                        {brand.productCount || 0}{" "}
+                        {t("admin.brand.detail.products_unit")}
                       </p>
                     </div>
                   </div>
@@ -189,12 +210,12 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                     </div>
                     <div>
                       <strong className="text-blue-800 text-sm font-medium">
-                        Tỷ lệ sản phẩm:
+                        {t("admin.brand.detail.product_ratio")}:
                       </strong>
                       <p className="text-blue-700 font-semibold text-lg">
                         {brand.productCount
-                          ? "Có sản phẩm"
-                          : "Chưa có sản phẩm"}
+                          ? t("admin.brand.detail.has_products")
+                          : t("admin.brand.detail.no_products")}
                       </p>
                     </div>
                   </div>
@@ -206,7 +227,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconCalendar size={20} className="text-orange-600" />
-                Thông tin thời gian
+                {t("admin.brand.detail.timeline_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,17 +238,20 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                         <IconCalendar size={16} className="text-green-600" />
                       </div>
                       <strong className="text-green-800 text-sm font-medium">
-                        Ngày tạo:
+                        {t("admin.brand.detail.created_date")}:
                       </strong>
                     </div>
                     <p className="text-green-700 font-semibold">
-                      {new Date(brand.createdAt).toLocaleDateString("vi-VN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(brand.createdAt).toLocaleDateString(
+                        i18n.language === "VI" ? "vi-VN" : "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </p>
                   </div>
                 )}
@@ -239,17 +263,20 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                         <IconCalendar size={16} className="text-yellow-600" />
                       </div>
                       <strong className="text-yellow-800 text-sm font-medium">
-                        Cập nhật lần cuối:
+                        {t("admin.brand.detail.updated_date")}:
                       </strong>
                     </div>
                     <p className="text-yellow-700 font-semibold">
-                      {new Date(brand.updatedAt).toLocaleDateString("vi-VN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(brand.updatedAt).toLocaleDateString(
+                        i18n.language === "VI" ? "vi-VN" : "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </p>
                   </div>
                 )}
@@ -260,13 +287,13 @@ export default function BrandDetailModal({ brand, open, onClose }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconInfoCircle size={20} className="text-purple-600" />
-                Thông tin bổ sung
+                {t("admin.brand.detail.additional_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
                   <strong className="text-purple-800 text-sm font-medium">
-                    Mã thương hiệu:
+                    {t("admin.brand.detail.brand_code")}:
                   </strong>
                   <p className="mt-1 text-purple-700 font-mono font-semibold">
                     BRAND-{brand.id.toString().padStart(4, "0")}
@@ -276,7 +303,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                 {brand.slug && (
                   <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                     <strong className="text-indigo-800 text-sm font-medium">
-                      Slug:
+                      {t("admin.brand.detail.slug")}:
                     </strong>
                     <p className="mt-1 text-indigo-700 font-mono font-semibold">
                       {brand.slug}
@@ -286,19 +313,22 @@ export default function BrandDetailModal({ brand, open, onClose }) {
 
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <strong className="text-gray-700 text-sm font-medium">
-                    Độ dài tên:
+                    {t("admin.brand.detail.name_length")}:
                   </strong>
                   <p className="mt-1 text-gray-800 font-semibold">
-                    {brand.name?.length || 0} ký tự
+                    {brand.name?.length || 0}{" "}
+                    {t("admin.brand.detail.name_length_unit")}
                   </p>
                 </div>
 
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <strong className="text-gray-700 text-sm font-medium">
-                    Có logo:
+                    {t("admin.brand.detail.has_logo")}:
                   </strong>
                   <p className="mt-1 text-gray-800 font-semibold">
-                    {brand.image || brand.logo ? "Có" : "Không"}
+                    {brand.image || brand.logo
+                      ? t("admin.brand.detail.yes")
+                      : t("admin.brand.detail.no")}
                   </p>
                 </div>
               </div>
@@ -308,7 +338,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                 <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-200">
                   <h4 className="flex items-center gap-2 font-semibold text-gray-800 mb-3">
                     <IconInfoCircle size={18} className="text-blue-600" />
-                    Mô tả chi tiết:
+                    {t("admin.brand.detail.detailed_description")}:
                   </h4>
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap bg-white p-3 rounded border">
                     {brand.description}
@@ -323,7 +353,7 @@ export default function BrandDetailModal({ brand, open, onClose }) {
                 onClick={onClose}
                 className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
               >
-                Đóng
+                {t("admin.brand.detail.close")}
               </button>
             </div>
           </div>

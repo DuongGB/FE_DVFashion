@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   IconX,
   IconTag,
@@ -14,22 +14,34 @@ import {
   IconAlertCircle,
   IconInfoCircle,
 } from "@tabler/icons-react";
-
-const typeLabels = {
-  PERCENTAGE: "Phần trăm",
-  FIXED_AMOUNT: "Tiền mặt",
-  FREE_SHIPPING: "Miễn phí vận chuyển",
-  BUY_ONE_GET_ONE: "Mua 1 tặng 1",
-};
+import { useTranslation } from "react-i18next";
 
 export default function PromotionDetailModal({ promotion, open, onClose }) {
+  const { t, i18n } = useTranslation();
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
+
   if (!open || !promotion) return null;
+
+  // Get language from i18n
+  const language = i18n.language || "VI";
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return "Không có";
+    if (!dateString) return t("admin.promotion.detail.no_data");
     const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
+    return date.toLocaleString(language === "VI" ? "vi-VN" : "en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -40,7 +52,7 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
 
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
+    return new Intl.NumberFormat(language === "VI" ? "vi-VN" : "en-US", {
       style: "currency",
       currency: "VND",
     }).format(amount);
@@ -76,9 +88,9 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
       case "FIXED_AMOUNT":
         return formatCurrency(promotion.value);
       case "FREE_SHIPPING":
-        return "Miễn phí vận chuyển";
+        return t("admin.promotion.detail.values.free_shipping");
       case "BUY_ONE_GET_ONE":
-        return "Mua 1 tặng 1";
+        return t("admin.promotion.detail.values.buy_one_get_one");
       default:
         return promotion.value;
     }
@@ -93,27 +105,27 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
     if (isExpired) {
       return {
         color: "bg-red-100 text-red-800 border-red-200",
-        label: "Đã hết hạn",
+        label: t("admin.promotion.detail.status.expired"),
         icon: <IconAlertCircle size={16} />,
       };
     }
     if (isUpcoming) {
       return {
         color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        label: "Sắp diễn ra",
+        label: t("admin.promotion.detail.status.upcoming"),
         icon: <IconClock size={16} />,
       };
     }
     if (promotion.active) {
       return {
         color: "bg-green-100 text-green-800 border-green-200",
-        label: "Đang hoạt động",
+        label: t("admin.promotion.detail.status.active"),
         icon: <IconCheck size={16} />,
       };
     }
     return {
       color: "bg-gray-100 text-gray-800 border-gray-200",
-      label: "Không hoạt động",
+      label: t("admin.promotion.detail.status.inactive"),
       icon: <IconAlertCircle size={16} />,
     };
   };
@@ -143,9 +155,13 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               {getTypeIcon()}
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">{promotion.name}</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {t("admin.promotion.detail.title")}
+              </h2>
               <p className="text-blue-100 opacity-90">
-                {promotion.description || "Không có mô tả"}
+                {t("admin.promotion.detail.description", {
+                  name: promotion.name,
+                })}
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <span
@@ -170,10 +186,10 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                 </div>
                 <div>
                   <p className="text-xs text-green-600 font-medium">
-                    Mã khuyến mãi
+                    {t("admin.promotion.detail.fields.promotion_code")}
                   </p>
                   <p className="text-sm font-bold text-green-800">
-                    {promotion.code}
+                    {promotion.code || `PROMO-${promotion.id}`}
                   </p>
                 </div>
               </div>
@@ -185,7 +201,9 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                   {getTypeIcon()}
                 </div>
                 <div>
-                  <p className="text-xs text-blue-600 font-medium">Giá trị</p>
+                  <p className="text-xs text-blue-600 font-medium">
+                    {t("admin.promotion.detail.fields.value")}
+                  </p>
                   <p className="text-sm font-bold text-blue-800">
                     {getValueDisplay()}
                   </p>
@@ -200,7 +218,7 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                 </div>
                 <div>
                   <p className="text-xs text-purple-600 font-medium">
-                    Đã sử dụng
+                    {t("admin.promotion.detail.fields.used")}
                   </p>
                   <p className="text-sm font-bold text-purple-800">
                     {promotion.currentUsage || 0}/{promotion.maxUsages || "∞"}
@@ -216,12 +234,12 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                 </div>
                 <div>
                   <p className="text-xs text-orange-600 font-medium">
-                    Đơn tối thiểu
+                    {t("admin.promotion.detail.fields.min_order")}
                   </p>
                   <p className="text-sm font-bold text-orange-800">
                     {promotion.minOrderAmount > 0
                       ? formatCurrency(promotion.minOrderAmount)
-                      : "Không yêu cầu"}
+                      : t("admin.promotion.detail.values.no_minimum")}
                   </p>
                 </div>
               </div>
@@ -236,27 +254,30 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconInfoCircle size={20} className="text-blue-600" />
-                  Thông tin cơ bản
+                  {t("admin.promotion.detail.sections.basic_info")}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600 font-medium">ID:</span>
+                    <span className="text-gray-600 font-medium">
+                      {t("admin.promotion.detail.fields.id")}:
+                    </span>
                     <span className="text-gray-800 font-mono">
                       {promotion.id}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-gray-600 font-medium">
-                      Loại khuyến mãi:
+                      {t("admin.promotion.detail.fields.type")}:
                     </span>
                     <span className="text-gray-800 flex items-center gap-2">
                       {getTypeIcon()}
-                      {typeLabels[promotion.type] || promotion.type}
+                      {t(`admin.promotion.type.${promotion.type}`) ||
+                        promotion.type}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-gray-600 font-medium">
-                      Trạng thái:
+                      {t("admin.promotion.detail.fields.status")}:
                     </span>
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color} flex items-center gap-1`}
@@ -272,17 +293,21 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconCalendar size={20} className="text-purple-600" />
-                  Thời gian áp dụng
+                  {t("admin.promotion.detail.sections.time_info")}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600 font-medium">Bắt đầu:</span>
+                    <span className="text-gray-600 font-medium">
+                      {t("admin.promotion.detail.fields.start_time")}:
+                    </span>
                     <span className="text-gray-800 text-sm sm:text-base">
                       {formatDate(promotion.startDate)}
                     </span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2">
-                    <span className="text-gray-600 font-medium">Kết thúc:</span>
+                    <span className="text-gray-600 font-medium">
+                      {t("admin.promotion.detail.fields.end_time")}:
+                    </span>
                     <span className="text-gray-800 text-sm sm:text-base">
                       {formatDate(promotion.endDate)}
                     </span>
@@ -297,34 +322,43 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconUsers size={20} className="text-green-600" />
-                  Thống kê sử dụng
+                  {t("admin.promotion.detail.sections.usage_stats")}
                 </h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Lượt sử dụng tối đa:</span>
+                    <span className="text-gray-600">
+                      {t("admin.promotion.detail.fields.max_usage")}:
+                    </span>
                     <span className="text-gray-800 font-semibold">
-                      {promotion.maxUsages || "Không giới hạn"}
+                      {promotion.maxUsages ||
+                        t("admin.promotion.detail.values.unlimited")}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Đã sử dụng:</span>
+                    <span className="text-gray-600">
+                      {t("admin.promotion.detail.fields.current_usage")}:
+                    </span>
                     <span className="text-blue-600 font-semibold">
                       {promotion.currentUsage || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Còn lại:</span>
+                    <span className="text-gray-600">
+                      {t("admin.promotion.detail.fields.remaining")}:
+                    </span>
                     <span className="text-orange-600 font-semibold">
                       {promotion.maxUsages
                         ? promotion.maxUsages - (promotion.currentUsage || 0)
-                        : "Không giới hạn"}
+                        : t("admin.promotion.detail.values.unlimited")}
                     </span>
                   </div>
 
                   {promotion.maxUsages && (
                     <div className="mt-4">
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
-                        <span>Tiến độ sử dụng</span>
+                        <span>
+                          {t("admin.promotion.detail.fields.progress")}
+                        </span>
                         <span>{usagePercentage}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
@@ -344,18 +378,20 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconShoppingCart size={20} className="text-orange-600" />
-                  Điều kiện áp dụng
+                  {t("admin.promotion.detail.sections.conditions")}
                 </h3>
                 <div className="space-y-3">
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                     <div className="flex items-center gap-2 text-orange-800">
                       <IconShoppingCart size={16} />
-                      <span className="font-medium">Đơn hàng tối thiểu:</span>
+                      <span className="font-medium">
+                        {t("admin.promotion.detail.fields.min_order_amount")}:
+                      </span>
                     </div>
                     <p className="text-orange-700 mt-1">
                       {promotion.minOrderAmount > 0
                         ? formatCurrency(promotion.minOrderAmount)
-                        : "Không yêu cầu giá trị tối thiểu"}
+                        : t("admin.promotion.detail.values.no_minimum_value")}
                     </p>
                   </div>
                 </div>
@@ -363,21 +399,34 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
             </div>
           </div>
 
+          {/* Promotion Description */}
+          {promotion.description && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconInfoCircle size={20} className="text-green-600" />
+                Mô tả khuyến mãi
+              </h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {promotion.description}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Applicable Products */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
               <IconTag size={20} className="text-blue-600" />
-              Sản phẩm áp dụng
+              {t("admin.promotion.detail.sections.applicable_products")}
             </h3>
             {promotion.applicableProducts &&
             promotion.applicableProducts.length > 0 ? (
               <div>
                 <p className="text-gray-600 mb-3">
-                  Khuyến mãi này áp dụng cho{" "}
-                  <span className="font-semibold text-blue-600">
-                    {promotion.applicableProducts.length}
-                  </span>{" "}
-                  sản phẩm:
+                  {t("admin.promotion.detail.values.apply_to_products", {
+                    count: promotion.applicableProducts.length,
+                  })}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {promotion.applicableProducts.map((product) => (
@@ -395,7 +444,7 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 inline-flex items-center gap-2">
                   <IconCheck size={20} className="text-green-600" />
                   <span className="text-green-700 font-medium">
-                    🎉 Áp dụng cho tất cả sản phẩm
+                    {t("admin.promotion.detail.values.apply_all_products")}
                   </span>
                 </div>
               </div>
@@ -408,7 +457,7 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                   <IconTag size={20} className="text-purple-600" />
-                  Danh mục áp dụng
+                  {t("admin.promotion.detail.sections.applicable_categories")}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {promotion.applicableCategories.map((category) => (
@@ -422,6 +471,16 @@ export default function PromotionDetailModal({ promotion, open, onClose }) {
                 </div>
               </div>
             )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
+            >
+              {t("admin.promotion.detail.close")}
+            </button>
+          </div>
         </div>
       </div>
     </div>

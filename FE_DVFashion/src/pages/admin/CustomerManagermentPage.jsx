@@ -6,6 +6,7 @@ import CustomerDetailModal from "../../components/ui/customer/CustomerDetailModa
 import CustomerForm from "../../components/ui/customer/CustomerForm";
 import { useUser } from "../../hooks/useUser";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import { useTranslation } from "react-i18next";
 
 // Enums theo class diagram
 const BehaviorType = {
@@ -29,37 +30,8 @@ const Gender = {
   OTHER: "OTHER",
 };
 
-// Translations for labels
-const statusLabels = {
-  vi: {
-    active: "Hoạt động",
-    inactive: "Không hoạt động",
-    total: "Tổng khách hàng",
-    activeCount: "Đang hoạt động",
-    inactiveCount: "Không hoạt động",
-    allStatus: "Tất cả trạng thái",
-    vietnamese: "Tiếng Việt",
-    english: "Tiếng Anh",
-  },
-  en: {
-    active: "Active",
-    inactive: "Inactive",
-    total: "Total Customers",
-    activeCount: "Active",
-    inactiveCount: "Inactive",
-    allStatus: "All Status",
-    vietnamese: "Vietnamese",
-    english: "English",
-  },
-};
-
-const genderLabels = {
-  MALE: "Nam",
-  FEMALE: "Nữ",
-  OTHER: "Khác",
-};
-
 export default function CustomerManagementPage() {
+  const { t, i18n } = useTranslation();
   const { users, isLoadingUsers, usersError, updateUser, updateUserError } =
     useUser();
 
@@ -70,12 +42,27 @@ export default function CustomerManagementPage() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [language, setLanguage] = useState("vi");
   const [loadingItems, setLoadingItems] = useState({
     status: null,
   });
-  const [originalOrder, setOriginalOrder] = useState([]); // Store original order
+  const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
+
+  // Get language from i18n instead of local state
+  const language = i18n.language || "VI";
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Store original order when users first load
   useEffect(() => {
@@ -92,15 +79,12 @@ export default function CustomerManagementPage() {
     setCurrentPage(1);
   }, [search, statusFilter, genderFilter]);
 
-  // Helper function to get status labels
-  const getStatusLabel = (key) => {
-    return statusLabels[language][key] || statusLabels.vi[key];
-  };
-
   // Helper function to format date
   const formatDate = (date) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("vi-VN");
+    return new Date(date).toLocaleDateString(
+      language === "VI" ? "vi-VN" : "en-US"
+    );
   };
 
   // Filter customers with stable sorting (similar to BrandPage)
@@ -150,40 +134,24 @@ export default function CustomerManagementPage() {
   // Handle toggle status with position preservation (similar to BrandPage)
   const handleToggleStatus = async (customer) => {
     const newStatus = !customer.active;
-    console.log("🔄 Toggle status for customer:", {
-      customerId: customer.id,
-      currentStatus: customer.active,
-      newStatus: newStatus,
-      customerData: customer,
-    });
-
     const actionText = newStatus
-      ? language === "vi"
-        ? "kích hoạt lại"
-        : "activate"
-      : language === "vi"
-      ? "vô hiệu hóa"
-      : "deactivate";
+      ? t("admin.customer.actions.activate")
+      : t("admin.customer.actions.deactivate");
 
     const confirmText = newStatus
-      ? language === "vi"
-        ? "Kích hoạt"
-        : "Activate"
-      : language === "vi"
-      ? "Vô hiệu hóa"
-      : "Deactivate";
+      ? t("admin.customer.actions.activate")
+      : t("admin.customer.actions.deactivate");
 
-    const cancelText = language === "vi" ? "Hủy" : "Cancel";
+    const cancelText = language === "VI" ? "Hủy" : "Cancel";
 
-    const title =
-      language === "vi"
-        ? `Xác nhận ${actionText} khách hàng`
-        : `Confirm ${actionText} customer`;
+    const title = newStatus
+      ? t("admin.customer.actions.confirm_activate")
+      : t("admin.customer.actions.confirm_deactivate");
 
-    const message =
-      language === "vi"
-        ? `Bạn có chắc chắn muốn ${actionText} khách hàng "${customer.fullName}" không?`
-        : `Are you sure you want to ${actionText} customer "${customer.fullName}"?`;
+    const message = t("admin.customer.actions.confirm_message", {
+      action: actionText,
+      name: customer.fullName,
+    });
 
     showConfirmationToast({
       title,
@@ -213,14 +181,9 @@ export default function CustomerManagementPage() {
 
           console.log("📥 Update response:", response);
 
-          const successMessage =
-            language === "vi"
-              ? `${
-                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
-                } khách hàng thành công!`
-              : `Customer ${
-                  newStatus ? "activated" : "deactivated"
-                } successfully!`;
+          const successMessage = newStatus
+            ? t("admin.customer.actions.success_activate")
+            : t("admin.customer.actions.success_deactivate");
 
           toast.success(successMessage);
         } catch (error) {
@@ -231,13 +194,9 @@ export default function CustomerManagementPage() {
             status: error.response?.status,
           });
 
-          const errorMessage =
-            language === "vi"
-              ? `Có lỗi xảy ra khi ${actionText} khách hàng!`
-              : `Error occurred while ${actionText.replace(
-                  " ",
-                  "ing"
-                )} customer!`;
+          const errorMessage = newStatus
+            ? t("admin.customer.actions.error_activate")
+            : t("admin.customer.actions.error_deactivate");
           toast.error(errorMessage);
         } finally {
           console.log("🔄 Clearing loading state");
@@ -259,18 +218,24 @@ export default function CustomerManagementPage() {
   useEffect(() => {
     if (usersError) {
       toast.error(
-        usersError.message || "Có lỗi xảy ra khi tải dữ liệu khách hàng"
+        usersError.message ||
+          (language === "VI"
+            ? "Có lỗi xảy ra khi tải dữ liệu khách hàng"
+            : "Error occurred while loading customer data")
       );
     }
-  }, [usersError]);
+  }, [usersError, language]);
 
   useEffect(() => {
     if (updateUserError) {
       toast.error(
-        updateUserError.message || "Có lỗi xảy ra khi cập nhật khách hàng"
+        updateUserError.message ||
+          (language === "VI"
+            ? "Có lỗi xảy ra khi cập nhật khách hàng"
+            : "Error occurred while updating customer")
       );
     }
-  }, [updateUserError]);
+  }, [updateUserError, language]);
 
   // Handle error state
   if (usersError && !users) {
@@ -278,20 +243,17 @@ export default function CustomerManagementPage() {
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <div className="text-red-500 text-center">
           <h3 className="text-lg font-semibold mb-2">
-            {language === "vi" ? "Lỗi tải dữ liệu" : "Error Loading Data"}
+            {t("admin.customer.error.loading_title")}
           </h3>
           <p className="text-sm">
-            {usersError.message ||
-              (language === "vi"
-                ? "Không thể tải danh sách khách hàng"
-                : "Unable to load customer list")}
+            {usersError.message || t("admin.customer.error.loading_message")}
           </p>
         </div>
         <button
           onClick={() => window.location.reload()}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          {language === "vi" ? "Thử lại" : "Try Again"}
+          {t("admin.customer.error.try_again")}
         </button>
       </div>
     );
@@ -302,7 +264,7 @@ export default function CustomerManagementPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {language === "vi" ? "Quản lý khách hàng" : "Customer Management"}
+          {t("admin.customer.title")}
         </h1>
       </div>
 
@@ -312,7 +274,7 @@ export default function CustomerManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("total")}
+                {t("admin.customer.total_customers")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -324,7 +286,7 @@ export default function CustomerManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("activeCount")}
+                {t("admin.customer.active_customers")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -338,7 +300,7 @@ export default function CustomerManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.customer.inactive_customers")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -351,7 +313,7 @@ export default function CustomerManagementPage() {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow border">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
@@ -361,11 +323,7 @@ export default function CustomerManagementPage() {
               />
               <input
                 type="text"
-                placeholder={
-                  language === "vi"
-                    ? "Tìm kiếm theo tên, email, username, SĐT..."
-                    : "Search by name, email, username, phone..."
-                }
+                placeholder={t("admin.customer.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -380,10 +338,12 @@ export default function CustomerManagementPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">{getStatusLabel("allStatus")}</option>
-              <option value="active">{getStatusLabel("activeCount")}</option>
+              <option value="">{t("admin.customer.all_status")}</option>
+              <option value="active">
+                {t("admin.customer.active_customers")}
+              </option>
               <option value="inactive">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.customer.inactive_customers")}
               </option>
             </select>
           </div>
@@ -395,28 +355,12 @@ export default function CustomerManagementPage() {
               onChange={(e) => setGenderFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">
-                {language === "vi" ? "Tất cả giới tính" : "All Genders"}
-              </option>
-              <option value="MALE">{language === "vi" ? "Nam" : "Male"}</option>
+              <option value="">{t("admin.customer.all_genders")}</option>
+              <option value="MALE">{t("admin.customer.gender.MALE")}</option>
               <option value="FEMALE">
-                {language === "vi" ? "Nữ" : "Female"}
+                {t("admin.customer.gender.FEMALE")}
               </option>
-              <option value="OTHER">
-                {language === "vi" ? "Khác" : "Other"}
-              </option>
-            </select>
-          </div>
-
-          {/* Language Filter */}
-          <div>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="vi">{getStatusLabel("vietnamese")}</option>
-              <option value="en">{getStatusLabel("english")}</option>
+              <option value="OTHER">{t("admin.customer.gender.OTHER")}</option>
             </select>
           </div>
         </div>
@@ -424,9 +368,10 @@ export default function CustomerManagementPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {language === "vi"
-          ? `Hiển thị ${paginatedCustomers.length} trên tổng số ${filteredCustomers.length} khách hàng`
-          : `Showing ${paginatedCustomers.length} of ${filteredCustomers.length} customers`}
+        {t("admin.customer.showing_results", {
+          current: paginatedCustomers.length,
+          total: filteredCustomers.length,
+        })}
       </div>
 
       {/* Customers Table */}
@@ -434,30 +379,18 @@ export default function CustomerManagementPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-3">ID</th>
+              <th className="p-3">{t("admin.customer.columns.id")}</th>
+              <th className="p-3">{t("admin.customer.columns.full_name")}</th>
+              <th className="p-3">{t("admin.customer.columns.email")}</th>
+              <th className="p-3">{t("admin.customer.columns.phone")}</th>
+              <th className="p-3">{t("admin.customer.columns.gender")}</th>
               <th className="p-3">
-                {language === "vi" ? "Họ tên" : "Full Name"}
+                {t("admin.customer.columns.date_of_birth")}
               </th>
-              <th className="p-3">Email</th>
-              <th className="p-3">{language === "vi" ? "SĐT" : "Phone"}</th>
-              <th className="p-3">
-                {language === "vi" ? "Giới tính" : "Gender"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Ngày sinh" : "Date of Birth"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Trạng thái" : "Status"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Địa chỉ" : "Address"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Ngày tạo" : "Created At"}
-              </th>
-              <th className="p-3">
-                {language === "vi" ? "Hành động" : "Actions"}
-              </th>
+              <th className="p-3">{t("admin.customer.columns.status")}</th>
+              <th className="p-3">{t("admin.customer.columns.address")}</th>
+              <th className="p-3">{t("admin.customer.columns.created_at")}</th>
+              <th className="p-3">{t("admin.customer.columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -466,7 +399,7 @@ export default function CustomerManagementPage() {
                 <td colSpan={10} className="text-center text-gray-500 p-4">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                    {language === "vi" ? "Đang tải..." : "Loading..."}
+                    {t("admin.customer.loading")}
                   </div>
                 </td>
               </tr>
@@ -483,7 +416,8 @@ export default function CustomerManagementPage() {
                   <td className="p-3">{customer.email}</td>
                   <td className="p-3">{customer.phone || "N/A"}</td>
                   <td className="p-3">
-                    {genderLabels[customer.gender] || "Khác"}
+                    {t(`admin.customer.gender.${customer.gender}`) ||
+                      t("admin.customer.gender.OTHER")}
                   </td>
                   <td className="p-3">
                     {customer.dob ? formatDate(customer.dob) : "N/A"}
@@ -498,13 +432,9 @@ export default function CustomerManagementPage() {
                           : "bg-red-100 text-red-800 hover:bg-red-200"
                       }`}
                       title={
-                        language === "vi"
-                          ? `Click để ${
-                              customer.active ? "vô hiệu hóa" : "kích hoạt lại"
-                            }`
-                          : `Click to ${
-                              customer.active ? "deactivate" : "activate"
-                            }`
+                        customer.active
+                          ? t("admin.customer.actions.tooltip_deactivate")
+                          : t("admin.customer.actions.tooltip_activate")
                       }
                     >
                       {loadingItems.status === customer.id ? (
@@ -514,8 +444,8 @@ export default function CustomerManagementPage() {
                       ) : (
                         <>
                           {customer.active
-                            ? getStatusLabel("active")
-                            : getStatusLabel("inactive")}
+                            ? t("admin.customer.status.active")
+                            : t("admin.customer.status.inactive")}
                         </>
                       )}
                     </button>
@@ -539,15 +469,13 @@ export default function CustomerManagementPage() {
                           </div>
                         ) : (
                           <span className="text-gray-500 text-sm">
-                            {language === "vi"
-                              ? "Không có địa chỉ mặc định"
-                              : "No default address"}
+                            {t("admin.customer.address.no_default_address")}
                           </span>
                         );
                       })()
                     ) : (
                       <span className="text-gray-500 text-sm">
-                        {language === "vi" ? "Chưa có địa chỉ" : "No address"}
+                        {t("admin.customer.address.no_address")}
                       </span>
                     )}
                   </td>
@@ -559,16 +487,14 @@ export default function CustomerManagementPage() {
                       <button
                         onClick={() => handleViewDetail(customer)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
-                        title={
-                          language === "vi" ? "Xem chi tiết" : "View Details"
-                        }
+                        title={t("admin.customer.actions.view_details")}
                       >
                         <IconEye size={24} />
                       </button>
                       <button
                         onClick={() => handleEdit(customer)}
                         className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                        title={language === "vi" ? "Chỉnh sửa" : "Edit"}
+                        title={t("admin.customer.actions.edit")}
                       >
                         <IconEdit size={24} />
                       </button>
@@ -579,9 +505,7 @@ export default function CustomerManagementPage() {
             ) : (
               <tr>
                 <td colSpan={10} className="text-center text-gray-500 p-4">
-                  {language === "vi"
-                    ? "Không có khách hàng nào."
-                    : "No customers found."}
+                  {t("admin.customer.no_customers")}
                 </td>
               </tr>
             )}

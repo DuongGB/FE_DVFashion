@@ -1,28 +1,26 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
-import MainLayout from "./layouts/MainLayout";
-import AdminLayout from "./layouts/AdminLayout";
-import AdminPage from "./pages/admin/AdminPage";
-import BlogPage from "./pages/BlogPage";
-import HomePage from "./pages/HomePage";
-import StaffPage from "./pages/staff/StaffPage";
-import AccountPage from "./pages/customer/AccountPage";
-import CustomerPage from "./pages/customer/CustomerPage";
-import OrdersPage from "./pages/staff/OrderPage";
-import ProductPage from "./pages/admin/ProductPage";
-import CategoryPage from "./pages/admin/CategoryPage";
-import BrandPage from "./pages/admin/BrandPage";
-import ReviewPage from "./pages/admin/ReviewPage";
-import PromotionPage from "./pages/admin/PromotionPage";
-import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
-import EmployeePage from "./pages/admin/EmployeePage";
-import AnalystReportPage from "./pages/admin/AnalystReportPage";
-import InventoryPage from "./pages/admin/InventoryPage";
-import StaffLayout from "./layouts/StaffLayout";
-import ForecastPage from "./pages/admin/ForecastPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OAuth2RedirectHandler from "./components/ui/auth/OAuth2RedirectHandler";
+import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
+import AdminLayout from "./layouts/AdminLayout";
+import MainLayout from "./layouts/MainLayout";
+import AdminPage from "./pages/admin/AdminPage";
+import AnalystReportPage from "./pages/admin/AnalystReportPage";
+import BrandPage from "./pages/admin/BrandPage";
+import CategoryPage from "./pages/admin/CategoryPage";
+import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
+import EmployeePage from "./pages/admin/EmployeePage";
+import ForecastPage from "./pages/admin/ForecastPage";
+import InventoryPage from "./pages/admin/InventoryPage";
+import ProductPage from "./pages/admin/ProductPage";
+import PromotionPage from "./pages/admin/PromotionPage";
+import ReviewPage from "./pages/admin/ReviewPage";
+import BlogPage from "./pages/BlogPage";
+import AccountPage from "./pages/customer/AccountPage";
+import CustomerPage from "./pages/customer/CustomerPage";
+import OrderPage from "./pages/admin/OrderPage";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
@@ -45,6 +43,7 @@ function App() {
             <Route path="employees" element={<EmployeePage />} />
             <Route path="reports" element={<AnalystReportPage />} />
             <Route path="forecasts" element={<ForecastPage />} />
+            <Route path="orders" element={<OrderPage />} />
           </Route>
         </Route>
 
