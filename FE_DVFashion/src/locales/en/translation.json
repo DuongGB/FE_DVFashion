@@ -303,5 +303,98 @@
         "register_failed": "Registration failed. Please try again."
       }
     }
+  },
+  "admin": {
+    "sidebar": {
+      "home": "Home",
+      "business_management": "Business Management",
+      "orders": "Orders",
+      "inventory": "Inventory",
+      "products": "Products",
+      "categories": "Categories",
+      "brands": "Brands",
+      "customer_feedback": "Customer & Feedback",
+      "customers": "Customers",
+      "reviews": "Reviews",
+      "marketing": "Marketing",
+      "promotions": "Promotions",
+      "human_resources": "Human Resources",
+      "employees": "Employees",
+      "reports_analytics": "Reports & Analytics",
+      "reports_management": "Reports Management",
+      "revenue_forecast": "Revenue Forecast",
+      "display_pages": "Display Pages",
+      "customer_page": "Customer Page",
+      "staff_page": "Staff Page",
+      "logout": "Logout",
+      "loading": "Loading...",
+      "employee_name": "Employee Name",
+      "role": "Role"
+    },
+    "dashboard": {
+      "title": "Administration Dashboard",
+      "stats": {
+        "total_customers": "Total Customers",
+        "total_products": "Total Products",
+        "total_orders": "Total Orders",
+        "monthly_revenue": "Monthly Revenue",
+        "pending_orders": "Pending Orders",
+        "active_customers": "Active Customers",
+        "average_rating": "Average Rating",
+        "daily_views": "Daily Views",
+        "change_from_last_month": "from last month"
+      },
+      "charts": {
+        "revenue_title": "Revenue Chart",
+        "revenue_chart_title": "Monthly Revenue and Orders",
+        "month": "Month",
+        "revenue_label": "Revenue (VND)",
+        "orders_label": "Number of Orders",
+        "revenue": "Revenue",
+        "orders": "Orders",
+        "loading": "Loading chart...",
+        "month_1": "January",
+        "month_2": "February",
+        "month_3": "March",
+        "month_4": "April",
+        "month_5": "May",
+        "month_6": "June"
+      },
+      "recent_activity": {
+        "title": "Recent Activity",
+        "view_all": "View all activities →",
+        "activities": {
+          "new_order": "New Order",
+          "new_customer": "New Customer",
+          "product_update": "Product Update",
+          "new_review": "New Review",
+          "payment_completed": "Payment Completed"
+        },
+        "time": {
+          "minutes_ago": "{{count}} minutes ago",
+          "hours_ago": "{{count}} hours ago"
+        }
+      },
+      "quick_actions": {
+        "title": "Quick Actions",
+        "manage_products": "Manage Products",
+        "manage_orders": "Manage Orders",
+        "manage_customers": "Manage Customers",
+        "reports_analytics": "Reports & Analytics",
+        "manage_promotions": "Manage Promotions"
+      },
+      "top_products": {
+        "title": "Best Selling Products",
+        "view_all": "View all →",
+        "sold": "{{count}} sold",
+        "sample_products": {
+          "basic_tshirt": "Men's Basic T-shirt",
+          "slim_jeans": "Slim Fit Jeans",
+          "office_shirt": "Office Shirt",
+          "white_sneakers": "White Sneakers",
+          "unisex_hoodie": "Unisex Hoodie"
+        }
+      }
+    }
   }
 }

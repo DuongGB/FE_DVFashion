@@ -1,33 +1,35 @@
 import {
-  IconHomeInfinity,
-  IconTruckDelivery,
-  IconShirt,
-  IconUsers,
-  IconCategory,
-  IconBuildingStore,
-  IconDevicesCheck,
   IconAdCircle,
-  IconDeviceAnalytics,
-  IconHomeEdit,
-  IconCashRegister,
-  IconLogout,
+  IconBriefcase,
+  IconBuildingStore,
+  IconCategory,
   IconChevronDown,
   IconChevronRight,
-  IconBriefcase,
-  IconUserHeart,
-  IconSpeakerphone,
+  IconDeviceAnalytics,
+  IconDevicesCheck,
+  IconHomeEdit,
+  IconHomeInfinity,
+  IconLogout,
   IconReportAnalytics,
+  IconShirt,
+  IconSpeakerphone,
+  IconTruckDelivery,
+  IconUserHeart,
+  IconUsers,
   IconWorldWww,
+  IconReceipt,
 } from "@tabler/icons-react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { use, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import EmployeeCard from "../common/EmployeeCard";
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Sidebar({ onClose }) {
   const { logout, isLogoutLoading, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, i18n } = useTranslation();
 
   // State cho menu collapse
   const [expandedMenus, setExpandedMenus] = useState({
@@ -38,6 +40,14 @@ export default function Sidebar({ onClose }) {
     reports: false,
     display: false,
   });
+
+  useEffect(() => {
+    const handleLanguageChange = () => {};
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   const defaultAvatar =
     "https://img.pikbest.com/png-images/20240806/3d-character-of-a-male-office-worker-wearing-white-shirt-and-tie_10659321.png!f305cw";
@@ -50,7 +60,7 @@ export default function Sidebar({ onClose }) {
         className="w-64 text-white flex flex-col py-8 px-6 h-full"
       >
         <div className="flex items-center justify-center h-full">
-          <div className="text-center">Loading...</div>
+          <div className="text-center">{t("admin.sidebar.loading")}</div>
         </div>
       </aside>
     );
@@ -171,9 +181,9 @@ export default function Sidebar({ onClose }) {
     >
       {/* Thông tin nhân viên */}
       <EmployeeCard
-        name={user?.fullName || "Tên nhân viên"}
+        name={user?.fullName || t("admin.sidebar.employee_name")}
         image={defaultAvatar}
-        role={roleDisplay || "Vai trò"}
+        role={roleDisplay || t("admin.sidebar.role")}
       />
 
       {/* Navigation Links of ADMIN */}
@@ -192,59 +202,62 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconHomeInfinity stroke={2} />
-                <span className="ml-3">Trang chủ</span>
+                <span className="ml-3">{t("admin.sidebar.home")}</span>
               </Link>
             </li>
 
             {/* Quản lý kinh doanh */}
             <MenuWithSubmenu
-              title="Quản lý kinh doanh"
+              title={t("admin.sidebar.business_management")}
               icon={<IconBriefcase stroke={2} />}
               menuKey="business"
             >
+              <SubMenuItem to="/admin/orders" icon={<IconReceipt size={16} />}>
+                {t("admin.sidebar.orders")}
+              </SubMenuItem>
               <SubMenuItem
                 to="/admin/inventories"
                 icon={<IconTruckDelivery size={16} />}
               >
-                Kho hàng
+                {t("admin.sidebar.inventory")}
               </SubMenuItem>
               <SubMenuItem to="/admin/products" icon={<IconShirt size={16} />}>
-                Sản phẩm
+                {t("admin.sidebar.products")}
               </SubMenuItem>
               <SubMenuItem
                 to="/admin/categories"
                 icon={<IconCategory size={16} />}
               >
-                Danh mục
+                {t("admin.sidebar.categories")}
               </SubMenuItem>
               <SubMenuItem
                 to="/admin/brands"
                 icon={<IconBuildingStore size={16} />}
               >
-                Thương hiệu
+                {t("admin.sidebar.brands")}
               </SubMenuItem>
             </MenuWithSubmenu>
 
             {/* Khách hàng & phản hồi */}
             <MenuWithSubmenu
-              title="Khách hàng & phản hồi"
+              title={t("admin.sidebar.customer_feedback")}
               icon={<IconUserHeart stroke={2} />}
               menuKey="customer"
             >
               <SubMenuItem to="/admin/customers" icon={<IconUsers size={16} />}>
-                Khách hàng
+                {t("admin.sidebar.customers")}
               </SubMenuItem>
               <SubMenuItem
                 to="/admin/reviews"
                 icon={<IconDevicesCheck size={16} />}
               >
-                Bài nhận xét
+                {t("admin.sidebar.reviews")}
               </SubMenuItem>
             </MenuWithSubmenu>
 
             {/* Marketing */}
             <MenuWithSubmenu
-              title="Marketing"
+              title={t("admin.sidebar.marketing")}
               icon={<IconSpeakerphone stroke={2} />}
               menuKey="marketing"
             >
@@ -252,7 +265,7 @@ export default function Sidebar({ onClose }) {
                 to="/admin/promotions"
                 icon={<IconAdCircle size={16} />}
               >
-                Khuyến mãi
+                {t("admin.sidebar.promotions")}
               </SubMenuItem>
             </MenuWithSubmenu>
 
@@ -272,7 +285,7 @@ export default function Sidebar({ onClose }) {
 
             {/* Báo cáo & phân tích */}
             <MenuWithSubmenu
-              title="Báo cáo & phân tích"
+              title={t("admin.sidebar.reports_analytics")}
               icon={<IconReportAnalytics stroke={2} />}
               menuKey="reports"
             >
@@ -280,19 +293,19 @@ export default function Sidebar({ onClose }) {
                 to="/admin/reports"
                 icon={<IconDeviceAnalytics size={16} />}
               >
-                Quản lý báo cáo
+                {t("admin.sidebar.reports_management")}
               </SubMenuItem>
               <SubMenuItem
                 to="/admin/forecasts"
                 icon={<IconDeviceAnalytics size={16} />}
               >
-                Dự báo doanh thu
+                {t("admin.sidebar.revenue_forecast")}
               </SubMenuItem>
             </MenuWithSubmenu>
 
             {/* Trang hiển thị */}
             <MenuWithSubmenu
-              title="Trang hiển thị"
+              title={t("admin.sidebar.display_pages")}
               icon={<IconWorldWww stroke={2} />}
               menuKey="display"
             >
@@ -302,7 +315,9 @@ export default function Sidebar({ onClose }) {
                   onClick={handleCustomerPageClick}
                 >
                   <IconHomeEdit size={16} />
-                  <span className="ml-3">Trang khách hàng</span>
+                  <span className="ml-3">
+                    {t("admin.sidebar.customer_page")}
+                  </span>
                 </button>
               </li>
               {/* <li>
@@ -322,6 +337,7 @@ export default function Sidebar({ onClose }) {
                 className="flex items-center hover:bg-red-600 rounded-lg p-2 w-full bg-red-500 font-semibold cursor-pointer justify-center"
                 onClick={handleLogout}
                 disabled={isLogoutLoading}
+                title={t("admin.sidebar.logout")}
               >
                 <IconLogout stroke={2} />
               </button>

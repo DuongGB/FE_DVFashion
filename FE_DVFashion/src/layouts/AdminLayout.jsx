@@ -1,17 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { IconSettings, IconBell } from "@tabler/icons-react";
 import Sidebar from "../components/common/Sidebar";
 import SettingAdminModal from "../components/ui/settingForAdmin/SettingAdminModal";
+import { useTranslation } from "react-i18next";
 
 export default function AdminLayout() {
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    const handleLanguageChange = () => {};
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
+
   const [isSettingModalOpen, setIsSettingModalOpen] = useState(false);
   return (
     <div className="h-screen bg-gray-50 flex">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <header className="bg-white shadow-md flex items-center justify-between px-6 py-4">
-          <div className="text-lg font-semibold">Trang quản trị</div>
+          <div className="text-lg font-semibold">
+            {t("admin.dashboard.title")}
+          </div>
           <div className="flex items-center space-x-4">
             {/* Settings Icon */}
             <div className="flex items-center space-x-3">

@@ -303,5 +303,99 @@
         "register_failed": "Đăng ký thất bại. Vui lòng thử lại."
       }
     }
+  },
+
+  "admin": {
+    "sidebar": {
+      "home": "Trang chủ",
+      "business_management": "Quản lý kinh doanh",
+      "orders": "Đơn hàng",
+      "inventory": "Kho hàng",
+      "products": "Sản phẩm",
+      "categories": "Danh mục",
+      "brands": "Thương hiệu",
+      "customer_feedback": "Khách hàng & phản hồi",
+      "customers": "Khách hàng",
+      "reviews": "Bài nhận xét",
+      "marketing": "Marketing",
+      "promotions": "Khuyến mãi",
+      "human_resources": "Nhân sự",
+      "employees": "Nhân viên",
+      "reports_analytics": "Báo cáo & phân tích",
+      "reports_management": "Quản lý báo cáo",
+      "revenue_forecast": "Dự báo doanh thu",
+      "display_pages": "Trang hiển thị",
+      "customer_page": "Trang khách hàng",
+      "staff_page": "Trang nhân viên",
+      "logout": "Đăng xuất",
+      "loading": "Đang tải...",
+      "employee_name": "Tên nhân viên",
+      "role": "Vai trò"
+    },
+    "dashboard": {
+      "title": "Trang quản trị",
+      "stats": {
+        "total_customers": "Tổng khách hàng",
+        "total_products": "Tổng sản phẩm",
+        "total_orders": "Tổng đơn hàng",
+        "monthly_revenue": "Doanh thu tháng",
+        "pending_orders": "Đơn hàng chờ xử lý",
+        "active_customers": "Khách hàng hoạt động",
+        "average_rating": "Đánh giá trung bình",
+        "daily_views": "Lượt xem hôm nay",
+        "change_from_last_month": "từ tháng trước"
+      },
+      "charts": {
+        "revenue_title": "Biểu đồ doanh thu",
+        "revenue_chart_title": "Doanh thu và Đơn hàng theo tháng",
+        "month": "Tháng",
+        "revenue_label": "Doanh thu (VNĐ)",
+        "orders_label": "Số đơn hàng",
+        "revenue": "Doanh thu",
+        "orders": "Đơn hàng",
+        "loading": "Đang tải biểu đồ...",
+        "month_1": "Tháng 1",
+        "month_2": "Tháng 2",
+        "month_3": "Tháng 3",
+        "month_4": "Tháng 4",
+        "month_5": "Tháng 5",
+        "month_6": "Tháng 6"
+      },
+      "recent_activity": {
+        "title": "Hoạt động gần đây",
+        "view_all": "Xem tất cả hoạt động →",
+        "activities": {
+          "new_order": "Đơn hàng mới",
+          "new_customer": "Khách hàng mới",
+          "product_update": "Sản phẩm cập nhật",
+          "new_review": "Đánh giá mới",
+          "payment_completed": "Thanh toán hoàn thành"
+        },
+        "time": {
+          "minutes_ago": "{{count}} phút trước",
+          "hours_ago": "{{count}} giờ trước"
+        }
+      },
+      "quick_actions": {
+        "title": "Thao tác nhanh",
+        "manage_products": "Quản lý sản phẩm",
+        "manage_orders": "Quản lý đơn hàng",
+        "manage_customers": "Quản lý khách hàng",
+        "reports_analytics": "Báo cáo phân tích",
+        "manage_promotions": "Quản lý khuyến mãi"
+      },
+      "top_products": {
+        "title": "Sản phẩm bán chạy",
+        "view_all": "Xem tất cả →",
+        "sold": "{{count}} đã bán",
+        "sample_products": {
+          "basic_tshirt": "Áo thun nam basic",
+          "slim_jeans": "Quần jeans slim fit",
+          "office_shirt": "Áo sơ mi công sở",
+          "white_sneakers": "Giày sneaker trắng",
+          "unisex_hoodie": "Áo hoodie unisex"
+        }
+      }
+    }
   }
 }
