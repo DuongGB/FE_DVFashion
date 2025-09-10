@@ -14,8 +14,10 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import { usePromotion } from "../../../hooks/usePromotion";
+import { useTranslation } from "react-i18next";
 
 const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -30,11 +32,27 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
   const [errors, setErrors] = useState({});
 
+  // Get language from i18n
+  const language = i18n.language || "VI";
+
   // Use promotion hook
   const { createPromotion, isCreating, updatePromotion, isUpdating } =
-    usePromotion();
+    usePromotion(language);
 
   const isSubmitting = isCreating || isUpdating;
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Load dữ liệu khi edit promotion
   useEffect(() => {
@@ -85,11 +103,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
     // Validate required fields
     if (!formData.name.trim()) {
-      newErrors.name = "Tên khuyến mãi là bắt buộc";
+      newErrors.name = t("admin.promotion.form.promotion_name_required");
     }
 
     if (!formData.type.trim()) {
-      newErrors.type = "Loại khuyến mãi là bắt buộc";
+      newErrors.type = t("admin.promotion.form.type_required");
     }
 
     // Validation cho value dựa trên type
@@ -100,21 +118,21 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     } else {
       // PERCENTAGE và FIXED_AMOUNT cần value
       if (!formData.value || parseFloat(formData.value) <= 0) {
-        newErrors.value = "Giá trị khuyến mãi phải > 0";
+        newErrors.value = t("admin.promotion.form.value_required");
       }
 
       if (formData.type === "PERCENTAGE" && parseFloat(formData.value) > 100) {
-        newErrors.value = "Phần trăm giảm không được vượt quá 100%";
+        newErrors.value = t("admin.promotion.form.value_percentage_max");
       }
     }
 
     // Validate dates
     if (!formData.startDate) {
-      newErrors.startDate = "Ngày bắt đầu là bắt buộc";
+      newErrors.startDate = t("admin.promotion.form.start_date_required");
     }
 
     if (!formData.endDate) {
-      newErrors.endDate = "Ngày kết thúc là bắt buộc";
+      newErrors.endDate = t("admin.promotion.form.end_date_required");
     }
 
     if (
@@ -122,16 +140,18 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       formData.endDate &&
       new Date(formData.startDate) >= new Date(formData.endDate)
     ) {
-      newErrors.endDate = "Ngày kết thúc phải sau ngày bắt đầu";
+      newErrors.endDate = t("admin.promotion.form.end_date_error");
     }
 
     // Validate optional numeric fields
     if (formData.minOrderAmount && parseFloat(formData.minOrderAmount) < 0) {
-      newErrors.minOrderAmount = "Giá trị đơn hàng tối thiểu phải >= 0";
+      newErrors.minOrderAmount = t(
+        "admin.promotion.form.min_order_amount_error"
+      );
     }
 
     if (formData.maxUsages && parseInt(formData.maxUsages) <= 0) {
-      newErrors.maxUsages = "Số lần sử dụng tối đa phải > 0";
+      newErrors.maxUsages = t("admin.promotion.form.max_usages_error");
     }
 
     setErrors(newErrors);
@@ -181,16 +201,16 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         await updatePromotion({
           promotionId: promotion.id,
           promotionData: submitData,
-          lang: "VI",
+          lang: language,
         });
-        toast.success("Cập nhật khuyến mãi thành công!");
+        toast.success(t("admin.promotion.form.update_success"));
       } else {
         // Tạo promotion mới
         await createPromotion({
           promotionData: submitData,
-          lang: "VI",
+          lang: language,
         });
-        toast.success("Tạo khuyến mãi mới thành công!");
+        toast.success(t("admin.promotion.form.create_success"));
       }
 
       // Đóng form sau khi thành công
@@ -199,7 +219,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       console.error("Error submitting promotion:", error);
 
       // Improved error handling
-      let errorMessage = "Có lỗi xảy ra!";
+      let errorMessage = t("admin.promotion.form.create_error");
 
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
@@ -207,8 +227,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         errorMessage = error.message;
       } else {
         errorMessage = promotion
-          ? "Có lỗi xảy ra khi cập nhật khuyến mãi!"
-          : "Có lỗi xảy ra khi tạo khuyến mãi!";
+          ? t("admin.promotion.form.update_error")
+          : t("admin.promotion.form.create_error");
       }
 
       toast.error(errorMessage);
@@ -237,7 +257,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       return (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Miễn phí vận chuyển
+            {t("admin.promotion.form.free_shipping_title")}
           </label>
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
             <div className="flex items-center gap-3">
@@ -246,10 +266,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
               </div>
               <div>
                 <p className="text-sm font-bold text-purple-800">
-                  Áp dụng miễn phí vận chuyển
+                  {t("admin.promotion.form.free_shipping_desc")}
                 </p>
                 <p className="text-xs text-purple-600">
-                  Không tính phí vận chuyển cho đơn hàng
+                  {t("admin.promotion.form.free_shipping_note")}
                 </p>
               </div>
             </div>
@@ -262,7 +282,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       return (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Mua 1 tặng 1
+            {t("admin.promotion.form.buy_one_get_one_title")}
           </label>
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
             <div className="flex items-center gap-3">
@@ -271,10 +291,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
               </div>
               <div>
                 <p className="text-sm font-bold text-orange-800">
-                  Mua 1 tặng 1 sản phẩm
+                  {t("admin.promotion.form.buy_one_get_one_desc")}
                 </p>
                 <p className="text-xs text-orange-600">
-                  Khách hàng sẽ nhận được 1 sản phẩm miễn phí
+                  {t("admin.promotion.form.buy_one_get_one_note")}
                 </p>
               </div>
             </div>
@@ -287,7 +307,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     return (
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Giá trị *
+          {t("admin.promotion.form.value")} *
         </label>
         <div className="relative">
           <input
@@ -304,7 +324,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 ? "border-red-500 bg-red-50"
                 : "border-gray-300 hover:border-gray-400"
             }`}
-            placeholder="0"
+            placeholder={t("admin.promotion.form.value_placeholder")}
             required
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -314,13 +334,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         {formData.type === "PERCENTAGE" && (
           <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
             <IconInfoCircle size={12} />
-            Nhập phần trăm (0-100%)
+            {t("admin.promotion.form.value_percentage_hint")}
           </p>
         )}
         {formData.type === "FIXED_AMOUNT" && (
           <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
             <IconInfoCircle size={12} />
-            Nhập số tiền giảm (VNĐ)
+            {t("admin.promotion.form.value_fixed_amount_hint")}
           </p>
         )}
         {errors.value && (
@@ -360,12 +380,14 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">
-                {promotion ? "Chỉnh sửa khuyến mãi" : "Tạo khuyến mãi mới"}
+                {promotion
+                  ? t("admin.promotion.form.edit_title")
+                  : t("admin.promotion.form.create_title")}
               </h2>
               <p className="text-blue-100 opacity-90">
                 {promotion
-                  ? "Cập nhật thông tin khuyến mãi hiện tại"
-                  : "Thiết lập thông tin cho khuyến mãi mới"}
+                  ? t("admin.promotion.form.edit_description")
+                  : t("admin.promotion.form.create_description")}
               </p>
             </div>
           </div>
@@ -378,13 +400,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconTag size={20} className="text-blue-600" />
-                Thông tin cơ bản
+                {t("admin.promotion.form.basic_info")}
               </h3>
 
               {/* Tên khuyến mãi */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tên khuyến mãi *
+                  {t("admin.promotion.form.promotion_name")} *
                 </label>
                 <input
                   type="text"
@@ -397,7 +419,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder="Nhập tên khuyến mãi"
+                  placeholder={t(
+                    "admin.promotion.form.promotion_name_placeholder"
+                  )}
                   required
                 />
                 {errors.name && (
@@ -411,7 +435,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
               {/* Mô tả */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mô tả
+                  {t("admin.promotion.form.description")}
                 </label>
                 <textarea
                   name="description"
@@ -420,7 +444,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   disabled={isSubmitting}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
-                  placeholder="Nhập mô tả khuyến mãi"
+                  placeholder={t(
+                    "admin.promotion.form.description_placeholder"
+                  )}
                 />
               </div>
             </div>
@@ -429,13 +455,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconPercentage size={20} className="text-green-600" />
-                Loại và giá trị khuyến mãi
+                {t("admin.promotion.form.type_value_section")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Loại khuyến mãi *
+                    {t("admin.promotion.form.type")} *
                   </label>
                   <select
                     name="type"
@@ -445,14 +471,18 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                     required
                   >
-                    <option value="PERCENTAGE">📊 Phần trăm (%)</option>
+                    <option value="PERCENTAGE">
+                      {t("admin.promotion.form.type_percentage")}
+                    </option>
                     <option value="FIXED_AMOUNT">
-                      💰 Số tiền cố định (VNĐ)
+                      {t("admin.promotion.form.type_fixed_amount")}
                     </option>
                     <option value="FREE_SHIPPING">
-                      🚚 Miễn phí vận chuyển
+                      {t("admin.promotion.form.type_free_shipping")}
                     </option>
-                    <option value="BUY_ONE_GET_ONE">🎁 Mua 1 tặng 1</option>
+                    <option value="BUY_ONE_GET_ONE">
+                      {t("admin.promotion.form.type_buy_one_get_one")}
+                    </option>
                   </select>
                   {errors.type && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -466,7 +496,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Đơn hàng tối thiểu (VNĐ)
+                    {t("admin.promotion.form.min_order_amount")}
                   </label>
                   <input
                     type="number"
@@ -481,11 +511,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="0"
+                    placeholder={t(
+                      "admin.promotion.form.min_order_amount_placeholder"
+                    )}
                   />
                   <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     <IconInfoCircle size={12} />
-                    Để trống = không yêu cầu tối thiểu
+                    {t("admin.promotion.form.min_order_amount_hint")}
                   </p>
                   {errors.minOrderAmount && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -501,13 +533,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconCalendar size={20} className="text-purple-600" />
-                Thời gian và giới hạn
+                {t("admin.promotion.form.time_limits_section")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ngày bắt đầu *
+                    {t("admin.promotion.form.start_date")} *
                   </label>
                   <input
                     type="date"
@@ -532,7 +564,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ngày kết thúc *
+                    {t("admin.promotion.form.end_date")} *
                   </label>
                   <input
                     type="date"
@@ -557,7 +589,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Số lần sử dụng tối đa
+                    {t("admin.promotion.form.max_usages")}
                   </label>
                   <input
                     type="number"
@@ -572,11 +604,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="100 000"
+                    placeholder={t(
+                      "admin.promotion.form.max_usages_placeholder"
+                    )}
                   />
                   <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     <IconInfoCircle size={12} />
-                    Để trống = 100 000 lần sử dụng
+                    {t("admin.promotion.form.max_usages_hint")}
                   </p>
                   {errors.maxUsages && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -592,7 +626,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconCheck size={20} className="text-green-600" />
-                Trạng thái khuyến mãi
+                {t("admin.promotion.form.status_section")}
               </h3>
 
               <label className="flex items-center gap-3 cursor-pointer group">
@@ -606,11 +640,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 />
                 <div>
                   <span className="text-sm font-medium text-green-800">
-                    Kích hoạt khuyến mãi ngay lập tức
+                    {t("admin.promotion.form.status_active")}
                   </span>
                   <p className="text-xs text-green-600 mt-1">
-                    Khuyến mãi sẽ có hiệu lực ngay khi được tạo và trong khoảng
-                    thời gian đã thiết lập
+                    {t("admin.promotion.form.status_active_desc")}
                   </p>
                 </div>
               </label>
@@ -624,7 +657,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 disabled={isSubmitting}
                 className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Hủy bỏ
+                {t("admin.promotion.form.cancel")}
               </button>
               <button
                 type="submit"
@@ -634,12 +667,16 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 {isSubmitting ? (
                   <>
                     <IconLoader2 size={16} className="animate-spin" />
-                    {promotion ? "Đang cập nhật..." : "Đang tạo..."}
+                    {promotion
+                      ? t("admin.promotion.form.updating")
+                      : t("admin.promotion.form.creating")}
                   </>
                 ) : (
                   <>
                     <IconCheck size={16} />
-                    {promotion ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
+                    {promotion
+                      ? t("admin.promotion.form.update_button")
+                      : t("admin.promotion.form.create_button")}
                   </>
                 )}
               </button>

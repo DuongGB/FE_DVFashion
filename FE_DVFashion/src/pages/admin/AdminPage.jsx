@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  IconUsers,
+  IconCalendar,
+  IconChartBar,
+  IconCurrencyDollar,
+  IconDiscount,
+  IconEye,
   IconPackage,
   IconShoppingCart,
-  IconCurrencyDollar,
-  IconTrendingUp,
-  IconCalendar,
-  IconEye,
-  IconUserCheck,
   IconStar,
-  IconSettings,
-  IconPlus,
-  IconClipboardList,
-  IconDiscount,
-  IconChartBar,
+  IconTrendingUp,
+  IconUserCheck,
+  IconUsers,
 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const AdminPage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [dashboardData, setDashboardData] = useState({
     totalUsers: 0,
     totalProducts: 0,
@@ -33,6 +32,14 @@ const AdminPage = () => {
   });
   const [revenueChartData, setRevenueChartData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {};
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -55,13 +62,17 @@ const AdminPage = () => {
         });
 
         setRevenueChartData([
-          ["Tháng", "Doanh thu (VNĐ)", "Số đơn hàng"],
-          ["Tháng 1", 18500000, 120],
-          ["Tháng 2", 22000000, 145],
-          ["Tháng 3", 19800000, 132],
-          ["Tháng 4", 25200000, 168],
-          ["Tháng 5", 24800000, 162],
-          ["Tháng 6", 28500000, 189],
+          [
+            t("admin.dashboard.charts.month"),
+            t("admin.dashboard.charts.revenue_label"),
+            t("admin.dashboard.charts.orders_label"),
+          ],
+          [t("admin.dashboard.charts.month_1"), 18500000, 120],
+          [t("admin.dashboard.charts.month_2"), 22000000, 145],
+          [t("admin.dashboard.charts.month_3"), 19800000, 132],
+          [t("admin.dashboard.charts.month_4"), 25200000, 168],
+          [t("admin.dashboard.charts.month_5"), 24800000, 162],
+          [t("admin.dashboard.charts.month_6"), 28500000, 189],
         ]);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -71,7 +82,7 @@ const AdminPage = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [t]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -152,7 +163,7 @@ const AdminPage = () => {
 
   const RevenueChart = () => {
     const options = {
-      title: "Doanh thu và Đơn hàng theo tháng",
+      title: t("admin.dashboard.charts.revenue_chart_title"),
       titleTextStyle: {
         color: "#374151",
         fontSize: 18,
@@ -161,21 +172,21 @@ const AdminPage = () => {
       },
       backgroundColor: "transparent",
       hAxis: {
-        title: "Tháng",
+        title: t("admin.dashboard.charts.month"),
         titleTextStyle: { color: "#6B7280", fontSize: 12 },
         textStyle: { color: "#6B7280", fontSize: 11 },
         gridlines: { color: "#F3F4F6" },
       },
       vAxes: {
         0: {
-          title: "Doanh thu (VNĐ)",
+          title: t("admin.dashboard.charts.revenue_label"),
           titleTextStyle: { color: "#3B82F6", fontSize: 12 },
           textStyle: { color: "#6B7280", fontSize: 11 },
           format: "#,###",
           gridlines: { color: "#F3F4F6" },
         },
         1: {
-          title: "Số đơn hàng",
+          title: t("admin.dashboard.charts.orders_label"),
           titleTextStyle: { color: "#10B981", fontSize: 12 },
           textStyle: { color: "#6B7280", fontSize: 11 },
           gridlines: { color: "transparent" },
@@ -221,7 +232,9 @@ const AdminPage = () => {
             <div className="h-full flex items-center justify-center">
               <div className="flex flex-col items-center space-y-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <p className="text-gray-500 text-sm">Đang tải biểu đồ...</p>
+                <p className="text-gray-500 text-sm">
+                  {t("admin.dashboard.charts.loading")}
+                </p>
               </div>
             </div>
           }
@@ -233,33 +246,45 @@ const AdminPage = () => {
   const RecentActivity = () => {
     const activities = [
       {
-        action: "Đơn hàng mới",
+        action: t("admin.dashboard.recent_activity.activities.new_order"),
         detail: "#ORD-001234",
-        time: "5 phút trước",
+        time: t("admin.dashboard.recent_activity.time.minutes_ago", {
+          count: 5,
+        }),
         type: "order",
       },
       {
-        action: "Khách hàng mới",
+        action: t("admin.dashboard.recent_activity.activities.new_customer"),
         detail: "Nguyễn Văn A",
-        time: "10 phút trước",
+        time: t("admin.dashboard.recent_activity.time.minutes_ago", {
+          count: 10,
+        }),
         type: "user",
       },
       {
-        action: "Sản phẩm cập nhật",
-        detail: "Áo thun nam basic",
-        time: "15 phút trước",
+        action: t("admin.dashboard.recent_activity.activities.product_update"),
+        detail: t("admin.dashboard.top_products.sample_products.basic_tshirt"),
+        time: t("admin.dashboard.recent_activity.time.minutes_ago", {
+          count: 15,
+        }),
         type: "product",
       },
       {
-        action: "Đánh giá mới",
+        action: t("admin.dashboard.recent_activity.activities.new_review"),
         detail: "5 sao - Áo sơ mi",
-        time: "20 phút trước",
+        time: t("admin.dashboard.recent_activity.time.minutes_ago", {
+          count: 20,
+        }),
         type: "review",
       },
       {
-        action: "Thanh toán hoàn thành",
+        action: t(
+          "admin.dashboard.recent_activity.activities.payment_completed"
+        ),
         detail: "#PAY-005678",
-        time: "25 phút trước",
+        time: t("admin.dashboard.recent_activity.time.minutes_ago", {
+          count: 25,
+        }),
         type: "payment",
       },
     ];
@@ -278,7 +303,7 @@ const AdminPage = () => {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Hoạt động gần đây
+          {t("admin.dashboard.recent_activity.title")}
         </h3>
         <div className="space-y-4">
           {activities.map((activity, index) => (
@@ -306,7 +331,7 @@ const AdminPage = () => {
             onClick={() => navigate("/admin/activity-log")}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            Xem tất cả hoạt động →
+            {t("admin.dashboard.recent_activity.view_all")}
           </button>
         </div>
       </div>
@@ -316,47 +341,41 @@ const AdminPage = () => {
   const QuickActions = () => {
     const actions = [
       {
-        label: "Quản lý sản phẩm",
+        label: t("admin.dashboard.quick_actions.manage_products"),
         icon: IconPackage,
         color: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-300",
         route: "/admin/products",
       },
       {
-        label: "Quản lý đơn hàng",
+        label: t("admin.dashboard.quick_actions.manage_orders"),
         icon: IconShoppingCart,
         color: "bg-green-500 hover:bg-green-600 focus:ring-green-300",
         route: "/admin/orders",
       },
       {
-        label: "Quản lý khách hàng",
+        label: t("admin.dashboard.quick_actions.manage_customers"),
         icon: IconUsers,
         color: "bg-purple-500 hover:bg-purple-600 focus:ring-purple-300",
         route: "/admin/customers",
       },
       {
-        label: "Báo cáo phân tích",
+        label: t("admin.dashboard.quick_actions.reports_analytics"),
         icon: IconChartBar,
         color: "bg-indigo-500 hover:bg-indigo-600 focus:ring-indigo-300",
         route: "/admin/reports",
       },
       {
-        label: "Quản lý khuyến mãi",
+        label: t("admin.dashboard.quick_actions.manage_promotions"),
         icon: IconDiscount,
         color: "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300",
         route: "/admin/promotions",
-      },
-      {
-        label: "Quản lý nhân viên",
-        icon: IconUserCheck,
-        color: "bg-red-500 hover:bg-red-600 focus:ring-red-300",
-        route: "/admin/employees",
       },
     ];
 
     return (
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Thao tác nhanh
+          {t("admin.dashboard.quick_actions.title")}
         </h3>
         <div className="grid grid-cols-2 gap-3">
           {actions.map((action, index) => (
@@ -387,13 +406,13 @@ const AdminPage = () => {
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Sản phẩm bán chạy
+            {t("admin.dashboard.top_products.title")}
           </h3>
           <button
             onClick={() => navigate("/admin/products")}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            Xem tất cả →
+            {t("admin.dashboard.top_products.view_all")}
           </button>
         </div>
         <div className="space-y-4">
@@ -411,7 +430,9 @@ const AdminPage = () => {
                 <div>
                   <p className="font-medium text-gray-900">{product.name}</p>
                   <p className="text-sm text-gray-600">
-                    {product.sales} đã bán
+                    {t("admin.dashboard.top_products.sold", {
+                      count: product.sales,
+                    })}
                   </p>
                 </div>
               </div>
@@ -434,28 +455,28 @@ const AdminPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={IconUsers}
-            title="Tổng khách hàng"
+            title={t("admin.dashboard.stats.total_customers")}
             value={dashboardData.totalUsers}
             change={12}
             color="blue"
           />
           <StatCard
             icon={IconPackage}
-            title="Tổng sản phẩm"
+            title={t("admin.dashboard.stats.total_products")}
             value={dashboardData.totalProducts}
             change={5}
             color="green"
           />
           <StatCard
             icon={IconShoppingCart}
-            title="Tổng đơn hàng"
+            title={t("admin.dashboard.stats.total_orders")}
             value={dashboardData.totalOrders}
             change={18}
             color="yellow"
           />
           <StatCard
             icon={IconCurrencyDollar}
-            title="Doanh thu tháng"
+            title={t("admin.dashboard.stats.monthly_revenue")}
             value={dashboardData.monthlyRevenue}
             change={23}
             color="purple"
@@ -467,26 +488,26 @@ const AdminPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={IconCalendar}
-            title="Đơn hàng chờ xử lý"
+            title={t("admin.dashboard.stats.pending_orders")}
             value={dashboardData.pendingOrders}
             color="red"
           />
           <StatCard
             icon={IconUserCheck}
-            title="Khách hàng hoạt động"
+            title={t("admin.dashboard.stats.active_customers")}
             value={dashboardData.activeCustomers}
             color="indigo"
           />
           <StatCard
             icon={IconStar}
-            title="Đánh giá trung bình"
+            title={t("admin.dashboard.stats.average_rating")}
             value={dashboardData.averageRating}
             color="yellow"
             format="rating"
           />
           <StatCard
             icon={IconEye}
-            title="Lượt xem hôm nay"
+            title={t("admin.dashboard.stats.daily_views")}
             value={dashboardData.dailyViews}
             change={8}
             color="green"
@@ -499,16 +520,20 @@ const AdminPage = () => {
           <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
-                Biểu đồ doanh thu
+                {t("admin.dashboard.charts.revenue_title")}
               </h3>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                  <span className="text-gray-600">Doanh thu</span>
+                  <span className="text-gray-600">
+                    {t("admin.dashboard.charts.revenue")}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-gray-600">Đơn hàng</span>
+                  <span className="text-gray-600">
+                    {t("admin.dashboard.charts.orders")}
+                  </span>
                 </div>
               </div>
             </div>

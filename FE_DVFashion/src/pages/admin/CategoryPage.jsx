@@ -6,39 +6,16 @@ import CategoryForm from "../../components/ui/category/CategoryForm";
 import CategoryDetailModal from "../../components/ui/category/CategoryDetailModal";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { useCategory } from "../../hooks/useCategory";
-
-// Translations for status labels
-const statusLabels = {
-  vi: {
-    active: "Hoạt động",
-    inactive: "Không hoạt động",
-    total: "Tổng danh mục",
-    activeCount: "Đang hoạt động",
-    inactiveCount: "Không hoạt động",
-    allStatus: "Tất cả trạng thái",
-    vietnamese: "Tiếng Việt",
-    english: "Tiếng Anh",
-  },
-  en: {
-    active: "Active",
-    inactive: "Inactive",
-    total: "Total Categories",
-    activeCount: "Active",
-    inactiveCount: "Inactive",
-    allStatus: "All Status",
-    vietnamese: "Vietnamese",
-    english: "English",
-  },
-};
+import { useTranslation } from "react-i18next";
 
 export default function CategoryPage() {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [language, setLanguage] = useState("VI");
   const [loadingItems, setLoadingItems] = useState({
     status: null,
     delete: null,
@@ -46,8 +23,24 @@ export default function CategoryPage() {
   const [originalOrder, setOriginalOrder] = useState([]); // Store original order
   const pageSize = 10;
 
-  // Use the category hook
+  // Get language from i18n instead of local state
+  const language = i18n.language || "VI";
+
+  // Use the category hook with dynamic language
   const { categories, isLoading, error, update } = useCategory(language);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Store original order when categories first load
   useEffect(() => {
@@ -69,12 +62,6 @@ export default function CategoryPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
-
-  // Helper function to get status labels
-  const getStatusLabel = (key) => {
-    const langKey = language === "VI" ? "vi" : "en";
-    return statusLabels[langKey][key] || statusLabels.vi[key];
-  };
 
   // Sort categories by original order to maintain position
   const sortedCategories = useMemo(() => {
@@ -125,34 +112,23 @@ export default function CategoryPage() {
   // Handle toggle status with position preservation
   const handleToggleStatus = async (category) => {
     const newStatus = !category.active;
-    const langKey = language === "VI" ? "vi" : "en";
     const actionText = newStatus
-      ? langKey === "vi"
-        ? "kích hoạt lại"
-        : "activate"
-      : langKey === "vi"
-      ? "vô hiệu hóa"
-      : "deactivate";
+      ? t("admin.category.actions.activate")
+      : t("admin.category.actions.deactivate");
 
     const confirmText = newStatus
-      ? langKey === "vi"
-        ? "Kích hoạt"
-        : "Activate"
-      : langKey === "vi"
-      ? "Vô hiệu hóa"
-      : "Deactivate";
+      ? t("admin.category.actions.activate")
+      : t("admin.category.actions.deactivate");
 
-    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
+    const cancelText = language === "VI" ? "Hủy" : "Cancel";
 
-    const title =
-      langKey === "vi"
-        ? `Xác nhận ${actionText} danh mục`
-        : `Confirm ${actionText} category`;
+    const title = `${t(
+      "admin.category.actions.confirm"
+    )} ${actionText.toLowerCase()} ${t("admin.category.title").toLowerCase()}`;
 
-    const message =
-      langKey === "vi"
-        ? `Bạn có chắc chắn muốn ${actionText} danh mục "${category.name}" không?`
-        : `Are you sure you want to ${actionText} category "${category.name}"?`;
+    const message = `${t("admin.category.actions.confirm_message")} "${
+      category.name
+    }"?`;
 
     showConfirmationToast({
       title,
@@ -189,25 +165,18 @@ export default function CategoryPage() {
             lang: language,
           });
 
-          const successMessage =
-            langKey === "vi"
-              ? `${
-                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
-                } danh mục thành công!`
-              : `Category ${
-                  newStatus ? "activated" : "deactivated"
-                } successfully!`;
+          const successMessage = `${actionText} ${t(
+            "admin.category.title"
+          ).toLowerCase()} ${t("admin.category.actions.success")}!`;
 
           toast.success(successMessage);
         } catch (error) {
           console.error("Error updating category status:", error);
-          const errorMessage =
-            langKey === "vi"
-              ? `Có lỗi xảy ra khi ${actionText} danh mục!`
-              : `Error occurred while ${actionText.replace(
-                  " ",
-                  "ing"
-                )} category!`;
+          const errorMessage = `${t(
+            "admin.category.actions.error"
+          )} ${actionText.toLowerCase()} ${t(
+            "admin.category.title"
+          ).toLowerCase()}!`;
           toast.error(errorMessage);
         } finally {
           // Clear loading state
@@ -250,14 +219,14 @@ export default function CategoryPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {language === "VI" ? "Quản lý danh mục" : "Category Management"}
+          {t("admin.category.title")}
         </h1>
         <button
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <IconPlus size={20} />
-          {language === "VI" ? "Tạo danh mục" : "Create Category"}
+          {t("admin.category.create_category")}
         </button>
       </div>
 
@@ -267,7 +236,7 @@ export default function CategoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("total")}
+                {t("admin.category.total_categories")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -278,7 +247,7 @@ export default function CategoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("activeCount")}
+                {t("admin.category.active_categories")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -291,7 +260,7 @@ export default function CategoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.category.inactive_categories")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -313,11 +282,7 @@ export default function CategoryPage() {
               />
               <input
                 type="text"
-                placeholder={
-                  language === "VI"
-                    ? "Tìm kiếm theo tên, mô tả, ID..."
-                    : "Search by name, description, ID..."
-                }
+                placeholder={t("admin.category.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -332,23 +297,13 @@ export default function CategoryPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">{getStatusLabel("allStatus")}</option>
-              <option value="active">{getStatusLabel("activeCount")}</option>
-              <option value="inactive">
-                {getStatusLabel("inactiveCount")}
+              <option value="">{t("admin.category.all_status")}</option>
+              <option value="active">
+                {t("admin.category.active_categories")}
               </option>
-            </select>
-          </div>
-
-          {/* Language Filter */}
-          <div>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="VI">{getStatusLabel("vietnamese")}</option>
-              <option value="EN">{getStatusLabel("english")}</option>
+              <option value="inactive">
+                {t("admin.category.inactive_categories")}
+              </option>
             </select>
           </div>
         </div>
@@ -356,9 +311,10 @@ export default function CategoryPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {language === "VI"
-          ? `Hiển thị ${paginatedCategories.length} trên tổng số ${filteredCategories.length} danh mục`
-          : `Showing ${paginatedCategories.length} of ${filteredCategories.length} categories`}
+        {t("admin.category.showing_results", {
+          current: paginatedCategories.length,
+          total: filteredCategories.length,
+        })}
       </div>
 
       {/* Categories Table */}
@@ -366,22 +322,12 @@ export default function CategoryPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-3">ID</th>
-              <th className="p-3">
-                {language === "VI" ? "Hình ảnh" : "Image"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Tên danh mục" : "Category Name"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Mô tả" : "Description"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Trạng thái" : "Status"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Hành động" : "Actions"}
-              </th>
+              <th className="p-3">{t("admin.category.columns.id")}</th>
+              <th className="p-3">{t("admin.category.columns.image")}</th>
+              <th className="p-3">{t("admin.category.columns.name")}</th>
+              <th className="p-3">{t("admin.category.columns.description")}</th>
+              <th className="p-3">{t("admin.category.columns.status")}</th>
+              <th className="p-3">{t("admin.category.columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -390,7 +336,7 @@ export default function CategoryPage() {
                 <td colSpan={6} className="text-center text-gray-500 p-4">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                    {language === "VI" ? "Đang tải..." : "Loading..."}
+                    {t("admin.category.loading")}
                   </div>
                 </td>
               </tr>
@@ -452,13 +398,9 @@ export default function CategoryPage() {
                           : "bg-red-100 text-red-800 hover:bg-red-200"
                       }`}
                       title={
-                        language === "VI"
-                          ? `Click để ${
-                              category.active ? "vô hiệu hóa" : "kích hoạt lại"
-                            }`
-                          : `Click to ${
-                              category.active ? "deactivate" : "activate"
-                            }`
+                        category.active
+                          ? t("admin.category.actions.deactivate")
+                          : t("admin.category.actions.activate")
                       }
                     >
                       {loadingItems.status === category.id ? (
@@ -468,8 +410,8 @@ export default function CategoryPage() {
                       ) : (
                         <>
                           {category.active
-                            ? getStatusLabel("active")
-                            : getStatusLabel("inactive")}
+                            ? t("admin.category.status.active")
+                            : t("admin.category.status.inactive")}
                         </>
                       )}
                     </button>
@@ -480,16 +422,14 @@ export default function CategoryPage() {
                       <button
                         onClick={() => handleViewDetail(category)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
-                        title={
-                          language === "VI" ? "Xem chi tiết" : "View Details"
-                        }
+                        title={t("admin.category.actions.view_details")}
                       >
                         <IconEye size={24} />
                       </button>
                       <button
                         onClick={() => handleEdit(category)}
                         className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                        title={language === "VI" ? "Chỉnh sửa" : "Edit"}
+                        title={t("admin.category.actions.edit")}
                       >
                         <IconEdit size={24} />
                       </button>
@@ -500,9 +440,7 @@ export default function CategoryPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="text-center text-gray-500 p-4">
-                  {language === "VI"
-                    ? "Không có danh mục nào."
-                    : "No categories found."}
+                  {t("admin.category.no_categories")}
                 </td>
               </tr>
             )}

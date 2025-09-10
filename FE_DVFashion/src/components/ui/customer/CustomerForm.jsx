@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import { useUser } from "../../../hooks/useUser";
+import { useTranslation } from "react-i18next";
 
 // Enums
 const Gender = {
@@ -29,6 +30,7 @@ const UserRole = {
 };
 
 export default function CustomerForm({ isOpen, onClose, customer }) {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -42,9 +44,25 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
   });
   const [errors, setErrors] = useState({});
 
+  // Get language from i18n
+  const language = i18n.language || "VI";
+
   const { updateUser, isUpdatingUser, updateUserError } = useUser();
 
   const loading = isUpdatingUser;
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   useEffect(() => {
     if (customer) {
@@ -53,7 +71,6 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
         userName: customer.userName || "",
         email: customer.email || "",
         fullName: customer.fullName || "",
-
         phone: customer.phone || "",
         gender: customer.gender || Gender.MALE,
         dob: customer.dob
@@ -102,7 +119,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
       ward: "",
       district: "",
       city: "",
-      country: "Việt Nam",
+      country: language === "VI" ? "Việt Nam" : "Vietnam",
       zipCode: "",
       isDefault: formData.addresses.length === 0, // First address is default
     };
@@ -154,55 +171,54 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
 
     // Required fields
     if (!formData.userName.trim()) {
-      newErrors.userName = "Username là bắt buộc";
+      newErrors.userName = t("admin.customer.form.username_required");
     } else if (!/^[a-zA-Z0-9._]+$/.test(formData.userName)) {
-      newErrors.userName =
-        "Username chỉ được chứa chữ cái, số, dấu chấm và gạch dưới";
+      newErrors.userName = t("admin.customer.form.username_invalid");
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
+      newErrors.email = t("admin.customer.form.email_required");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = t("admin.customer.form.email_invalid");
     }
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ và tên là bắt buộc";
+      newErrors.fullName = t("admin.customer.form.full_name_required");
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
+      newErrors.phone = t("admin.customer.form.phone_required");
     } else if (!/^[0-9+\-\s()]+$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
+      newErrors.phone = t("admin.customer.form.phone_invalid");
     }
 
     if (!formData.dob) {
-      newErrors.dob = "Ngày sinh là bắt buộc";
+      newErrors.dob = t("admin.customer.form.date_of_birth_required");
     } else {
       const birthDate = new Date(formData.dob);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       if (age < 13) {
-        newErrors.dob = "Khách hàng phải từ 13 tuổi trở lên";
+        newErrors.dob = t("admin.customer.form.age_requirement");
       }
     }
 
-    // Validate addresses
+    // Validate addresses - commented out for now
     // formData.addresses.forEach((address, index) => {
     //   if (!address.street.trim()) {
-    //     newErrors[`address_${index}_street`] = "Địa chỉ là bắt buộc";
+    //     newErrors[`address_${index}_street`] = t("admin.customer.form.street_required");
     //   }
     //   if (!address.ward.trim()) {
-    //     newErrors[`address_${index}_ward`] = "Phường/Xã là bắt buộc";
+    //     newErrors[`address_${index}_ward`] = t("admin.customer.form.ward_required");
     //   }
     //   if (!address.district.trim()) {
-    //     newErrors[`address_${index}_district`] = "Quận/Huyện là bắt buộc";
+    //     newErrors[`address_${index}_district`] = t("admin.customer.form.district_required");
     //   }
     //   if (!address.city.trim()) {
-    //     newErrors[`address_${index}_city`] = "Thành phố là bắt buộc";
+    //     newErrors[`address_${index}_city`] = t("admin.customer.form.city_required");
     //   }
     //   if (!address.country.trim()) {
-    //     newErrors[`address_${index}_country`] = "Quốc gia là bắt buộc";
+    //     newErrors[`address_${index}_country`] = t("admin.customer.form.country_required");
     //   }
     // });
 
@@ -214,7 +230,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      toast.error(t("admin.customer.form.validation_error"));
       return;
     }
 
@@ -231,15 +247,15 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
           userData: customerData,
         });
 
-        const successMessage = "Cập nhật khách hàng thành công!";
-        toast.success(successMessage);
+        toast.success(t("admin.customer.form.update_success"));
       }
 
       onClose();
     } catch (error) {
       console.error("Error submitting customer:", error);
-      const errorMessage = customer;
-      ("Có lỗi xảy ra khi cập nhật khách hàng!");
+      const errorMessage = customer
+        ? t("admin.customer.form.update_error")
+        : t("admin.customer.form.create_error");
       toast.error(errorMessage);
     }
   };
@@ -253,10 +269,10 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
   useEffect(() => {
     if (updateUserError) {
       toast.error(
-        updateUserError.message || "Có lỗi xảy ra khi cập nhật khách hàng"
+        updateUserError.message || t("admin.customer.form.update_error")
       );
     }
-  }, [updateUserError]);
+  }, [updateUserError, t]);
 
   if (!isOpen) return null;
 
@@ -285,12 +301,14 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">
-                {customer ? "Chỉnh sửa khách hàng" : "Tạo khách hàng mới"}
+                {customer
+                  ? t("admin.customer.form.edit_title")
+                  : t("admin.customer.form.create_title")}
               </h2>
               <p className="text-blue-100 opacity-90">
                 {customer
-                  ? "Cập nhật thông tin khách hàng hiện tại"
-                  : "Thiết lập thông tin cho khách hàng mới"}
+                  ? t("admin.customer.form.edit_description")
+                  : t("admin.customer.form.create_description")}
               </p>
             </div>
           </div>
@@ -303,14 +321,14 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconInfoCircle size={20} className="text-blue-600" />
-                Thông tin cơ bản
+                {t("admin.customer.form.basic_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Username *
+                    {t("admin.customer.form.username")} *
                   </label>
                   <input
                     type="text"
@@ -324,7 +342,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Nhập username..."
+                    placeholder={t("admin.customer.form.username_placeholder")}
                     required
                   />
                   {errors.userName && (
@@ -338,7 +356,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
+                    {t("admin.customer.form.email")} *
                   </label>
                   <div className="relative">
                     <IconMail
@@ -357,7 +375,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
-                      placeholder="Nhập email..."
+                      placeholder={t("admin.customer.form.email_placeholder")}
                       required
                     />
                   </div>
@@ -372,7 +390,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Họ và tên *
+                    {t("admin.customer.form.full_name")} *
                   </label>
                   <input
                     type="text"
@@ -386,7 +404,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Nhập họ và tên..."
+                    placeholder={t("admin.customer.form.full_name_placeholder")}
                     required
                   />
                   {errors.fullName && (
@@ -400,7 +418,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {/* Phone */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Số điện thoại *
+                    {t("admin.customer.form.phone")} *
                   </label>
                   <div className="relative">
                     <IconPhone
@@ -419,7 +437,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
-                      placeholder="Nhập số điện thoại..."
+                      placeholder={t("admin.customer.form.phone_placeholder")}
                       required
                     />
                   </div>
@@ -434,7 +452,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {/* Date of Birth */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ngày sinh *
+                    {t("admin.customer.form.date_of_birth")} *
                   </label>
                   <div className="relative">
                     <IconCalendar
@@ -465,7 +483,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {/* Gender */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Giới tính
+                    {t("admin.customer.form.gender")}
                   </label>
                   <select
                     value={formData.gender}
@@ -475,20 +493,26 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                     disabled={loading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
-                    <option value={Gender.MALE}>Nam</option>
-                    <option value={Gender.FEMALE}>Nữ</option>
-                    <option value={Gender.OTHER}>Khác</option>
+                    <option value={Gender.MALE}>
+                      {t("admin.customer.form.gender_male")}
+                    </option>
+                    <option value={Gender.FEMALE}>
+                      {t("admin.customer.form.gender_female")}
+                    </option>
+                    <option value={Gender.OTHER}>
+                      {t("admin.customer.form.gender_other")}
+                    </option>
                   </select>
                 </div>
 
                 {/* Role */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vai trò
+                    {t("admin.customer.form.role")}
                   </label>
                   <input
                     type="text"
-                    value="Khách hàng"
+                    value={t("admin.customer.form.role_customer")}
                     readOnly
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                   />
@@ -498,7 +522,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
               {/* Status */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Trạng thái
+                  {t("admin.customer.form.status")}
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center cursor-pointer group">
@@ -511,7 +535,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                       className="w-4 h-4 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed transition-all duration-200"
                     />
                     <span className="ml-3 text-sm font-medium text-green-600">
-                      🟢 Hoạt động
+                      {t("admin.customer.form.status_active")}
                     </span>
                   </label>
                   <label className="flex items-center cursor-pointer group">
@@ -524,7 +548,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                       className="w-4 h-4 text-red-600 focus:ring-red-500 disabled:cursor-not-allowed transition-all duration-200"
                     />
                     <span className="ml-3 text-sm font-medium text-red-600">
-                      🔴 Không hoạt động
+                      {t("admin.customer.form.status_inactive")}
                     </span>
                   </label>
                 </div>
@@ -536,7 +560,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                   <IconMapPin size={20} className="text-purple-600" />
-                  Địa chỉ ({formData.addresses.length})
+                  {t("admin.customer.form.addresses_count", {
+                    count: formData.addresses.length,
+                  })}
                 </h3>
                 <button
                   type="button"
@@ -545,7 +571,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                   className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg hover:shadow-xl"
                 >
                   <IconPlus size={16} />
-                  Thêm địa chỉ
+                  {t("admin.customer.form.add_address")}
                 </button>
               </div>
 
@@ -555,10 +581,10 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                     <IconMapPin size={32} className="text-gray-400" />
                   </div>
                   <p className="text-lg font-medium text-gray-700 mb-2">
-                    Chưa có địa chỉ nào
+                    {t("admin.customer.form.no_addresses")}
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Thêm địa chỉ để hoàn thiện thông tin khách hàng
+                    {t("admin.customer.form.no_addresses_desc")}
                   </p>
                   <button
                     type="button"
@@ -566,7 +592,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                     disabled={loading}
                     className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer disabled:opacity-50"
                   >
-                    Thêm địa chỉ đầu tiên
+                    {t("admin.customer.form.add_first_address")}
                   </button>
                 </div>
               ) : (
@@ -579,7 +605,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-semibold text-gray-800 flex items-center gap-2">
                           <IconMapPin size={16} className="text-purple-600" />
-                          Địa chỉ #{index + 1}
+                          {t("admin.customer.form.address_number", {
+                            number: index + 1,
+                          })}
                         </h4>
                         <div className="flex items-center gap-2">
                           {!address.isDefault && (
@@ -589,12 +617,12 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                               disabled={loading}
                               className="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer disabled:opacity-50"
                             >
-                              Đặt làm mặc định
+                              {t("admin.customer.form.set_default")}
                             </button>
                           )}
                           {address.isDefault && (
                             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                              Mặc định
+                              {t("admin.customer.form.default_address")}
                             </span>
                           )}
                           <button
@@ -612,7 +640,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* Street */}
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Địa chỉ *
+                            {t("admin.customer.form.street")} *
                           </label>
                           <input
                             type="text"
@@ -630,7 +658,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300 hover:border-gray-400"
                             }`}
-                            placeholder="Nhập địa chỉ..."
+                            placeholder={t(
+                              "admin.customer.form.street_placeholder"
+                            )}
                           />
                           {errors[`address_${index}_street`] && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -643,7 +673,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* Ward */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Phường/Xã *
+                            {t("admin.customer.form.ward")} *
                           </label>
                           <input
                             type="text"
@@ -657,7 +687,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300 hover:border-gray-400"
                             }`}
-                            placeholder="Nhập phường/xã..."
+                            placeholder={t(
+                              "admin.customer.form.ward_placeholder"
+                            )}
                           />
                           {errors[`address_${index}_ward`] && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -670,7 +702,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* District */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Quận/Huyện *
+                            {t("admin.customer.form.district")} *
                           </label>
                           <input
                             type="text"
@@ -688,7 +720,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300 hover:border-gray-400"
                             }`}
-                            placeholder="Nhập quận/huyện..."
+                            placeholder={t(
+                              "admin.customer.form.district_placeholder"
+                            )}
                           />
                           {errors[`address_${index}_district`] && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -701,7 +735,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* City */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Thành phố *
+                            {t("admin.customer.form.city")} *
                           </label>
                           <input
                             type="text"
@@ -715,7 +749,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300 hover:border-gray-400"
                             }`}
-                            placeholder="Nhập thành phố..."
+                            placeholder={t(
+                              "admin.customer.form.city_placeholder"
+                            )}
                           />
                           {errors[`address_${index}_city`] && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -728,7 +764,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* Country */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Quốc gia *
+                            {t("admin.customer.form.country")} *
                           </label>
                           <input
                             type="text"
@@ -746,7 +782,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300 hover:border-gray-400"
                             }`}
-                            placeholder="Nhập quốc gia..."
+                            placeholder={t(
+                              "admin.customer.form.country_placeholder"
+                            )}
                           />
                           {errors[`address_${index}_country`] && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -759,7 +797,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                         {/* Zip Code */}
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Mã bưu điện
+                            {t("admin.customer.form.zip_code")}
                           </label>
                           <input
                             type="text"
@@ -773,7 +811,9 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                             }
                             disabled={loading}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
-                            placeholder="Nhập mã bưu điện..."
+                            placeholder={t(
+                              "admin.customer.form.zip_code_placeholder"
+                            )}
                           />
                         </div>
                       </div>
@@ -791,7 +831,7 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 disabled={loading}
                 className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Hủy bỏ
+                {t("admin.customer.form.cancel")}
               </button>
               <button
                 type="submit"
@@ -801,12 +841,16 @@ export default function CustomerForm({ isOpen, onClose, customer }) {
                 {loading ? (
                   <>
                     <IconLoader2 size={16} className="animate-spin" />
-                    {customer ? "Đang cập nhật..." : "Đang tạo..."}
+                    {customer
+                      ? t("admin.customer.form.updating")
+                      : t("admin.customer.form.creating")}
                   </>
                 ) : (
                   <>
                     <IconCheck size={16} />
-                    {customer ? "Cập nhật khách hàng" : "Tạo khách hàng mới"}
+                    {customer
+                      ? t("admin.customer.form.update_button")
+                      : t("admin.customer.form.create_button")}
                   </>
                 )}
               </button>

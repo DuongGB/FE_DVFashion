@@ -6,39 +6,16 @@ import BrandForm from "../../components/ui/brand/BrandForm";
 import BrandDetailModal from "../../components/ui/brand/BrandDetailModal";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { useBrand } from "../../hooks/useBrand";
-
-// Translations for status labels
-const statusLabels = {
-  vi: {
-    active: "Hoạt động",
-    inactive: "Không hoạt động",
-    total: "Tổng thương hiệu",
-    activeCount: "Đang hoạt động",
-    inactiveCount: "Không hoạt động",
-    allStatus: "Tất cả trạng thái",
-    vietnamese: "Tiếng Việt",
-    english: "Tiếng Anh",
-  },
-  en: {
-    active: "Active",
-    inactive: "Inactive",
-    total: "Total Brands",
-    activeCount: "Active",
-    inactiveCount: "Inactive",
-    allStatus: "All Status",
-    vietnamese: "Vietnamese",
-    english: "English",
-  },
-};
+import { useTranslation } from "react-i18next";
 
 export default function BrandPage() {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [language, setLanguage] = useState("VI");
   const [loadingItems, setLoadingItems] = useState({
     status: null,
     delete: null,
@@ -46,8 +23,22 @@ export default function BrandPage() {
   const [originalOrder, setOriginalOrder] = useState([]); // Store original order
   const pageSize = 10;
 
+  const language = i18n.language || "VI";
+
   // Use the brand hook
   const { brands, isLoading, error, updateBrand } = useBrand(language);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Store original order when brands first load
   useEffect(() => {
@@ -66,12 +57,6 @@ export default function BrandPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
-
-  // Helper function to get status labels
-  const getStatusLabel = (key) => {
-    const langKey = language === "VI" ? "vi" : "en";
-    return statusLabels[langKey][key] || statusLabels.vi[key];
-  };
 
   // Sort brands by original order to maintain position
   const sortedBrands = useMemo(() => {
@@ -122,34 +107,23 @@ export default function BrandPage() {
   // Handle toggle status with position preservation
   const handleToggleStatus = async (brand) => {
     const newStatus = !brand.active;
-    const langKey = language === "VI" ? "vi" : "en";
     const actionText = newStatus
-      ? langKey === "vi"
-        ? "kích hoạt lại"
-        : "activate"
-      : langKey === "vi"
-      ? "vô hiệu hóa"
-      : "deactivate";
+      ? t("admin.brand.actions.activate")
+      : t("admin.brand.actions.deactivate");
 
     const confirmText = newStatus
-      ? langKey === "vi"
-        ? "Kích hoạt"
-        : "Activate"
-      : langKey === "vi"
-      ? "Vô hiệu hóa"
-      : "Deactivate";
+      ? t("admin.brand.actions.activate")
+      : t("admin.brand.actions.deactivate");
 
-    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
+    const cancelText = language === "VI" ? "Hủy" : "Cancel";
 
-    const title =
-      langKey === "vi"
-        ? `Xác nhận ${actionText} thương hiệu`
-        : `Confirm ${actionText} brand`;
+    const title = `${t(
+      "admin.brand.actions.confirm"
+    )} ${actionText.toLowerCase()} ${t("admin.brand.title").toLowerCase()}`;
 
-    const message =
-      langKey === "vi"
-        ? `Bạn có chắc chắn muốn ${actionText} thương hiệu "${brand.name}" không?`
-        : `Are you sure you want to ${actionText} brand "${brand.name}"?`;
+    const message = `${t(
+      "admin.brand.actions.confirm_message"
+    )} ${actionText.toLowerCase()} "${brand.name}"?`;
 
     showConfirmationToast({
       title,
@@ -186,22 +160,18 @@ export default function BrandPage() {
             lang: language,
           });
 
-          const successMessage =
-            langKey === "vi"
-              ? `${
-                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
-                } thương hiệu thành công!`
-              : `Brand ${
-                  newStatus ? "activated" : "deactivated"
-                } successfully!`;
+          const successMessage = `${actionText} ${t(
+            "admin.brand.title"
+          ).toLowerCase()} ${t("admin.brand.actions.success")}!`;
 
           toast.success(successMessage);
         } catch (error) {
           console.error("Error updating brand status:", error);
-          const errorMessage =
-            langKey === "vi"
-              ? `Có lỗi xảy ra khi ${actionText} thương hiệu!`
-              : `Error occurred while ${actionText.replace(" ", "ing")} brand!`;
+          const errorMessage = `${t(
+            "admin.brand.actions.error"
+          )} ${actionText.toLowerCase()} ${t(
+            "admin.brand.title"
+          ).toLowerCase()}!`;
           toast.error(errorMessage);
         } finally {
           // Clear loading state
@@ -244,14 +214,14 @@ export default function BrandPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {language === "VI" ? "Quản lý thương hiệu" : "Brand Management"}
+          {t("admin.brand.title")}
         </h1>
         <button
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <IconPlus size={20} />
-          {language === "VI" ? "Tạo thương hiệu" : "Create Brand"}
+          {t("admin.brand.create_brand")}
         </button>
       </div>
 
@@ -261,7 +231,7 @@ export default function BrandPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("total")}
+                {t("admin.brand.total_brands")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -272,7 +242,7 @@ export default function BrandPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("activeCount")}
+                {t("admin.brand.active_brands")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -285,7 +255,7 @@ export default function BrandPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.brand.inactive_brands")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -307,11 +277,7 @@ export default function BrandPage() {
               />
               <input
                 type="text"
-                placeholder={
-                  language === "VI"
-                    ? "Tìm kiếm theo tên, mô tả, ID..."
-                    : "Search by name, description, ID..."
-                }
+                placeholder={t("admin.brand.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -326,23 +292,11 @@ export default function BrandPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">{getStatusLabel("allStatus")}</option>
-              <option value="active">{getStatusLabel("activeCount")}</option>
+              <option value="">{t("admin.brand.all_status")}</option>
+              <option value="active">{t("admin.brand.active_brands")}</option>
               <option value="inactive">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.brand.inactive_brands")}
               </option>
-            </select>
-          </div>
-
-          {/* Language Filter */}
-          <div>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="VI">{getStatusLabel("vietnamese")}</option>
-              <option value="EN">{getStatusLabel("english")}</option>
             </select>
           </div>
         </div>
@@ -350,9 +304,10 @@ export default function BrandPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {language === "VI"
-          ? `Hiển thị ${paginatedBrands.length} trên tổng số ${filteredBrands.length} thương hiệu`
-          : `Showing ${paginatedBrands.length} of ${filteredBrands.length} brands`}
+        {t("admin.brand.showing_results", {
+          current: paginatedBrands.length,
+          total: filteredBrands.length,
+        })}
       </div>
 
       {/* Brands Table */}
@@ -360,20 +315,12 @@ export default function BrandPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-3">ID</th>
-              <th className="p-3">{language === "VI" ? "Logo" : "Logo"}</th>
-              <th className="p-3">
-                {language === "VI" ? "Tên thương hiệu" : "Brand Name"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Mô tả" : "Description"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Trạng thái" : "Status"}
-              </th>
-              <th className="p-3">
-                {language === "VI" ? "Hành động" : "Actions"}
-              </th>
+              <th className="p-3">{t("admin.brand.columns.id")}</th>
+              <th className="p-3">{t("admin.brand.columns.logo")}</th>
+              <th className="p-3">{t("admin.brand.columns.name")}</th>
+              <th className="p-3">{t("admin.brand.columns.description")}</th>
+              <th className="p-3">{t("admin.brand.columns.status")}</th>
+              <th className="p-3">{t("admin.brand.columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -382,7 +329,7 @@ export default function BrandPage() {
                 <td colSpan={6} className="text-center text-gray-500 p-4">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                    {language === "VI" ? "Đang tải..." : "Loading..."}
+                    {t("admin.brand.loading")}
                   </div>
                 </td>
               </tr>
@@ -440,13 +387,9 @@ export default function BrandPage() {
                           : "bg-red-100 text-red-800 hover:bg-red-200"
                       }`}
                       title={
-                        language === "VI"
-                          ? `Click để ${
-                              brand.active ? "vô hiệu hóa" : "kích hoạt lại"
-                            }`
-                          : `Click to ${
-                              brand.active ? "deactivate" : "activate"
-                            }`
+                        brand.active
+                          ? t("admin.brand.actions.deactivate")
+                          : t("admin.brand.actions.activate")
                       }
                     >
                       {loadingItems.status === brand.id ? (
@@ -456,8 +399,8 @@ export default function BrandPage() {
                       ) : (
                         <>
                           {brand.active
-                            ? getStatusLabel("active")
-                            : getStatusLabel("inactive")}
+                            ? t("admin.brand.status.active")
+                            : t("admin.brand.status.inactive")}
                         </>
                       )}
                     </button>
@@ -468,16 +411,14 @@ export default function BrandPage() {
                       <button
                         onClick={() => handleViewDetail(brand)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
-                        title={
-                          language === "VI" ? "Xem chi tiết" : "View Details"
-                        }
+                        title={t("admin.brand.actions.view_details")}
                       >
                         <IconEye size={24} />
                       </button>
                       <button
                         onClick={() => handleEdit(brand)}
                         className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                        title={language === "VI" ? "Chỉnh sửa" : "Edit"}
+                        title={t("admin.brand.actions.edit")}
                       >
                         <IconEdit size={24} />
                       </button>
@@ -488,9 +429,7 @@ export default function BrandPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="text-center text-gray-500 p-4">
-                  {language === "VI"
-                    ? "Không có thương hiệu nào."
-                    : "No brands found."}
+                  {t("admin.brand.no_brands")}
                 </td>
               </tr>
             )}

@@ -95,15 +95,15 @@ export const useBrand = (lang = "VI") => {
     isLoading,
     error,
 
-    createBrand: createBrandMutation.mutate,
+    createBrand: createBrandMutation.mutateAsync,
     isCreating: createBrandMutation.isPending,
     CreateError: createBrandMutation.error,
 
-    updateBrand: updateBrandMutation.mutate,
+    updateBrand: updateBrandMutation.mutateAsync,
     isUpdating: updateBrandMutation.isPending,
     updateError: updateBrandMutation.error,
 
-    deleteBrand: deleteBrandMutation.mutate,
+    deleteBrand: deleteBrandMutation.mutateAsync,
     isDeleting: deleteBrandMutation.isPending,
     deleteError: deleteBrandMutation.error,
   };

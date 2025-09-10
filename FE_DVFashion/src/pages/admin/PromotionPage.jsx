@@ -6,83 +6,10 @@ import PromotionForm from "../../components/ui/promotion/PromotionForm";
 import PromotionDetailModal from "../../components/ui/promotion/PromotionDetailModal";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { usePromotion } from "../../hooks/usePromotion";
-
-const typeLabels = {
-  PERCENTAGE: "Phần trăm",
-  FIXED_AMOUNT: "Tiền mặt",
-  FREE_SHIPPING: "Miễn phí vận chuyển",
-  BUY_ONE_GET_ONE: "Mua 1 tặng 1",
-};
-
-// Translations for status labels
-const statusLabels = {
-  vi: {
-    active: "Hoạt động",
-    inactive: "Không hoạt động",
-    total: "Tổng khuyến mãi",
-    activeCount: "Đang hoạt động",
-    inactiveCount: "Không hoạt động",
-    expired: "Hết hạn sử dụng",
-    allStatus: "Tất cả trạng thái",
-    vietnamese: "Tiếng Việt",
-    english: "Tiếng Anh",
-    managePromotions: "Quản lý Khuyến mãi",
-    createPromotion: "Tạo khuyến mãi",
-    searchPlaceholder: "Tìm kiếm theo tên, mô tả, ID...",
-    showing: "Hiển thị",
-    of: "trên tổng số",
-    promotions: "khuyến mãi",
-    noPromotions: "Không có khuyến mãi nào.",
-    loading: "Đang tải...",
-    viewDetails: "Xem chi tiết",
-    edit: "Chỉnh sửa",
-    id: "ID",
-    name: "Tên",
-    description: "Mô tả",
-    type: "Loại",
-    value: "Giá trị",
-    minOrder: "Min Đơn",
-    maxUsage: "Max Lượt",
-    startDate: "Bắt đầu",
-    endDate: "Kết thúc",
-    status: "Trạng thái",
-    actions: "Hành động",
-  },
-  en: {
-    active: "Active",
-    inactive: "Inactive",
-    total: "Total Promotions",
-    activeCount: "Active",
-    inactiveCount: "Inactive",
-    expired: "Expired",
-    allStatus: "All Status",
-    vietnamese: "Vietnamese",
-    english: "English",
-    managePromotions: "Manage Promotions",
-    createPromotion: "Create Promotion",
-    searchPlaceholder: "Search by name, description, ID...",
-    showing: "Showing",
-    of: "of",
-    promotions: "promotions",
-    noPromotions: "No promotions found.",
-    loading: "Loading...",
-    viewDetails: "View Details",
-    edit: "Edit",
-    id: "ID",
-    name: "Name",
-    description: "Description",
-    type: "Type",
-    value: "Value",
-    minOrder: "Min Order",
-    maxUsage: "Max Usage",
-    startDate: "Start Date",
-    endDate: "End Date",
-    status: "Status",
-    actions: "Actions",
-  },
-};
+import { useTranslation } from "react-i18next";
 
 export default function PromotionPage() {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -90,26 +17,44 @@ export default function PromotionPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDetailPromotion, setSelectedDetailPromotion] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [language, setLanguage] = useState("VI");
   const [loadingItems, setLoadingItems] = useState({
     status: null,
   });
   const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
 
+  // Get language from i18n instead of local state
+  const language = i18n.language || "VI";
+
   // Use promotion hook
   const { promotions, isLoading, error, updatePromotion } =
     usePromotion(language);
 
-  // Helper function: Chuyển đổi định dạng ngày tháng
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
+
+  // Helper function: Chuyển đổi định dạng ngày tháng theo ngôn ngữ
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "";
     const date = new Date(dateTimeString);
-    const time = date.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    const time = date.toLocaleTimeString(
+      language === "VI" ? "vi-VN" : "en-US",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }
+    );
     const day = date.getDate();
     const month = date.getMonth() + 1; // Months are zero-based
     const year = date.getFullYear();
@@ -135,12 +80,6 @@ export default function PromotionPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
-
-  // Helper function to get status labels
-  const getStatusLabel = (key) => {
-    const langKey = language === "VI" ? "vi" : "en";
-    return statusLabels[langKey][key] || statusLabels.vi[key];
-  };
 
   // Sort promotions by original order to maintain position
   const sortedPromotions = useMemo(() => {
@@ -239,34 +178,25 @@ export default function PromotionPage() {
   // Handle toggle status with position preservation
   const handleToggleStatus = async (promotion) => {
     const newStatus = !promotion.active;
-    const langKey = language === "VI" ? "vi" : "en";
     const actionText = newStatus
-      ? langKey === "vi"
-        ? "kích hoạt lại"
-        : "activate"
-      : langKey === "vi"
-      ? "vô hiệu hóa"
-      : "deactivate";
+      ? t("admin.promotion.actions.activate")
+      : t("admin.promotion.actions.deactivate");
 
+    // Sử dụng translation key thay vì hardcoded text
     const confirmText = newStatus
-      ? langKey === "vi"
-        ? "Kích hoạt"
-        : "Activate"
-      : langKey === "vi"
-      ? "Vô hiệu hóa"
-      : "Deactivate";
+      ? t("admin.promotion.actions.activate")
+      : t("admin.promotion.actions.deactivate");
 
-    const cancelText = langKey === "vi" ? "Hủy" : "Cancel";
+    const cancelText = language === "VI" ? "Hủy" : "Cancel";
 
-    const title =
-      langKey === "vi"
-        ? `Xác nhận ${actionText} khuyến mãi`
-        : `Confirm ${actionText} promotion`;
+    const title = newStatus
+      ? t("admin.promotion.actions.confirm_activate")
+      : t("admin.promotion.actions.confirm_deactivate");
 
-    const message =
-      langKey === "vi"
-        ? `Bạn có chắc chắn muốn ${actionText} khuyến mãi "${promotion.name}" không?`
-        : `Are you sure you want to ${actionText} promotion "${promotion.name}"?`;
+    const message = t("admin.promotion.actions.confirm_message", {
+      action: actionText,
+      name: promotion.name,
+    });
 
     showConfirmationToast({
       title,
@@ -292,14 +222,9 @@ export default function PromotionPage() {
             lang: language,
           });
 
-          const successMessage =
-            langKey === "vi"
-              ? `${
-                  newStatus ? "Kích hoạt lại" : "Vô hiệu hóa"
-                } khuyến mãi thành công!`
-              : `Promotion ${
-                  newStatus ? "activated" : "deactivated"
-                } successfully!`;
+          const successMessage = newStatus
+            ? t("admin.promotion.actions.success_activate")
+            : t("admin.promotion.actions.success_deactivate");
 
           toast.success(successMessage);
         } catch (error) {
@@ -312,7 +237,7 @@ export default function PromotionPage() {
             console.error("Response headers:", error.response.headers);
           }
 
-          let errorMessage = "Có lỗi xảy ra!";
+          let errorMessage = t("admin.promotion.actions.error_activate");
 
           if (error.response?.data?.message) {
             errorMessage = error.response.data.message;
@@ -327,13 +252,9 @@ export default function PromotionPage() {
           } else if (error.message) {
             errorMessage = error.message;
           } else {
-            errorMessage =
-              langKey === "vi"
-                ? `Có lỗi xảy ra khi ${actionText} khuyến mãi!`
-                : `Error occurred while ${actionText.replace(
-                    " ",
-                    "ing"
-                  )} promotion!`;
+            errorMessage = newStatus
+              ? t("admin.promotion.actions.error_activate")
+              : t("admin.promotion.actions.error_deactivate");
           }
 
           toast.error(errorMessage);
@@ -371,14 +292,14 @@ export default function PromotionPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          {getStatusLabel("managePromotions")}
+          {t("admin.promotion.title")}
         </h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
           onClick={handleCreatePromotion}
         >
           <IconPlus size={16} />
-          {getStatusLabel("createPromotion")}
+          {t("admin.promotion.create_promotion")}
         </button>
       </div>
 
@@ -388,7 +309,7 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("total")}
+                {t("admin.promotion.total_promotions")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -399,7 +320,7 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("activeCount")}
+                {t("admin.promotion.active_promotions")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -412,7 +333,7 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.promotion.inactive_promotions")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -425,7 +346,7 @@ export default function PromotionPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("expired")}
+                {t("admin.promotion.expired_promotions")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
                 {stats.expired}
@@ -447,7 +368,7 @@ export default function PromotionPage() {
               />
               <input
                 type="text"
-                placeholder={getStatusLabel("searchPlaceholder")}
+                placeholder={t("admin.promotion.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -462,23 +383,13 @@ export default function PromotionPage() {
               onChange={handleStatusFilterChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">{getStatusLabel("allStatus")}</option>
-              <option value="active">{getStatusLabel("activeCount")}</option>
-              <option value="inactive">
-                {getStatusLabel("inactiveCount")}
+              <option value="all">{t("admin.promotion.all_status")}</option>
+              <option value="active">
+                {t("admin.promotion.active_promotions")}
               </option>
-            </select>
-          </div>
-
-          {/* Language Filter */}
-          <div>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="VI">{getStatusLabel("vietnamese")}</option>
-              <option value="EN">{getStatusLabel("english")}</option>
+              <option value="inactive">
+                {t("admin.promotion.inactive_promotions")}
+              </option>
             </select>
           </div>
         </div>
@@ -486,11 +397,10 @@ export default function PromotionPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {`${getStatusLabel("showing")} ${
-          paginatedPromotions.length
-        } ${getStatusLabel("of")} ${filteredPromotions.length} ${getStatusLabel(
-          "promotions"
-        )}`}
+        {t("admin.promotion.showing_results", {
+          current: paginatedPromotions.length,
+          total: filteredPromotions.length,
+        })}
       </div>
 
       {/* Table */}
@@ -498,17 +408,19 @@ export default function PromotionPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-2">{getStatusLabel("id")}</th>
-              <th className="p-2">{getStatusLabel("name")}</th>
-              <th className="p-2">{getStatusLabel("description")}</th>
-              <th className="p-2">{getStatusLabel("type")}</th>
-              <th className="p-2">{getStatusLabel("value")}</th>
-              <th className="p-2">{getStatusLabel("minOrder")}</th>
-              <th className="p-2">{getStatusLabel("maxUsage")}</th>
-              <th className="p-2">{getStatusLabel("startDate")}</th>
-              <th className="p-2">{getStatusLabel("endDate")}</th>
-              <th className="p-2">{getStatusLabel("status")}</th>
-              <th className="p-2">{getStatusLabel("actions")}</th>
+              <th className="p-2">{t("admin.promotion.columns.id")}</th>
+              <th className="p-2">{t("admin.promotion.columns.name")}</th>
+              <th className="p-2">
+                {t("admin.promotion.columns.description")}
+              </th>
+              <th className="p-2">{t("admin.promotion.columns.type")}</th>
+              <th className="p-2">{t("admin.promotion.columns.value")}</th>
+              <th className="p-2">{t("admin.promotion.columns.min_order")}</th>
+              <th className="p-2">{t("admin.promotion.columns.max_usage")}</th>
+              <th className="p-2">{t("admin.promotion.columns.start_date")}</th>
+              <th className="p-2">{t("admin.promotion.columns.end_date")}</th>
+              <th className="p-2">{t("admin.promotion.columns.status")}</th>
+              <th className="p-2">{t("admin.promotion.columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -517,7 +429,7 @@ export default function PromotionPage() {
                 <td colSpan={11} className="text-center text-gray-500 p-4">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                    {getStatusLabel("loading")}
+                    {t("admin.promotion.loading")}
                   </div>
                 </td>
               </tr>
@@ -535,14 +447,12 @@ export default function PromotionPage() {
                         {promo.description?.length > 40
                           ? promo.description.slice(0, 40) + "..."
                           : promo.description ||
-                            (language === "VI"
-                              ? "Không có mô tả"
-                              : "No description")}
+                            t("admin.promotion.no_description")}
                       </p>
                     </div>
                   </td>
                   <td className="p-2">
-                    {typeLabels[promo.type] || promo.type}
+                    {t(`admin.promotion.type.${promo.type}`) || promo.type}
                   </td>
                   <td className="p-2">
                     {promo.type === "PERCENTAGE"
@@ -550,21 +460,16 @@ export default function PromotionPage() {
                       : promo.type === "FIXED_AMOUNT"
                       ? `${promo.value?.toLocaleString()} VND`
                       : promo.type === "FREE_SHIPPING"
-                      ? language === "VI"
-                        ? "Miễn phí ship"
-                        : "Free shipping"
+                      ? t("admin.promotion.value.free_shipping")
                       : promo.type === "BUY_ONE_GET_ONE"
-                      ? language === "VI"
-                        ? "Mua 1 tặng 1"
-                        : "Buy 1 Get 1"
+                      ? t("admin.promotion.value.buy_one_get_one")
                       : promo.value}
                   </td>
                   <td className="p-2">
                     {promo.minOrderAmount?.toLocaleString() || 0} VND
                   </td>
                   <td className="p-2">
-                    {promo.maxUsages ||
-                      (language === "VI" ? "Không giới hạn" : "Unlimited")}
+                    {promo.maxUsages || t("admin.promotion.value.unlimited")}
                   </td>
                   <td className="p-2">{formatDateTime(promo.startDate)}</td>
                   <td className="p-2">{formatDateTime(promo.endDate)}</td>
@@ -578,13 +483,9 @@ export default function PromotionPage() {
                           : "bg-red-100 text-red-800 hover:bg-red-200"
                       }`}
                       title={
-                        language === "VI"
-                          ? `Click để ${
-                              promo.active ? "vô hiệu hóa" : "kích hoạt lại"
-                            }`
-                          : `Click to ${
-                              promo.active ? "deactivate" : "activate"
-                            }`
+                        promo.active
+                          ? t("admin.promotion.actions.tooltip_deactivate")
+                          : t("admin.promotion.actions.tooltip_activate")
                       }
                     >
                       {loadingItems.status === promo.id ? (
@@ -594,8 +495,8 @@ export default function PromotionPage() {
                       ) : (
                         <>
                           {promo.active
-                            ? getStatusLabel("active")
-                            : getStatusLabel("inactive")}
+                            ? t("admin.promotion.status.active")
+                            : t("admin.promotion.status.inactive")}
                         </>
                       )}
                     </button>
@@ -605,14 +506,14 @@ export default function PromotionPage() {
                       <button
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         onClick={() => handleViewPromotion(promo)}
-                        title={getStatusLabel("viewDetails")}
+                        title={t("admin.promotion.actions.view_details")}
                       >
                         <IconEye size={24} />
                       </button>
                       <button
                         className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
                         onClick={() => handleEditPromotion(promo)}
-                        title={getStatusLabel("edit")}
+                        title={t("admin.promotion.actions.edit")}
                       >
                         <IconEdit size={24} />
                       </button>
@@ -623,7 +524,7 @@ export default function PromotionPage() {
             ) : (
               <tr>
                 <td colSpan={11} className="text-center py-6 text-gray-500">
-                  {getStatusLabel("noPromotions")}
+                  {t("admin.promotion.no_promotions")}
                 </td>
               </tr>
             )}

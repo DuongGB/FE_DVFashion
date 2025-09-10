@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconX,
   IconLanguage,
@@ -19,6 +19,19 @@ export default function SettingAdminModal({ show, onClose }) {
 
   // Lấy thông tin người dùng hiện tại từ hook useAuth
   const { user: currentUser } = useAuth();
+
+  // Cập nhật giao diện khi ngôn ngữ thay đổi
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   const handleLanguageChange = (lang) => {
     i18n.changeLanguage(lang);
@@ -44,13 +57,16 @@ export default function SettingAdminModal({ show, onClose }) {
         </button>
 
         <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">
-          {t("settings")}
+          {t("admin.settings.title")}
         </h2>
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <IconLanguage size={20} className="text-gray-600" />
-            <span className="text-gray-700 font-medium">{t("language")}</span>
+            <span className="text-gray-700 font-medium">
+              {" "}
+              {t("admin.settings.language")}
+            </span>
           </div>
           <div className="flex gap-2">
             <button
@@ -80,14 +96,14 @@ export default function SettingAdminModal({ show, onClose }) {
           <div className="flex items-center gap-3">
             <IconLock size={20} className="text-gray-600" />
             <span className="text-gray-700 font-medium">
-              {t("change_password")}
+              {t("admin.settings.change_password")}
             </span>
           </div>
           <button
             className="text-blue-600 font-medium cursor-pointer"
             onClick={() => setShowChangePasswordModal(true)}
           >
-            {t("update")}
+            {t("admin.settings.update")}
           </button>
         </div>
 
@@ -95,14 +111,14 @@ export default function SettingAdminModal({ show, onClose }) {
           <div className="flex items-center gap-3">
             <IconUser size={20} className="text-gray-600" />
             <span className="text-gray-700 font-medium">
-              {t("update_account")}
+              {t("admin.settings.update_account")}
             </span>
           </div>
           <button
             className="text-blue-600 font-medium cursor-pointer"
             onClick={() => setShowUpdateAccountModal(true)}
           >
-            {t("update")}
+            {t("admin.settings.update")}
           </button>
         </div>
 
@@ -110,7 +126,7 @@ export default function SettingAdminModal({ show, onClose }) {
           <div className="flex items-center gap-3">
             <IconBell size={20} className="text-gray-600" />
             <span className="text-gray-700 font-medium">
-              {t("notifications")}
+              {t("admin.settings.notifications")}
             </span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
