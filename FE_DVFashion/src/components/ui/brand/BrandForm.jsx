@@ -10,21 +10,36 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import { useBrand } from "../../../hooks/useBrand";
+import { useTranslation } from "react-i18next";
 
 export default function BrandForm({ isOpen, onClose, brand }) {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     active: true,
   });
-  const [language, setLanguage] = useState("VI");
   const [logoFile, setLogoFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
 
+  const language = i18n.language || "VI";
+
   const { createBrand, updateBrand, isCreating, isUpdating } = useBrand();
 
   const loading = isCreating || isUpdating;
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force component update
+    };
+
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   useEffect(() => {
     if (brand) {
@@ -47,7 +62,6 @@ export default function BrandForm({ isOpen, onClose, brand }) {
       setLogoFile(null);
     }
     setErrors({});
-    setLanguage("VI");
   }, [brand, isOpen]);
 
   const handleInputChange = (field, value) => {
@@ -70,13 +84,13 @@ export default function BrandForm({ isOpen, onClose, brand }) {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn file hình ảnh!");
+        toast.error(t("admin.brand.form.image_error"));
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước file không được vượt quá 5MB!");
+        toast.error(t("admin.brand.form.image_size_error"));
         return;
       }
 
@@ -98,11 +112,11 @@ export default function BrandForm({ isOpen, onClose, brand }) {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Tên thương hiệu là bắt buộc";
+      newErrors.name = t("admin.brand.form.brand_name_required");
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Mô tả thương hiệu là bắt buộc";
+      newErrors.description = t("admin.brand.form.description_required");
     }
 
     setErrors(newErrors);
@@ -113,7 +127,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      toast.error(t("admin.brand.form.validation_error"));
       return;
     }
 
@@ -147,14 +161,14 @@ export default function BrandForm({ isOpen, onClose, brand }) {
           brandData,
           lang: language,
         });
-        toast.success("Cập nhật thương hiệu thành công!");
+        toast.success(t("admin.brand.form.update_success"));
       } else {
         // Create new brand
         await createBrand({
           brandData,
           lang: language,
         });
-        toast.success("Tạo thương hiệu thành công!");
+        toast.success(t("admin.brand.form.create_success"));
       }
 
       onClose();
@@ -163,8 +177,8 @@ export default function BrandForm({ isOpen, onClose, brand }) {
       const errorMessage =
         error.response?.data?.message ||
         (brand
-          ? "Có lỗi xảy ra khi cập nhật thương hiệu!"
-          : "Có lỗi xảy ra khi tạo thương hiệu!");
+          ? t("admin.brand.form.update_error")
+          : t("admin.brand.form.create_error"));
       toast.error(errorMessage);
     }
   };
@@ -202,12 +216,14 @@ export default function BrandForm({ isOpen, onClose, brand }) {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">
-                {brand ? "Chỉnh sửa thương hiệu" : "Tạo thương hiệu mới"}
+                {brand
+                  ? t("admin.brand.form.edit_title")
+                  : t("admin.brand.form.create_title")}
               </h2>
               <p className="text-blue-100 opacity-90">
                 {brand
-                  ? "Cập nhật thông tin thương hiệu hiện tại"
-                  : "Thiết lập thông tin cho thương hiệu mới"}
+                  ? t("admin.brand.form.edit_description")
+                  : t("admin.brand.form.create_description")}
               </p>
             </div>
           </div>
@@ -220,14 +236,14 @@ export default function BrandForm({ isOpen, onClose, brand }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconTag size={20} className="text-blue-600" />
-                Thông tin cơ bản
+                {t("admin.brand.form.basic_info")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Brand Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tên thương hiệu *
+                    {t("admin.brand.form.brand_name")} *
                   </label>
                   <input
                     type="text"
@@ -239,7 +255,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Nhập tên thương hiệu..."
+                    placeholder={t("admin.brand.form.brand_name_placeholder")}
                     required
                   />
                   {errors.name && (
@@ -253,7 +269,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                 {/* Status */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Trạng thái
+                    {t("admin.brand.form.status")}
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center cursor-pointer group">
@@ -266,7 +282,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                         className="w-4 h-4 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed transition-all duration-200"
                       />
                       <span className="ml-3 text-sm font-medium text-green-600">
-                        🟢 Hoạt động
+                        {t("admin.brand.form.status_active")}
                       </span>
                     </label>
                     <label className="flex items-center cursor-pointer group">
@@ -279,7 +295,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                         className="w-4 h-4 text-red-600 focus:ring-red-500 disabled:cursor-not-allowed transition-all duration-200"
                       />
                       <span className="ml-3 text-sm font-medium text-red-600">
-                        🔴 Không hoạt động
+                        {t("admin.brand.form.status_inactive")}
                       </span>
                     </label>
                   </div>
@@ -289,7 +305,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
               {/* Description */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mô tả *
+                  {t("admin.brand.form.description")} *
                 </label>
                 <textarea
                   value={formData.description}
@@ -303,7 +319,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder="Nhập mô tả thương hiệu..."
+                  placeholder={t("admin.brand.form.description_placeholder")}
                   required
                 />
                 {errors.description && (
@@ -319,7 +335,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconBrandAndroid size={20} className="text-purple-600" />
-                Logo thương hiệu
+                {t("admin.brand.form.logo_section")}
               </h3>
 
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 relative hover:border-gray-400 transition-all duration-200">
@@ -347,14 +363,14 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                       <IconUpload size={32} className="text-gray-400" />
                     </div>
                     <p className="text-lg font-medium text-gray-700 mb-2">
-                      Tải logo lên
+                      {t("admin.brand.form.logo_upload")}
                     </p>
                     <p className="text-sm text-gray-500 mb-2">
-                      Kéo thả hoặc click để tải logo lên
+                      {t("admin.brand.form.logo_drag_drop")}
                     </p>
                     <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
                       <IconInfoCircle size={12} />
-                      PNG, JPG, GIF (tối đa 5MB)
+                      {t("admin.brand.form.logo_format")}
                     </p>
                   </div>
                 )}
@@ -377,7 +393,7 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                 disabled={loading}
                 className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Hủy bỏ
+                {t("admin.brand.form.cancel")}
               </button>
               <button
                 type="submit"
@@ -387,12 +403,16 @@ export default function BrandForm({ isOpen, onClose, brand }) {
                 {loading ? (
                   <>
                     <IconLoader2 size={16} className="animate-spin" />
-                    {brand ? "Đang cập nhật..." : "Đang tạo..."}
+                    {brand
+                      ? t("admin.brand.form.updating")
+                      : t("admin.brand.form.creating")}
                   </>
                 ) : (
                   <>
                     <IconCheck size={16} />
-                    {brand ? "Cập nhật thương hiệu" : "Tạo thương hiệu mới"}
+                    {brand
+                      ? t("admin.brand.form.update_button")
+                      : t("admin.brand.form.create_button")}
                   </>
                 )}
               </button>
