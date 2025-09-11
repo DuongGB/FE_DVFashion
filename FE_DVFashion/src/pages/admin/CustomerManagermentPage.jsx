@@ -90,10 +90,19 @@ export default function CustomerManagementPage() {
   // Filter customers with stable sorting (similar to BrandPage)
   const customers = useMemo(() => {
     if (!users) return [];
+    // Sắp xếp theo originalOrder nếu có
+    if (originalOrder.length > 0) {
+      return [...users]
+        .filter((user) => user.role === "CUSTOMER")
+        .sort(
+          (a, b) => originalOrder.indexOf(a.id) - originalOrder.indexOf(b.id)
+        );
+    }
+    // Nếu chưa có originalOrder thì sort theo id
     return users
       .filter((user) => user.role === "CUSTOMER")
       .sort((a, b) => a.id - b.id);
-  }, [users]);
+  }, [users, originalOrder]);
 
   const filteredCustomers = useMemo(() => {
     return customers.filter((customer) => {
@@ -164,22 +173,22 @@ export default function CustomerManagementPage() {
           : "bg-red-600 hover:bg-red-700"
       } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
       onConfirm: async () => {
-        console.log("✅ User confirmed the action");
-        // Set loading state
         setLoadingItems((prev) => ({ ...prev, status: customer.id }));
 
         try {
-          console.log("📤 Sending update request:", {
+          await updateUser({
             userId: customer.id,
             userData: { active: newStatus },
           });
 
-          const response = await updateUser({
-            userId: customer.id,
-            userData: { active: newStatus },
-          });
-
-          console.log("📥 Update response:", response);
+          // Cập nhật trạng thái trong state users, giữ nguyên thứ tự
+          if (users) {
+            const updatedUsers = users.map((u) =>
+              u.id === customer.id ? { ...u, active: newStatus } : u
+            );
+            // Nếu bạn dùng setUsers từ hook useUser, hãy gọi setUsers(updatedUsers)
+            // Nếu không, hãy cập nhật lại state users ở đây nếu cần
+          }
 
           const successMessage = newStatus
             ? t("admin.customer.actions.success_activate")
@@ -187,20 +196,11 @@ export default function CustomerManagementPage() {
 
           toast.success(successMessage);
         } catch (error) {
-          console.error("❌ Error updating customer status:", error);
-          console.error("Error details:", {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-          });
-
           const errorMessage = newStatus
             ? t("admin.customer.actions.error_activate")
             : t("admin.customer.actions.error_deactivate");
           toast.error(errorMessage);
         } finally {
-          console.log("🔄 Clearing loading state");
-          // Clear loading state
           setLoadingItems((prev) => ({ ...prev, status: null }));
         }
       },
