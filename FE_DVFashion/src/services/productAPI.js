@@ -34,11 +34,6 @@ export const productAPI = {
     });
   },
 
-  // Delete a product
-  deleteProduct: (productId) => {
-    return api.delete(`/products/${productId}`);
-  },
-
   // Get product by ID
   getProductById: (productId, lang) => {
     return api.get(`/products/${productId}?lang=${lang}`);
