@@ -1,297 +1,602 @@
-import React, { useState, useEffect } from "react";
 import {
-  IconX,
-  IconPackage,
-  IconTag,
-  IconCurrencyDollar,
-  IconFileText,
-  IconPhoto,
   IconCheck,
-  IconDiscount,
-  IconStar,
-  IconCalendar,
   IconChevronDown,
   IconChevronUp,
-  IconTrash,
+  IconCurrencyDollar,
+  IconDiscount,
+  IconFileText,
+  IconPackage,
+  IconPhoto,
   IconPlus,
+  IconTrash,
+  IconX,
 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useProduct } from "../../../hooks/useProduct";
+import { useProductVariant } from "../../../hooks/useProductVariant";
+import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { sizeAPI } from "../../../services/sizeAPI";
+import { productVariantImageAPI } from "../../../services/productVariantImageAPI";
 
 const ProductForm = ({
   isOpen,
   onClose,
-  onSubmit,
   product = null,
   brands = [],
   categories = [],
 }) => {
+  const { t, i18n } = useTranslation();
+  const language = i18n.language || "VI";
+  const queryClient = useQueryClient();
+
+  const { createProduct, isCreating, updateProduct, isUpdating } =
+    useProduct(language);
+  const { addVariant, isAddingVariant, updateVariant, isUpdatingVariant } =
+    useProductVariant(product?.id);
+
   const [formData, setFormData] = useState({
-    code: "",
     name: "",
     description: "",
     price: "",
-    sale_price: "",
-    on_sale: false,
-    status: "active",
-    brand_id: "",
-    category_id: "",
-    images: [],
+    material: "",
+    salePrice: "",
+    onSale: false,
+    status: "ACTIVE",
+    brandId: "",
+    categoryId: "",
+    promotionId: "",
     variants: [],
-    specifications: [{ key: "", value: "" }],
   });
 
   const [errors, setErrors] = useState({});
   const [showVariants, setShowVariants] = useState(false);
-  const [showSpecifications, setShowSpecifications] = useState(false);
+  const [isProcessingVariants, setIsProcessingVariants] = useState(false);
 
-  // Load dữ liệu khi edit product
+  // Initialize form data when product changes
   useEffect(() => {
     if (product) {
       setFormData({
-        code: product.code || "",
         name: product.name || "",
         description: product.description || "",
         price: product.price || "",
-        sale_price: product.sale_price || "",
-        on_sale: product.on_sale || false,
-        status: product.status || "active",
-        brand_id: product.brand_id || "",
-        category_id: product.category_id || "",
-        images: product.images || [],
-        variants: product.variants || [],
-        specifications: product.specifications || [{ key: "", value: "" }],
+        material: product.material || "",
+        salePrice: product.salePrice || "",
+        onSale: product.onSale || false,
+        status: product.status || "ACTIVE",
+        brandId: product.brandId || "",
+        categoryId: product.categoryId || "",
+        promotionId: product.promotionId || "",
+        variants: product.variants
+          ? product.variants.map((v) => ({
+              id: v.id || null,
+              color: v.color || "",
+              additionalPrice: v.additionalPrice || 0,
+              status: v.status || "ACTIVE",
+              sizes: v.sizes
+                ? v.sizes.map((s) => ({
+                    id: s.id || null,
+                    sizeName: s.sizeName || "",
+                    stockQuantity: s.stockQuantity || 0,
+                    isNew: false,
+                    isModified: false,
+                  }))
+                : [
+                    {
+                      id: null,
+                      sizeName: "",
+                      stockQuantity: 0,
+                      isNew: true,
+                      isModified: false,
+                    },
+                  ],
+              images: v.images
+                ? v.images.map((img) => ({
+                    id: img.id || null,
+                    isPrimary: img.isPrimary || false,
+                    imageFile: null,
+                    preview: img.imageUrl || "",
+                    existingImageUrl: img.imageUrl || "",
+                    isNew: false,
+                    isModified: false,
+                  }))
+                : [],
+              isNew: false,
+              isModified: false,
+            }))
+          : [],
       });
     } else {
-      // Reset form cho create mới
       setFormData({
-        code: "",
         name: "",
         description: "",
         price: "",
-        sale_price: "",
-        on_sale: false,
-        status: "active",
-        brand_id: "",
-        category_id: "",
-        images: [],
+        material: "",
+        salePrice: "",
+        onSale: false,
+        status: "ACTIVE",
+        brandId: "",
+        categoryId: "",
+        promotionId: "",
         variants: [],
-        specifications: [{ key: "", value: "" }],
       });
     }
     setErrors({});
   }, [product, isOpen]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  // Add variant
+  const handleVariantAdd = () => {
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      variants: [
+        ...prev.variants,
+        {
+          id: null,
+          color: "",
+          additionalPrice: 0,
+          status: "ACTIVE",
+          sizes: [
+            {
+              id: null,
+              sizeName: "",
+              stockQuantity: 0,
+              isNew: true,
+              isModified: false,
+            },
+          ],
+          images: [],
+          isNew: true,
+          isModified: false,
+        },
+      ],
     }));
+  };
 
-    // Clear error khi user thay đổi
+  // Remove variant
+  const handleVariantRemove = (idx) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      variants.splice(idx, 1);
+      return { ...prev, variants };
+    });
+  };
+
+  // Update variant field
+  const handleVariantChange = (idx, field, value) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      const variant = variants[idx];
+
+      if (variant[field] !== value) {
+        variants[idx] = {
+          ...variant,
+          [field]: value,
+          isModified: variant.id ? true : variant.isModified,
+        };
+      }
+
+      return { ...prev, variants };
+    });
+  };
+
+  // Add size to variant
+  const handleSizeAdd = (variantIdx, e) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      variants[variantIdx].sizes.push({
+        id: null,
+        sizeName: "",
+        stockQuantity: 0,
+        isNew: true,
+        isModified: false,
+      });
+      return { ...prev, variants };
+    });
+    e.target.value = "";
+  };
+
+  // Remove size from variant
+  const handleSizeRemove = (variantIdx, sizeIdx) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      variants[variantIdx].sizes.splice(sizeIdx, 1);
+      return { ...prev, variants };
+    });
+  };
+
+  // Update size field
+  const handleSizeChange = (variantIdx, sizeIdx, field, value) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      const size = variants[variantIdx].sizes[sizeIdx];
+
+      if (size[field] !== value) {
+        variants[variantIdx].sizes[sizeIdx] = {
+          ...size,
+          [field]: value,
+          isModified: size.id && !size.isNew ? true : size.isModified,
+        };
+      }
+
+      return { ...prev, variants };
+    });
+  };
+
+  // Add images to variant
+  const handleImageAdd = (variantIdx, e) => {
+    console.log("handleImageAdd called", variantIdx, e.target.files);
+    const files = Array.from(e.target.files);
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      const isFirstImage = variants[variantIdx].images.length === 0;
+
+      variants[variantIdx].images.push(
+        ...files.map((file, i) => ({
+          id: null,
+          isPrimary: isFirstImage && i === 0,
+          imageFile: file,
+          preview: URL.createObjectURL(file),
+          existingImageUrl: null,
+          isNew: true,
+          isModified: false,
+        }))
+      );
+      return { ...prev, variants };
+    });
+    e.target.value = "";
+  };
+
+  // Remove image from variant
+  const handleImageRemove = (variantIdx, imgIdx) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      const removedImage = variants[variantIdx].images[imgIdx];
+
+      if (removedImage.preview && removedImage.imageFile) {
+        URL.revokeObjectURL(removedImage.preview);
+      }
+
+      const wasPrimary = removedImage.isPrimary;
+      variants[variantIdx].images.splice(imgIdx, 1);
+
+      if (wasPrimary && variants[variantIdx].images.length > 0) {
+        variants[variantIdx].images[0].isPrimary = true;
+        if (variants[variantIdx].images[0].id) {
+          variants[variantIdx].images[0].isModified = true;
+        }
+      }
+
+      return { ...prev, variants };
+    });
+  };
+
+  // Set primary image
+  const handleSetPrimaryImage = (variantIdx, imgIdx) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      variants[variantIdx].images = variants[variantIdx].images.map(
+        (img, i) => ({
+          ...img,
+          isPrimary: i === imgIdx,
+          isModified:
+            img.id && img.isPrimary !== (i === imgIdx) ? true : img.isModified,
+        })
+      );
+      return { ...prev, variants };
+    });
+  };
+
+  // Handle common field changes
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => {
+      // Nếu thay đổi salePrice và có giá trị > 0 thì onSale = true
+      if (name === "salePrice") {
+        const salePriceValue = value && parseFloat(value) > 0 ? value : "";
+        return {
+          ...prev,
+          salePrice: salePriceValue,
+          onSale:
+            salePriceValue && parseFloat(salePriceValue) > 0
+              ? true
+              : prev.onSale,
+        };
+      }
+      return {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+    });
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
-    // Tự động set sale_price = price khi price thay đổi và chưa có sale_price
-    if (name === "price" && !formData.sale_price) {
-      setFormData((prev) => ({
-        ...prev,
-        sale_price: value,
-      }));
-    }
   };
 
-  const handleImageAdd = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map((file) => ({
-      id: Date.now() + Math.random(),
-      file,
-      url: URL.createObjectURL(file),
-      alt: file.name,
-    }));
-
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...newImages],
-    }));
-  };
-
-  const handleImageRemove = (imageId) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((img) => img.id !== imageId),
-    }));
-  };
-
-  const handleVariantAdd = () => {
-    const newVariant = {
-      id: Date.now(),
-      name: "",
-      sku: "",
-      price: formData.price,
-      sale_price: formData.sale_price,
-      stock: 0,
-      attributes: [{ name: "", value: "" }],
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      variants: [...prev.variants, newVariant],
-    }));
-  };
-
-  const handleVariantChange = (variantId, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.map((variant) =>
-        variant.id === variantId ? { ...variant, [field]: value } : variant
-      ),
-    }));
-  };
-
-  const handleVariantRemove = (variantId) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.filter((variant) => variant.id !== variantId),
-    }));
-  };
-
-  const handleVariantAttributeChange = (variantId, attrIndex, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.map((variant) =>
-        variant.id === variantId
-          ? {
-              ...variant,
-              attributes: variant.attributes.map((attr, index) =>
-                index === attrIndex ? { ...attr, [field]: value } : attr
-              ),
-            }
-          : variant
-      ),
-    }));
-  };
-
-  const handleVariantAttributeAdd = (variantId) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.map((variant) =>
-        variant.id === variantId
-          ? {
-              ...variant,
-              attributes: [...variant.attributes, { name: "", value: "" }],
-            }
-          : variant
-      ),
-    }));
-  };
-
-  const handleVariantAttributeRemove = (variantId, attrIndex) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.map((variant) =>
-        variant.id === variantId
-          ? {
-              ...variant,
-              attributes: variant.attributes.filter(
-                (_, index) => index !== attrIndex
-              ),
-            }
-          : variant
-      ),
-    }));
-  };
-
-  const handleSpecificationChange = (index, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      specifications: prev.specifications.map((spec, i) =>
-        i === index ? { ...spec, [field]: value } : spec
-      ),
-    }));
-  };
-
-  const handleSpecificationAdd = () => {
-    setFormData((prev) => ({
-      ...prev,
-      specifications: [...prev.specifications, { key: "", value: "" }],
-    }));
-  };
-
-  const handleSpecificationRemove = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      specifications: prev.specifications.filter((_, i) => i !== index),
-    }));
-  };
-
+  // Validation
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã sản phẩm là bắt buộc";
-    }
+    // Basic product validation
+    if (!formData.name.trim())
+      newErrors.name = t("admin.product.validation.name_required");
+    if (!formData.price || formData.price <= 0)
+      newErrors.price = t("admin.product.validation.price_required");
+    if (!formData.material.trim())
+      newErrors.material = t("admin.product.validation.material_required");
+    if (!formData.status)
+      newErrors.status = t("admin.product.validation.status_required");
+    if (!formData.categoryId)
+      newErrors.categoryId = t("admin.product.validation.category_required");
+    if (!formData.brandId)
+      newErrors.brandId = t("admin.product.validation.brand_required");
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên sản phẩm là bắt buộc";
-    }
+    // Variant validation
+    if (!formData.variants.length)
+      newErrors.variants = t("admin.product.validation.variants_required");
 
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = "Giá sản phẩm phải lớn hơn 0";
-    }
+    formData.variants.forEach((variant, idx) => {
+      if (!variant.color.trim())
+        newErrors[`variant_${idx}_color`] = t(
+          "admin.product.validation.color_required"
+        );
 
-    if (!formData.sale_price || formData.sale_price <= 0) {
-      newErrors.sale_price = "Giá khuyến mãi phải lớn hơn 0";
-    }
+      if (!variant.sizes.length)
+        newErrors[`variant_${idx}_sizes`] = t(
+          "admin.product.validation.sizes_required"
+        );
 
-    if (
-      formData.sale_price &&
-      formData.price &&
-      parseFloat(formData.sale_price) > parseFloat(formData.price)
-    ) {
-      newErrors.sale_price = "Giá khuyến mãi không được lớn hơn giá gốc";
-    }
+      if (!variant.images.length)
+        newErrors[`variant_${idx}_images`] = t(
+          "admin.product.validation.images_required"
+        );
 
-    if (!formData.brand_id) {
-      newErrors.brand_id = "Thương hiệu là bắt buộc";
-    }
+      variant.sizes.forEach((size, sidx) => {
+        if (!size.sizeName.trim())
+          newErrors[`variant_${idx}_size_${sidx}_sizeName`] = t(
+            "admin.product.validation.size_name_required"
+          );
+        if (size.stockQuantity === "" || size.stockQuantity < 0)
+          newErrors[`variant_${idx}_size_${sidx}_stockQuantity`] = t(
+            "admin.product.validation.stock_quantity_required"
+          );
+      });
 
-    if (!formData.category_id) {
-      newErrors.category_id = "Danh mục là bắt buộc";
-    }
+      const hasPrimaryImage = variant.images.some((img) => img.isPrimary);
+      if (variant.images.length > 0 && !hasPrimaryImage) {
+        variant.images[0].isPrimary = true;
+        if (variant.images[0].id) {
+          variant.images[0].isModified = true;
+        }
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  /**
+   * Xử lý cập nhật/thêm mới các biến thể (variant), size và ảnh cho sản phẩm.
+   * - Nếu variant mới: gọi addVariant (bao gồm size và ảnh).
+   * - Nếu variant đã tồn tại:
+   *    + Nếu variant thay đổi: gọi updateVariant.
+   *    + Xử lý từng size: nếu size mới thì addSize, nếu đã có thì updateSize.
+   *    + Xử lý từng ảnh: nếu mới thì addImageToVariant, nếu thay đổi thì updateVariantImage.
+   */
+  const processVariantUpdates = async () => {
+    setIsProcessingVariants(true);
+
+    try {
+      for (const [variantIndex, variant] of formData.variants.entries()) {
+        if (variant.isNew) {
+          // Tạo mới variant cùng size và ảnh
+          const variantRequest = {
+            color: variant.color,
+            additionalPrice: parseFloat(variant.additionalPrice) || 0,
+            status: variant.status,
+            sizes: variant.sizes.map((s) => ({
+              sizeName: s.sizeName,
+              stockQuantity: parseInt(s.stockQuantity),
+            })),
+            images: variant.images.map((img) => ({
+              isPrimary: Boolean(img.isPrimary),
+            })),
+          };
+
+          const imageFiles = variant.images
+            .filter((img) => img.imageFile)
+            .map((img) => img.imageFile);
+
+          await addVariant({
+            variant: variantRequest,
+            images: imageFiles,
+          });
+        } else {
+          // Variant đã tồn tại
+          if (variant.isModified) {
+            await updateVariant({
+              variantId: variant.id,
+              variant: {
+                color: variant.color,
+                additionalPrice: parseFloat(variant.additionalPrice) || 0,
+                status: variant.status,
+              },
+            });
+          }
+
+          // Xử lý size cho variant này
+          await processSizesForVariant(variant);
+
+          // Xử lý ảnh cho variant này
+          await processImagesForVariant(variant, variantIndex);
+        }
+      }
+
+      // Invalidate cache sau khi cập nhật
+      await Promise.all([
+        queryClient.invalidateQueries(["products", "all"]),
+        queryClient.invalidateQueries(["products", "all", "VI"]),
+        queryClient.invalidateQueries(["products", "all", "EN"]),
+        queryClient.invalidateQueries(["variants", product?.id]),
+        ...formData.variants
+          .map((variant) =>
+            variant.id
+              ? [
+                  queryClient.invalidateQueries(["sizes", variant.id]),
+                  queryClient.invalidateQueries(["variantImages", variant.id]),
+                ]
+              : []
+          )
+          .flat(),
+      ]);
+      queryClient.refetchQueries(["products", "all"]);
+      queryClient.refetchQueries(["products", "all", "VI"]);
+      queryClient.refetchQueries(["products", "all", "EN"]);
+    } catch (error) {
+      console.error("Error processing variants:", error);
+      throw error;
+    } finally {
+      setIsProcessingVariants(false);
+    }
+  };
+
+  /**
+   * Thêm/cập nhật size cho một variant.
+   * - Nếu size mới (chưa có id): gọi addSize.
+   * - Nếu size đã có id: gọi updateSize.
+   */
+  const processSizesForVariant = async (variant) => {
+    if (!variant.id) return;
+    for (const size of variant.sizes || []) {
+      if (!size.id) {
+        await sizeAPI.addSize(variant.id, {
+          sizeName: size.sizeName,
+          stockQuantity: size.stockQuantity,
+        });
+      } else {
+        await sizeAPI.updateSize(variant.id, size.id, {
+          sizeName: size.sizeName,
+          stockQuantity: size.stockQuantity,
+        });
+      }
+    }
+  };
+
+  /**
+   * Thêm/cập nhật ảnh cho một variant sử dụng hook useProductVariantImage.
+   * - Nếu ảnh mới (isNew): gọi addImage.
+   * - Nếu ảnh đã có và thay đổi (isModified): gọi updateImage.
+   */
+  const processImagesForVariant = async (variant) => {
+    if (!variant.id) return;
+    for (const image of variant.images || []) {
+      if (image.isNew && image.imageFile) {
+        await productVariantImageAPI.addImageToVariant(
+          variant.id,
+          { isPrimary: Boolean(image.isPrimary) },
+          image.imageFile
+        );
+      } else if (image.isModified && image.id) {
+        await productVariantImageAPI.updateVariantImage(
+          variant.id,
+          image.id,
+          { isPrimary: Boolean(image.isPrimary) },
+          null
+        );
+      }
+    }
+  };
+
+  // Submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Format data trước khi submit
-      const submitData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        sale_price: parseFloat(formData.sale_price),
-        brand_id: parseInt(formData.brand_id),
-        category_id: parseInt(formData.category_id),
-        specifications: formData.specifications.filter(
-          (spec) => spec.key && spec.value
-        ),
-        variants: formData.variants.map((variant) => ({
-          ...variant,
-          price: parseFloat(variant.price),
-          sale_price: parseFloat(variant.sale_price),
-          stock: parseInt(variant.stock),
-          attributes: variant.attributes.filter(
-            (attr) => attr.name && attr.value
-          ),
-        })),
-      };
-      onSubmit(submitData);
+    if (!validateForm()) return;
+
+    const productData = {
+      name: formData.name,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      material: formData.material,
+      salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+      onSale: Boolean(formData.onSale),
+      status: formData.status,
+      categoryId: parseInt(formData.categoryId),
+      brandId: parseInt(formData.brandId),
+      promotionId: formData.promotionId ? parseInt(formData.promotionId) : null,
+    };
+
+    try {
+      if (product) {
+        await updateProduct({
+          productId: product.id,
+          productData,
+        });
+        await processVariantUpdates();
+        toast.success(t("admin.product.messages.update_success"));
+      } else {
+        const createProductData = {
+          ...productData,
+          variants: formData.variants.map((v) => ({
+            color: v.color,
+            additionalPrice: parseFloat(v.additionalPrice) || 0,
+            status: v.status,
+            sizes: v.sizes.map((s) => ({
+              sizeName: s.sizeName,
+              stockQuantity: parseInt(s.stockQuantity),
+            })),
+            images: v.images.map((img) => ({
+              isPrimary: Boolean(img.isPrimary),
+            })),
+          })),
+        };
+        const variantImages = [];
+        formData.variants.forEach((variant) => {
+          variant.images.forEach((img) => {
+            if (img.imageFile) {
+              variantImages.push(img.imageFile);
+            }
+          });
+        });
+        await createProduct({
+          productData: createProductData,
+          variantImages,
+        });
+        await Promise.all([
+          queryClient.invalidateQueries(["products", "all"]),
+          queryClient.invalidateQueries(["products", "all", "VI"]),
+          queryClient.invalidateQueries(["products", "all", "EN"]),
+        ]);
+        queryClient.refetchQueries(["products", "all"]);
+        queryClient.refetchQueries(["products", "all", "VI"]);
+        queryClient.refetchQueries(["products", "all", "EN"]);
+        toast.success(t("admin.product.messages.create_success"));
+      }
+      onClose();
+    } catch (error) {
+      let errorMessage;
+      if (error.message && error.message.includes("Failed to process")) {
+        errorMessage = `${
+          product
+            ? t("admin.product.messages.update_error")
+            : t("admin.product.messages.create_error")
+        } ${error.message}`;
+      } else {
+        errorMessage = product
+          ? t("admin.product.messages.update_error")
+          : t("admin.product.messages.create_error");
+      }
+      toast.error(errorMessage);
     }
   };
 
   if (!isOpen) return null;
+
+  const isSubmitting =
+    isCreating ||
+    isUpdating ||
+    isAddingVariant ||
+    isUpdatingVariant ||
+    isProcessingVariants;
 
   return (
     <div
@@ -299,107 +604,127 @@ const ProductForm = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
+        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-3">
-            <IconPackage size={24} className="text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">
-              {product ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm mới"}
+            <IconPackage size={28} className="text-white" />
+            <h2 className="text-2xl font-bold">
+              {product
+                ? t("admin.product.form.edit_title")
+                : t("admin.product.form.create_title")}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black text-white rounded-full transition-colors cursor-pointer hover:bg-gray-800"
+            disabled={isSubmitting}
+            className="p-2 bg-black/70 text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IconX size={20} />
           </button>
         </div>
 
+        {/* Processing Indicator */}
+        {isProcessingVariants && (
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 m-4">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <p className="text-blue-700">
+                {language === "VI"
+                  ? "Đang xử lý biến thể, kích cỡ và hình ảnh..."
+                  : "Processing variants, sizes and images..."}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 space-y-6 flex-1 overflow-y-auto"
+        >
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Mã sản phẩm */}
+            {/* Product Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconTag size={16} className="inline mr-1" />
-                Mã sản phẩm *
-              </label>
-              <input
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.code ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="SP001"
-              />
-              {errors.code && (
-                <p className="text-red-500 text-sm mt-1">{errors.code}</p>
-              )}
-            </div>
-
-            {/* Tên sản phẩm */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <IconPackage size={16} className="inline mr-1" />
-                Tên sản phẩm *
+                {t("admin.product.form.name")} *
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Nhập tên sản phẩm"
+                placeholder={t("admin.product.form.name_placeholder")}
               />
               {errors.name && (
                 <p className="text-red-500 text-sm mt-1">{errors.name}</p>
               )}
             </div>
+
+            {/* Material */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("admin.product.form.material")} *
+              </label>
+              <input
+                type="text"
+                name="material"
+                value={formData.material}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  errors.material ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder={t("admin.product.form.material_placeholder")}
+              />
+              {errors.material && (
+                <p className="text-red-500 text-sm mt-1">{errors.material}</p>
+              )}
+            </div>
           </div>
 
-          {/* Mô tả */}
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <IconFileText size={16} className="inline mr-1" />
-              Mô tả sản phẩm
+              {t("admin.product.form.description")}
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
+              disabled={isSubmitting}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nhập mô tả sản phẩm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder={t("admin.product.form.description_placeholder")}
             />
           </div>
 
-          {/* Giá và danh mục */}
+          {/* Price and Category Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Original Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <IconCurrencyDollar size={16} className="inline mr-1" />
-                Giá gốc *
+                {t("admin.product.form.price")} *
               </label>
               <input
                 type="number"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 min="0"
                 step="1000"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.price ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="0"
@@ -409,127 +734,94 @@ const ProductForm = ({
               )}
             </div>
 
+            {/* Sale Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <IconDiscount size={16} className="inline mr-1" />
-                Giá khuyến mãi *
+                {t("admin.product.form.sale_price")}
               </label>
               <input
                 type="number"
-                name="sale_price"
-                value={formData.sale_price}
+                name="salePrice"
+                value={formData.salePrice}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 min="0"
                 step="1000"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.sale_price ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="0"
               />
-              {errors.sale_price && (
-                <p className="text-red-500 text-sm mt-1">{errors.sale_price}</p>
-              )}
             </div>
 
+            {/* Brand */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Thương hiệu *
+                {t("admin.product.form.brand")} *
               </label>
               <select
-                name="brand_id"
-                value={formData.brand_id}
+                name="brandId"
+                value={formData.brandId}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.brand_id ? "border-red-500" : "border-gray-300"
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  errors.brandId ? "border-red-500" : "border-gray-300"
                 }`}
               >
-                <option value="">Chọn thương hiệu</option>
+                <option value="">{t("admin.product.form.select_brand")}</option>
                 {brands.map((brand) => (
                   <option key={brand.id} value={brand.id}>
                     {brand.name}
                   </option>
                 ))}
               </select>
-              {errors.brand_id && (
-                <p className="text-red-500 text-sm mt-1">{errors.brand_id}</p>
+              {errors.brandId && (
+                <p className="text-red-500 text-sm mt-1">{errors.brandId}</p>
               )}
             </div>
 
+            {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Danh mục *
+                {t("admin.product.form.category")} *
               </label>
               <select
-                name="category_id"
-                value={formData.category_id}
+                name="categoryId"
+                value={formData.categoryId}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.category_id ? "border-red-500" : "border-gray-300"
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  errors.categoryId ? "border-red-500" : "border-gray-300"
                 }`}
               >
-                <option value="">Chọn danh mục</option>
+                <option value="">
+                  {t("admin.product.form.select_category")}
+                </option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
-              {errors.category_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.category_id}
-                </p>
+              {errors.categoryId && (
+                <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>
               )}
             </div>
           </div>
 
-          {/* Hình ảnh */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <IconPhoto size={16} className="inline mr-1" />
-              Hình ảnh sản phẩm
-            </label>
-            <div className="space-y-3">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageAdd}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-
-              {formData.images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.images.map((image, index) => (
-                    <div key={image.id || index} className="relative group">
-                      <img
-                        src={image.url}
-                        alt={image.alt}
-                        className="w-full h-24 object-cover rounded border"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleImageRemove(image.id)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <IconX size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Variants */}
+          {/* Variants Section */}
           <div>
             <button
               type="button"
               onClick={() => setShowVariants(!showVariants)}
-              className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
+              className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
                 <IconPackage size={16} />
-                <span>Biến thể sản phẩm ({formData.variants.length})</span>
+                <span>
+                  {t("admin.product.form.variant")} ({formData.variants.length})
+                  *
+                </span>
               </div>
               {showVariants ? (
                 <IconChevronUp size={16} />
@@ -538,143 +830,325 @@ const ProductForm = ({
               )}
             </button>
 
+            {errors.variants && (
+              <p className="text-red-500 text-sm mt-1">{errors.variants}</p>
+            )}
+
             {showVariants && (
-              <div className="mt-3 space-y-4 border border-gray-200 rounded-md p-4">
+              <div className="mt-3 space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
                 <button
                   type="button"
                   onClick={handleVariantAdd}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <IconPlus size={16} />
-                  Thêm biến thể
+                  {t("admin.product.form.add_variant")}
                 </button>
 
-                {formData.variants.map((variant) => (
+                {formData.variants.map((variant, idx) => (
                   <div
-                    key={variant.id}
-                    className="border border-gray-200 rounded-md p-4 bg-gray-50"
+                    key={idx}
+                    className="border border-gray-200 rounded-lg p-4 bg-white"
                   >
+                    {/* Variant Header */}
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-medium text-gray-700">
-                        Biến thể #{variant.id}
+                        {t("admin.product.form.variant")} #{idx + 1}
+                        {variant.isNew && (
+                          <span className="text-xs text-green-500 ml-2">
+                            (NEW)
+                          </span>
+                        )}
+                        {variant.isModified && (
+                          <span className="text-xs text-blue-500 ml-2">
+                            (MODIFIED)
+                          </span>
+                        )}
                       </h4>
                       <button
                         type="button"
-                        onClick={() => handleVariantRemove(variant.id)}
-                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleVariantRemove(idx)}
+                        disabled={isSubmitting}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={t("admin.product.form.remove_variant")}
                       >
                         <IconTrash size={16} />
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                      <input
-                        type="text"
-                        placeholder="Tên biến thể"
-                        value={variant.name}
-                        onChange={(e) =>
-                          handleVariantChange(
-                            variant.id,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                        className="px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                      <input
-                        type="text"
-                        placeholder="SKU"
-                        value={variant.sku}
-                        onChange={(e) =>
-                          handleVariantChange(variant.id, "sku", e.target.value)
-                        }
-                        className="px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Giá"
-                        value={variant.price}
-                        onChange={(e) =>
-                          handleVariantChange(
-                            variant.id,
-                            "price",
-                            e.target.value
-                          )
-                        }
-                        className="px-3 py-2 border border-gray-300 rounded-md"
-                      />
+                    {/* Variant Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder={t("admin.product.form.color") + " *"}
+                          value={variant.color}
+                          onChange={(e) =>
+                            handleVariantChange(idx, "color", e.target.value)
+                          }
+                          disabled={isSubmitting}
+                          className={`w-full px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                            errors[`variant_${idx}_color`]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        />
+                        {errors[`variant_${idx}_color`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`variant_${idx}_color`]}
+                          </p>
+                        )}
+                      </div>
+
                       <input
                         type="number"
-                        placeholder="Tồn kho"
-                        value={variant.stock}
+                        placeholder={t("admin.product.form.additional_price")}
+                        value={variant.additionalPrice}
                         onChange={(e) =>
                           handleVariantChange(
-                            variant.id,
-                            "stock",
+                            idx,
+                            "additionalPrice",
                             e.target.value
                           )
                         }
-                        className="px-3 py-2 border border-gray-300 rounded-md"
+                        disabled={isSubmitting}
+                        min="0"
+                        step="1000"
+                        className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       />
+
+                      <select
+                        value={variant.status}
+                        onChange={(e) =>
+                          handleVariantChange(idx, "status", e.target.value)
+                        }
+                        disabled={isSubmitting}
+                        className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="ACTIVE">
+                          {t("admin.product.form.active")}
+                        </option>
+                        <option value="INACTIVE">
+                          {t("admin.product.form.inactive")}
+                        </option>
+                        <option value="OUT_OF_STOCK">
+                          {t("admin.product.form.out_of_stock")}
+                        </option>
+                        <option value="DISCONTINUED">
+                          {t("admin.product.form.discontinued")}
+                        </option>
+                      </select>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-600">
-                          Thuộc tính
-                        </label>
+                    {/* Sizes Section */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-600">
+                          {t("admin.product.form.sizes")} *
+                        </span>
                         <button
                           type="button"
-                          onClick={() => handleVariantAttributeAdd(variant.id)}
-                          className="text-blue-500 hover:text-blue-700 text-sm"
+                          onClick={() => handleSizeAdd(idx)}
+                          disabled={isSubmitting}
+                          className="text-blue-500 hover:text-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          + Thêm thuộc tính
+                          + {t("admin.product.form.add_size")}
                         </button>
                       </div>
-                      {variant.attributes.map((attr, attrIndex) => (
-                        <div key={attrIndex} className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Tên thuộc tính"
-                            value={attr.name}
-                            onChange={(e) =>
-                              handleVariantAttributeChange(
-                                variant.id,
-                                attrIndex,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Giá trị"
-                            value={attr.value}
-                            onChange={(e) =>
-                              handleVariantAttributeChange(
-                                variant.id,
-                                attrIndex,
-                                "value",
-                                e.target.value
-                              )
-                            }
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleVariantAttributeRemove(
-                                variant.id,
-                                attrIndex
-                              )
-                            }
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <IconTrash size={14} />
-                          </button>
+
+                      <div className="space-y-2">
+                        {variant.sizes.map((size, sidx) => (
+                          <div key={sidx} className="flex gap-2 items-center">
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                placeholder={t("admin.product.form.size_name")}
+                                value={size.sizeName}
+                                onChange={(e) =>
+                                  handleSizeChange(
+                                    idx,
+                                    sidx,
+                                    "sizeName",
+                                    e.target.value
+                                  )
+                                }
+                                disabled={isSubmitting}
+                                className={`w-full px-2 py-1 border rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  errors[`variant_${idx}_size_${sidx}_sizeName`]
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                              {errors[
+                                `variant_${idx}_size_${sidx}_sizeName`
+                              ] && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {
+                                    errors[
+                                      `variant_${idx}_size_${sidx}_sizeName`
+                                    ]
+                                  }
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex-1">
+                              <input
+                                type="number"
+                                placeholder={t(
+                                  "admin.product.form.stock_quantity"
+                                )}
+                                value={size.stockQuantity}
+                                min={0}
+                                onChange={(e) =>
+                                  handleSizeChange(
+                                    idx,
+                                    sidx,
+                                    "stockQuantity",
+                                    parseInt(e.target.value) || 0
+                                  )
+                                }
+                                disabled={isSubmitting}
+                                className={`w-full px-2 py-1 border rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  errors[
+                                    `variant_${idx}_size_${sidx}_stockQuantity`
+                                  ]
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                              {errors[
+                                `variant_${idx}_size_${sidx}_stockQuantity`
+                              ] && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {
+                                    errors[
+                                      `variant_${idx}_size_${sidx}_stockQuantity`
+                                    ]
+                                  }
+                                </p>
+                              )}
+                            </div>
+
+                            {variant.sizes.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleSizeRemove(idx, sidx)}
+                                disabled={isSubmitting}
+                                className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={t("admin.product.form.remove_size")}
+                              >
+                                <IconTrash size={14} />
+                              </button>
+                            )}
+
+                            <div className="flex flex-col text-xs text-gray-500">
+                              {size.id && <span>(ID: {size.id})</span>}
+                              {size.isNew && (
+                                <span className="text-green-500">(NEW)</span>
+                              )}
+                              {size.isModified && (
+                                <span className="text-blue-500">(MOD)</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {errors[`variant_${idx}_sizes`] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors[`variant_${idx}_sizes`]}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Images Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconPhoto size={16} />
+                        <span className="font-medium text-gray-600">
+                          {t("admin.product.form.images")} *
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleImageAdd(idx, e)}
+                          disabled={isSubmitting}
+                          className="ml-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      </div>
+
+                      {variant.images.length > 0 && (
+                        <div className="flex flex-wrap gap-3 mt-2">
+                          {variant.images.map((img, imgIdx) => (
+                            <div
+                              key={imgIdx}
+                              className="relative group w-20 h-20 border rounded-lg"
+                            >
+                              <img
+                                src={img.preview || img.existingImageUrl}
+                                alt=""
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+
+                              {/* Remove Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleImageRemove(idx, imgIdx)}
+                                disabled={isSubmitting}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <IconX size={12} />
+                              </button>
+
+                              {/* Primary Button */}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleSetPrimaryImage(idx, imgIdx)
+                                }
+                                disabled={isSubmitting}
+                                className={`absolute bottom-1 left-1 px-1 py-0.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  img.isPrimary
+                                    ? "bg-green-500 text-white"
+                                    : "bg-gray-200 text-gray-700"
+                                }`}
+                              >
+                                {img.isPrimary
+                                  ? t("admin.product.form.primary")
+                                  : t("admin.product.form.set_primary")}
+                              </button>
+
+                              {/* Status Indicators */}
+                              <div className="absolute top-1 left-1 flex flex-col text-xs">
+                                {img.id && (
+                                  <span className="bg-blue-500 text-white px-1 rounded">
+                                    {img.id}
+                                  </span>
+                                )}
+                                {img.isNew && (
+                                  <span className="bg-green-500 text-white px-1 rounded mt-1">
+                                    NEW
+                                  </span>
+                                )}
+                                {img.isModified && (
+                                  <span className="bg-blue-500 text-white px-1 rounded mt-1">
+                                    MOD
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+
+                      {errors[`variant_${idx}_images`] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors[`variant_${idx}_images`]}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -682,131 +1156,84 @@ const ProductForm = ({
             )}
           </div>
 
-          {/* Specifications */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowSpecifications(!showSpecifications)}
-              className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <IconFileText size={16} />
-                <span>
-                  Thông số kỹ thuật (
-                  {
-                    formData.specifications.filter((s) => s.key && s.value)
-                      .length
-                  }
-                  )
-                </span>
-              </div>
-              {showSpecifications ? (
-                <IconChevronUp size={16} />
-              ) : (
-                <IconChevronDown size={16} />
-              )}
-            </button>
-
-            {showSpecifications && (
-              <div className="mt-3 space-y-2 border border-gray-200 rounded-md p-4">
-                <button
-                  type="button"
-                  onClick={handleSpecificationAdd}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors"
-                >
-                  <IconPlus size={16} />
-                  Thêm thông số
-                </button>
-
-                {formData.specifications.map((spec, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Tên thông số"
-                      value={spec.key}
-                      onChange={(e) =>
-                        handleSpecificationChange(index, "key", e.target.value)
-                      }
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Giá trị"
-                      value={spec.value}
-                      onChange={(e) =>
-                        handleSpecificationChange(
-                          index,
-                          "value",
-                          e.target.value
-                        )
-                      }
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                    {formData.specifications.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleSpecificationRemove(index)}
-                        className="text-red-500 hover:text-red-700 px-2"
-                      >
-                        <IconTrash size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Trạng thái */}
+          {/* Status & Sale Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-4 rounded-md">
+            <div className="bg-gray-50 p-4 rounded-lg">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  name="on_sale"
-                  checked={formData.on_sale}
+                  name="onSale"
+                  checked={formData.onSale}
                   onChange={handleChange}
-                  className="rounded"
+                  disabled={isSubmitting}
+                  className="rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <IconDiscount size={16} className="text-orange-600" />
                 <span className="text-sm font-medium text-gray-700">
-                  Đang khuyến mãi
+                  {t("admin.product.form.on_sale")}
                 </span>
               </label>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Trạng thái
+                {t("admin.product.form.status")}
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="active">Hoạt động</option>
-                <option value="inactive">Không hoạt động</option>
-                <option value="draft">Bản nháp</option>
+                <option value="ACTIVE">{t("admin.product.form.active")}</option>
+                <option value="INACTIVE">
+                  {t("admin.product.form.inactive")}
+                </option>
+                <option value="OUT_OF_STOCK">
+                  {t("admin.product.form.out_of_stock")}
+                </option>
+                <option value="DISCONTINUED">
+                  {t("admin.product.form.discontinued")}
+                </option>
               </select>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Hủy
+              {t("admin.product.form.cancel")}
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <IconCheck size={16} />
-              {product ? "Cập nhật" : "Tạo mới"}
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  {isProcessingVariants
+                    ? language === "VI"
+                      ? "Đang xử lý..."
+                      : "Processing..."
+                    : language === "VI"
+                    ? "Đang lưu..."
+                    : "Saving..."}
+                </>
+              ) : (
+                <>
+                  <IconCheck size={16} />
+                  {product
+                    ? t("admin.product.form.submit_update")
+                    : t("admin.product.form.submit_create")}
+                </>
+              )}
             </button>
           </div>
         </form>

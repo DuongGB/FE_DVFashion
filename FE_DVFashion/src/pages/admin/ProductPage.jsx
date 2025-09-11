@@ -1,256 +1,32 @@
-import { useState, useEffect } from "react";
-import Pagination from "../../components/common/Pagination";
 import {
-  IconEye,
   IconEdit,
-  IconPlus,
+  IconEye,
   IconFilter,
+  IconPlus,
+  IconSearch,
   IconX,
 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Pagination from "../../components/common/Pagination";
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
 import ProductForm from "../../components/ui/product/ProductForm";
-import { toast } from "react-toastify";
-import { useProduct } from "../../hooks/useProduct";
 import { useBrand } from "../../hooks/useBrand";
 import { useCategory } from "../../hooks/useCategory";
-
-// const mockProducts = [
-//   {
-//     id: 1,
-//     code: "SP001",
-//     name: "Áo Thun Nam Basic",
-//     description: "Áo thun cotton thoáng mát, thiết kế đơn giản",
-//     price: 150000,
-//     sale_price: 120000,
-//     on_sale: true,
-//     review_count: 12,
-//     status: "ACTIVE",
-//     created_at: "2024-04-01T08:00:00",
-//     updated_at: "2024-04-10T15:30:00",
-//     brand: { id: 1, name: "Nike", code: "NIKE" },
-//     category: { id: 2, name: "Áo thun nam", code: "ATNAM" },
-//     gender: "Nam", // Thêm trường giới tính
-//     images: [{ id: 1, url: "/src/assets/product.avif", alt: "Áo thun nam" }],
-//     variants: [
-//       {
-//         id: 1,
-//         name: "Áo Thun Nam - Đỏ - Size M",
-//         sku: "SP001-RED-M",
-//         price: 150000,
-//         sale_price: 120000,
-//         stock_quantity: 50,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 1,
-//         attributes: [
-//           { name: "Màu sắc", value: "Đỏ" },
-//           { name: "Kích thước", value: "M" },
-//         ],
-//       },
-//       {
-//         id: 11,
-//         name: "Áo Thun Nam - Xanh - Size L",
-//         sku: "SP001-BLUE-L",
-//         price: 150000,
-//         sale_price: 120000,
-//         stock_quantity: 30,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 1,
-//         attributes: [
-//           { name: "Màu sắc", value: "Xanh" },
-//           { name: "Kích thước", value: "L" },
-//         ],
-//       },
-//     ],
-//     specifications: [
-//       { key: "Chất liệu", value: "Cotton 100%" },
-//       { key: "Xuất xứ", value: "Việt Nam" },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     code: "SP002",
-//     name: "Quần Jeans Slim Fit",
-//     description: "Quần jeans nam cao cấp, form slim fit",
-//     price: 350000,
-//     sale_price: 350000,
-//     on_sale: false,
-//     review_count: 8,
-//     status: "ACTIVE",
-//     created_at: "2024-04-02T09:15:00",
-//     updated_at: "2024-04-11T16:45:00",
-//     brand: { id: 2, name: "Levi's", code: "LEVIS" },
-//     category: { id: 3, name: "Quần jean nam", code: "QJNAM" },
-//     gender: "Nam",
-//     images: [{ id: 2, url: "/src/assets/product.avif", alt: "Quần jeans" }],
-//     variants: [
-//       {
-//         id: 2,
-//         name: "Quần Jeans - Xanh - Size 32",
-//         sku: "SP002-BLUE-32",
-//         price: 350000,
-//         sale_price: 350000,
-//         stock_quantity: 30,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 2,
-//         attributes: [
-//           { name: "Màu sắc", value: "Xanh" },
-//           { name: "Kích thước", value: "32" },
-//         ],
-//       },
-//       {
-//         id: 12,
-//         name: "Quần Jeans - Đen - Size 34",
-//         sku: "SP002-BLACK-34",
-//         price: 350000,
-//         sale_price: 350000,
-//         stock_quantity: 20,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 2,
-//         attributes: [
-//           { name: "Màu sắc", value: "Đen" },
-//           { name: "Kích thước", value: "34" },
-//         ],
-//       },
-//     ],
-//     specifications: [
-//       { key: "Chất liệu", value: "Denim 98% cotton, 2% spandex" },
-//       { key: "Kiểu dáng", value: "Slim fit" },
-//     ],
-//   },
-//   {
-//     id: 3,
-//     code: "SP003",
-//     name: "Váy Maxi Nữ",
-//     description: "Váy maxi nữ thanh lịch, phù hợp dạo phố",
-//     price: 280000,
-//     sale_price: 250000,
-//     on_sale: true,
-//     review_count: 15,
-//     status: "ACTIVE",
-//     created_at: "2024-04-03T10:30:00",
-//     updated_at: "2024-04-12T14:20:00",
-//     brand: { id: 3, name: "Zara", code: "ZARA" },
-//     category: { id: 4, name: "Váy nữ", code: "VAYNU" },
-//     gender: "Nữ",
-//     images: [{ id: 3, url: "/src/assets/product.avif", alt: "Váy maxi" }],
-//     variants: [
-//       {
-//         id: 3,
-//         name: "Váy Maxi - Hồng - Size S",
-//         sku: "SP003-PINK-S",
-//         price: 280000,
-//         sale_price: 250000,
-//         stock_quantity: 25,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 3,
-//         attributes: [
-//           { name: "Màu sắc", value: "Hồng" },
-//           { name: "Kích thước", value: "S" },
-//         ],
-//       },
-//       {
-//         id: 13,
-//         name: "Váy Maxi - Trắng - Size M",
-//         sku: "SP003-WHITE-M",
-//         price: 280000,
-//         sale_price: 250000,
-//         stock_quantity: 15,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 3,
-//         attributes: [
-//           { name: "Màu sắc", value: "Trắng" },
-//           { name: "Kích thước", value: "M" },
-//         ],
-//       },
-//     ],
-//     specifications: [
-//       { key: "Chất liệu", value: "Polyester 100%" },
-//       { key: "Xuất xứ", value: "Việt Nam" },
-//     ],
-//   },
-//   {
-//     id: 4,
-//     code: "SP004",
-//     name: "Giày Sneaker Unisex",
-//     description: "Giày sneaker thời trang, phù hợp cho mọi giới tính",
-//     price: 750000,
-//     sale_price: 650000,
-//     on_sale: true,
-//     review_count: 22,
-//     status: "ACTIVE",
-//     created_at: "2024-04-04T11:15:00",
-//     updated_at: "2024-04-13T16:30:00",
-//     brand: { id: 1, name: "Nike", code: "NIKE" },
-//     category: { id: 5, name: "Giày dép", code: "GIAYDEP" },
-//     gender: "Unisex",
-//     images: [{ id: 4, url: "/src/assets/product.avif", alt: "Giày sneaker" }],
-//     variants: [
-//       {
-//         id: 4,
-//         name: "Giày Sneaker - Trắng - Size 42",
-//         sku: "SP004-WHITE-42",
-//         price: 750000,
-//         sale_price: 650000,
-//         stock_quantity: 12,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 4,
-//         attributes: [
-//           { name: "Màu sắc", value: "Trắng" },
-//           { name: "Kích thước", value: "42" },
-//         ],
-//       },
-//       {
-//         id: 14,
-//         name: "Giày Sneaker - Đen - Size 40",
-//         sku: "SP004-BLACK-40",
-//         price: 750000,
-//         sale_price: 650000,
-//         stock_quantity: 8,
-//         additional_price: 0,
-//         status: "ACTIVE",
-//         product_id: 4,
-//         attributes: [
-//           { name: "Màu sắc", value: "Đen" },
-//           { name: "Kích thước", value: "40" },
-//         ],
-//       },
-//     ],
-//     specifications: [
-//       { key: "Chất liệu", value: "Da tổng hợp" },
-//       { key: "Xuất xứ", value: "Việt Nam" },
-//     ],
-//   },
-// ];
-
-// Mock data cho brands và categories
-// const mockBrands = [
-//   { id: 1, name: "Nike", code: "NIKE", active: true },
-//   { id: 2, name: "Adidas", code: "ADIDAS", active: true },
-//   { id: 3, name: "Levi's", code: "LEVIS", active: true },
-//   { id: 4, name: "Zara", code: "ZARA", active: true },
-// ];
-
-// const mockCategories = [
-//   { id: 1, name: "Thời trang nam", code: "TTNAM", active: true },
-//   { id: 2, name: "Áo thun nam", code: "ATNAM", active: true },
-//   { id: 3, name: "Quần jean nam", code: "QJNAM", active: true },
-//   { id: 4, name: "Váy nữ", code: "VAYNU", active: true },
-//   { id: 5, name: "Giày dép", code: "GIAYDEP", active: true },
-// ];
+import { useProduct } from "../../hooks/useProduct";
+import { toast } from "react-toastify";
+import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
 export default function ProductPage() {
+  const { t, i18n } = useTranslation();
+  const language = i18n.language || "VI";
+
   const { products: getAllProducts, isLoading: isLoadingProducts } =
-    useProduct();
-  const { brands: getAllBrands, isLoading: isLoadingBrands } = useBrand();
+    useProduct(language);
+  const { brands: getAllBrands, isLoading: isLoadingBrands } =
+    useBrand(language);
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
-    useCategory();
+    useCategory(language);
 
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -263,61 +39,162 @@ export default function ProductPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [loadingStatusId, setLoadingStatusId] = useState(null);
+  const [originalOrder, setOriginalOrder] = useState([]);
+
+  const { updateProduct, isUpdating } = useProduct(language);
+
+  // Toggle status handler (giống CategoryPage)
+  const handleToggleStatus = (product) => {
+    // Xác định trạng thái mới
+    let newStatus;
+    switch (product.status) {
+      case "ACTIVE":
+        newStatus = "INACTIVE";
+        break;
+      case "INACTIVE":
+      case "OUT_OF_STOCK":
+      case "DISCONTINUED":
+        newStatus = "ACTIVE";
+        break;
+      default:
+        newStatus = "INACTIVE";
+    }
+
+    const actionText =
+      newStatus === "ACTIVE"
+        ? t("admin.product.status.active")
+        : t("admin.product.status.inactive");
+
+    const confirmText = actionText;
+    const cancelText = language === "VI" ? "Hủy" : "Cancel";
+    const title = `${t(
+      "admin.product.actions.confirm"
+    )} ${actionText.toLowerCase()} ${t("admin.product.title").toLowerCase()}`;
+    const message = `${t("admin.product.actions.confirm_message")} "${
+      product.name
+    }"?`;
+
+    showConfirmationToast({
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass: `${
+        newStatus === "ACTIVE"
+          ? "bg-green-600 hover:bg-green-700 rounded cursor-pointer px-3 py-1"
+          : "bg-red-600 hover:bg-red-700 rounded cursor-pointer px-3 py-1"
+      } text-white`,
+      onConfirm: async () => {
+        setLoadingStatusId(product.id);
+        try {
+          await updateProduct({
+            productId: product.id,
+            productData: {
+              ...product,
+              status: newStatus,
+            },
+            lang: language,
+          });
+          // Cập nhật trạng thái trong state products, giữ nguyên thứ tự
+          setProducts((prev) =>
+            prev.map((p) =>
+              p.id === product.id ? { ...p, status: newStatus } : p
+            )
+          );
+          toast.success(
+            `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
+              "admin.brand.actions.success"
+            )}!`,
+            { autoClose: 2000, position: "top-center" }
+          );
+        } catch (error) {
+          toast.error(
+            t("admin.product.actions.error") ||
+              "Có lỗi xảy ra khi cập nhật trạng thái!",
+            { autoClose: 2000, position: "top-center" }
+          );
+        } finally {
+          setLoadingStatusId(null);
+        }
+      },
+    });
+  };
 
   // Advanced filters
   const [filters, setFilters] = useState({
     priceRange: { min: "", max: "" },
     colors: [],
     sizes: [],
-    gender: "all",
+    materials: [],
     brandIds: [],
     categoryIds: [],
   });
 
   const pageSize = 10;
 
+  // Force re-render when language changes
   useEffect(() => {
-    // Giả lập fetch API
+    const handleLanguageChange = () => {};
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
+
+  useEffect(() => {
     setProducts(getAllProducts || []);
     setBrands(getAllBrands || []);
     setCategories(getAllCategories || []);
-  }, [isLoadingBrands, isLoadingCategories, isLoadingProducts]);
+    // Lưu thứ tự ban đầu khi load lần đầu
+    if (getAllProducts && originalOrder.length === 0) {
+      setOriginalOrder(getAllProducts.map((p) => p.id));
+    }
+  }, [getAllProducts, getAllBrands, getAllCategories]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, filters]);
+
+  // Format currency
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat(language === "VI" ? "vi-VN" : "en-US", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+  };
 
   // Lấy danh sách màu sắc từ variants
   const getAvailableColors = () => {
     const colors = new Set();
     products.forEach((product) => {
       product.variants?.forEach((variant) => {
-        const colorAttr = variant.attributes?.find(
-          (attr) => attr.name === "Màu sắc"
-        );
-        if (colorAttr) colors.add(colorAttr.value);
+        if (variant.color) colors.add(variant.color);
       });
     });
     return Array.from(colors).sort();
   };
 
-  // Lấy danh sách kích cỡ từ variants
+  // Lấy danh sách kích cỡ từ variants -> sizes
   const getAvailableSizes = () => {
     const sizes = new Set();
     products.forEach((product) => {
       product.variants?.forEach((variant) => {
-        const sizeAttr = variant.attributes?.find(
-          (attr) => attr.name === "Kích thước"
-        );
-        if (sizeAttr) sizes.add(sizeAttr.value);
+        variant.sizes?.forEach((size) => {
+          if (size.sizeName) sizes.add(size.sizeName);
+        });
       });
     });
     return Array.from(sizes).sort();
   };
 
-  // Lấy danh sách giới tính
-  const getAvailableGenders = () => {
-    const genders = new Set();
+  // Lấy danh sách chất liệu
+  const getAvailableMaterials = () => {
+    const materials = new Set();
     products.forEach((product) => {
-      if (product.gender) genders.add(product.gender);
+      if (product.material) materials.add(product.material);
     });
-    return Array.from(genders).sort();
+    return Array.from(materials).sort();
   };
 
   // Xử lý thay đổi filter
@@ -333,20 +210,18 @@ export default function ProductPage() {
         return { ...prev, [filterType]: value };
       }
     });
-    setCurrentPage(1); // Reset về trang đầu khi filter
+    setCurrentPage(1);
   };
 
   // Xóa một filter cụ thể
   const removeFilter = (filterType, value = null) => {
     setFilters((prev) => {
       if (value !== null) {
-        // Xóa một giá trị cụ thể trong array
         return {
           ...prev,
           [filterType]: prev[filterType].filter((v) => v !== value),
         };
       } else {
-        // Xóa toàn bộ filter
         if (filterType === "priceRange") {
           return { ...prev, [filterType]: { min: "", max: "" } };
         } else if (Array.isArray(prev[filterType])) {
@@ -364,7 +239,7 @@ export default function ProductPage() {
       priceRange: { min: "", max: "" },
       colors: [],
       sizes: [],
-      gender: "all",
+      materials: [],
       brandIds: [],
       categoryIds: [],
     });
@@ -374,78 +249,91 @@ export default function ProductPage() {
 
   // Kiểm tra sản phẩm có màu sắc không
   const productHasColor = (product, color) => {
-    return product.variants?.some((variant) =>
-      variant.attributes?.some(
-        (attr) => attr.name === "Màu sắc" && attr.value === color
-      )
-    );
+    return product.variants?.some((variant) => variant.color === color);
   };
 
   // Kiểm tra sản phẩm có kích cỡ không
   const productHasSize = (product, size) => {
     return product.variants?.some((variant) =>
-      variant.attributes?.some(
-        (attr) => attr.name === "Kích thước" && attr.value === size
-      )
+      variant.sizes?.some((s) => s.sizeName === size)
     );
   };
 
+  // Kiểm tra sản phẩm có chất liệu không
+  const productHasMaterial = (product, material) => {
+    return product.material === material;
+  };
+
   // Lọc sản phẩm với tất cả filters
-  const filteredProducts = products.filter((product) => {
-    // Tìm kiếm theo tên hoặc mã
-    const matchesSearch =
-      product.name.toLowerCase().includes(search.toLowerCase()) ||
-      product.code.toLowerCase().includes(search.toLowerCase());
+  const filteredProducts = products
+    .filter((product) => {
+      // Tìm kiếm theo tên
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    // Lọc theo trạng thái
-    const matchesStatus =
-      statusFilter === "all" ||
-      product.status.toLowerCase() === statusFilter.toLowerCase();
+      // Lọc theo trạng thái
+      const matchesStatus =
+        statusFilter === "all" ||
+        product.status.toLowerCase() === statusFilter.toLowerCase();
 
-    // Lọc theo khoảng giá
-    const matchesPriceRange = (() => {
-      const { min, max } = filters.priceRange;
-      const price = product.sale_price || product.price;
-      if (min && price < parseFloat(min)) return false;
-      if (max && price > parseFloat(max)) return false;
-      return true;
-    })();
+      // Lọc theo khoảng giá
+      const matchesPriceRange = (() => {
+        const { min, max } = filters.priceRange;
+        const price = product.salePrice || product.price;
+        if (min && price < parseFloat(min)) return false;
+        if (max && price > parseFloat(max)) return false;
+        return true;
+      })();
 
-    // Lọc theo màu sắc
-    const matchesColors =
-      filters.colors.length === 0 ||
-      filters.colors.some((color) => productHasColor(product, color));
+      // Lọc theo màu sắc
+      const matchesColors =
+        filters.colors.length === 0 ||
+        filters.colors.some((color) => productHasColor(product, color));
 
-    // Lọc theo kích cỡ
-    const matchesSizes =
-      filters.sizes.length === 0 ||
-      filters.sizes.some((size) => productHasSize(product, size));
+      // Lọc theo kích cỡ
+      const matchesSizes =
+        filters.sizes.length === 0 ||
+        filters.sizes.some((size) => productHasSize(product, size));
 
-    // Lọc theo giới tính
-    const matchesGender =
-      filters.gender === "all" || product.gender === filters.gender;
+      // Lọc theo chất liệu
+      const matchesMaterials =
+        filters.materials.length === 0 ||
+        filters.materials.some((material) =>
+          productHasMaterial(product, material)
+        );
 
-    // Lọc theo thương hiệu
-    const matchesBrands =
-      filters.brandIds.length === 0 ||
-      filters.brandIds.includes(product.brand?.id);
+      // Lọc theo thương hiệu
+      const matchesBrands =
+        filters.brandIds.length === 0 ||
+        filters.brandIds.some((brandId) => {
+          const brand = brands.find((b) => b.id === brandId);
+          return brand && product.brandName === brand.name;
+        });
 
-    // Lọc theo danh mục
-    const matchesCategories =
-      filters.categoryIds.length === 0 ||
-      filters.categoryIds.includes(product.category?.id);
+      // Lọc theo danh mục
+      const matchesCategories =
+        filters.categoryIds.length === 0 ||
+        filters.categoryIds.some((categoryId) => {
+          const category = categories.find((c) => c.id === categoryId);
+          return category && product.categoryName === category.name;
+        });
 
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesPriceRange &&
-      matchesColors &&
-      matchesSizes &&
-      matchesGender &&
-      matchesBrands &&
-      matchesCategories
-    );
-  });
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesPriceRange &&
+        matchesColors &&
+        matchesSizes &&
+        matchesMaterials &&
+        matchesBrands &&
+        matchesCategories
+      );
+    })
+    .sort((a, b) => {
+      // Sắp xếp theo thứ tự ban đầu
+      return originalOrder.indexOf(a.id) - originalOrder.indexOf(b.id);
+    });
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const paginatedProducts = filteredProducts.slice(
@@ -459,7 +347,7 @@ export default function ProductPage() {
     if (filters.priceRange.min || filters.priceRange.max) count++;
     if (filters.colors.length > 0) count += filters.colors.length;
     if (filters.sizes.length > 0) count += filters.sizes.length;
-    if (filters.gender !== "all") count++;
+    if (filters.materials.length > 0) count += filters.materials.length;
     if (filters.brandIds.length > 0) count += filters.brandIds.length;
     if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
     if (statusFilter !== "all") count++;
@@ -484,66 +372,10 @@ export default function ProductPage() {
     setShowDetailModal(true);
   };
 
-  // Xử lý submit form (tạo mới hoặc cập nhật)
-  const handleFormSubmit = (formData) => {
-    console.log("Form submitted:", formData);
-
-    if (editingProduct) {
-      // Cập nhật sản phẩm
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                ...formData,
-                id: editingProduct.id,
-                updated_at: new Date().toISOString(),
-                brand: brands.find((b) => b.id === formData.brand_id),
-                category: categories.find((c) => c.id === formData.category_id),
-              }
-            : p
-        )
-      );
-      toast.success("Cập nhật sản phẩm thành công!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } else {
-      // Tạo sản phẩm mới
-      const newProduct = {
-        ...formData,
-        id: Math.max(...products.map((p) => p.id)) + 1,
-        review_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        brand: brands.find((b) => b.id === formData.brand_id),
-        category: categories.find((c) => c.id === formData.category_id),
-      };
-      setProducts((prev) => [newProduct, ...prev]);
-      toast.success("Tạo sản phẩm thành công!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-
-    setShowForm(false);
-    setEditingProduct(null);
-  };
-
   // Đóng form
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingProduct(null);
-  };
-
-  // Format giá tiền
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN").format(price) + " ₫";
-  };
-
-  // Format ngày tháng
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
   // Lấy màu trạng thái
@@ -564,18 +396,35 @@ export default function ProductPage() {
 
   // Lấy text trạng thái
   const getStatusText = (status) => {
-    switch (status) {
-      case "ACTIVE":
-        return "Hoạt động";
-      case "INACTIVE":
-        return "Không hoạt động";
-      case "OUT_OF_STOCK":
-        return "Hết hàng";
-      case "DISCONTINUED":
-        return "Ngừng bán";
-      default:
-        return status;
+    const statusKey = status.toLowerCase().replace(/_/g, "_");
+    return t(`admin.product.status.${statusKey}`, status);
+  };
+
+  // Tính tổng số lượng tồn kho từ tất cả variants và sizes
+  const getTotalStock = (product) => {
+    if (!product.variants) return 0;
+    return product.variants.reduce((total, variant) => {
+      if (!variant.sizes) return total;
+      return (
+        total +
+        variant.sizes.reduce((variantTotal, size) => {
+          return variantTotal + (size.stockQuantity || 0);
+        }, 0)
+      );
+    }, 0);
+  };
+
+  // Lấy ảnh chính của sản phẩm
+  const getPrimaryImage = (product) => {
+    if (!product.variants || product.variants.length === 0) return null;
+    for (const variant of product.variants) {
+      if (variant.images && variant.images.length > 0) {
+        const primaryImage = variant.images.find((img) => img.isPrimary);
+        if (primaryImage) return primaryImage;
+        return variant.images[0];
+      }
     }
+    return null;
   };
 
   // Statistics calculation
@@ -584,45 +433,32 @@ export default function ProductPage() {
     active: products.filter((p) => p.status === "ACTIVE").length,
     inactive: products.filter((p) => p.status === "INACTIVE").length,
     outOfStock: products.filter((p) => p.status === "OUT_OF_STOCK").length,
-    onSale: products.filter((p) => p.on_sale).length,
-    totalValue: products.reduce((sum, p) => sum + (p.sale_price || p.price), 0),
-  };
-
-  // Get status label
-  const getStatusLabel = (type) => {
-    switch (type) {
-      case "total":
-        return "Tổng sản phẩm";
-      case "activeCount":
-        return "Đang hoạt động";
-      case "inactiveCount":
-        return "Không hoạt động";
-      case "outOfStock":
-        return "Hết hàng";
-      case "onSale":
-        return "Đang khuyến mãi";
-      case "totalValue":
-        return "Tổng giá trị";
-      default:
-        return "";
-    }
+    onSale: products.filter((p) => p.onSale).length,
+    totalValue: products.reduce((sum, p) => sum + (p.salePrice || p.price), 0),
   };
 
   if (isLoadingProducts || isLoadingBrands || isLoadingCategories) {
-    return <div>Đang tải dữ liệu...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+          <div className="text-lg">{t("admin.product.loading_data")}</div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm</h1>
+        <h1 className="text-2xl font-bold">{t("admin.product.title")}</h1>
         <button
           onClick={handleCreateProduct}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <IconPlus size={16} />
-          Tạo sản phẩm
+          {t("admin.product.create_product")}
         </button>
       </div>
 
@@ -632,7 +468,7 @@ export default function ProductPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("total")}
+                {t("admin.product.total_products")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -643,7 +479,7 @@ export default function ProductPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("activeCount")}
+                {t("admin.product.active_products")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -656,7 +492,7 @@ export default function ProductPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("inactiveCount")}
+                {t("admin.product.inactive_products")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -669,7 +505,7 @@ export default function ProductPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {getStatusLabel("onSale")}
+                {t("admin.product.on_sale_products")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
                 {stats.onSale}
@@ -682,24 +518,36 @@ export default function ProductPage() {
       {/* Basic Filters */}
       <div className="bg-white p-4 rounded-lg shadow border mb-4 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex gap-4 items-center flex-1">
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên hoặc mã sản phẩm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="relative flex-1">
+            <IconSearch
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={16}
+            />
+            <input
+              type="text"
+              placeholder={t("admin.product.search_placeholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-            <option value="out_of_stock">Hết hàng</option>
-            <option value="discontinued">Ngừng bán</option>
+            <option value="all">{t("admin.product.all_status")}</option>
+            <option value="active">{t("admin.product.status.active")}</option>
+            <option value="inactive">
+              {t("admin.product.status.inactive")}
+            </option>
+            <option value="out_of_stock">
+              {t("admin.product.status.out_of_stock")}
+            </option>
+            <option value="discontinued">
+              {t("admin.product.status.discontinued")}
+            </option>
           </select>
 
           <button
@@ -711,7 +559,7 @@ export default function ProductPage() {
             }`}
           >
             <IconFilter size={16} />
-            Bộ lọc
+            {t("admin.product.filters.filter")}
             {getActiveFiltersCount() > 0 && (
               <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
                 {getActiveFiltersCount()}
@@ -725,12 +573,14 @@ export default function ProductPage() {
       {showAdvancedFilters && (
         <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-gray-700">Bộ lọc nâng cao</h3>
+            <h3 className="font-semibold text-gray-700">
+              {t("admin.product.filters.advanced_filters")}
+            </h3>
             <button
               onClick={clearAllFilters}
-              className="text-red-600 hover:text-red-800 text-sm underlin cursor-pointer"
+              className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
             >
-              Xóa tất cả
+              {t("admin.product.filters.clear_all")}
             </button>
           </div>
 
@@ -738,12 +588,12 @@ export default function ProductPage() {
             {/* Price Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Khoảng giá
+                {t("admin.product.filters.price_range")}
               </label>
               <div className="flex gap-2">
                 <input
                   type="number"
-                  placeholder="Từ"
+                  placeholder={t("admin.product.filters.price_from")}
                   value={filters.priceRange.min}
                   onChange={(e) =>
                     handleFilterChange("priceRange", {
@@ -755,7 +605,7 @@ export default function ProductPage() {
                 />
                 <input
                   type="number"
-                  placeholder="Đến"
+                  placeholder={t("admin.product.filters.price_to")}
                   value={filters.priceRange.max}
                   onChange={(e) =>
                     handleFilterChange("priceRange", {
@@ -768,29 +618,10 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Gender */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Giới tính
-              </label>
-              <select
-                value={filters.gender}
-                onChange={(e) => handleFilterChange("gender", e.target.value)}
-                className="border rounded-lg px-3 py-2 w-full text-sm"
-              >
-                <option value="all">Tất cả</option>
-                {getAvailableGenders().map((gender) => (
-                  <option key={gender} value={gender}>
-                    {gender}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Brand */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Thương hiệu
+                {t("admin.product.filters.brand")}
               </label>
               <select
                 value=""
@@ -800,10 +631,40 @@ export default function ProductPage() {
                 }
                 className="border rounded-lg px-3 py-2 w-full text-sm"
               >
-                <option value="">Chọn thương hiệu</option>
+                <option value="">
+                  {t("admin.product.filters.select_brand")}
+                </option>
                 {brands.map((brand) => (
                   <option key={brand.id} value={brand.id}>
                     {brand.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("admin.product.filters.category")}
+              </label>
+              <select
+                value=""
+                onChange={(e) =>
+                  e.target.value &&
+                  handleFilterChange(
+                    "categoryIds",
+                    parseInt(e.target.value),
+                    true
+                  )
+                }
+                className="border rounded-lg px-3 py-2 w-full text-sm"
+              >
+                <option value="">
+                  {t("admin.product.filters.select_category")}
+                </option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
                   </option>
                 ))}
               </select>
@@ -813,7 +674,7 @@ export default function ProductPage() {
           {/* Colors */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Màu sắc
+              {t("admin.product.filters.colors")}
             </label>
             <div className="flex flex-wrap gap-2">
               {getAvailableColors().map((color) => (
@@ -835,7 +696,7 @@ export default function ProductPage() {
           {/* Sizes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kích cỡ
+              {t("admin.product.filters.sizes")}
             </label>
             <div className="flex flex-wrap gap-2">
               {getAvailableSizes().map((size) => (
@@ -853,6 +714,30 @@ export default function ProductPage() {
               ))}
             </div>
           </div>
+
+          {/* Materials */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t("admin.product.filters.materials")}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {getAvailableMaterials().map((material) => (
+                <button
+                  key={material}
+                  onClick={() =>
+                    handleFilterChange("materials", material, true)
+                  }
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                    filters.materials.includes(material)
+                      ? "bg-purple-500 text-white border-purple-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-purple-300"
+                  }`}
+                >
+                  {material}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -860,16 +745,21 @@ export default function ProductPage() {
       {getActiveFiltersCount() > 0 && (
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-600">Đang lọc:</span>
+            <span className="text-sm text-gray-600">
+              {t("admin.product.filters.filtering")}
+            </span>
 
             {/* Price Range */}
             {(filters.priceRange.min || filters.priceRange.max) && (
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                Giá:{" "}
-                {filters.priceRange.min &&
-                  `từ ${formatPrice(filters.priceRange.min)}`}{" "}
-                {filters.priceRange.max &&
-                  `đến ${formatPrice(filters.priceRange.max)}`}
+                {t("admin.product.filters.price_filter", {
+                  min: filters.priceRange.min
+                    ? formatPrice(filters.priceRange.min)
+                    : "",
+                  max: filters.priceRange.max
+                    ? formatPrice(filters.priceRange.max)
+                    : "",
+                })}
                 <button
                   onClick={() => removeFilter("priceRange")}
                   className="hover:text-blue-600"
@@ -885,7 +775,7 @@ export default function ProductPage() {
                 key={color}
                 className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
               >
-                Màu: {color}
+                {t("admin.product.filters.color_filter", { color })}
                 <button
                   onClick={() => removeFilter("colors", color)}
                   className="hover:text-purple-600"
@@ -901,7 +791,7 @@ export default function ProductPage() {
                 key={size}
                 className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
               >
-                Size: {size}
+                {t("admin.product.filters.size_filter", { size })}
                 <button
                   onClick={() => removeFilter("sizes", size)}
                   className="hover:text-green-600"
@@ -911,18 +801,21 @@ export default function ProductPage() {
               </span>
             ))}
 
-            {/* Gender */}
-            {filters.gender !== "all" && (
-              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                Giới tính: {filters.gender}
+            {/* Materials */}
+            {filters.materials.map((material) => (
+              <span
+                key={material}
+                className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+              >
+                {t("admin.product.filters.material_filter", { material })}
                 <button
-                  onClick={() => removeFilter("gender")}
+                  onClick={() => removeFilter("materials", material)}
                   className="hover:text-yellow-600"
                 >
                   <IconX size={12} />
                 </button>
               </span>
-            )}
+            ))}
 
             {/* Brands */}
             {filters.brandIds.map((brandId) => {
@@ -933,7 +826,9 @@ export default function ProductPage() {
                     key={brandId}
                     className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
                   >
-                    Thương hiệu: {brand.name}
+                    {t("admin.product.filters.brand_filter", {
+                      brand: brand.name,
+                    })}
                     <button
                       onClick={() => removeFilter("brandIds", brandId)}
                       className="hover:text-indigo-600"
@@ -945,10 +840,35 @@ export default function ProductPage() {
               );
             })}
 
+            {/* Categories */}
+            {filters.categoryIds.map((categoryId) => {
+              const category = categories.find((c) => c.id === categoryId);
+              return (
+                category && (
+                  <span
+                    key={categoryId}
+                    className="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+                  >
+                    {t("admin.product.filters.category_filter", {
+                      category: category.name,
+                    })}
+                    <button
+                      onClick={() => removeFilter("categoryIds", categoryId)}
+                      className="hover:text-pink-600"
+                    >
+                      <IconX size={12} />
+                    </button>
+                  </span>
+                )
+              );
+            })}
+
             {/* Status */}
             {statusFilter !== "all" && (
               <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                Trạng thái: {getStatusText(statusFilter.toUpperCase())}
+                {t("admin.product.filters.status_filter", {
+                  status: getStatusText(statusFilter.toUpperCase()),
+                })}
                 <button
                   onClick={() => setStatusFilter("all")}
                   className="hover:text-gray-600"
@@ -963,8 +883,10 @@ export default function ProductPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        Hiển thị {paginatedProducts.length} trong tổng số{" "}
-        {filteredProducts.length} sản phẩm
+        {t("admin.product.showing_results", {
+          current: paginatedProducts.length,
+          total: filteredProducts.length,
+        })}
       </div>
 
       {/* Products Table */}
@@ -972,113 +894,140 @@ export default function ProductPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-2">ID</th>
-              <th className="p-2">Hình ảnh</th>
-              <th className="p-2">Mã SP</th>
-              <th className="p-2">Tên sản phẩm</th>
-              <th className="p-2">Thương hiệu</th>
-              <th className="p-2">Danh mục</th>
-              <th className="p-2">Giới tính</th>
-              <th className="p-2">Giá gốc</th>
-              <th className="p-2">Giá KM</th>
-              <th className="p-2">Trạng thái</th>
-              <th className="p-2">Biến thể</th>
-              <th className="p-2">Đánh giá</th>
-              <th className="p-2">Ngày tạo</th>
-              <th className="p-2">Hành động</th>
+              <th className="p-2">{t("admin.product.columns.id")}</th>
+              <th className="p-2">{t("admin.product.columns.image")}</th>
+              <th className="p-2">{t("admin.product.columns.name")}</th>
+              <th className="p-2">{t("admin.product.columns.brand")}</th>
+              <th className="p-2">{t("admin.product.columns.category")}</th>
+              <th className="p-2">{t("admin.product.columns.material")}</th>
+              <th className="p-2">
+                {t("admin.product.columns.original_price")}
+              </th>
+              <th className="p-2">{t("admin.product.columns.sale_price")}</th>
+              <th className="p-2">{t("admin.product.columns.status")}</th>
+              <th className="p-2">{t("admin.product.columns.variants")}</th>
+              <th className="p-2">{t("admin.product.columns.stock")}</th>
+              <th className="p-2">{t("admin.product.columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {paginatedProducts.length > 0 ? (
-              paginatedProducts.map((product) => (
-                <tr key={product.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2">{product.id}</td>
-                  <td className="p-2">
-                    {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0].url}
-                        alt={product.images[0].alt}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">No img</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-2 font-mono text-sm">{product.code}</td>
-                  <td className="p-2">
-                    <div>
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {product.description}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-2">{product.brand?.name}</td>
-                  <td className="p-2">{product.category?.name}</td>
-                  <td className="p-2">
-                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
-                      {product.gender}
-                    </span>
-                  </td>
-                  <td className="p-2 w-28 font-medium">
-                    {formatPrice(product.price)}
-                  </td>
-                  <td className="p-2 w-28">
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {formatPrice(product.sale_price)}
-                      </span>
-                      {product.on_sale && (
-                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
-                          SALE
-                        </span>
+              paginatedProducts.map((product) => {
+                const primaryImage = getPrimaryImage(product);
+                const totalStock = getTotalStock(product);
+
+                return (
+                  <tr key={product.id} className="border-b hover:bg-gray-50">
+                    <td className="p-2">{product.id}</td>
+                    <td className="p-2">
+                      {primaryImage ? (
+                        <img
+                          src={primaryImage.imageUrl}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">
+                            {t("admin.product.values.no_image")}
+                          </span>
+                        </div>
                       )}
-                    </div>
-                  </td>
-                  <td className="p-2 w-32">
-                    <span
-                      className={`px-2 py-1 rounded-full font-medium ${getStatusColor(
-                        product.status
-                      )}`}
-                    >
-                      {getStatusText(product.status)}
-                    </span>
-                  </td>
-                  <td className="p-2 text-center">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                      {product.variants?.length || 0}
-                    </span>
-                  </td>
-                  <td className="p-2 text-center">{product.review_count}</td>
-                  <td className="p-2 text-sm text-gray-600">
-                    {formatDate(product.created_at)}
-                  </td>
-                  <td className="p-2">
-                    <div className="flex gap-2">
+                    </td>
+                    <td className="p-2">
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {product.description}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2">{product.brandName}</td>
+                    <td className="p-2">{product.categoryName}</td>
+                    <td className="p-2">
+                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
+                        {product.material}
+                      </span>
+                    </td>
+                    <td className="p-2 w-28 font-medium">
+                      {formatPrice(product.price)}
+                    </td>
+                    <td className="p-2 w-28">
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {formatPrice(product.salePrice)}
+                        </span>
+                        {product.onSale && (
+                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
+                            {t("admin.product.values.sale")}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 w-32">
                       <button
-                        className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
-                        onClick={() => handleViewProduct(product)}
-                        title="Xem chi tiết"
+                        onClick={() => handleToggleStatus(product)}
+                        disabled={loadingStatusId === product.id}
+                        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                          product.status
+                        )}`}
+                        title={
+                          product.status === "ACTIVE"
+                            ? t("admin.product.status.inactive")
+                            : t("admin.product.status.active")
+                        }
                       >
-                        <IconEye />
+                        {loadingStatusId === product.id ? (
+                          <span className="flex items-center gap-1">
+                            <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
+                          </span>
+                        ) : (
+                          getStatusText(product.status)
+                        )}
                       </button>
-                      <button
-                        className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
-                        onClick={() => handleEditProduct(product)}
-                        title="Chỉnh sửa"
+                    </td>
+                    <td className="p-2 text-center">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-medium">
+                        {product.variants ? product.variants.length : 0}
+                      </span>
+                    </td>
+                    <td className="p-2 text-center">
+                      <span
+                        className={`px-2 py-1 rounded text-medium font-medium ${
+                          totalStock > 0
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                       >
-                        <IconEdit />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        {totalStock}
+                      </span>
+                    </td>
+                    <td className="p-2">
+                      <div className="flex gap-2">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
+                          onClick={() => handleViewProduct(product)}
+                          title={t("admin.product.actions.view_details")}
+                        >
+                          <IconEye size={24} />
+                        </button>
+                        <button
+                          className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
+                          onClick={() => handleEditProduct(product)}
+                          title={t("admin.product.actions.edit")}
+                          // disabled={isUpdating}
+                        >
+                          <IconEdit size={24} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={14} className="text-center py-6 text-gray-500">
-                  Không có sản phẩm nào phù hợp với bộ lọc.
+                <td colSpan={12} className="text-center py-6 text-gray-500">
+                  {t("admin.product.no_products")}
                 </td>
               </tr>
             )}
@@ -1107,7 +1056,6 @@ export default function ProductPage() {
       <ProductForm
         isOpen={showForm}
         onClose={handleCloseForm}
-        onSubmit={handleFormSubmit}
         product={editingProduct}
         brands={brands}
         categories={categories}
