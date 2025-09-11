@@ -62,37 +62,18 @@ export const useProduct = (lang = "VI") => {
     },
   });
 
-  // Delete product mutation
-  const deleteProductMutation = useMutation({
-    mutationFn: (productId) => {
-      console.log("Deleting product with ID:", productId);
-      return productAPI.deleteProduct(productId);
-    },
-    onSuccess: (data) => {
-      console.log("Product deleted successfully:", data);
-      queryClient.invalidateQueries(["products", "all"]);
-    },
-    onError: (error) => {
-      console.error("Error deleting product:", error);
-    },
-  });
-
   return {
     // Fetched data
     products,
     isLoading,
     error,
 
-    createProduct: createProductMutation.mutate,
+    createProduct: createProductMutation.mutateAsync,
     isCreating: createProductMutation.isPending,
     createError: createProductMutation.error,
 
-    updateProduct: updateProductMutation.mutate,
+    updateProduct: updateProductMutation.mutateAsync,
     isUpdating: updateProductMutation.isPending,
     updateError: updateProductMutation.error,
-
-    deleteProduct: deleteProductMutation.mutate,
-    isDeleting: deleteProductMutation.isPending,
-    deleteError: deleteProductMutation.error,
   };
 };
