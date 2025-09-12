@@ -5,53 +5,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "react-feather";
 
-export default function ProductCarousel() {
+export default function ProductCarousel({ products = [] }) {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
-
-  const products = [
-    {
-      id: 1,
-      name: "Áo Polo nam Premium Aircool",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#e5d3c6", "#000000", "#cccccc"],
-      tag: "NEW",
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Casual kẻ sọc",
-      price: "499.000đ",
-      image: "./src/assets/product1.avif",
-      colors: ["#d0e0ff", "#cccccc"],
-      tag: "NEW",
-    },
-    {
-      id: 3,
-      name: "Áo Polo nam Premium Cotton Linen",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#eaa2b6", "#d8e4c0", "#d8e4c0"],
-    },
-    {
-      id: 4,
-      name: "Áo Tanktop Nam Mặc Trong Antismell",
-      price: "89.000đ",
-      oldPrice: "99.000đ",
-      discount: "-10%",
-      image: "./src/assets/product1.avif",
-      colors: ["#222", "#444"],
-    },
-    {
-      id: 5,
-      name: "Áo Polo nam Premium Pique",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#111", "#ddd"],
-      tag: "NEW",
-    },
-  ];
+  // Chỉ lấy sản phẩm ACTIVE
+  const activeProducts = products.filter((p) => p.status === "ACTIVE");
 
   useEffect(() => {
     if (
@@ -66,65 +25,109 @@ export default function ProductCarousel() {
       swiperRef.current.navigation.init();
       swiperRef.current.navigation.update();
     }
-  }, []);
+  }, [products]);
 
-  const ProductCard = ({ product }) => (
-    <div className="relative group bg-white rounded-xl shadow-sm overflow-hidden p-2">
-      {/* Hình ảnh */}
-      <div className="relative">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-[300px] object-cover rounded-lg"
-        />
-        {product.tag && (
-          <span className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-            {product.tag}
-          </span>
-        )}
-        <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition rounded-lg">
-          <span className="text-white text-sm">Thêm nhanh vào giỏ hàng</span>
-          <div className="flex gap-2">
-            {["M", "L", "XL", "2XL", "3XL"].map((size) => (
-              <button
-                key={size}
-                className="bg-white px-2 py-1 rounded text-xs font-medium hover:bg-gray-200"
-              >
-                {size}
-              </button>
-            ))}
+  const ProductCard = ({ product }) => {
+    // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
+    const mainVariant = product.variants?.[0];
+    // Lấy ảnh chính
+    const mainImage =
+      mainVariant?.images?.find((img) => img.isPrimary)?.imageUrl ||
+      mainVariant?.images?.[0]?.imageUrl ||
+      product.primaryImage?.imageUrl ||
+      product.image ||
+      "/placeholder.png";
+    // Lấy tất cả màu sắc từ các variant
+    const colors = product.variants?.map((v) => v.color).filter(Boolean) || [];
+    // Lấy tất cả size từ các variant
+    const sizes =
+      product.variants
+        ?.flatMap((v) => v.sizes?.map((s) => s.sizeName) || [])
+        .filter((v, i, arr) => arr.indexOf(v) === i) || [];
+
+    // Tính phần trăm giảm giá nếu có
+    const discountPercent =
+      product.price && product.salePrice
+        ? Math.round(
+            ((product.price - product.salePrice) / product.price) * 100
+          )
+        : null;
+
+    return (
+      <div className="relative group bg-white rounded-xl shadow-sm overflow-hidden p-2">
+        {/* Hình ảnh */}
+        <div className="relative">
+          <img
+            src={mainImage}
+            alt={product.name}
+            className="w-full h-[300px] object-cover rounded-lg"
+          />
+          {product.onSale && discountPercent && (
+            <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold">
+              -{discountPercent}%
+            </span>
+          )}
+          <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition rounded-lg">
+            <span className="text-white text-sm">Thêm nhanh vào giỏ hàng</span>
+            <div className="flex gap-2">
+              {sizes.map((size) => (
+                <button
+                  key={size}
+                  className="bg-white px-2 py-1 rounded text-xs font-medium hover:bg-gray-200"
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Màu sắc */}
-      <div className="flex gap-2 mt-2">
-        {product.colors.map((c, idx) => (
-          <span
-            key={idx}
-            className="w-5 h-5 rounded-full border cursor-pointer"
-            style={{ backgroundColor: c }}
-          ></span>
-        ))}
-      </div>
+        {/* Màu sắc */}
+        <div className="flex gap-2 mt-2 ">
+          {colors.map((color, idx) => (
+            <span
+              key={idx}
+              className="w-8 h-8 rounded-full border cursor-pointer"
+              style={{
+                backgroundColor: /^#|rgb|hsl/.test(color) ? color : undefined,
+                borderColor: "#ccc",
+              }}
+              title={color}
+            >
+              {/* Nếu là tên màu (Đen, Xanh...), có thể thêm border hoặc text */}
+              {!/^#|rgb|hsl/.test(color) && (
+                <span className="block w-full h-full flex items-center text-[10px] leading-5 justify-center">
+                  {color}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
 
-      {/* Tên + Giá */}
-      <h3 className="text-sm mt-2">{product.name}</h3>
-      <div className="flex items-center gap-2">
-        <span className="font-bold">{product.price}</span>
-        {product.oldPrice && (
-          <span className="line-through text-gray-400 text-sm">
-            {product.oldPrice}
+        {/* Tên + Giá */}
+        <h3 className="text-sm mt-2">{product.name}</h3>
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base text-black">
+            {product.salePrice
+              ? `${product.salePrice.toLocaleString()}₫`
+              : product.price
+              ? `${product.price.toLocaleString()}₫`
+              : ""}
           </span>
-        )}
-        {product.discount && (
-          <span className="text-blue-600 text-xs font-semibold">
-            {product.discount}
-          </span>
-        )}
+          {product.salePrice && (
+            <span className="line-through text-gray-400 text-sm">
+              {product.price?.toLocaleString()}₫
+            </span>
+          )}
+          {product.onSale && discountPercent && (
+            <span className="text-blue-600 text-xs font-semibold">
+              -{discountPercent}%
+            </span>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-10 py-10 relative">
@@ -146,7 +149,7 @@ export default function ProductCarousel() {
           1024: { slidesPerView: 4 },
         }}
       >
-        {products.map((product) => (
+        {activeProducts.map((product) => (
           <SwiperSlide key={product.id}>
             <ProductCard product={product} />
           </SwiperSlide>

@@ -3,6 +3,8 @@ import { useAuth } from "../../hooks/useAuth";
 import Banner from "../../components/common/Banner";
 import Category from "../../components/common/Category";
 import ProductCarousel from "../../components/common/ProductCarousel";
+import { useTranslation } from "react-i18next";
+import { useProduct } from "../../hooks/useProduct";
 
 const ads = [
   {
@@ -23,6 +25,9 @@ const ads = [
 
 const CustomerPage = () => {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language || "VI";
+  const { products = [], isLoading: isLoadingProducts } = useProduct();
   return (
     <div className="font-sans">
       {/* Banner */}
@@ -60,7 +65,12 @@ const CustomerPage = () => {
       </div>
 
       {/* Content */}
-      <ProductCarousel />
+      {/* Content */}
+      {isLoadingProducts ? (
+        <div className="text-center py-10">Đang tải sản phẩm...</div>
+      ) : (
+        <ProductCarousel products={products} />
+      )}
     </div>
   );
 };

@@ -17,6 +17,22 @@
       "cs": "C&S"
     }
   },
+  "search": {
+    "result_title": "Kết quả tìm kiếm",
+    "view_all": "XEM TẤT CẢ",
+    "no_result": "Không tìm thấy sản phẩm phù hợp",
+    "suggest_title": "Từ khóa nổi bật ngày hôm nay",
+    "no_recent": "Không có sản phẩm đã xem gần đây",
+    "close": "Đóng",
+    "keywords": {
+      "tshirt": "Áo thun",
+      "shorts": "Quần Shorts",
+      "polo": "Áo Polo",
+      "sun_protection_jacket": "Áo khoác chống nắng",
+      "sun_protection_gloves": "Găng tay chống nắng",
+      "trousers": "Quần dài"
+    }
+  },
   "about_dvfashion": "VỀ DVFASHION",
   "dvfclub": "DVFclub",
   "blog": "Blog",

@@ -17,6 +17,22 @@
       "cs": "C&S"
     }
   },
+  "search": {
+    "result_title": "Search results",
+    "view_all": "VIEW ALL",
+    "no_result": "No matching products found",
+    "suggest_title": "Today's trending keywords",
+    "no_recent": "No recently viewed products",
+    "close": "Close",
+    "keywords": {
+      "tshirt": "T-shirt",
+      "shorts": "Shorts",
+      "polo": "Polo Shirt",
+      "sun_protection_jacket": "Sun Protection Jacket",
+      "sun_protection_gloves": "Sun Protection Gloves",
+      "trousers": "Trousers"
+    }
+  },
   "about_dvfashion": "ABOUT DVFASHION",
   "dvfclub": "DVFclub",
   "blog": "Blog",
