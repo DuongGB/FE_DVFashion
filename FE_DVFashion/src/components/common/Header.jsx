@@ -233,7 +233,6 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   };
 
   const handleViewAllCart = () => {
-    // Chuyển sang trang giỏ hàng
     window.location.href = "/cart";
   };
 
@@ -344,7 +343,11 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
           </span>
         </div>
         {/* Shopping Cart */}
-        <div className="relative cursor-pointer group" ref={cartRef}>
+        <div
+          className="relative cursor-pointer group"
+          ref={cartRef}
+          onClick={handleViewAllCart}
+        >
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
             {cart.length}

@@ -22,6 +22,8 @@ import CustomerPage from "./pages/customer/CustomerPage";
 import OrderPage from "./pages/admin/OrderPage";
 import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import CartPage from "./pages/CartPage";
+import CartLayout from "./layouts/CartLayout";
 
 function App() {
   return (
@@ -80,6 +82,11 @@ function App() {
             <Route path="/customer" element={<CustomerPage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
+        </Route>
+
+        {/* Cart layout */}
+        <Route element={<CartLayout />}>
+          <Route path="/cart" element={<CartPage />} />
         </Route>
       </Routes>
       <ToastContainer
