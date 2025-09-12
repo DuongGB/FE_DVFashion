@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useProduct } from "../../hooks/useProduct";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 export default function SearchPopup({ show, onClose }) {
   const { t, i18n } = useTranslation();
@@ -112,38 +113,42 @@ export default function SearchPopup({ show, onClose }) {
                             )
                           : null;
                       return (
-                        <div
+                        <Link
+                          to={`/product/${p.id}`}
                           key={p.id}
-                          className="flex flex-col items-center bg-white rounded-xl p-4"
+                          className="block hover:shadow-lg transition"
+                          onClick={onClose}
                         >
-                          <img
-                            src={mainImage}
-                            alt={p.name}
-                            className="w-48 h-64 object-cover rounded-lg mb-2"
-                          />
-                          <div className="font-semibold text-base text-center">
-                            {p.name}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="font-bold text-lg text-black">
-                              {p.salePrice
-                                ? `${p.salePrice.toLocaleString()}đ`
-                                : p.price
-                                ? `${p.price.toLocaleString()}đ`
-                                : ""}
-                            </span>
-                            {p.salePrice && (
-                              <span className="line-through text-gray-400 text-sm">
-                                {p.price?.toLocaleString()}đ
+                          <div className="flex flex-col items-center bg-white rounded-xl p-4">
+                            <img
+                              src={mainImage}
+                              alt={p.name}
+                              className="w-48 h-64 object-cover rounded-lg mb-2"
+                            />
+                            <div className="font-semibold text-base text-center">
+                              {p.name}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="font-bold text-lg text-black">
+                                {p.salePrice
+                                  ? `${p.salePrice.toLocaleString()}đ`
+                                  : p.price
+                                  ? `${p.price.toLocaleString()}đ`
+                                  : ""}
                               </span>
-                            )}
-                            {p.salePrice && p.price && (
-                              <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                -{discountPercent}%
-                              </span>
-                            )}
+                              {p.salePrice && (
+                                <span className="line-through text-gray-400 text-sm">
+                                  {p.price?.toLocaleString()}đ
+                                </span>
+                              )}
+                              {p.salePrice && p.price && (
+                                <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                  -{discountPercent}%
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>

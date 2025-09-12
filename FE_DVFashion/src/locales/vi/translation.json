@@ -314,6 +314,21 @@
       }
     }
   },
+  "product": {
+    "detail": {
+      "cashback": "Được hoàn lên đến",
+      "color": "Màu sắc:",
+      "size": "Kích thước:",
+      "size_guide": "Hướng dẫn chọn size",
+      "add_to_cart": "Thêm vào giỏ",
+      "description": "Mô tả sản phẩm",
+      "no_description": "Chưa có mô tả sản phẩm.",
+      "policy_easy_return": "Đổi trả cực dễ chỉ cần số điện thoại",
+      "policy_hotline": "Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h",
+      "policy_60days": "60 ngày đổi trả (sản phẩm chưa qua sử dụng và còn nguyên nhãn mác)",
+      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h"
+    }
+  },
 
   "admin": {
     "settings": {

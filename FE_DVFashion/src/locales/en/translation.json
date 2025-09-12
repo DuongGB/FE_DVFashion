@@ -314,6 +314,21 @@
       }
     }
   },
+  "product": {
+    "detail": {
+      "cashback": "Earn up to",
+      "color": "Color:",
+      "size": "Size:",
+      "size_guide": "Size guide",
+      "add_to_cart": "Add to cart",
+      "description": "Product description",
+      "no_description": "No product description.",
+      "policy_easy_return": "Easy returns with just a phone number",
+      "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
+      "policy_60days": "60-day returns (unused and with original tags)",
+      "policy_fast_refund": "Home pickup & refund within 24h"
+    }
+  },
 
   "admin": {
     "settings": {

@@ -21,6 +21,7 @@ import AccountPage from "./pages/customer/AccountPage";
 import CustomerPage from "./pages/customer/CustomerPage";
 import OrderPage from "./pages/admin/OrderPage";
 import HomePage from "./pages/HomePage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
 
           <Route
             element={

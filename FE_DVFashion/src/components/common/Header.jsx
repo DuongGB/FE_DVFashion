@@ -8,6 +8,7 @@ import { useAuthModal } from "../../hooks/useAuthModal";
 import AuthModal from "../ui/auth/AuthModal";
 import { useTranslation } from "react-i18next";
 import SearchPopup from "./SearchPopup";
+import logo from "../../assets/logo_DVF.png";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -183,7 +184,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       <div className="flex items-center gap-4 w-[110px]">
         <Link to="/" className="text-2xl font-bold text-orange-600 w-full">
           <img
-            src=".\src\assets\logo_DVF.png"
+            src={logo}
             alt="DVFASHION"
             className="h-8 w-full object-contain"
           />
