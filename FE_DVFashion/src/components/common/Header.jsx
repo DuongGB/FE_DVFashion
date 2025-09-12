@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShoppingCart, User } from "react-feather";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../../assets/logo_DVF.png";
 import { useAuth } from "../../hooks/useAuth";
+import { useAuthModal } from "../../hooks/useAuthModal";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
-import { useAuthModal } from "../../hooks/useAuthModal";
 import AuthModal from "../ui/auth/AuthModal";
-import { useTranslation } from "react-i18next";
+import CartDropdown from "../ui/cart/CartDropdown";
+import SearchPopup from "./SearchPopup";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -155,16 +158,91 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
   );
 }
 
+const demoCart = [
+  {
+    id: 1,
+    name: "Tshirt chạy bộ nữ AirRush Gradient",
+    color: "Trắng",
+    size: "XS",
+    price: 169000,
+    oldPrice: 199000,
+    quantity: 1,
+    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
+  },
+  {
+    id: 2,
+    name: "T-shirt thể thao nam FlexLine Active",
+    color: "Đen",
+    size: "L",
+    price: 179000,
+    oldPrice: 199000,
+    quantity: 1,
+    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
+  },
+  {
+    id: 3,
+    name: "T-shirt thể thao nam FlexLine Active V-neck",
+    color: "Navy",
+    size: "2XL",
+    price: 179000,
+    oldPrice: 199000,
+    quantity: 1,
+    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
+  },
+  {
+    id: 4,
+    name: "T-shirt thể thao nam FlexLine Active V-neck",
+    color: "Navy",
+    size: "2XL",
+    price: 179000,
+    oldPrice: 199000,
+    quantity: 1,
+    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
+  },
+];
+
 // Main menu component
 function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { t } = useTranslation();
+  const [showSearch, setShowSearch] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [cart, setCart] = useState(demoCart);
+  const searchRef = useRef();
+  const cartRef = useRef();
+
+  // Đóng popup khi click ra ngoài
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        showSearch &&
+        searchRef.current &&
+        !searchRef.current.contains(e.target)
+      ) {
+        setShowSearch(false);
+      }
+      if (showCart && cartRef.current && !cartRef.current.contains(e.target)) {
+        setShowCart(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSearch]);
+
+  const handleRemoveCartItem = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleViewAllCart = () => {
+    window.location.href = "/cart";
+  };
+
   return (
     <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
       {/* Logo */}
       <div className="flex items-center gap-4 w-[110px]">
         <Link to="/" className="text-2xl font-bold text-orange-600 w-full">
           <img
-            src=".\src\assets\logo_DVF.png"
+            src={logo}
             alt="DVFASHION"
             className="h-8 w-full object-contain"
           />
@@ -222,12 +300,37 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         </div>
       </nav>
       {/* Search, Account, Cart */}
-      <div className="flex items-center gap-4">
-        <input
-          type="text"
-          placeholder={t("header.search_placeholder")}
-          className="border rounded-full px-4 py-1"
-        />
+      <div className="flex items-center gap-4" ref={searchRef}>
+        {/* Nút mở popup search */}
+        <div
+          className="flex-1 flex items-center"
+          onClick={() => setShowSearch(true)}
+        >
+          {/* Thanh search chỉ là khung giả, không nhập được */}
+          <div className="relative w-[350px] cursor-pointer">
+            <input
+              type="text"
+              placeholder={t("header.search_placeholder")}
+              className="border rounded-full px-10 py-2 w-full bg-gray-50 cursor-pointer"
+              readOnly
+            />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+              <svg
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </span>
+          </div>
+        </div>
+        <SearchPopup show={showSearch} onClose={() => setShowSearch(false)} />
+        {/* Account và Cart giữ nguyên */}
         <div
           className="flex items-center gap-2 cursor-pointer"
           onClick={onUserClick}
@@ -239,11 +342,23 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
               : t("header.account")}
           </span>
         </div>
-        <div className="relative cursor-pointer">
+        {/* Shopping Cart */}
+        <div
+          className="relative cursor-pointer group"
+          ref={cartRef}
+          onClick={handleViewAllCart}
+        >
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            0
+            {cart.length}
           </span>
+          <div className="hidden group-hover:block">
+            <CartDropdown
+              cart={cart}
+              onRemove={handleRemoveCartItem}
+              onViewAll={handleViewAllCart}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -330,8 +445,6 @@ export default function Header() {
   const { isAuthenticated, user } = useAuth();
   const [showAccount, setShowAccount] = useState(false);
   const authModal = useAuthModal();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   // Display modal show account if authenticated
   const handleUserClick = () => {

@@ -1,57 +1,17 @@
-import React, { useRef, useEffect } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "react-feather";
 import "swiper/css";
 import "swiper/css/navigation";
-import { ChevronLeft, ChevronRight } from "react-feather";
+import { Navigation } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import ProductCard from "./ProductCard";
 
-export default function ProductCarousel() {
+export default function ProductCarousel({ products = [] }) {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
-
-  const products = [
-    {
-      id: 1,
-      name: "Áo Polo nam Premium Aircool",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#e5d3c6", "#000000", "#cccccc"],
-      tag: "NEW",
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Casual kẻ sọc",
-      price: "499.000đ",
-      image: "./src/assets/product1.avif",
-      colors: ["#d0e0ff", "#cccccc"],
-      tag: "NEW",
-    },
-    {
-      id: 3,
-      name: "Áo Polo nam Premium Cotton Linen",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#eaa2b6", "#d8e4c0", "#d8e4c0"],
-    },
-    {
-      id: 4,
-      name: "Áo Tanktop Nam Mặc Trong Antismell",
-      price: "89.000đ",
-      oldPrice: "99.000đ",
-      discount: "-10%",
-      image: "./src/assets/product1.avif",
-      colors: ["#222", "#444"],
-    },
-    {
-      id: 5,
-      name: "Áo Polo nam Premium Pique",
-      price: "399.000đ",
-      image: "./src/assets/product.avif",
-      colors: ["#111", "#ddd"],
-      tag: "NEW",
-    },
-  ];
+  // Chỉ lấy sản phẩm ACTIVE
+  const activeProducts = products.filter((p) => p.status === "ACTIVE");
 
   useEffect(() => {
     if (
@@ -66,65 +26,7 @@ export default function ProductCarousel() {
       swiperRef.current.navigation.init();
       swiperRef.current.navigation.update();
     }
-  }, []);
-
-  const ProductCard = ({ product }) => (
-    <div className="relative group bg-white rounded-xl shadow-sm overflow-hidden p-2">
-      {/* Hình ảnh */}
-      <div className="relative">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-[300px] object-cover rounded-lg"
-        />
-        {product.tag && (
-          <span className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-            {product.tag}
-          </span>
-        )}
-        <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition rounded-lg">
-          <span className="text-white text-sm">Thêm nhanh vào giỏ hàng</span>
-          <div className="flex gap-2">
-            {["M", "L", "XL", "2XL", "3XL"].map((size) => (
-              <button
-                key={size}
-                className="bg-white px-2 py-1 rounded text-xs font-medium hover:bg-gray-200"
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Màu sắc */}
-      <div className="flex gap-2 mt-2">
-        {product.colors.map((c, idx) => (
-          <span
-            key={idx}
-            className="w-5 h-5 rounded-full border cursor-pointer"
-            style={{ backgroundColor: c }}
-          ></span>
-        ))}
-      </div>
-
-      {/* Tên + Giá */}
-      <h3 className="text-sm mt-2">{product.name}</h3>
-      <div className="flex items-center gap-2">
-        <span className="font-bold">{product.price}</span>
-        {product.oldPrice && (
-          <span className="line-through text-gray-400 text-sm">
-            {product.oldPrice}
-          </span>
-        )}
-        {product.discount && (
-          <span className="text-blue-600 text-xs font-semibold">
-            {product.discount}
-          </span>
-        )}
-      </div>
-    </div>
-  );
+  }, [products]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-10 py-10 relative">
@@ -146,7 +48,7 @@ export default function ProductCarousel() {
           1024: { slidesPerView: 4 },
         }}
       >
-        {products.map((product) => (
+        {activeProducts.map((product) => (
           <SwiperSlide key={product.id}>
             <ProductCard product={product} />
           </SwiperSlide>

@@ -6,12 +6,17 @@ import Banner from "../components/common/Banner";
 import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
 import { useTranslation } from "react-i18next";
+import { useProduct } from "../hooks/useProduct";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+
+  // Lấy danh sách sản phẩm từ API
+  const language = i18n.language || "VI";
+  const { products = [], isLoading: isLoadingProducts } = useProduct(language);
 
   useEffect(() => {
     // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
@@ -97,7 +102,11 @@ export default function HomePage() {
       </div>
 
       {/* Content */}
-      <ProductCarousel />
+      {isLoadingProducts ? (
+        <div className="text-center py-10">Đang tải sản phẩm...</div>
+      ) : (
+        <ProductCarousel products={products} />
+      )}
     </div>
   );
 }
