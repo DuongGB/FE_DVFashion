@@ -17,6 +17,22 @@
       "cs": "C&S"
     }
   },
+  "search": {
+    "result_title": "Search results",
+    "view_all": "VIEW ALL",
+    "no_result": "No matching products found",
+    "suggest_title": "Today's trending keywords",
+    "no_recent": "No recently viewed products",
+    "close": "Close",
+    "keywords": {
+      "tshirt": "T-shirt",
+      "shorts": "Shorts",
+      "polo": "Polo Shirt",
+      "sun_protection_jacket": "Sun Protection Jacket",
+      "sun_protection_gloves": "Sun Protection Gloves",
+      "trousers": "Trousers"
+    }
+  },
   "about_dvfashion": "ABOUT DVFASHION",
   "dvfclub": "DVFclub",
   "blog": "Blog",
@@ -296,6 +312,21 @@
         "otp_send_failed": "Unable to send OTP. Please try again.",
         "register_failed": "Registration failed. Please try again."
       }
+    }
+  },
+  "product": {
+    "detail": {
+      "cashback": "Earn up to",
+      "color": "Color:",
+      "size": "Size:",
+      "size_guide": "Size guide",
+      "add_to_cart": "Add to cart",
+      "description": "Product description",
+      "no_description": "No product description.",
+      "policy_easy_return": "Easy returns with just a phone number",
+      "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
+      "policy_60days": "60-day returns (unused and with original tags)",
+      "policy_fast_refund": "Home pickup & refund within 24h"
     }
   },
 

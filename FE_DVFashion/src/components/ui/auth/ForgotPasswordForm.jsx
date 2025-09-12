@@ -136,13 +136,6 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
     }
   };
 
-  const handleTryAgain = () => {
-    setIsEmailSent(false);
-    setContact("");
-    setContactType("");
-    setErrors({});
-  };
-
   // Lấy icon phù hợp
   const getContactIcon = () => {
     if (contactType === "phone") {

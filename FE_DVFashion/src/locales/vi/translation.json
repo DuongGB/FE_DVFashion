@@ -17,6 +17,22 @@
       "cs": "C&S"
     }
   },
+  "search": {
+    "result_title": "Kết quả tìm kiếm",
+    "view_all": "XEM TẤT CẢ",
+    "no_result": "Không tìm thấy sản phẩm phù hợp",
+    "suggest_title": "Từ khóa nổi bật ngày hôm nay",
+    "no_recent": "Không có sản phẩm đã xem gần đây",
+    "close": "Đóng",
+    "keywords": {
+      "tshirt": "Áo thun",
+      "shorts": "Quần Shorts",
+      "polo": "Áo Polo",
+      "sun_protection_jacket": "Áo khoác chống nắng",
+      "sun_protection_gloves": "Găng tay chống nắng",
+      "trousers": "Quần dài"
+    }
+  },
   "about_dvfashion": "VỀ DVFASHION",
   "dvfclub": "DVFclub",
   "blog": "Blog",
@@ -296,6 +312,21 @@
         "otp_send_failed": "Không thể gửi OTP. Vui lòng thử lại.",
         "register_failed": "Đăng ký thất bại. Vui lòng thử lại."
       }
+    }
+  },
+  "product": {
+    "detail": {
+      "cashback": "Được hoàn lên đến",
+      "color": "Màu sắc:",
+      "size": "Kích thước:",
+      "size_guide": "Hướng dẫn chọn size",
+      "add_to_cart": "Thêm vào giỏ",
+      "description": "Mô tả sản phẩm",
+      "no_description": "Chưa có mô tả sản phẩm.",
+      "policy_easy_return": "Đổi trả cực dễ chỉ cần số điện thoại",
+      "policy_hotline": "Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h",
+      "policy_60days": "60 ngày đổi trả (sản phẩm chưa qua sử dụng và còn nguyên nhãn mác)",
+      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h"
     }
   },
 
