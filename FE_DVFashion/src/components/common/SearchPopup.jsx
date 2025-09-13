@@ -22,7 +22,7 @@ export default function SearchPopup({ show, onClose }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show, onClose]);
+  }, [show]);
 
   // Lọc sản phẩm theo search
   useEffect(() => {
