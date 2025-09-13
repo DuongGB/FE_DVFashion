@@ -1,73 +1,22 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  IconTruckDelivery,
   IconCircleDashedPercentage,
+  IconTruckDelivery,
 } from "@tabler/icons-react";
-const demoCart = [
-  {
-    id: 1,
-    name: "T-shirt thể thao nam FlexLine Active V-neck",
-    color: "Navy",
-    size: "2XL",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 2,
-    name: "Singlet chạy bộ AirRush Gradient",
-    color: "Đen",
-    size: "3XL",
-    price: 160000,
-    oldPrice: 189000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 3,
-    name: "Tshirt chạy bộ nữ AirRush Gradient",
-    color: "Trắng",
-    size: "M",
-    price: 169000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 4,
-    name: "Tất cổ ngắn chạy bộ nữ",
-    color: "Hồng",
-    size: "Hồng",
-    price: 0,
-    oldPrice: 79000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-    gift: true,
-  },
-  {
-    id: 5,
-    name: "T-shirt thể thao nam FlexLine Active",
-    color: "Đen",
-    size: "L",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-];
-export default function CartBottom() {
-  const [cart, setCart] = useState(demoCart);
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const oldTotal = cart.reduce(
-    (sum, item) => sum + (item.oldPrice || 0) * item.quantity,
+
+export default function CartBottom({ cart }) {
+  // Tính tổng tiền và giảm giá
+  const total = cart?.reduce(
+    (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const discount = oldTotal - total;
+  const discount = cart?.reduce(
+    (acc, item) =>
+      acc + item.price * item.quantity * (item.discountPercentage / 100),
+    0
+  );
+
   return (
     <div>
-      {" "}
       {/* Voucher & Thanh toán khi nhận hàng bar */}
       <div className="fixed bottom-0 left-0 w-full flex z-20">
         <div className="flex-1 flex items-center gap-8 bg-[#edeffe] px-12 py-4 border-t">
@@ -86,14 +35,19 @@ export default function CartBottom() {
         <div className="w-[600px] flex items-center justify-between bg-white px-10 py-4 border-t">
           <div className="flex items-center">
             <span className="text-2xl font-bold text-blue-700">
-              {total.toLocaleString()}đ
+              {total?.toLocaleString()}đ
             </span>
             <span className="ml-4 text-xs text-gray-500">
               Tiết kiệm{" "}
-              <span className="font-bold">{discount.toLocaleString()}đ</span>
+              <span className="font-bold">
+                {discount > 0 ? discount?.toLocaleString() : "0"}đ
+              </span>
             </span>
           </div>
-          <button className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold">
+          <button
+            className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold"
+            disabled={cart?.length === 0}
+          >
             ĐẶT HÀNG
           </button>
         </div>
