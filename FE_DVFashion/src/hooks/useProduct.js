@@ -18,10 +18,11 @@ export const useProduct = (lang = "VI") => {
         return res.data.data || res.data || [];
       } catch (error) {
         console.error("Error fetching products:", error);
-        if (error.response?.status === 401) {
-          throw new Error("Bạn cần đăng nhập để xem danh sách sản phẩm");
-        }
-        throw error;
+        // if (error.response?.status === 401) {
+        //   throw new Error("Bạn cần đăng nhập để xem danh sách sản phẩm");
+        // }
+        // throw error;
+        return [];
       }
     },
     retry: (failureCount, error) => {
