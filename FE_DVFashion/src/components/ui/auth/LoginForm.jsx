@@ -16,6 +16,7 @@ export default function LoginForm({
   onSuccess,
   onSwitchToRegister,
   onForgotPassword,
+  stayOnPage,
 }) {
   const { login, isLoginLoading, loginError } = useAuth();
   const navigate = useNavigate();
@@ -122,7 +123,12 @@ export default function LoginForm({
         }
 
         // Chuyển hướng đến route tương ứng
-        navigate(defaultRoute, { replace: true });
+        if (stayOnPage) {
+          if (onSuccess) onSuccess();
+        } else {
+          navigate(defaultRoute, { replace: true });
+          if (onSuccess) onSuccess();
+        }
 
         if (onSuccess) onSuccess();
       }

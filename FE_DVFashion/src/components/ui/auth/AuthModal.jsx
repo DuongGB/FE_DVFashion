@@ -4,7 +4,7 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 
-const AuthModal = ({ isOpen, onClose, initialMode = "login" }) => {
+const AuthModal = ({ isOpen, onClose, initialMode = "login", stayOnPage }) => {
   const [mode, setMode] = useState(initialMode);
 
   useEffect(() => {
@@ -72,6 +72,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = "login" }) => {
               onSuccess={handleSuccess}
               onSwitchToRegister={handleSwitchToRegister}
               onForgotPassword={handleSwitchToForgotPassword}
+              stayOnPage={stayOnPage}
             />
           )}
 
