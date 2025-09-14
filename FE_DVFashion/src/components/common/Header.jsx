@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { ShoppingCart, User } from "react-feather";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo_DVF.png";
 import { useAuth } from "../../hooks/useAuth";
-import { useAuthModal } from "../../hooks/useAuthModal";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
 import AuthModal from "../ui/auth/AuthModal";
 import CartDropdown from "../ui/cart/CartDropdown";
 import SearchPopup from "./SearchPopup";
+import { useAuthModal } from "../../contexts/AuthModalContext";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -479,6 +479,7 @@ export default function Header() {
         isOpen={authModal.isOpen}
         onClose={authModal.close}
         initialMode={authModal.mode}
+        stayOnPage={authModal.stayOnPage}
       />
 
       {/* Account Modal - Giữ nguyên */}

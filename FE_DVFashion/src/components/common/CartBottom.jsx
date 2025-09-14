@@ -2,9 +2,8 @@ import {
   IconCircleDashedPercentage,
   IconTruckDelivery,
 } from "@tabler/icons-react";
+import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
-import { useAuthModal } from "../../hooks/useAuthModal";
-import AuthModal from "../ui/auth/AuthModal";
 
 export default function CartBottom({ cart }) {
   const { isAuthenticated } = useAuth();
@@ -24,7 +23,7 @@ export default function CartBottom({ cart }) {
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleOrderClick = () => {
     if (!isAuthenticated) {
-      authModal.openLogin();
+      authModal.openLogin({ stayOnPage: true });
       return;
     }
     // Xử lý đặt hàng ở đây (chuyển đến trang thanh toán hoặc hiển thị modal)
@@ -68,12 +67,6 @@ export default function CartBottom({ cart }) {
           </button>
         </div>
       </div>
-      <AuthModal
-        isOpen={authModal.isOpen}
-        onClose={authModal.close}
-        initialMode={authModal.mode}
-        stayOnPage={true}
-      />
     </div>
   );
 }

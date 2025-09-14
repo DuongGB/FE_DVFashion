@@ -1,6 +1,7 @@
 import getColorHex from "../../utils/getColorHex";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { encodeId } from "../../utils/encodeId";
 
 export default function ProductCard({ product }) {
   // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
@@ -54,7 +55,7 @@ export default function ProductCard({ product }) {
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`/product/${encodeId(product.id)}`}
       className="block group bg-white rounded-xl shadow-sm overflow-hidden p-2 hover:shadow-lg transition"
     >
       {/* Hình ảnh */}
