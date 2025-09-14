@@ -54,11 +54,6 @@ export default function ProductDetailModal({ product, open, onClose }) {
           color: "bg-red-100 text-red-800",
           text: t("admin.product.status.inactive"),
         };
-      case "OUT_OF_STOCK":
-        return {
-          color: "bg-yellow-100 text-yellow-800",
-          text: t("admin.product.status.out_of_stock"),
-        };
       case "DISCONTINUED":
         return {
           color: "bg-gray-100 text-gray-800",
@@ -70,17 +65,6 @@ export default function ProductDetailModal({ product, open, onClose }) {
   };
 
   const statusInfo = getStatusInfo(product.status);
-
-  // Tổng tồn kho từ tất cả variants và sizes
-  const totalStock =
-    product.variants?.reduce(
-      (sum, variant) =>
-        sum +
-        (variant.sizes
-          ? variant.sizes.reduce((s, size) => s + (size.stockQuantity || 0), 0)
-          : 0),
-      0
-    ) || 0;
 
   // Gom tất cả ảnh từ các variant
   const allImages =
@@ -266,14 +250,6 @@ export default function ProductDetailModal({ product, open, onClose }) {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <div>
-                      <strong className="text-gray-600">
-                        {t("admin.product.detail.total_stock")}:
-                      </strong>
-                      <span className="ml-2 text-blue-600 font-bold">
-                        {totalStock}
-                      </span>
-                    </div>
                     <div className="flex items-center gap-2">
                       <IconStar size={16} className="text-yellow-500" />
                       <span className="text-gray-600">
@@ -330,7 +306,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
                                 key={sidx}
                                 className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-1 mb-1"
                               >
-                                {size.sizeName}: {size.stockQuantity}
+                                {size.sizeName}
                               </span>
                             ))}
                         </td>
