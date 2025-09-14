@@ -78,17 +78,11 @@ const ProductForm = ({
                 ? v.sizes.map((s) => ({
                     id: s.id || null,
                     sizeName: s.sizeName || "",
-                    stockQuantity: s.stockQuantity || 0,
-                    isNew: false,
-                    isModified: false,
                   }))
                 : [
                     {
                       id: null,
                       sizeName: "",
-                      stockQuantity: 0,
-                      isNew: true,
-                      isModified: false,
                     },
                   ],
               images: v.images
@@ -98,12 +92,8 @@ const ProductForm = ({
                     imageFile: null,
                     preview: img.imageUrl || "",
                     existingImageUrl: img.imageUrl || "",
-                    isNew: false,
-                    isModified: false,
                   }))
                 : [],
-              isNew: false,
-              isModified: false,
             }))
           : [],
       });
@@ -140,14 +130,9 @@ const ProductForm = ({
             {
               id: null,
               sizeName: "",
-              stockQuantity: 0,
-              isNew: true,
-              isModified: false,
             },
           ],
           images: [],
-          isNew: true,
-          isModified: false,
         },
       ],
     }));
@@ -187,9 +172,6 @@ const ProductForm = ({
       variants[variantIdx].sizes.push({
         id: null,
         sizeName: "",
-        stockQuantity: 0,
-        isNew: true,
-        isModified: false,
       });
       return { ...prev, variants };
     });
@@ -356,10 +338,6 @@ const ProductForm = ({
           newErrors[`variant_${idx}_size_${sidx}_sizeName`] = t(
             "admin.product.validation.size_name_required"
           );
-        if (size.stockQuantity === "" || size.stockQuantity < 0)
-          newErrors[`variant_${idx}_size_${sidx}_stockQuantity`] = t(
-            "admin.product.validation.stock_quantity_required"
-          );
       });
 
       const hasPrimaryImage = variant.images.some((img) => img.isPrimary);
@@ -396,7 +374,6 @@ const ProductForm = ({
             status: variant.status,
             sizes: variant.sizes.map((s) => ({
               sizeName: s.sizeName,
-              stockQuantity: parseInt(s.stockQuantity),
             })),
             images: variant.images.map((img) => ({
               isPrimary: Boolean(img.isPrimary),
@@ -471,12 +448,10 @@ const ProductForm = ({
       if (!size.id) {
         await sizeAPI.addSize(variant.id, {
           sizeName: size.sizeName,
-          stockQuantity: size.stockQuantity,
         });
       } else {
         await sizeAPI.updateSize(variant.id, size.id, {
           sizeName: size.sizeName,
-          stockQuantity: size.stockQuantity,
         });
       }
     }
@@ -542,7 +517,6 @@ const ProductForm = ({
             status: v.status,
             sizes: v.sizes.map((s) => ({
               sizeName: s.sizeName,
-              stockQuantity: parseInt(s.stockQuantity),
             })),
             images: v.images.map((img) => ({
               isPrimary: Boolean(img.isPrimary),
@@ -932,9 +906,6 @@ const ProductForm = ({
                         <option value="INACTIVE">
                           {t("admin.product.form.inactive")}
                         </option>
-                        <option value="OUT_OF_STOCK">
-                          {t("admin.product.form.out_of_stock")}
-                        </option>
                         <option value="DISCONTINUED">
                           {t("admin.product.form.discontinued")}
                         </option>
@@ -987,44 +958,6 @@ const ProductForm = ({
                                   {
                                     errors[
                                       `variant_${idx}_size_${sidx}_sizeName`
-                                    ]
-                                  }
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex-1">
-                              <input
-                                type="number"
-                                placeholder={t(
-                                  "admin.product.form.stock_quantity"
-                                )}
-                                value={size.stockQuantity}
-                                min={0}
-                                onChange={(e) =>
-                                  handleSizeChange(
-                                    idx,
-                                    sidx,
-                                    "stockQuantity",
-                                    parseInt(e.target.value) || 0
-                                  )
-                                }
-                                disabled={isSubmitting}
-                                className={`w-full px-2 py-1 border rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
-                                  errors[
-                                    `variant_${idx}_size_${sidx}_stockQuantity`
-                                  ]
-                                    ? "border-red-500"
-                                    : "border-gray-300"
-                                }`}
-                              />
-                              {errors[
-                                `variant_${idx}_size_${sidx}_stockQuantity`
-                              ] && (
-                                <p className="text-red-500 text-xs mt-1">
-                                  {
-                                    errors[
-                                      `variant_${idx}_size_${sidx}_stockQuantity`
                                     ]
                                   }
                                 </p>
@@ -1189,9 +1122,6 @@ const ProductForm = ({
                 <option value="ACTIVE">{t("admin.product.form.active")}</option>
                 <option value="INACTIVE">
                   {t("admin.product.form.inactive")}
-                </option>
-                <option value="OUT_OF_STOCK">
-                  {t("admin.product.form.out_of_stock")}
                 </option>
                 <option value="DISCONTINUED">
                   {t("admin.product.form.discontinued")}

@@ -1,161 +1,94 @@
-import { useState, useEffect } from "react";
-import {
-  IconEdit,
-  IconTrash,
-  IconEye,
-  IconPlus,
-  IconFilter,
-} from "@tabler/icons-react";
+import { IconEye, IconFilter } from "@tabler/icons-react";
+import { useState } from "react";
 import Pagination from "../../components/common/Pagination";
 import InventoryDetailModal from "../../components/ui/inventory/InventoryDetailModal";
-
-// Mock data cho inventory
-const mockInventories = [
-  {
-    id: 1,
-    productVariant: {
-      id: 1,
-      name: "Áo Thun Nam - Đỏ - Size M",
-      sku: "ATN-RED-M",
-      product: { id: 1, name: "Áo Thun Nam" },
-    },
-    quantity: 100,
-    reservedQuantity: 15,
-    minStockLevel: 20,
-    lastUpdated: "2024-09-01T10:30:00",
-    transactions: [],
-  },
-  {
-    id: 2,
-    productVariant: {
-      id: 2,
-      name: "Quần Jeans - Xanh - Size L",
-      sku: "QJ-BLUE-L",
-      product: { id: 2, name: "Quần Jeans" },
-    },
-    quantity: 50,
-    reservedQuantity: 8,
-    minStockLevel: 15,
-    lastUpdated: "2024-09-01T09:15:00",
-    transactions: [],
-  },
-  {
-    id: 3,
-    productVariant: {
-      id: 3,
-      name: "Giày Sneaker - Trắng - Size 42",
-      sku: "GS-WHITE-42",
-      product: { id: 3, name: "Giày Sneaker" },
-    },
-    quantity: 5,
-    reservedQuantity: 2,
-    minStockLevel: 10,
-    lastUpdated: "2024-08-31T16:45:00",
-    transactions: [],
-  },
-  {
-    id: 4,
-    productVariant: {
-      id: 4,
-      name: "Áo Khoác - Đen - Size XL",
-      sku: "AK-BLACK-XL",
-      product: { id: 4, name: "Áo Khoác" },
-    },
-    quantity: 80,
-    reservedQuantity: 12,
-    minStockLevel: 25,
-    lastUpdated: "2024-09-01T14:20:00",
-    transactions: [],
-  },
-  {
-    id: 5,
-    productVariant: {
-      id: 5,
-      name: "Váy Maxi - Hồng - Size S",
-      sku: "VM-PINK-S",
-      product: { id: 5, name: "Váy Maxi" },
-    },
-    quantity: 2,
-    reservedQuantity: 0,
-    minStockLevel: 8,
-    lastUpdated: "2024-08-30T11:30:00",
-    transactions: [],
-  },
-];
-
-// Mock data cho inventory transactions
-const mockTransactions = [
-  {
-    id: 1,
-    inventory: { id: 1 },
-    type: "IN",
-    quantity: 50,
-    reference: "PO-001",
-    notes: "Nhập hàng từ nhà cung cấp",
-    transactionDate: "2024-09-01T08:00:00",
-    createdBy: { id: 1, name: "Nguyễn Văn A" },
-  },
-  {
-    id: 2,
-    inventory: { id: 2 },
-    type: "OUT",
-    quantity: -5,
-    reference: "ORDER-123",
-    notes: "Xuất hàng cho đơn hàng",
-    transactionDate: "2024-09-01T10:30:00",
-    createdBy: { id: 2, name: "Trần Thị B" },
-  },
-  {
-    id: 3,
-    inventory: { id: 3 },
-    type: "ADJUSTMENT",
-    quantity: -2,
-    reference: "ADJ-001",
-    notes: "Điều chỉnh hàng hỏng",
-    transactionDate: "2024-08-31T15:00:00",
-    createdBy: { id: 1, name: "Nguyễn Văn A" },
-  },
-];
+import { useInventory } from "../../hooks/useInventory";
 
 export default function InventoryPage() {
-  const [inventories, setInventories] = useState([]);
+  const { inventories, isLoading, error } = useInventory();
   const [search, setSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
-  const [transactions, setTransactions] = useState([]);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+
+  // Thêm state cho bộ lọc nâng cao
+  const [filters, setFilters] = useState({
+    colors: [],
+    sizes: [],
+  });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
   const pageSize = 10;
 
-  useEffect(() => {
-    setInventories(mockInventories);
-    setTransactions(mockTransactions);
-  }, []);
+  // Lấy danh sách màu và size có trong kho
+  const availableColors = Array.from(
+    new Set((inventories || []).map((inv) => inv.productColor).filter(Boolean))
+  );
+  const availableSizes = Array.from(
+    new Set((inventories || []).map((inv) => inv.sizeName).filter(Boolean))
+  );
+
+  // Nếu đang loading hoặc lỗi
+  if (isLoading) return <div>Đang tải dữ liệu kho...</div>;
+  if (error) return <div>Lỗi tải dữ liệu kho!</div>;
 
   // Lọc inventory
-  const filteredInventories = inventories.filter((inventory) => {
+  const filteredInventories = (inventories || []).filter((inventory) => {
     const matchesSearch =
-      inventory.productVariant.name
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      inventory.productVariant.sku
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      inventory.id.toString().includes(search);
+      inventory.productName?.toLowerCase().includes(search.toLowerCase()) ||
+      inventory.sizeName?.toLowerCase().includes(search.toLowerCase());
 
     const matchesStockFilter = (() => {
       switch (stockFilter) {
         case "low":
-          return inventory.quantity <= inventory.minStockLevel;
+          return inventory.isLowStock;
         case "out":
-          return inventory.quantity === 0;
+          return inventory.availableQuantity === 0;
         default:
           return true;
       }
     })();
 
-    return matchesSearch && matchesStockFilter;
+    // Lọc theo màu
+    const matchesColor =
+      filters.colors.length === 0 ||
+      filters.colors.includes(inventory.productColor);
+
+    // Lọc theo size
+    const matchesSize =
+      filters.sizes.length === 0 || filters.sizes.includes(inventory.sizeName);
+
+    return matchesSearch && matchesStockFilter && matchesColor && matchesSize;
   });
+
+  // Đếm số filter đang active
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.colors.length > 0) count += filters.colors.length;
+    if (filters.sizes.length > 0) count += filters.sizes.length;
+    if (stockFilter !== "all") count++;
+    if (search) count++;
+    return count;
+  };
+
+  // Xoá filter
+  const removeFilter = (type, value = null) => {
+    setFilters((prev) => {
+      if (type === "colors" || type === "sizes") {
+        return {
+          ...prev,
+          [type]: prev[type].filter((v) => v !== value),
+        };
+      }
+      return prev;
+    });
+    if (type === "stockFilter") setStockFilter("all");
+    if (type === "search") setSearch("");
+  };
 
   const totalPages = Math.ceil(filteredInventories.length / pageSize);
   const paginatedInventories = filteredInventories.slice(
@@ -182,20 +115,41 @@ export default function InventoryPage() {
 
   // Xác định màu sắc dựa trên mức tồn kho
   const getStockLevelColor = (inventory) => {
-    if (inventory.quantity === 0) return "text-red-600 font-bold";
-    if (inventory.quantity <= inventory.minStockLevel)
+    if (inventory.quantityInStock === 0) return "text-red-600 font-bold";
+    if (inventory.quantityInStock <= inventory.minStockLevel)
       return "text-yellow-600 font-bold";
     return "text-green-600";
   };
 
-  // Tính available quantity (quantity - reservedQuantity)
-  const getAvailableQuantity = (inventory) => {
-    return inventory.quantity - inventory.reservedQuantity;
-  };
+  // Thống kê số lượng các loại tồn kho
+  const totalProducts = inventories.length;
+  const normalStock = inventories.filter(
+    (inv) => inv.quantityInStock > inv.minStockLevel
+  ).length;
+  const lowStock = inventories.filter(
+    (inv) => inv.quantityInStock > 0 && inv.quantityInStock <= inv.minStockLevel
+  ).length;
+  const outOfStock = inventories.filter(
+    (inv) => inv.quantityInStock === 0
+  ).length;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản Lý Kho Hàng</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Quản lý kho hàng</h1>
+        <div className="flex gap-4">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            Nhập kho
+          </button>
+          <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            Xuất kho
+          </button>
+          <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            Điều chỉnh kho
+          </button>
+        </div>
+      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -204,7 +158,7 @@ export default function InventoryPage() {
             <div>
               <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
               <p className="text-2xl font-bold text-gray-900">
-                {inventories.length}
+                {totalProducts}
               </p>
             </div>
           </div>
@@ -216,12 +170,7 @@ export default function InventoryPage() {
               <p className="text-sm font-medium text-gray-600">
                 Tồn kho bình thường
               </p>
-              <p className="text-2xl font-bold text-green-600">
-                {
-                  inventories.filter((inv) => inv.quantity > inv.minStockLevel)
-                    .length
-                }
-              </p>
+              <p className="text-2xl font-bold text-green-600">{normalStock}</p>
             </div>
           </div>
         </div>
@@ -230,14 +179,7 @@ export default function InventoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Sắp hết hàng</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {
-                  inventories.filter(
-                    (inv) =>
-                      inv.quantity > 0 && inv.quantity <= inv.minStockLevel
-                  ).length
-                }
-              </p>
+              <p className="text-2xl font-bold text-yellow-600">{lowStock}</p>
             </div>
           </div>
         </div>
@@ -246,47 +188,189 @@ export default function InventoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Hết hàng</p>
-              <p className="text-2xl font-bold text-red-600">
-                {inventories.filter((inv) => inv.quantity === 0).length}
-              </p>
+              <p className="text-2xl font-bold text-red-600">{outOfStock}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex justify-between mb-4 items-center gap-4 bg-white p-4 rounded-lg shadow border">
-        <div className="flex gap-4 items-center w-2/3">
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên, SKU hoặc ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      {/* Basic Filters */}
+      <div className="bg-white p-4 rounded-lg shadow border mb-4 flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex gap-4 items-center flex-1">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên, size..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value)}
-            className="border rounded-lg px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tất cả</option>
             <option value="low">Sắp hết hàng</option>
             <option value="out">Hết hàng</option>
           </select>
-        </div>
 
-        <div className="flex gap-2">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors">
-            <IconPlus size={16} />
-            Nhập kho
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors">
+          <button
+            onClick={() => setShowAdvancedFilters((v) => !v)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer ${
+              showAdvancedFilters
+                ? "bg-blue-50 border-blue-300 text-blue-700"
+                : "border-gray-300 hover:bg-gray-50"
+            }`}
+          >
             <IconFilter size={16} />
-            Điều chỉnh
+            Bộ lọc nâng cao
+            {getActiveFiltersCount() > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                {getActiveFiltersCount()}
+              </span>
+            )}
           </button>
         </div>
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold text-gray-700">Bộ lọc nâng cao</h3>
+            <button
+              onClick={() => setFilters({ colors: [], sizes: [] })}
+              className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
+            >
+              Xoá tất cả
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Lọc theo màu */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Màu sắc
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {availableColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        colors: prev.colors.includes(color)
+                          ? prev.colors.filter((c) => c !== color)
+                          : [...prev.colors, color],
+                      }))
+                    }
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      filters.colors.includes(color)
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Lọc theo size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Size
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        sizes: prev.sizes.includes(size)
+                          ? prev.sizes.filter((s) => s !== size)
+                          : [...prev.sizes, size],
+                      }))
+                    }
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      filters.sizes.includes(size)
+                        ? "bg-green-500 text-white border-green-500"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-green-300"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Filters Display */}
+      {getActiveFiltersCount() > 0 && (
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm text-gray-600">Đang lọc theo:</span>
+            {/* Search */}
+            {search && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                {`Tìm: "${search}"`}
+                <button
+                  onClick={() => removeFilter("search")}
+                  className="hover:text-blue-600"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {/* Stock filter */}
+            {stockFilter !== "all" && (
+              <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                {stockFilter === "low" ? "Sắp hết hàng" : "Hết hàng"}
+                <button
+                  onClick={() => removeFilter("stockFilter")}
+                  className="hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {/* Colors */}
+            {filters.colors.map((color) => (
+              <span
+                key={color}
+                className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+              >
+                {color}
+                <button
+                  onClick={() => removeFilter("colors", color)}
+                  className="hover:text-blue-600"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {/* Sizes */}
+            {filters.sizes.map((size) => (
+              <span
+                key={size}
+                className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+              >
+                {size}
+                <button
+                  onClick={() => removeFilter("sizes", size)}
+                  className="hover:text-green-600"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
@@ -300,8 +384,9 @@ export default function InventoryPage() {
             <tr className="bg-gray-400">
               <th className="p-3">ID</th>
               <th className="p-3">Sản phẩm</th>
-              <th className="p-3">SKU</th>
-              <th className="p-3">Số lượng</th>
+              <th className="p-3">Màu sắc</th>
+              <th className="p-3">Size</th>
+              <th className="p-3">Tồn kho</th>
               <th className="p-3">Đặt trước</th>
               <th className="p-3">Khả dụng</th>
               <th className="p-3">Mức tối thiểu</th>
@@ -314,72 +399,57 @@ export default function InventoryPage() {
             {paginatedInventories.length > 0 ? (
               paginatedInventories.map((inventory) => (
                 <tr key={inventory.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{inventory.id}</td>
-                  <td className="p-3">
+                  <td className="p-2">{inventory.id}</td>
+                  <td className="p-2">
                     <div>
-                      <div className="font-medium">
-                        {inventory.productVariant.product.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {inventory.productVariant.name}
-                      </div>
+                      <div className="font-medium">{inventory.productName}</div>
                     </div>
                   </td>
-                  <td className="p-3 font-mono text-sm">
-                    {inventory.productVariant.sku}
-                  </td>
+                  <td className="p-2">{inventory.productColor}</td>
+                  <td className="p-2 text-blue-600">{inventory.sizeName}</td>
                   <td
-                    className={`p-3 font-bold ${getStockLevelColor(inventory)}`}
+                    className={`p-2 font-bold ${getStockLevelColor(inventory)}`}
                   >
-                    {inventory.quantity}
+                    {inventory.quantityInStock}
                   </td>
-                  <td className="p-3 text-blue-600">
-                    {inventory.reservedQuantity}
+                  <td className="p-2">{inventory.reservedQuantity}</td>
+                  <td className="p-2">{inventory.availableQuantity}</td>
+                  <td className="p-2 text-gray-600">
+                    {inventory.minStockLevel}
                   </td>
-                  <td className="p-3 font-medium">
-                    {getAvailableQuantity(inventory)}
-                  </td>
-                  <td className="p-3">{inventory.minStockLevel}</td>
-                  <td className="p-3">
-                    {inventory.quantity === 0 ? (
-                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded ">
+                  <td className="p-2">
+                    {inventory.quantityInStock === 0 ? (
+                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
                         Hết hàng
                       </span>
-                    ) : inventory.quantity <= inventory.minStockLevel ? (
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded ">
+                    ) : inventory.quantityInStock <= inventory.minStockLevel ? (
+                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
                         Sắp hết
                       </span>
                     ) : (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded ">
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
                         Bình thường
                       </span>
                     )}
                   </td>
-                  <td className="p-3 text-gray-600">
+                  <td className="p-2 text-gray-600">
                     {formatDate(inventory.lastUpdated)}
                   </td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
-                      <button
-                        className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
-                        onClick={() => handleViewDetail(inventory)}
-                        title="Xem lịch sử giao dịch"
-                      >
-                        <IconEye />
-                      </button>
-                      <button
-                        className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
-                        title="Chỉnh sửa"
-                      >
-                        <IconEdit />
-                      </button>
-                    </div>
+                  <td className="p-2">
+                    {/* Thêm nút hành động nếu cần */}
+                    <button
+                      className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
+                      onClick={() => handleViewDetail(inventory)}
+                      title="Xem chi tiết"
+                    >
+                      <IconEye size={24} />
+                    </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={10} className="text-center py-6 text-gray-500">
+                <td colSpan={11} className="text-center py-6 text-gray-500">
                   Không có dữ liệu kho hàng.
                 </td>
               </tr>
@@ -400,7 +470,6 @@ export default function InventoryPage() {
       {/* Inventory Detail Modal */}
       <InventoryDetailModal
         inventory={selectedInventory}
-        transactions={transactions}
         open={showDetailModal}
         onClose={handleCloseDetailModal}
       />
