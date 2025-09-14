@@ -2,8 +2,14 @@ import {
   IconCircleDashedPercentage,
   IconTruckDelivery,
 } from "@tabler/icons-react";
+import { useAuth } from "../../hooks/useAuth";
+import { useAuthModal } from "../../hooks/useAuthModal";
+import AuthModal from "../ui/auth/AuthModal";
 
 export default function CartBottom({ cart }) {
+  const { isAuthenticated } = useAuth();
+  const authModal = useAuthModal();
+
   // Tính tổng tiền và giảm giá
   const total = cart?.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -14,6 +20,15 @@ export default function CartBottom({ cart }) {
       acc + item.price * item.quantity * (item.discountPercentage / 100),
     0
   );
+
+  // Hàm xử lý khi nhấn nút Đặt hàng
+  const handleOrderClick = () => {
+    if (!isAuthenticated) {
+      authModal.openLogin();
+      return;
+    }
+    // Xử lý đặt hàng ở đây (chuyển đến trang thanh toán hoặc hiển thị modal)
+  };
 
   return (
     <div>
@@ -45,13 +60,20 @@ export default function CartBottom({ cart }) {
             </span>
           </div>
           <button
-            className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold"
+            className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
             disabled={cart?.length === 0}
+            onClick={handleOrderClick}
           >
             ĐẶT HÀNG
           </button>
         </div>
       </div>
+      <AuthModal
+        isOpen={authModal.isOpen}
+        onClose={authModal.close}
+        initialMode={authModal.mode}
+        stayOnPage={true}
+      />
     </div>
   );
 }
