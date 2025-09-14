@@ -4,11 +4,13 @@ import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
 import { ShoppingCart } from "react-feather";
 import getColorHex from "../utils/getColorHex";
+import { decodeId } from "../utils/encodeId";
 
 export default function ProductDetailPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "VI";
-  const { id } = useParams();
+  const { id: encodeId } = useParams();
+  const id = decodeId(encodeId);
   const { products = [] } = useProduct(lang);
 
   const [selectedVariant, setSelectedVariant] = useState(null);

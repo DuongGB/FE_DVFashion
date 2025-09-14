@@ -24,34 +24,36 @@ import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import CartLayout from "./layouts/CartLayout";
+import { AuthModalProvider } from "./contexts/AuthModalContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* OAuth2 redirect handler */}
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+    <AuthModalProvider>
+      <Router>
+        <Routes>
+          {/* OAuth2 redirect handler */}
+          <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-        {/* Admin routes - chỉ cho phép ROLE_ADMIN */}
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminPage />} />
-            <Route path="inventories" element={<InventoryPage />} />
-            <Route path="products" element={<ProductPage />} />
-            <Route path="categories" element={<CategoryPage />} />
-            <Route path="brands" element={<BrandPage />} />
-            <Route path="reviews" element={<ReviewPage />} />
-            <Route path="promotions" element={<PromotionPage />} />
-            <Route path="customers" element={<CustomerManagermentPage />} />
-            <Route path="employees" element={<EmployeePage />} />
-            <Route path="reports" element={<AnalystReportPage />} />
-            <Route path="forecasts" element={<ForecastPage />} />
-            <Route path="orders" element={<OrderPage />} />
+          {/* Admin routes - chỉ cho phép ROLE_ADMIN */}
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminPage />} />
+              <Route path="inventories" element={<InventoryPage />} />
+              <Route path="products" element={<ProductPage />} />
+              <Route path="categories" element={<CategoryPage />} />
+              <Route path="brands" element={<BrandPage />} />
+              <Route path="reviews" element={<ReviewPage />} />
+              <Route path="promotions" element={<PromotionPage />} />
+              <Route path="customers" element={<CustomerManagermentPage />} />
+              <Route path="employees" element={<EmployeePage />} />
+              <Route path="reports" element={<AnalystReportPage />} />
+              <Route path="forecasts" element={<ForecastPage />} />
+              <Route path="orders" element={<OrderPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
-        {/* <Route
+          {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
+          {/* <Route
           element={
             <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
           }
@@ -64,44 +66,45 @@ function App() {
             <Route path="promotions" element={<PromotionPage />} />
             <Route path="customers" element={<CustomerManagermentPage />} />
           </Route> */}
-        {/* </Route> */}
+          {/* </Route> */}
 
-        {/* Main layout routes */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/product/:id" element={<ProductDetailPage />} />
+          {/* Main layout routes */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/product/:id" element={<ProductDetailPage />} />
 
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_STAFF"]}
-              />
-            }
-          >
-            <Route path="/customer" element={<CustomerPage />} />
-            <Route path="/account" element={<AccountPage />} />
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={["ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_STAFF"]}
+                />
+              }
+            >
+              <Route path="/customer" element={<CustomerPage />} />
+              <Route path="/account" element={<AccountPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Cart layout */}
-        <Route element={<CartLayout />}>
-          <Route path="/cart" element={<CartPage />} />
-        </Route>
-      </Routes>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </Router>
+          {/* Cart layout */}
+          <Route element={<CartLayout />}>
+            <Route path="/cart" element={<CartPage />} />
+          </Route>
+        </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+      </Router>
+    </AuthModalProvider>
   );
 }
 
