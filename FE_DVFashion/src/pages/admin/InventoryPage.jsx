@@ -1,10 +1,21 @@
-import { IconEye, IconFilter } from "@tabler/icons-react";
+import {
+  IconPackageImport,
+  IconEye,
+  IconFilter,
+  IconAdjustments,
+  IconPackageExport,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import Pagination from "../../components/common/Pagination";
 import InventoryDetailModal from "../../components/ui/inventory/InventoryDetailModal";
 import { useInventory } from "../../hooks/useInventory";
+import ImportStockModal from "../../components/ui/inventory/ImportStockModal";
+import ExportStockModal from "../../components/ui/inventory/ExportStockModal";
+import AdjustStockModal from "../../components/ui/inventory/AdjustStockModal";
+import { useTranslation } from "react-i18next";
 
 export default function InventoryPage() {
+  const { t } = useTranslation();
   const { inventories, isLoading, error } = useInventory();
   const [search, setSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
@@ -33,8 +44,8 @@ export default function InventoryPage() {
   );
 
   // Nếu đang loading hoặc lỗi
-  if (isLoading) return <div>Đang tải dữ liệu kho...</div>;
-  if (error) return <div>Lỗi tải dữ liệu kho!</div>;
+  if (isLoading) return <div>{t("admin.inventory.loading")}</div>;
+  if (error) return <div>{t("admin.inventory.error")}</div>;
 
   // Lọc inventory
   const filteredInventories = (inventories || []).filter((inventory) => {
@@ -136,58 +147,48 @@ export default function InventoryPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý kho hàng</h1>
-        <div className="flex gap-4">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-            Nhập kho
-          </button>
-          <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-            Xuất kho
-          </button>
-          <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-800 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-            Điều chỉnh kho
-          </button>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold">{t("admin.inventory.title")}</h1>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
+              <p className="text-sm font-medium text-gray-600">
+                {t("admin.inventory.total_products")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {totalProducts}
               </p>
             </div>
           </div>
         </div>
-
         <div className="bg-white p-6 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Tồn kho bình thường
+                {t("admin.inventory.normal_stock")}
               </p>
               <p className="text-2xl font-bold text-green-600">{normalStock}</p>
             </div>
           </div>
         </div>
-
         <div className="bg-white p-6 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Sắp hết hàng</p>
+              <p className="text-sm font-medium text-gray-600">
+                {t("admin.inventory.low_stock")}
+              </p>
               <p className="text-2xl font-bold text-yellow-600">{lowStock}</p>
             </div>
           </div>
         </div>
-
         <div className="bg-white p-6 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Hết hàng</p>
+              <p className="text-sm font-medium text-gray-600">
+                {t("admin.inventory.out_of_stock")}
+              </p>
               <p className="text-2xl font-bold text-red-600">{outOfStock}</p>
             </div>
           </div>
@@ -200,23 +201,21 @@ export default function InventoryPage() {
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên, size..."
+              placeholder={t("admin.inventory.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Tất cả</option>
-            <option value="low">Sắp hết hàng</option>
-            <option value="out">Hết hàng</option>
+            <option value="all">{t("admin.inventory.all")}</option>
+            <option value="low">{t("admin.inventory.filter_low")}</option>
+            <option value="out">{t("admin.inventory.filter_out")}</option>
           </select>
-
           <button
             onClick={() => setShowAdvancedFilters((v) => !v)}
             className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer ${
@@ -226,7 +225,7 @@ export default function InventoryPage() {
             }`}
           >
             <IconFilter size={16} />
-            Bộ lọc nâng cao
+            {t("admin.inventory.advanced_filters")}
             {getActiveFiltersCount() > 0 && (
               <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
                 {getActiveFiltersCount()}
@@ -240,19 +239,21 @@ export default function InventoryPage() {
       {showAdvancedFilters && (
         <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-gray-700">Bộ lọc nâng cao</h3>
+            <h3 className="font-semibold text-gray-700">
+              {t("admin.inventory.advanced_filters")}
+            </h3>
             <button
               onClick={() => setFilters({ colors: [], sizes: [] })}
               className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
             >
-              Xoá tất cả
+              {t("admin.inventory.clear_all")}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Lọc theo màu */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Màu sắc
+                {t("admin.inventory.color")}
               </label>
               <div className="flex flex-wrap gap-2">
                 {availableColors.map((color) => (
@@ -280,7 +281,7 @@ export default function InventoryPage() {
             {/* Lọc theo size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size
+                {t("admin.inventory.size")}
               </label>
               <div className="flex flex-wrap gap-2">
                 {availableSizes.map((size) => (
@@ -313,11 +314,13 @@ export default function InventoryPage() {
       {getActiveFiltersCount() > 0 && (
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-600">Đang lọc theo:</span>
+            <span className="text-sm text-gray-600">
+              {t("admin.inventory.active_filters")}
+            </span>
             {/* Search */}
             {search && (
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                {`Tìm: "${search}"`}
+                {t("admin.inventory.search", { search })}
                 <button
                   onClick={() => removeFilter("search")}
                   className="hover:text-blue-600"
@@ -329,7 +332,9 @@ export default function InventoryPage() {
             {/* Stock filter */}
             {stockFilter !== "all" && (
               <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                {stockFilter === "low" ? "Sắp hết hàng" : "Hết hàng"}
+                {stockFilter === "low"
+                  ? t("admin.inventory.filter_low")
+                  : t("admin.inventory.filter_out")}
                 <button
                   onClick={() => removeFilter("stockFilter")}
                   className="hover:text-gray-600"
@@ -374,7 +379,10 @@ export default function InventoryPage() {
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {`Hiển thị ${paginatedInventories.length} trên tổng số ${filteredInventories.length} bản ghi`}
+        {t("admin.inventory.showing_results", {
+          current: paginatedInventories.length,
+          total: filteredInventories.length,
+        })}
       </div>
 
       {/* Inventory Table */}
@@ -382,17 +390,17 @@ export default function InventoryPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
-              <th className="p-3">ID</th>
-              <th className="p-3">Sản phẩm</th>
-              <th className="p-3">Màu sắc</th>
-              <th className="p-3">Size</th>
-              <th className="p-3">Tồn kho</th>
-              <th className="p-3">Đặt trước</th>
-              <th className="p-3">Khả dụng</th>
-              <th className="p-3">Mức tối thiểu</th>
-              <th className="p-3">Trạng thái</th>
-              <th className="p-3">Cập nhật cuối</th>
-              <th className="p-3">Hành động</th>
+              <th className="p-2">{t("admin.inventory.id")}</th>
+              <th className="p-2">{t("admin.inventory.product")}</th>
+              <th className="p-2">{t("admin.inventory.color")}</th>
+              <th className="p-2">{t("admin.inventory.size")}</th>
+              <th className="p-2">{t("admin.inventory.stock")}</th>
+              <th className="p-2">{t("admin.inventory.reserved")}</th>
+              <th className="p-2">{t("admin.inventory.available")}</th>
+              <th className="p-2">{t("admin.inventory.min_stock")}</th>
+              <th className="p-2">{t("admin.inventory.status")}</th>
+              <th className="p-2">{t("admin.inventory.last_updated")}</th>
+              <th className="p-2">{t("admin.inventory.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -420,15 +428,15 @@ export default function InventoryPage() {
                   <td className="p-2">
                     {inventory.quantityInStock === 0 ? (
                       <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
-                        Hết hàng
+                        {t("admin.inventory.status_out")}
                       </span>
                     ) : inventory.quantityInStock <= inventory.minStockLevel ? (
                       <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                        Sắp hết
+                        {t("admin.inventory.status_low")}
                       </span>
                     ) : (
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Bình thường
+                        {t("admin.inventory.status_normal")}
                       </span>
                     )}
                   </td>
@@ -436,13 +444,42 @@ export default function InventoryPage() {
                     {formatDate(inventory.lastUpdated)}
                   </td>
                   <td className="p-2">
-                    {/* Thêm nút hành động nếu cần */}
                     <button
                       className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
                       onClick={() => handleViewDetail(inventory)}
-                      title="Xem chi tiết"
+                      title={t("admin.inventory.view_detail")}
                     >
                       <IconEye size={24} />
+                    </button>
+                    <button
+                      className="text-green-600 hover:text-green-800 p-1 cursor-pointer"
+                      title={t("admin.inventory.import")}
+                      onClick={() => {
+                        setSelectedInventory(inventory);
+                        setShowImportModal(true);
+                      }}
+                    >
+                      <IconPackageImport size={24} />
+                    </button>
+                    <button
+                      className="text-orange-600 hover:text-orange-800 p-1 cursor-pointer"
+                      title={t("admin.inventory.export")}
+                      onClick={() => {
+                        setSelectedInventory(inventory);
+                        setShowExportModal(true);
+                      }}
+                    >
+                      <IconPackageExport size={24} />
+                    </button>
+                    <button
+                      className="text-purple-600 hover:text-purple-800 p-1 cursor-pointer"
+                      title={t("admin.inventory.adjust")}
+                      onClick={() => {
+                        setSelectedInventory(inventory);
+                        setShowAdjustModal(true);
+                      }}
+                    >
+                      <IconAdjustments size={24} />
                     </button>
                   </td>
                 </tr>
@@ -450,7 +487,7 @@ export default function InventoryPage() {
             ) : (
               <tr>
                 <td colSpan={11} className="text-center py-6 text-gray-500">
-                  Không có dữ liệu kho hàng.
+                  {t("admin.inventory.no_data")}
                 </td>
               </tr>
             )}
@@ -473,6 +510,33 @@ export default function InventoryPage() {
         open={showDetailModal}
         onClose={handleCloseDetailModal}
       />
+
+      {/* Import Stock Modal */}
+      {showImportModal && (
+        <ImportStockModal
+          open={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          inventory={selectedInventory}
+        />
+      )}
+
+      {/* Export Stock Modal */}
+      {showExportModal && (
+        <ExportStockModal
+          open={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          inventory={selectedInventory}
+        />
+      )}
+
+      {/* Adjust Stock Modal */}
+      {showAdjustModal && (
+        <AdjustStockModal
+          open={showAdjustModal}
+          onClose={() => setShowAdjustModal(false)}
+          inventory={selectedInventory}
+        />
+      )}
     </div>
   );
 }
