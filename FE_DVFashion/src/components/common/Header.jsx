@@ -10,6 +10,7 @@ import AuthModal from "../ui/auth/AuthModal";
 import CartDropdown from "../ui/cart/CartDropdown";
 import SearchPopup from "./SearchPopup";
 import { useAuthModal } from "../../contexts/AuthModalContext";
+import { useCart } from "../../hooks/useCart";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -17,7 +18,7 @@ const LangSwitchButton = ({ lang, onLangChange }) => (
     aria-label="Chuyển đổi ngôn ngữ"
     onClick={onLangChange}
   >
-    {lang === "VI" ? "EN" : "VI"}
+    {lang === "VI" ? "VI" : "EN"}
   </button>
 );
 
@@ -158,55 +159,12 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
   );
 }
 
-const demoCart = [
-  {
-    id: 1,
-    name: "Tshirt chạy bộ nữ AirRush Gradient",
-    color: "Trắng",
-    size: "XS",
-    price: 169000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 2,
-    name: "T-shirt thể thao nam FlexLine Active",
-    color: "Đen",
-    size: "L",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 3,
-    name: "T-shirt thể thao nam FlexLine Active V-neck",
-    color: "Navy",
-    size: "2XL",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 4,
-    name: "T-shirt thể thao nam FlexLine Active V-neck",
-    color: "Navy",
-    size: "2XL",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-];
-
 // Main menu component
 function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { t } = useTranslation();
   const [showSearch, setShowSearch] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const [cart, setCart] = useState(demoCart);
+  const { cart, isLoading, removeItem } = useCart();
   const searchRef = useRef();
   const cartRef = useRef();
 
@@ -226,15 +184,20 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSearch]);
+  }, [showSearch, showCart]);
 
-  const handleRemoveCartItem = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  // Xóa sản phẩm khỏi giỏ hàng
+  const handleRemoveCartItem = async (cartItemId) => {
+    await removeItem(cartItemId);
   };
 
-  const handleViewAllCart = () => {
+  const handleViewAllCart = (e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện nổi bọt
     window.location.href = "/cart";
   };
+
+  // Lấy số lượng sản phẩm trong giỏ hàng
+  const cartLength = cart?.items?.length || 0;
 
   return (
     <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
@@ -350,7 +313,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         >
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            {cart.length}
+            {cartLength}
           </span>
           <div className="hidden group-hover:block">
             <CartDropdown

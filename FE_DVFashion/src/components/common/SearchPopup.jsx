@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useProduct } from "../../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { encodeId } from "../../utils/encodeId";
 
 export default function SearchPopup({ show, onClose }) {
   const { t, i18n } = useTranslation();
@@ -114,7 +115,7 @@ export default function SearchPopup({ show, onClose }) {
                           : null;
                       return (
                         <Link
-                          to={`/product/${p.id}`}
+                          to={`/product/${encodeId(p.id)}`}
                           key={p.id}
                           className="block hover:shadow-lg transition"
                           onClick={onClose}
