@@ -329,6 +329,40 @@
       "policy_fast_refund": "Home pickup & refund within 24h"
     }
   },
+  "cart": {
+    "title": "Cart",
+    "shipping_info": "Shipping Information",
+    "salutation": {
+      "default": "Mr/Ms",
+      "male": "Mr",
+      "female": "Ms",
+      "other": "Prefer not to say"
+    },
+    "name_placeholder": "Enter your full name",
+    "phone_placeholder": "Phone number",
+    "email_placeholder": "Email",
+    "address_placeholder": "Address",
+    "province_placeholder": "Select province/city",
+    "note_placeholder": "Enter note",
+    "other_receiver": "Call another receiver (if any)",
+    "vat": "Issue VAT invoice",
+    "payment_method": "Payment Method",
+    "payment_cod": "Cash on delivery",
+    "payment_online": "Pay via Paypal",
+    "payment_online_note": "Supports all payment methods",
+    "choose_from_address_book": "Choose from address book",
+    "select_all": "All products",
+    "clear_all": "Clear all",
+    "empty_title": "Your cart is empty",
+    "empty_subtitle": "Buy more products to receive attractive offers!",
+    "shop_now": "Shop now",
+    "remove": "Remove",
+    "discount_code_placeholder": "Enter discount code",
+    "apply": "APPLY",
+    "promotion_expiry": "Expiry: {{date}}",
+    "promotion_not_qualified": "Order does not meet conditions",
+    "loading": "Loading cart..."
+  },
 
   "admin": {
     "settings": {

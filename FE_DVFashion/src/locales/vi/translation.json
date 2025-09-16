@@ -329,6 +329,40 @@
       "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h"
     }
   },
+  "cart": {
+    "title": "Giỏ hàng",
+    "shipping_info": "Thông tin vận chuyển",
+    "salutation": {
+      "default": "Anh/Chị",
+      "male": "Anh",
+      "female": "Chị",
+      "other": "Không tiết lộ"
+    },
+    "name_placeholder": "Nhập họ và tên của bạn",
+    "phone_placeholder": "Số điện thoại",
+    "email_placeholder": "Email",
+    "address_placeholder": "Địa chỉ",
+    "province_placeholder": "Chọn tỉnh/thành phố",
+    "note_placeholder": "Nhập ghi chú",
+    "other_receiver": "Gọi người khác nhận hàng (nếu có)",
+    "vat": "Xuất hoá đơn VAT",
+    "payment_method": "Hình thức thanh toán",
+    "payment_cod": "Thanh toán khi nhận hàng",
+    "payment_online": "Thanh toán qua Paypal",
+    "payment_online_note": "Hỗ trợ mọi hình thức thanh toán",
+    "choose_from_address_book": "Chọn từ sổ địa chỉ",
+    "select_all": "Tất cả sản phẩm",
+    "clear_all": "Xóa tất cả",
+    "empty_title": "Giỏ hàng bạn đang trống",
+    "empty_subtitle": "Hãy mua thêm sản phẩm để nhận nhiều ưu đãi hấp dẫn!",
+    "shop_now": "Mua sắm ngay",
+    "remove": "Xóa",
+    "discount_code_placeholder": "Nhập mã giảm giá",
+    "apply": "ÁP DỤNG",
+    "promotion_expiry": "HSD: {{date}}",
+    "promotion_not_qualified": "Đơn hàng chưa đủ điều kiện",
+    "loading": "Đang tải giỏ hàng..."
+  },
 
   "admin": {
     "settings": {
