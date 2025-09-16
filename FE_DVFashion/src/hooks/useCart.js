@@ -11,7 +11,22 @@ export const useCart = () => {
     error,
   } = useQuery({
     queryKey: ["cart"],
-    queryFn: () => cartAPI.getCart().then((res) => res.data.data),
+    queryFn: async () => {
+      try {
+        const res = await cartAPI.getCart();
+        console.log("Cart response:", res.data);
+        return res.data.data || res.data || { items: [] };
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+        return { items: [] };
+      }
+    },
+    retry: (failureCount, error) => {
+      if (error.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 
   // Thêm vào giỏ hàng
@@ -24,8 +39,8 @@ export const useCart = () => {
 
   // Cập nhật số lượng
   const updateQuantityMutation = useMutation({
-    mutationFn: ({ cartItemId, quantity }) =>
-      cartAPI.updateCartItemQuantity(cartItemId, { quantity }),
+    mutationFn: ({ cartItemId, newQuantity }) =>
+      cartAPI.updateCartItemQuantity(cartItemId, { newQuantity }),
     onSuccess: () => {
       queryClient.invalidateQueries(["cart"]);
     },

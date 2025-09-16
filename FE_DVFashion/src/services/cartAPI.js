@@ -15,15 +15,19 @@ export const cartAPI = {
   },
 
   // Cập nhật số lượng sản phẩm trong giỏ hàng
-  updateCartItemQuantity: (cartItemId, data, lang) => {
-    return api.put(`/cart/items/${cartItemId}?lang=${lang}`, data, {
-      headers: { "Content-Type": "application/json" },
-    });
+  updateCartItemQuantity: (cartItemId, data, lang = "VI") => {
+    return api.put(
+      `/cart/items/${cartItemId}/quantity?lang=${lang}`,
+      { newQuantity: data.newQuantity },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   },
 
   // Xóa một sản phẩm khỏi giỏ hàng
   removeCartItem: (cartItemId, lang) => {
-    return api.delete(`/cart/items/${cartItemId}/?lang=${lang}`);
+    return api.delete(`/cart/items/${cartItemId}?lang=${lang}`);
   },
 
   // Xóa toàn bộ giỏ hàng
