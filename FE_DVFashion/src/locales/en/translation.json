@@ -315,6 +315,14 @@
     }
   },
   "product": {
+    "card": {
+      "quick_add": "Quick add to cart",
+      "choose_valid_color": "Please select a valid color.",
+      "choose_valid_size": "Please select a valid size.",
+      "added_to_cart": "Added to cart",
+      "login_to_add": "Please login to add products to cart.",
+      "out_of_stock": "Product is out of stock!"
+    },
     "detail": {
       "cashback": "Earn up to",
       "color": "Color:",

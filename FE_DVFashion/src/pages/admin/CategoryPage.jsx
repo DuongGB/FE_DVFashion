@@ -20,7 +20,7 @@ export default function CategoryPage() {
     status: null,
     delete: null,
   });
-  const [originalOrder, setOriginalOrder] = useState([]); // Store original order
+  const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
 
   // Get language from i18n instead of local state

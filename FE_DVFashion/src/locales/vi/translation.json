@@ -315,6 +315,14 @@
     }
   },
   "product": {
+    "card": {
+      "quick_add": "Thêm nhanh vào giỏ hàng",
+      "choose_valid_color": "Vui lòng chọn màu sắc hợp lệ.",
+      "choose_valid_size": "Vui lòng chọn kích thước hợp lệ.",
+      "added_to_cart": "Đã thêm vào giỏ hàng",
+      "login_to_add": "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.",
+      "out_of_stock": "Sản phẩm đã hết hàng!"
+    },
     "detail": {
       "cashback": "Được hoàn lên đến",
       "color": "Màu sắc:",

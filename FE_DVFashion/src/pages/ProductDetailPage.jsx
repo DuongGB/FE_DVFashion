@@ -8,6 +8,7 @@ import getColorHex from "../utils/getColorHex";
 import { decodeId } from "../utils/encodeId";
 import { useCart } from "../hooks/useCart";
 import { toast } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 
 export default function ProductDetailPage() {
   const { t, i18n } = useTranslation();
@@ -15,6 +16,7 @@ export default function ProductDetailPage() {
   const { id: encodeId } = useParams();
   const id = decodeId(encodeId);
   const { products = [] } = useProduct(lang);
+  const { isAuthenticated } = useAuth();
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -63,7 +65,7 @@ export default function ProductDetailPage() {
     const sizeObj = selectedVariant.sizes?.find(
       (s) => s.sizeName === selectedSize || s.name === selectedSize
     );
-    if (!sizeObj) return toast.error("Vui lòng chọn kích thước!");
+    if (!sizeObj) return toast.error(t("product.card.choose_valid_size"));
 
     try {
       await addToCart({
@@ -71,10 +73,14 @@ export default function ProductDetailPage() {
         sizeId: sizeObj.id || sizeObj.sizeId,
         quantity,
       });
-      toast.success("Đã thêm vào giỏ hàng");
+      toast.success(t("product.card.added_to_cart"));
       // Không chuyển trang, không nhảy đi đâu cả
     } catch (error) {
-      toast.error("Sản phẩm đã hết hàng!");
+      if (!isAuthenticated) {
+        toast.error(t("product.card.login_to_add"));
+        return;
+      }
+      toast.error(t("product.card.out_of_stock"));
     }
   };
 

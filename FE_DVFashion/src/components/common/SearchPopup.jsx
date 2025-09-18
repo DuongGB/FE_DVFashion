@@ -3,8 +3,10 @@ import { useProduct } from "../../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { encodeId } from "../../utils/encodeId";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchPopup({ show, onClose }) {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "VI";
   const { products = [] } = useProduct(lang);
@@ -153,8 +155,14 @@ export default function SearchPopup({ show, onClose }) {
                       );
                     })}
                   </div>
-                  <button className="mt-8 px-8 py-2 bg-black text-white rounded-full font-bold hover:bg-gray-900">
-                    {t("search.view_all", "XEM TẤT CẢ")}
+                  <button
+                    className="mt-8 px-8 py-2 bg-black text-white rounded-full font-bold hover:bg-gray-900"
+                    onClick={() => {
+                      navigate(`/search?q=${encodeURIComponent(search)}`);
+                      onClose();
+                    }}
+                  >
+                    {t("search.view_all")}
                   </button>
                 </>
               ) : (

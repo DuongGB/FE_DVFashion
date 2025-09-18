@@ -4,9 +4,13 @@ import { useState, useEffect } from "react";
 import { encodeId } from "../../utils/encodeId";
 import { useCart } from "../../hooks/useCart";
 import { toast } from "react-toastify";
+import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 export default function ProductCard({ product }) {
+  const { t } = useTranslation();
   const { addToCart, isAdding } = useCart();
+  const { isAuthenticated } = useAuth();
 
   // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
   const [activeColor, setActiveColor] = useState(
@@ -59,14 +63,14 @@ export default function ProductCard({ product }) {
     // Tìm variant theo màu đang chọn
     const variant = product.variants?.find((v) => v.color === activeColor);
     if (!variant) {
-      toast.error("Vui lòng chọn màu sắc hợp lệ.");
+      toast.error(t("product.card.choose_valid_color"));
       return;
     }
 
     // Tìm size trong variant
     const size = variant.sizes?.find((s) => s.sizeName === sizeName);
     if (!size) {
-      toast.error("Vui lòng chọn kích thước hợp lệ.");
+      toast.error(t("product.card.choose_valid_size"));
       return;
     }
 
@@ -76,9 +80,13 @@ export default function ProductCard({ product }) {
         sizeId: size.id,
         quantity: 1,
       });
-      toast.success("Đã thêm vào giỏ hàng");
+      toast.success(t("product.card.added_to_cart"));
     } catch (error) {
-      toast.error("Sản phẩm đã hết hàng!");
+      if (!isAuthenticated) {
+        toast.error(t("product.card.login_to_add"));
+        return;
+      }
+      toast.error(t("product.card.out_of_stock"));
     }
   };
 
@@ -100,7 +108,9 @@ export default function ProductCard({ product }) {
           </span>
         )}
         <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition rounded-lg">
-          <span className="text-white text-sm">Thêm nhanh vào giỏ hàng</span>
+          <span className="text-white text-sm">
+            {t("product.card.quick_add")}
+          </span>
           <div className="flex gap-2">
             {sizes.map((size) => (
               <button
