@@ -24,6 +24,7 @@ import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import CartLayout from "./layouts/CartLayout";
+import SearchProductPage from "./pages/SearchProductPage";
 import { AuthModalProvider } from "./contexts/AuthModalContext";
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route path="/search" element={<SearchProductPage />} />
 
             <Route
               element={

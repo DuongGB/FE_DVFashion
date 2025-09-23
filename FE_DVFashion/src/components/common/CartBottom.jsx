@@ -5,20 +5,42 @@ import {
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function CartBottom({ cart }) {
+export default function CartBottom({ cart, total, discount }) {
   const { isAuthenticated } = useAuth();
   const authModal = useAuthModal();
 
-  // Tính tổng tiền và giảm giá
-  const total = cart?.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-  const discount = cart?.reduce(
-    (acc, item) =>
-      acc + item.price * item.quantity * (item.discountPercentage / 100),
-    0
-  );
+  // Nếu truyền total từ trên xuống thì dùng, không thì tự tính
+  const computedTotal =
+    typeof total === "number"
+      ? total
+      : cart?.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
+
+  // Nếu truyền discount từ trên xuống thì dùng, không thì tự tính
+  const computedDiscount =
+    typeof discount === "number"
+      ? discount
+      : cart?.reduce(
+          (acc, item) =>
+            acc +
+            (item.oldPrice ? item.oldPrice : item.unitPrice) * item.quantity,
+          0
+        ) - computedTotal;
+
+  // // Tính tổng tiền thực trả
+  // const total = cart?.reduce(
+  //   (acc, item) => acc + item.unitPrice * item.quantity,
+  //   0
+  // );
+
+  // // Tính tổng tiền gốc (chưa giảm giá)
+  // const originalTotal = cart?.reduce(
+  //   (acc, item) =>
+  //     acc + (item.oldPrice ? item.oldPrice : item.unitPrice) * item.quantity,
+  //   0
+  // );
+
+  // // Tính tổng giảm giá
+  // const discount = originalTotal - total;
 
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleOrderClick = () => {
@@ -49,12 +71,12 @@ export default function CartBottom({ cart }) {
         <div className="w-[600px] flex items-center justify-between bg-white px-10 py-4 border-t">
           <div className="flex items-center">
             <span className="text-2xl font-bold text-blue-700">
-              {total?.toLocaleString()}đ
+              {computedTotal?.toLocaleString()}đ
             </span>
             <span className="ml-4 text-xs text-gray-500">
               Tiết kiệm{" "}
               <span className="font-bold">
-                {discount > 0 ? discount?.toLocaleString() : "0"}đ
+                {computedDiscount > 0 ? discount?.toLocaleString() : "0"}đ
               </span>
             </span>
           </div>

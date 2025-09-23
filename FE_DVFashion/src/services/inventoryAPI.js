@@ -8,21 +8,21 @@ export const inventoryAPI = {
 
   // Nhập kho
   importStock: (data, lang = "VI") => {
-    return api.post(`/inventories/import/${lang}`, data, {
+    return api.post(`/inventories/import?lang=${lang}`, data, {
       headers: { "Content-Type": "application/json" },
     });
   },
 
   // Xuất kho
   exportStock: (data, lang = "VI") => {
-    return api.post(`/inventories/export/${lang}`, data, {
+    return api.post(`/inventories/export?lang=${lang}`, data, {
       headers: { "Content-Type": "application/json" },
     });
   },
 
   // Điều chỉnh kho
   adjustStock: (data, lang = "VI") => {
-    return api.post(`/inventories/adjust/${lang}`, data, {
+    return api.post(`/inventories/adjust?lang=${lang}`, data, {
       headers: { "Content-Type": "application/json" },
     });
   },

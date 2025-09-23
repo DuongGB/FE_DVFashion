@@ -9,13 +9,23 @@ import {
   IconHistory,
   IconClipboardList,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 const transactionTypes = {
-  IN: { label: "Nhập kho", color: "bg-green-500" },
-  OUT: { label: "Xuất kho", color: "bg-red-500" },
-  ADJUSTMENT: { label: "Điều chỉnh", color: "bg-yellow-500" },
-  RESERVED: { label: "Đặt trước", color: "bg-blue-500" },
-  RELEASED: { label: "Giải phóng", color: "bg-purple-500" },
+  IN: { label: "admin.inventory_detail.transaction.in", color: "bg-green-500" },
+  OUT: { label: "admin.inventory_detail.transaction.out", color: "bg-red-500" },
+  ADJUSTMENT: {
+    label: "admin.inventory_detail.transaction.adjustment",
+    color: "bg-yellow-500",
+  },
+  RESERVED: {
+    label: "admin.inventory_detail.transaction.reserved",
+    color: "bg-blue-500",
+  },
+  RELEASED: {
+    label: "admin.inventory_detail.transaction.released",
+    color: "bg-purple-500",
+  },
 };
 
 export default function InventoryDetailModal({
@@ -24,6 +34,7 @@ export default function InventoryDetailModal({
   open,
   onClose,
 }) {
+  const { t } = useTranslation();
   if (!open || !inventory) return null;
 
   // Format date for display
@@ -48,20 +59,20 @@ export default function InventoryDetailModal({
   const getStockStatus = (inventory) => {
     if (inventory.quantity === 0) {
       return {
-        label: "Hết hàng",
+        label: t("admin.inventory.status_out"),
         color: "bg-red-100 text-red-800",
         textColor: "text-red-600",
       };
     }
     if (inventory.quantity <= inventory.minStockLevel) {
       return {
-        label: "Sắp hết hàng",
+        label: t("admin.inventory.status_low"),
         color: "bg-yellow-100 text-yellow-800",
         textColor: "text-yellow-600",
       };
     }
     return {
-      label: "Bình thường",
+      label: t("admin.inventory.status_normal"),
       color: "bg-green-100 text-green-800",
       textColor: "text-green-600",
     };
@@ -99,7 +110,9 @@ export default function InventoryDetailModal({
         <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-3">
             <IconBox size={28} className="text-white" />
-            <h2 className="text-2xl font-bold">Chi tiết tồn kho</h2>
+            <h2 className="text-2xl font-bold">
+              {t("admin.inventory_detail.title")}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -117,37 +130,47 @@ export default function InventoryDetailModal({
               <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconPackage size={18} className="text-blue-600" />
-                  Thông tin sản phẩm
+                  {t("admin.inventory_detail.product_info")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <strong className="text-gray-600">ID Inventory:</strong>
+                    <strong className="text-gray-600">
+                      {t("admin.inventory.id")}:
+                    </strong>
                     <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">
                       #{inventory.id}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">Sản phẩm:</strong>
+                    <strong className="text-gray-600">
+                      {t("admin.inventory.product")}:
+                    </strong>
                     <span className="ml-2 font-medium">
                       {inventory.productName}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">Màu sắc:</strong>
+                    <strong className="text-gray-600">
+                      {t("admin.inventory.color")}:
+                    </strong>
                     <span className="ml-2 flex items-center gap-1">
                       <IconPalette size={16} className="text-blue-400" />
                       {inventory.productColor}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">Size:</strong>
+                    <strong className="text-gray-600">
+                      {t("admin.inventory.size")}:
+                    </strong>
                     <span className="ml-2 flex items-center gap-1">
                       <IconRuler size={16} className="text-green-400" />
                       {inventory.sizeName}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">Cập nhật cuối:</strong>
+                    <strong className="text-gray-600">
+                      {t("admin.inventory.last_updated")}:
+                    </strong>
                     <span className="ml-2 text-sm">
                       {formatDate(inventory.lastUpdated)}
                     </span>
@@ -159,20 +182,24 @@ export default function InventoryDetailModal({
               <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconClipboardList size={18} className="text-purple-600" />
-                  Thông tin tồn kho
+                  {t("admin.inventory_detail.stock_info")}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded border">
                     <div className="text-2xl font-bold text-blue-600">
                       {inventory.quantityInStock}
                     </div>
-                    <div className="text-sm text-gray-600">Tổng số lượng</div>
+                    <div className="text-sm text-gray-600">
+                      {t("admin.inventory.stock")}
+                    </div>
                   </div>
                   <div className="text-center p-3 bg-orange-50 rounded border">
                     <div className="text-2xl font-bold text-orange-600">
                       {inventory.reservedQuantity}
                     </div>
-                    <div className="text-sm text-gray-600">Đặt trước</div>
+                    <div className="text-sm text-gray-600">
+                      {t("admin.inventory.reserved")}
+                    </div>
                   </div>
                   <div className="text-center p-3 bg-green-50 rounded border">
                     <div
@@ -180,17 +207,23 @@ export default function InventoryDetailModal({
                     >
                       {getAvailableQuantity(inventory)}
                     </div>
-                    <div className="text-sm text-gray-600">Khả dụng</div>
+                    <div className="text-sm text-gray-600">
+                      {t("admin.inventory.available")}
+                    </div>
                   </div>
                   <div className="text-center p-3 bg-red-50 rounded border">
                     <div className="text-2xl font-bold text-red-600">
                       {inventory.minStockLevel}
                     </div>
-                    <div className="text-sm text-gray-600">Mức tối thiểu</div>
+                    <div className="text-sm text-gray-600">
+                      {t("admin.inventory.min_stock")}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-3">
-                  <strong className="text-gray-600">Trạng thái:</strong>
+                  <strong className="text-gray-600">
+                    {t("admin.inventory.status")}:
+                  </strong>
                   <span
                     className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${stockStatus.color}`}
                   >
@@ -205,9 +238,11 @@ export default function InventoryDetailModal({
               <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconHistory size={18} className="text-orange-600" />
-                  Lịch sử giao dịch
+                  {t("admin.inventory_detail.transaction_history")}
                   <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-normal">
-                    {inventoryTransactions.length} giao dịch
+                    {t("admin.inventory_detail.transaction_count", {
+                      count: inventoryTransactions.length,
+                    })}
                   </span>
                 </h3>
                 <div className="max-h-96 overflow-y-auto">
@@ -215,12 +250,24 @@ export default function InventoryDetailModal({
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-100">
-                          <th className="p-2">Loại</th>
-                          <th className="p-2">Ngày</th>
-                          <th className="p-2">SL</th>
-                          <th className="p-2">Tham chiếu</th>
-                          <th className="p-2">Người tạo</th>
-                          <th className="p-2">Ghi chú</th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_type")}
+                          </th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_date")}
+                          </th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_quantity")}
+                          </th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_reference")}
+                          </th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_creator")}
+                          </th>
+                          <th className="p-2">
+                            {t("admin.inventory_detail.transaction_notes")}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -233,7 +280,7 @@ export default function InventoryDetailModal({
                                   "bg-gray-500"
                                 }`}
                               >
-                                {transactionTypes[transaction.type]?.label ||
+                                {t(transactionTypes[transaction.type]?.label) ||
                                   transaction.type}
                               </span>
                             </td>
@@ -268,9 +315,9 @@ export default function InventoryDetailModal({
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       <div className="text-4xl mb-2">📦</div>
-                      <div>Chưa có giao dịch nào</div>
+                      <div>{t("admin.inventory_detail.no_transaction")}</div>
                       <div className="text-sm">
-                        Các giao dịch nhập/xuất kho sẽ hiển thị tại đây
+                        {t("admin.inventory_detail.no_transaction_desc")}
                       </div>
                     </div>
                   )}
@@ -284,26 +331,32 @@ export default function InventoryDetailModal({
             <div className="mt-6 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
               <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                 <IconAlertTriangle size={18} className="text-yellow-600" />
-                Thống kê giao dịch
+                {t("admin.inventory_detail.transaction_stats")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-green-100 p-3 rounded text-center">
                   <div className="text-lg font-bold text-green-700">
                     {totalIn}
                   </div>
-                  <div className="text-sm text-green-600">Tổng nhập</div>
+                  <div className="text-sm text-green-600">
+                    {t("admin.inventory_detail.total_in")}
+                  </div>
                 </div>
                 <div className="bg-red-100 p-3 rounded text-center">
                   <div className="text-lg font-bold text-red-700">
                     {totalOut}
                   </div>
-                  <div className="text-sm text-red-600">Tổng xuất</div>
+                  <div className="text-sm text-red-600">
+                    {t("admin.inventory_detail.total_out")}
+                  </div>
                 </div>
                 <div className="bg-yellow-100 p-3 rounded text-center">
                   <div className="text-lg font-bold text-yellow-700">
                     {totalAdjustment}
                   </div>
-                  <div className="text-sm text-yellow-600">Điều chỉnh</div>
+                  <div className="text-sm text-yellow-600">
+                    {t("admin.inventory_detail.total_adjustment")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -313,17 +366,21 @@ export default function InventoryDetailModal({
           <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm mt-6">
             <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
               <IconCalendar size={18} className="text-green-600" />
-              Thời gian
+              {t("admin.inventory_detail.timestamps")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <strong className="text-gray-600">Tạo lúc:</strong>
+                <strong className="text-gray-600">
+                  {t("admin.inventory_detail.created_at")}:
+                </strong>
                 <span className="ml-2 text-gray-800">
                   {formatDate(inventory.createdAt)}
                 </span>
               </div>
               <div>
-                <strong className="text-gray-600">Cập nhật lúc:</strong>
+                <strong className="text-gray-600">
+                  {t("admin.inventory_detail.updated_at")}:
+                </strong>
                 <span className="ml-2 text-gray-800">
                   {formatDate(inventory.lastUpdated)}
                 </span>
@@ -337,7 +394,7 @@ export default function InventoryDetailModal({
               onClick={onClose}
               className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
             >
-              Đóng
+              {t("admin.inventory_detail.close")}
             </button>
           </div>
         </div>

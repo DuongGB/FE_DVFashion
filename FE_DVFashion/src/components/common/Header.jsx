@@ -10,6 +10,8 @@ import AuthModal from "../ui/auth/AuthModal";
 import CartDropdown from "../ui/cart/CartDropdown";
 import SearchPopup from "./SearchPopup";
 import { useAuthModal } from "../../contexts/AuthModalContext";
+import { useCart } from "../../hooks/useCart";
+import { usePublicCategories } from "../../hooks/useCategory";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -17,79 +19,9 @@ const LangSwitchButton = ({ lang, onLangChange }) => (
     aria-label="Chuyển đổi ngôn ngữ"
     onClick={onLangChange}
   >
-    {lang === "VI" ? "EN" : "VI"}
+    {lang === "VI" ? "VI" : "EN"}
   </button>
 );
-
-const megaMenuItems = [
-  {
-    title: "TẤT CẢ SẢN PHẨM",
-    arrow: true,
-    items: [
-      {
-        label: "Sản phẩm mới",
-        to: "#",
-        className: "text-blue-600 font-medium",
-      },
-      { label: "Bán chạy nhất", isBold: true },
-      { label: "ECC Collection", to: "#" },
-      { label: "Excool Collection", to: "#" },
-      { label: "Copper Denim", to: "#" },
-      { label: "Promax", to: "#" },
-    ],
-  },
-  {
-    title: "ÁO NAM",
-    arrow: true,
-    items: [
-      { label: "Áo Tanktop", to: "#" },
-      { label: "Áo thun", to: "#" },
-      { label: "Áo Thể Thao", to: "#" },
-      { label: "Áo Polo", to: "#" },
-      { label: "Áo Sơ Mi", to: "#" },
-      { label: "Áo Dài Tay", to: "#" },
-      { label: "Áo Khoác", to: "#" },
-      { label: "Áo thun Graphic", to: "#" },
-    ],
-  },
-  {
-    title: "QUẦN NAM",
-    arrow: true,
-    items: [
-      { label: "Quần Short", to: "#" },
-      { label: "Quần Jogger", to: "#" },
-      { label: "Quần Thể Thao", to: "#" },
-      { label: "Quần Dài", to: "#" },
-      { label: "Quần Pants", to: "#" },
-      { label: "Quần Jean", to: "#" },
-      { label: "Quần Kaki", to: "#" },
-      { label: "Quần Bơi", to: "#" },
-    ],
-  },
-  {
-    title: "QUẦN LÓT NAM",
-    arrow: true,
-    items: [
-      { label: "Brief (Tam giác)", to: "#" },
-      { label: "Trunk (Boxer)", to: "#" },
-      { label: "Boxer Brief (Boxer dài)", to: "#" },
-      { label: "Long Leg", to: "#" },
-      { label: "Short mặc nhà", to: "#" },
-    ],
-  },
-  {
-    title: "PHỤ KIỆN",
-    arrow: true,
-    items: [
-      { label: "Tất cả phụ kiện", to: "#" },
-      {
-        label: "(Tất, mũ, túi...)",
-        isItalic: true,
-        className: "italic text-gray-500",
-      },
-    ],
-  },
-];
 
 // Top bar component
 function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
@@ -158,57 +90,59 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
   );
 }
 
-const demoCart = [
-  {
-    id: 1,
-    name: "Tshirt chạy bộ nữ AirRush Gradient",
-    color: "Trắng",
-    size: "XS",
-    price: 169000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 2,
-    name: "T-shirt thể thao nam FlexLine Active",
-    color: "Đen",
-    size: "L",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 3,
-    name: "T-shirt thể thao nam FlexLine Active V-neck",
-    color: "Navy",
-    size: "2XL",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-  {
-    id: 4,
-    name: "T-shirt thể thao nam FlexLine Active V-neck",
-    color: "Navy",
-    size: "2XL",
-    price: 179000,
-    oldPrice: 199000,
-    quantity: 1,
-    image: "https://pos.nvncdn.com/f4d87e-8901/ps/20250225_BLkcRuPLdV.jpeg",
-  },
-];
-
 // Main menu component
 function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { t } = useTranslation();
   const [showSearch, setShowSearch] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const [cart, setCart] = useState(demoCart);
+  const { cart, isLoading, removeItem } = useCart();
   const searchRef = useRef();
   const cartRef = useRef();
+
+  const [activeMenu, setActiveMenu] = useState(null);
+
+  // Xử lý hover vào từng menu item
+  const handleMouseEnter = (menuKey) => setActiveMenu(menuKey);
+  const handleMouseLeave = () => setActiveMenu(null);
+
+  const menuItems = [
+    {
+      key: "new",
+      label: t("header.navigation.new"),
+      color: "text-blue-600",
+      underline: "bg-blue-600",
+    },
+    {
+      key: "men",
+      label: t("header.navigation.men"),
+      color: "",
+      underline: "bg-black",
+    },
+    {
+      key: "women",
+      label: t("header.navigation.women"),
+      color: "",
+      underline: "bg-black",
+    },
+    {
+      key: "sports",
+      label: t("header.navigation.sports"),
+      color: "",
+      underline: "bg-black",
+    },
+    {
+      key: "sale",
+      label: t("header.navigation.sale"),
+      color: "text-red-600",
+      underline: "bg-red-600",
+    },
+    {
+      key: "cs",
+      label: t("header.navigation.cs"),
+      color: "",
+      underline: "bg-black",
+    },
+  ];
 
   // Đóng popup khi click ra ngoài
   useEffect(() => {
@@ -226,15 +160,20 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSearch]);
+  }, [showSearch, showCart]);
 
-  const handleRemoveCartItem = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  // Xóa sản phẩm khỏi giỏ hàng
+  const handleRemoveCartItem = async (cartItemId) => {
+    await removeItem(cartItemId);
   };
 
-  const handleViewAllCart = () => {
+  const handleViewAllCart = (e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện nổi bọt
     window.location.href = "/cart";
   };
+
+  // Lấy số lượng sản phẩm trong giỏ hàng
+  const cartLength = cart?.items?.length || 0;
 
   return (
     <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
@@ -250,54 +189,31 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       </div>
       {/* Nav */}
       <nav className="flex gap-8 font-bold text-lg items-center relative w-full justify-center">
-        <div className="group relative w-[110px] flex justify-center">
-          <Link
-            to="/"
-            className="cursor-pointer w-full text-center text-blue-600"
+        {menuItems.map((item) => (
+          <div
+            key={item.key}
+            className="group relative w-[110px] flex justify-center"
+            onMouseEnter={() => handleMouseEnter(item.key)}
+            onMouseLeave={handleMouseLeave}
           >
-            {t("header.navigation.new")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-blue-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
-        <div className="group relative w-[110px] flex justify-center">
-          <Link to="/" className="cursor-pointer w-full text-center">
-            {t("header.navigation.men")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
-        <div className="group relative w-[110px] flex justify-center">
-          <Link to="/" className="cursor-pointer w-full text-center">
-            {t("header.navigation.women")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
-        <div className="group relative w-[110px] flex justify-center">
-          <Link to="/" className="cursor-pointer w-full text-center">
-            {t("header.navigation.sports")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
-        <div className="group relative w-[110px] flex justify-center">
-          <Link
-            to="/"
-            className="flex flex-col items-center text-red-600 font-bold w-full text-center"
-          >
-            {t("header.navigation.sale")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-red-600 rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
-        <div className="group relative w-[110px] flex justify-center">
-          <Link to="/" className="cursor-pointer w-full text-center">
-            {t("header.navigation.cs")}
-          </Link>
-          <div className="absolute left-0 right-0 -bottom-1 h-[3px] w-0 bg-black rounded-full transition-all duration-500 group-hover:w-full"></div>
-          <MegaMenu />
-        </div>
+            <Link
+              to="/"
+              className={`cursor-pointer w-full text-center ${item.color}`}
+            >
+              {item.label}
+            </Link>
+            <div
+              className={`absolute left-0 right-0 -bottom-1 h-[3px] w-0 ${item.underline} rounded-full transition-all duration-500 group-hover:w-full`}
+            ></div>
+            {/* MegaMenu chỉ hiện khi activeMenu === item.key */}
+            {activeMenu === item.key && (
+              <MegaMenu
+                onMouseEnter={() => handleMouseEnter(item.key)}
+                onMouseLeave={handleMouseLeave}
+              />
+            )}
+          </div>
+        ))}
       </nav>
       {/* Search, Account, Cart */}
       <div className="flex items-center gap-4" ref={searchRef}>
@@ -350,7 +266,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         >
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            {cart.length}
+            {cartLength}
           </span>
           <div className="hidden group-hover:block">
             <CartDropdown
@@ -366,40 +282,54 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 }
 
 // MegaMenu component
-function MegaMenu() {
+function MegaMenu({ onMouseEnter, onMouseLeave }) {
+  const { t, i18n } = useTranslation();
+  const { categories, isLoading, error } = usePublicCategories(i18n.language);
+
+  // Chỉ lấy các category active
+  const activeCategories = categories?.filter((cat) => cat.active) || [];
+
+  if (isLoading) {
+    return (
+      <div
+        className="p-8 text-center"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        {t("category.loading", "Đang tải danh mục...")}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="p-8 text-center text-red-500"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        {t("category.error_loading")}
+      </div>
+    );
+  }
   return (
     <div
-      className="fixed left-1/2 top-[100px] transform -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white shadow-2xl rounded-2xl py-8 px-0 flex gap-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 z-50 text-base border border-gray-200 overflow-hidden"
+      className="fixed left-1/2 top-[95px] transform -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white shadow-2xl rounded-2xl py-8 px-0 flex gap-0 opacity-100 pointer-events-auto transition-all duration-200 z-50 text-base border border-gray-200 overflow-hidden"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{ minHeight: "420px" }}
     >
-      {/* Render columns from menuItems */}
+      {/* Banner left */}
       <div className="flex flex-1 gap-8 px-10">
-        {megaMenuItems.map((col, idx) => (
-          <div key={idx} className="flex-1 min-w-[180px]">
-            <h4
-              className={`font-bold mb-2 text-lg flex items-center ${
-                idx === 0 ? "text-blue-700" : ""
-              }`}
-            >
-              {col.title}
-              {col.arrow && <span className="ml-1 text-blue-700">&rarr;</span>}
+        {activeCategories.map((cat) => (
+          <div key={cat.id} className="flex-1 min-w-[180px]">
+            <h4 className="font-bold mb-2 text-lg flex items-center">
+              {cat.name}
             </h4>
             <ul className="space-y-1">
-              {col.items.map((item, i) => (
-                <li key={i}>
-                  {item.to ? (
-                    <Link to={item.to} className={item.className || ""}>
-                      {item.label}
-                    </Link>
-                  ) : item.isBold ? (
-                    <span className="font-bold">{item.label}</span>
-                  ) : item.isItalic ? (
-                    <span className={item.className || ""}>{item.label}</span>
-                  ) : (
-                    <span>{item.label}</span>
-                  )}
-                </li>
-              ))}
+              <li>
+                <span className="text-sm text-gray-500">{cat.description}</span>
+              </li>
             </ul>
           </div>
         ))}
@@ -430,12 +360,8 @@ function MegaMenu() {
       {/* Submenu bottom */}
       <div className="absolute left-0 bottom-0 w-full bg-gray-50 border-t flex justify-center items-center gap-8 py-4 px-2 text-base font-bold rounded-b-2xl">
         <Link to="#" className="text-gray-500 font-normal">
-          THEO NHU CẦU
+          {t("category.tagline")}
         </Link>
-        <Link to="#">ĐỒ LÓT</Link>
-        <Link to="#">ĐỒ THỂ THAO</Link>
-        <Link to="#">MẶC HÀNG NGÀY</Link>
-        <Link to="#">GRAPHIC TEES</Link>
       </div>
     </div>
   );

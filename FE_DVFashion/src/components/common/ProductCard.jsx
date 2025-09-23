@@ -2,15 +2,22 @@ import getColorHex from "../../utils/getColorHex";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { encodeId } from "../../utils/encodeId";
+import { useCart } from "../../hooks/useCart";
+import { toast } from "react-toastify";
+import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 export default function ProductCard({ product }) {
-  // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
+  const { t } = useTranslation();
+  const { addToCart, isAdding } = useCart();
+  const { isAuthenticated } = useAuth();
 
+  // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
   const [activeColor, setActiveColor] = useState(
     product.variants?.[0]?.color || ""
   );
-  // Lấy ảnh chính
 
+  // Lấy ảnh chính
   const [mainImage, setMainImage] = useState(
     product.variants?.[0]?.images?.find((img) => img.isPrimary)?.imageUrl ||
       product.variants?.[0]?.images?.[0]?.imageUrl ||
@@ -42,16 +49,46 @@ export default function ProductCard({ product }) {
   }, [product]);
 
   // Lấy tất cả size từ các variant
-  const sizes =
-    product.variants
-      ?.flatMap((v) => v.sizes?.map((s) => s.sizeName) || [])
-      .filter((v, i, arr) => arr.indexOf(v) === i) || [];
+  const activeVariant = product.variants?.find((v) => v.color === activeColor);
+  const sizes = activeVariant?.sizes?.map((s) => s.sizeName) || [];
 
   // Tính phần trăm giảm giá nếu có
   const discountPercent =
     product.price && product.salePrice
       ? Math.round(((product.price - product.salePrice) / product.price) * 100)
       : null;
+
+  // Hàm xử lý thêm nhanh vào giỏ hàng
+  const handleQuickAddToCart = async (sizeName) => {
+    // Tìm variant theo màu đang chọn
+    const variant = product.variants?.find((v) => v.color === activeColor);
+    if (!variant) {
+      toast.error(t("product.card.choose_valid_color"));
+      return;
+    }
+
+    // Tìm size trong variant
+    const size = variant.sizes?.find((s) => s.sizeName === sizeName);
+    if (!size) {
+      toast.error(t("product.card.choose_valid_size"));
+      return;
+    }
+
+    try {
+      await addToCart({
+        productVariantId: variant.id,
+        sizeId: size.id,
+        quantity: 1,
+      });
+      toast.success(t("product.card.added_to_cart"));
+    } catch (error) {
+      if (!isAuthenticated) {
+        toast.error(t("product.card.login_to_add"));
+        return;
+      }
+      toast.error(t("product.card.out_of_stock"));
+    }
+  };
 
   return (
     <Link
@@ -71,7 +108,9 @@ export default function ProductCard({ product }) {
           </span>
         )}
         <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition rounded-lg">
-          <span className="text-white text-sm">Thêm nhanh vào giỏ hàng</span>
+          <span className="text-white text-sm">
+            {t("product.card.quick_add")}
+          </span>
           <div className="flex gap-2">
             {sizes.map((size) => (
               <button
@@ -80,7 +119,11 @@ export default function ProductCard({ product }) {
                 type="button"
                 tabIndex={-1}
                 // Không cho click chuyển trang khi bấm size
-                onClick={(e) => e.preventDefault()}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  await handleQuickAddToCart(size);
+                }}
+                disabled={isAdding}
               >
                 {size}
               </button>
