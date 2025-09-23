@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"; // Import icons
 import { useTranslation } from "react-i18next"; // Import useTranslation
 
-export default function Category({ language = "VI" }) {
+export default function Category() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { categories, isLoading, error } = usePublicCategories(language);
+  const { t, i18n } = useTranslation();
+  const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 6;

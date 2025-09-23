@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { IconClock } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
 import { ShoppingCart } from "react-feather";
 import getColorHex from "../utils/getColorHex";
 import { decodeId } from "../utils/encodeId";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 
 export default function ProductDetailPage() {
   const { t, i18n } = useTranslation();
@@ -12,11 +16,14 @@ export default function ProductDetailPage() {
   const { id: encodeId } = useParams();
   const id = decodeId(encodeId);
   const { products = [] } = useProduct(lang);
+  const { isAuthenticated } = useAuth();
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [mainImageIdx, setMainImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { addToCart, isAdding } = useCart();
 
   // Lấy sản phẩm theo id
   const product = products.find((p) => String(p.id) === String(id));
@@ -28,15 +35,21 @@ export default function ProductDetailPage() {
 
   // Khi có product thì set variant và size mặc định
   useEffect(() => {
-    if (product && product.variants && product.variants.length > 0) {
+    if (
+      product &&
+      product.variants &&
+      product.variants.length > 0 &&
+      !isInitialized
+    ) {
       setSelectedVariant(product.variants[0]);
       setSelectedSize(
         product.variants[0].sizes?.[0]?.name ||
           product.variants[0].sizes?.[0]?.sizeName ||
           null
       );
+      setIsInitialized(true);
     }
-  }, [product]);
+  }, [product, isInitialized]);
 
   if (!product) {
     return (
@@ -45,6 +58,31 @@ export default function ProductDetailPage() {
       </div>
     );
   }
+
+  // Hàm xử lý thêm vào giỏ hàng
+  const handleAddToCart = async () => {
+    if (!product || !selectedVariant || !selectedSize) return;
+    const sizeObj = selectedVariant.sizes?.find(
+      (s) => s.sizeName === selectedSize || s.name === selectedSize
+    );
+    if (!sizeObj) return toast.error(t("product.card.choose_valid_size"));
+
+    try {
+      await addToCart({
+        productVariantId: selectedVariant.id,
+        sizeId: sizeObj.id || sizeObj.sizeId,
+        quantity,
+      });
+      toast.success(t("product.card.added_to_cart"));
+      // Không chuyển trang, không nhảy đi đâu cả
+    } catch (error) {
+      if (!isAuthenticated) {
+        toast.error(t("product.card.login_to_add"));
+        return;
+      }
+      toast.error(t("product.card.out_of_stock"));
+    }
+  };
 
   // Lấy ảnh chính và danh sách ảnh
   const images =
@@ -192,7 +230,11 @@ export default function ProductDetailPage() {
           </button>
         </div>
         {/* Thêm vào giỏ */}
-        <button className="mt-4 flex items-center justify-center gap-2 bg-black text-white font-bold rounded-full py-3 text-lg hover:bg-gray-900 transition">
+        <button
+          className="mt-4 flex items-center justify-center gap-2 bg-black text-white font-bold rounded-full py-3 text-lg hover:bg-gray-900 transition cursor-pointer disabled:opacity-50"
+          onClick={handleAddToCart}
+          disabled={isAdding}
+        >
           <ShoppingCart size={22} />
           {t("product.detail.add_to_cart")}
         </button>
@@ -208,67 +250,21 @@ export default function ProductDetailPage() {
         {/* Chính sách/ưu đãi */}
         <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4 mt-4 text-sm">
           <div className="flex items-center gap-2">
-            <span className="inline-block w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-            </span>
+            <IconClock size={24} className="text-gray-800" />
             {t("product.detail.policy_easy_return")}
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-            </span>
+            <IconClock size={24} className="text-gray-800" />
+
             {t("product.detail.policy_hotline")}
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-            </span>
+            <IconClock size={24} className="text-gray-800" />
+
             {t("product.detail.policy_60days")}
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-            </span>
+            <IconClock size={24} className="text-gray-800" />
             {t("product.detail.policy_fast_refund")}
           </div>
         </div>

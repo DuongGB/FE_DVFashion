@@ -1,8 +1,22 @@
 import { X } from "react-feather";
 import { ShoppingBag } from "react-feather";
+import { useCart } from "../../../hooks/useCart";
 
-export default function CartDropdown({ cart, onRemove, onViewAll }) {
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+export default function CartDropdown({ onRemove, onViewAll }) {
+  const { cart, isLoading } = useCart();
+
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center text-gray-500">Đang tải giỏ hàng...</div>
+    );
+  }
+
+  const items = cart?.items || [];
+  const total = items.reduce(
+    (sum, item) => sum + item.unitPrice * item.quantity,
+    0
+  );
+
   return (
     <div
       className="absolute -right-8 top-7 w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 p-4 animate-fadeIn h-100"
@@ -11,6 +25,7 @@ export default function CartDropdown({ cart, onRemove, onViewAll }) {
         boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
         border: "1px solid #e5e7eb",
       }}
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Mũi tên tam giác */}
       <div
@@ -34,7 +49,7 @@ export default function CartDropdown({ cart, onRemove, onViewAll }) {
             {total.toLocaleString()}đ
           </span>
           <span className="text-gray-400 text-xs ml-2">
-            ({cart.length} sản phẩm)
+            ({items.length} sản phẩm)
           </span>
         </span>
         <button
@@ -45,7 +60,7 @@ export default function CartDropdown({ cart, onRemove, onViewAll }) {
         </button>
       </div>
       <div className="max-h-[480px] h-[340px] overflow-y-auto pr- custom-scroll">
-        {cart.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-12 text-center text-gray-500">
             <div>
               <ShoppingBag size={48} className="mb-4 w-full" />
@@ -53,34 +68,31 @@ export default function CartDropdown({ cart, onRemove, onViewAll }) {
             </div>
           </div>
         ) : (
-          cart.map((item) => (
+          items.map((item) => (
             <div
-              key={item.id}
+              key={item.cartItemId}
               className="flex gap-3 items-center py-2 border-b last:border-b-0 group"
             >
               <img
-                src={item.image}
-                alt={item.name}
+                src={item.imageUrl}
+                alt={item.productName}
                 className="w-16 h-16 object-cover rounded-lg bg-gray-100"
               />
               <div className="flex-1 min-w-0">
-                <div className="font-semibold truncate">{item.name}</div>
+                <div className="font-semibold truncate">{item.productName}</div>
                 <div className="text-xs text-gray-500">
-                  {item.color} / {item.size}
+                  {item.color} / {item.sizeName}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="font-bold text-base text-black">
-                    {item.price.toLocaleString()}đ
-                  </span>
-                  <span className="line-through text-gray-400 text-xs">
-                    {item.oldPrice?.toLocaleString()}đ
+                    {item.unitPrice.toLocaleString()}đ
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">x{item.quantity}</div>
               </div>
               <button
                 className="ml-2 text-gray-400 hover:text-red-500"
-                onClick={() => onRemove(item.id)}
+                onClick={() => onRemove(item.cartItemId)}
                 aria-label="Xóa"
                 tabIndex={0}
               >
