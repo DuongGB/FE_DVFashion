@@ -11,9 +11,10 @@ import { useTranslation } from "react-i18next";
 import Pagination from "../../components/common/Pagination";
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
 import ProductForm from "../../components/ui/product/ProductForm";
-import { useBrand } from "../../hooks/useBrand";
+// import { useBrand } from "../../hooks/useBrand";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
+import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
@@ -21,15 +22,18 @@ export default function ProductPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
 
+  const { user } = useAuth();
+  const isStaff = user?.roles?.includes("ROLE_STAFF");
+
   const { products: getAllProducts, isLoading: isLoadingProducts } =
     useProduct(language);
-  const { brands: getAllBrands, isLoading: isLoadingBrands } =
-    useBrand(language);
+  // const { brands: getAllBrands, isLoading: isLoadingBrands } =
+  //   useBrand(language);
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
     useCategory(language);
 
   const [products, setProducts] = useState([]);
-  const [brands, setBrands] = useState([]);
+  // const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -46,6 +50,16 @@ export default function ProductPage() {
 
   // Toggle status handler (giống CategoryPage)
   const handleToggleStatus = (product) => {
+    // Kiểm tra quyền trước khi thực hiện
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_status_denied") ||
+          "Bạn không có quyền thực hiện thao tác này!",
+        { autoClose: 2000, position: "top-right" }
+      );
+      return;
+    }
+
     // Xác định trạng thái mới
     let newStatus;
     switch (product.status) {
@@ -102,12 +116,12 @@ export default function ProductPage() {
               p.id === product.id ? { ...p, status: newStatus } : p
             )
           );
-          toast.success(
-            `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
-              "admin.brand.actions.success"
-            )}!`,
-            { autoClose: 2000, position: "top-center" }
-          );
+          // toast.success(
+          //   `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
+          //     "admin.brand.actions.success"
+          //   )}!`,
+          //   { autoClose: 2000, position: "top-center" }
+          // );
         } catch (error) {
           toast.error(
             t("admin.product.actions.error") ||
@@ -127,7 +141,7 @@ export default function ProductPage() {
     colors: [],
     sizes: [],
     materials: [],
-    brandIds: [],
+    // brandIds: [],
     categoryIds: [],
   });
 
@@ -144,13 +158,13 @@ export default function ProductPage() {
 
   useEffect(() => {
     setProducts(getAllProducts || []);
-    setBrands(getAllBrands || []);
+    // setBrands(getAllBrands || []);
     setCategories(getAllCategories || []);
     // Lưu thứ tự ban đầu khi load lần đầu
     if (getAllProducts && originalOrder.length === 0) {
       setOriginalOrder(getAllProducts.map((p) => p.id));
     }
-  }, [getAllProducts, getAllBrands, getAllCategories]);
+  }, [getAllProducts, getAllCategories]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -240,7 +254,7 @@ export default function ProductPage() {
       colors: [],
       sizes: [],
       materials: [],
-      brandIds: [],
+      // brandIds: [],
       categoryIds: [],
     });
     setStatusFilter("all");
@@ -304,12 +318,12 @@ export default function ProductPage() {
         );
 
       // Lọc theo thương hiệu
-      const matchesBrands =
-        filters.brandIds.length === 0 ||
-        filters.brandIds.some((brandId) => {
-          const brand = brands.find((b) => b.id === brandId);
-          return brand && product.brandName === brand.name;
-        });
+      // const matchesBrands =
+      //   filters.brandIds.length === 0 ||
+      //   filters.brandIds.some((brandId) => {
+      //     const brand = brands.find((b) => b.id === brandId);
+      //     return brand && product.brandName === brand.name;
+      //   });
 
       // Lọc theo danh mục
       const matchesCategories =
@@ -326,7 +340,7 @@ export default function ProductPage() {
         matchesColors &&
         matchesSizes &&
         matchesMaterials &&
-        matchesBrands &&
+        // matchesBrands &&
         matchesCategories
       );
     })
@@ -348,7 +362,7 @@ export default function ProductPage() {
     if (filters.colors.length > 0) count += filters.colors.length;
     if (filters.sizes.length > 0) count += filters.sizes.length;
     if (filters.materials.length > 0) count += filters.materials.length;
-    if (filters.brandIds.length > 0) count += filters.brandIds.length;
+    // if (filters.brandIds.length > 0) count += filters.brandIds.length;
     if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
     if (statusFilter !== "all") count++;
     return count;
@@ -356,12 +370,28 @@ export default function ProductPage() {
 
   // Xử lý tạo sản phẩm mới
   const handleCreateProduct = () => {
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_create_denied") ||
+          "Bạn không có quyền tạo sản phẩm mới!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
     setEditingProduct(null);
     setShowForm(true);
   };
 
   // Xử lý chỉnh sửa sản phẩm
   const handleEditProduct = (product) => {
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_edit_denied") ||
+          "Bạn không có quyền chỉnh sửa sản phẩm!",
+        { autoClose: 2000, position: "top-right" }
+      );
+      return;
+    }
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -437,7 +467,7 @@ export default function ProductPage() {
     totalValue: products.reduce((sum, p) => sum + (p.salePrice || p.price), 0),
   };
 
-  if (isLoadingProducts || isLoadingBrands || isLoadingCategories) {
+  if (isLoadingProducts || isLoadingCategories) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="flex items-center gap-2">
@@ -453,13 +483,25 @@ export default function ProductPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{t("admin.product.title")}</h1>
-        <button
-          onClick={handleCreateProduct}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <IconPlus size={16} />
-          {t("admin.product.create_product")}
-        </button>
+        {/* Chỉ hiển thị nút tạo sản phẩm cho admin */}
+        {!isStaff && (
+          <button
+            onClick={handleCreateProduct}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IconPlus size={16} />
+            {t("admin.product.create_product")}
+          </button>
+        )}
+        {/* Hiển thị thông báo cho staff */}
+        {isStaff && (
+          <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+            <span className="font-medium text-yellow-800">
+              {t("admin.product.staff_view_only") ||
+                "Chế độ xem - Không thể chỉnh sửa"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Statistics Cards */}
@@ -619,7 +661,7 @@ export default function ProductPage() {
             </div>
 
             {/* Brand */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("admin.product.filters.brand")}
               </label>
@@ -640,7 +682,7 @@ export default function ProductPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Category */}
             <div>
@@ -818,7 +860,7 @@ export default function ProductPage() {
             ))}
 
             {/* Brands */}
-            {filters.brandIds.map((brandId) => {
+            {/* {filters.brandIds.map((brandId) => {
               const brand = brands.find((b) => b.id === brandId);
               return (
                 brand && (
@@ -838,7 +880,7 @@ export default function ProductPage() {
                   </span>
                 )
               );
-            })}
+            })} */}
 
             {/* Categories */}
             {filters.categoryIds.map((categoryId) => {
@@ -897,7 +939,7 @@ export default function ProductPage() {
               <th className="p-2">{t("admin.product.columns.id")}</th>
               <th className="p-2">{t("admin.product.columns.image")}</th>
               <th className="p-2">{t("admin.product.columns.name")}</th>
-              <th className="p-2">{t("admin.product.columns.brand")}</th>
+              {/* <th className="p-2">{t("admin.product.columns.brand")}</th> */}
               <th className="p-2">{t("admin.product.columns.category")}</th>
               <th className="p-2">{t("admin.product.columns.material")}</th>
               <th className="p-2">
@@ -942,7 +984,7 @@ export default function ProductPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-2">{product.brandName}</td>
+                    {/* <td className="p-2">{product.brandName}</td> */}
                     <td className="p-2">{product.categoryName}</td>
                     <td className="p-2">
                       <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
@@ -965,26 +1007,38 @@ export default function ProductPage() {
                       </div>
                     </td>
                     <td className="p-2 w-32">
-                      <button
-                        onClick={() => handleToggleStatus(product)}
-                        disabled={loadingStatusId === product.id}
-                        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
-                          product.status
-                        )}`}
-                        title={
-                          product.status === "ACTIVE"
-                            ? t("admin.product.status.inactive")
-                            : t("admin.product.status.active")
-                        }
-                      >
-                        {loadingStatusId === product.id ? (
-                          <span className="flex items-center gap-1">
-                            <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
-                          </span>
-                        ) : (
-                          getStatusText(product.status)
-                        )}
-                      </button>
+                      {isStaff ? (
+                        // Staff chỉ xem, không thể thay đổi
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            product.status
+                          )}`}
+                        >
+                          {getStatusText(product.status)}
+                        </span>
+                      ) : (
+                        // Admin có thể click để thay đổi
+                        <button
+                          onClick={() => handleToggleStatus(product)}
+                          disabled={loadingStatusId === product.id}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                            product.status
+                          )}`}
+                          title={
+                            product.status === "ACTIVE"
+                              ? t("admin.product.status.inactive")
+                              : t("admin.product.status.active")
+                          }
+                        >
+                          {loadingStatusId === product.id ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
+                            </span>
+                          ) : (
+                            getStatusText(product.status)
+                          )}
+                        </button>
+                      )}
                     </td>
                     <td className="p-2 text-center">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-medium">
@@ -1004,6 +1058,7 @@ export default function ProductPage() {
                     </td>
                     <td className="p-2">
                       <div className="flex gap-2">
+                        {/* Nút xem chi tiết - tất cả đều có thể xem */}
                         <button
                           className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
                           onClick={() => handleViewProduct(product)}
@@ -1011,14 +1066,29 @@ export default function ProductPage() {
                         >
                           <IconEye size={24} />
                         </button>
-                        <button
-                          className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
-                          onClick={() => handleEditProduct(product)}
-                          title={t("admin.product.actions.edit")}
-                          // disabled={isUpdating}
-                        >
-                          <IconEdit size={24} />
-                        </button>
+
+                        {/* Nút chỉnh sửa - chỉ admin mới có */}
+                        {!isStaff ? (
+                          <button
+                            className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
+                            onClick={() => handleEditProduct(product)}
+                            title={t("admin.product.actions.edit")}
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        ) : (
+                          // Hiển thị icon disabled cho staff
+                          <button
+                            className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                            onClick={() => handleEditProduct(product)}
+                            title={
+                              t("admin.product.staff_no_permission") ||
+                              "Không có quyền chỉnh sửa"
+                            }
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1053,13 +1123,14 @@ export default function ProductPage() {
       />
 
       {/* Product Form Modal */}
-      <ProductForm
-        isOpen={showForm}
-        onClose={handleCloseForm}
-        product={editingProduct}
-        brands={brands}
-        categories={categories}
-      />
+      {!isStaff && (
+        <ProductForm
+          isOpen={showForm}
+          onClose={handleCloseForm}
+          product={editingProduct}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }

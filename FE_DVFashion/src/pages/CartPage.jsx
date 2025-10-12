@@ -4,17 +4,21 @@ import {
   IconCreditCard,
   IconShoppingBag,
   IconTrash,
+  IconMapPin,
 } from "@tabler/icons-react";
 import CartBottom from "../components/common/CartBottom";
 import { Link } from "react-router-dom";
 import { usePromotion } from "../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../hooks/useCart";
+import { useAddress } from "../hooks/useAddress";
+import AddressList from "../components/ui/address/AddressList";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
+  const { defaultAddress } = useAddress();
 
   // Lấy giỏ hàng từ API
   const {
@@ -39,11 +43,102 @@ export default function CartPage() {
     email: "",
     address: "",
     province: "",
+    ward: "",
     note: "",
     otherReceiver: false,
     vat: false,
   });
+
+  const [locationData, setLocationData] = useState({
+    provinces: [],
+    wards: [],
+    isLoading: false,
+  });
+
+  // Load provinces when component mounts
+  useEffect(() => {
+    loadProvinces();
+  }, []);
+
+  // Load provinces
+  const loadProvinces = async () => {
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch("https://provinces.open-api.vn/api/v2/");
+      const provinces = await response.json();
+      setLocationData((prev) => ({
+        ...prev,
+        provinces,
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading provinces:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Load wards when province changes
+  const handleProvinceChange = async (provinceCode) => {
+    setShipping((prev) => ({
+      ...prev,
+      province: provinceCode,
+      ward: "",
+    }));
+
+    if (!provinceCode) {
+      setLocationData((prev) => ({ ...prev, wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch(
+        `https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`
+      );
+      const data = await response.json();
+      // Lấy tất cả ward
+      const allWards = data.wards || [];
+      setLocationData((prev) => ({
+        ...prev,
+        wards: allWards,
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading wards:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Handle ward change
+  const handleWardChange = (wardCode) => {
+    setShipping((prev) => ({ ...prev, ward: wardCode }));
+  };
+
+  // Get display names
+  const getProvinceName = (code) => {
+    const province = locationData.provinces.find(
+      (p) => p.code.toString() === code
+    );
+    return province ? province.name : "";
+  };
+
+  const getDistrictName = (code) => {
+    const district = locationData.districts.find(
+      (d) => d.code.toString() === code
+    );
+    return district ? district.name : "";
+  };
+
+  const getWardName = (code) => {
+    const ward = locationData.wards.find((w) => w.code.toString() === code);
+    return ward ? ward.name : "";
+  };
+
   const [payment, setPayment] = useState("cod");
+  const [showAddressList, setShowAddressList] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
   // Lưu thứ tự cartItemId ban đầu
   const [itemOrder, setItemOrder] = useState(
     cartItems.map((i) => i.cartItemId)
@@ -53,6 +148,21 @@ export default function CartPage() {
   useEffect(() => {
     setSelected(cartItems.map((item) => item.cartItemId));
   }, [cartItems]);
+
+  // Auto-select default address when component mounts or defaultAddress changes
+  useEffect(() => {
+    if (defaultAddress && !selectedAddress) {
+      setSelectedAddress(defaultAddress);
+      setShipping((prev) => ({
+        ...prev,
+        name: defaultAddress.fullName,
+        phone: defaultAddress.phone,
+        address: `${defaultAddress.street}, ${defaultAddress.ward}, ${defaultAddress.city}`,
+        province: "",
+        ward: "",
+      }));
+    }
+  }, [defaultAddress, selectedAddress]);
 
   // Đồng bộ selected khi giỏ hàng thay đổi
   useEffect(() => {
@@ -73,6 +183,24 @@ export default function CartPage() {
       .map((id) => cartItems.find((item) => item.cartItemId === id))
       .filter(Boolean);
   }, [cartItems, itemOrder]);
+
+  // Handle address selection
+  const handleSelectAddress = (address) => {
+    setSelectedAddress(address);
+    setShipping((prev) => ({
+      ...prev,
+      name: address.fullName,
+      phone: address.phone,
+      address: `${address.street}, ${address.ward}, ${address.city}`,
+    }));
+    setShowAddressList(false);
+  };
+
+  // Format address display
+  const formatAddressDisplay = (address) => {
+    if (!address) return "";
+    return `${address.street}, ${address.ward},  ${address.city}`;
+  };
 
   // Chọn hoặc bỏ chọn tất cả mục
   const handleSelectAll = (e) => {
@@ -171,16 +299,52 @@ export default function CartPage() {
     <div className="flex w-full min-h-screen bg-white font-sans">
       {/* Left: Shipping info */}
       <div className="flex-1 p-10 pr-8 border-r border-gray-100 bg-[#f7f8fa]">
-        <h2 className="text-2xl font-bold mb-8 text-gray-900">
-          {t("cart.shipping_info")}
-        </h2>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {t("cart.shipping_info")}
+          </h2>
+          <button
+            onClick={() => setShowAddressList(true)}
+            className="flex items-center gap-2 text-blue-600 text-sm font-semibold hover:underline cursor-pointer"
+          >
+            <IconMapPin size={16} />
+            {t("cart.choose_from_address_book")}
+          </button>
+        </div>
+
+        {/* Selected Address Display */}
+        {selectedAddress ? (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-blue-900">
+                  {t("cart.selected_address")}
+                </span>
+                {selectedAddress.isDefault && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    {t("address.default")}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">
+                {selectedAddress.fullName} | {selectedAddress.phone}
+              </p>
+              <p>{formatAddressDisplay(selectedAddress)}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-yellow-800 text-sm">
+                {t("cart.no_address_selected")}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-3 mb-5">
-          <select className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500">
-            <option>{t("cart.salutation.default")}</option>
-            <option>{t("cart.salutation.male")}</option>
-            <option>{t("cart.salutation.female")}</option>
-            <option>{t("cart.salutation.other")}</option>
-          </select>
           <input
             className="border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500"
             placeholder={t("cart.name_placeholder")}
@@ -214,27 +378,45 @@ export default function CartPage() {
             setShipping((s) => ({ ...s, address: e.target.value }))
           }
         />
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.province_placeholder")}
-        />
+        {/* Location Selection */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Province/City */}
+          <select
+            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            value={shipping.province}
+            onChange={(e) => handleProvinceChange(e.target.value)}
+            disabled={locationData.isLoading}
+          >
+            <option value="">{t("cart.select_province")}</option>
+            {locationData.provinces.map((province) => (
+              <option key={province.code} value={province.code}>
+                {province.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Ward */}
+          <select
+            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            value={shipping.ward}
+            onChange={(e) => handleWardChange(e.target.value)}
+            disabled={!shipping.province || locationData.isLoading}
+          >
+            <option value="">{t("cart.select_ward")}</option>
+            {locationData.wards.map((ward) => (
+              <option key={ward.code} value={ward.code}>
+                {ward.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <input
           className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
           placeholder={t("cart.note_placeholder")}
           value={shipping.note}
           onChange={(e) => setShipping((s) => ({ ...s, note: e.target.value }))}
         />
-        <div className="flex items-center mb-3">
-          <input
-            type="checkbox"
-            className="mr-2 accent-blue-600"
-            checked={shipping.otherReceiver}
-            onChange={(e) =>
-              setShipping((s) => ({ ...s, otherReceiver: e.target.checked }))
-            }
-          />
-          <span className="text-gray-700">{t("cart.other_receiver")}</span>
-        </div>
         <div className="flex items-center mb-8">
           <input
             type="checkbox"
@@ -281,16 +463,15 @@ export default function CartPage() {
           </label>
         </div>
       </div>
-      {/* Right: Cart */}
+      {/* Right: Cart - existing code remains the same */}
       <div className="w-[600px] p-10 pl-8 flex flex-col bg-white max-h-screen">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">
             {t("cart.title")}
           </h2>
-          <button className="text-blue-600 text-sm font-semibold hover:underline">
-            {t("cart.choose_from_address_book")}
-          </button>
         </div>
+
+        {/* Rest of the cart code remains the same... */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <input
@@ -310,6 +491,7 @@ export default function CartPage() {
             {t("cart.clear_all")}
           </button>
         </div>
+
         <div className="overflow-y-auto h-full flex-1 pr-2 custom-scroll">
           {orderedCartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-24">
@@ -397,7 +579,7 @@ export default function CartPage() {
             ))
           )}
 
-          {/* Mã giảm giá */}
+          {/* Promotions section - existing code remains the same */}
           <div className="mb-4">
             <div className="flex gap-2 overflow-x-auto pb-2">
               {promotions?.map((promo) => {
@@ -457,12 +639,21 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+
         <CartBottom
           cart={filteredCart}
           total={totalAfterPromotion}
           discount={promotionDiscount}
         />
       </div>
+
+      {/* Address List Modal */}
+      <AddressList
+        isOpen={showAddressList}
+        onClose={() => setShowAddressList(false)}
+        onSelectAddress={handleSelectAddress}
+        selectedAddressId={selectedAddress?.id}
+      />
       <style>
         {`
         .custom-scroll {

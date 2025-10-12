@@ -24,7 +24,7 @@ const ProductForm = ({
   isOpen,
   onClose,
   product = null,
-  brands = [],
+  // brands = [],
   categories = [],
 }) => {
   const { t, i18n } = useTranslation();
@@ -44,7 +44,7 @@ const ProductForm = ({
     salePrice: "",
     onSale: false,
     status: "ACTIVE",
-    brandId: "",
+    // brandId: "",
     categoryId: "",
     promotionId: "",
     variants: [],
@@ -65,7 +65,7 @@ const ProductForm = ({
         salePrice: product.salePrice || "",
         onSale: product.onSale || false,
         status: product.status || "ACTIVE",
-        brandId: product.brandId || "",
+        // brandId: product.brandId || "",
         categoryId: product.categoryId || "",
         promotionId: product.promotionId || "",
         variants: product.variants
@@ -106,7 +106,7 @@ const ProductForm = ({
         salePrice: "",
         onSale: false,
         status: "ACTIVE",
-        brandId: "",
+        // brandId: "",
         categoryId: "",
         promotionId: "",
         variants: [],
@@ -310,8 +310,8 @@ const ProductForm = ({
       newErrors.status = t("admin.product.validation.status_required");
     if (!formData.categoryId)
       newErrors.categoryId = t("admin.product.validation.category_required");
-    if (!formData.brandId)
-      newErrors.brandId = t("admin.product.validation.brand_required");
+    // if (!formData.brandId)
+    //   newErrors.brandId = t("admin.product.validation.brand_required");
 
     // Variant validation
     if (!formData.variants.length)
@@ -496,7 +496,7 @@ const ProductForm = ({
       onSale: Boolean(formData.onSale),
       status: formData.status,
       categoryId: parseInt(formData.categoryId),
-      brandId: parseInt(formData.brandId),
+      // brandId: parseInt(formData.brandId),
       promotionId: formData.promotionId ? parseInt(formData.promotionId) : null,
     };
 
@@ -683,7 +683,7 @@ const ProductForm = ({
           </div>
 
           {/* Price and Category Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Original Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -728,7 +728,7 @@ const ProductForm = ({
             </div>
 
             {/* Brand */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("admin.product.form.brand")} *
               </label>
@@ -751,7 +751,7 @@ const ProductForm = ({
               {errors.brandId && (
                 <p className="text-red-500 text-sm mt-1">{errors.brandId}</p>
               )}
-            </div>
+            </div> */}
 
             {/* Category */}
             <div>

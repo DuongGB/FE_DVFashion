@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+/* Leaflet CSS */
+@import "leaflet/dist/leaflet.css";
+
+/* Custom leaflet fixes */
+.leaflet-container {
+  height: 300px;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.leaflet-control-zoom {
+  border-radius: 8px !important;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 4px !important;
+}
