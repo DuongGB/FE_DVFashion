@@ -339,37 +339,108 @@
   },
   "cart": {
     "title": "Giỏ hàng",
-    "shipping_info": "Thông tin vận chuyển",
-    "salutation": {
-      "default": "Anh/Chị",
-      "male": "Anh",
-      "female": "Chị",
-      "other": "Không tiết lộ"
-    },
-    "name_placeholder": "Nhập họ và tên của bạn",
-    "phone_placeholder": "Số điện thoại",
-    "email_placeholder": "Email",
-    "address_placeholder": "Địa chỉ",
-    "province_placeholder": "Chọn tỉnh/thành phố",
-    "note_placeholder": "Nhập ghi chú",
-    "other_receiver": "Gọi người khác nhận hàng (nếu có)",
-    "vat": "Xuất hoá đơn VAT",
-    "payment_method": "Hình thức thanh toán",
-    "payment_cod": "Thanh toán khi nhận hàng",
-    "payment_online": "Thanh toán qua Paypal",
-    "payment_online_note": "Hỗ trợ mọi hình thức thanh toán",
+    "shipping_info": "Thông tin giao hàng",
     "choose_from_address_book": "Chọn từ sổ địa chỉ",
-    "select_all": "Tất cả sản phẩm",
+    "selected_address": "Địa chỉ đã chọn",
+    "change": "Thay đổi",
+    "title": "Giỏ hàng",
+    "loading": "Đang tải...",
+    "select_all": "Chọn tất cả",
     "clear_all": "Xóa tất cả",
-    "empty_title": "Giỏ hàng bạn đang trống",
-    "empty_subtitle": "Hãy mua thêm sản phẩm để nhận nhiều ưu đãi hấp dẫn!",
+    "empty_title": "Giỏ hàng trống",
+    "empty_subtitle": "Thêm sản phẩm để bắt đầu mua sắm",
     "shop_now": "Mua sắm ngay",
     "remove": "Xóa",
+    "name_placeholder": "Nhập họ và tên",
+    "phone_placeholder": "Nhập số điện thoại",
+    "email_placeholder": "Nhập email",
+    "address_placeholder": "Nhập địa chỉ",
+    "province_placeholder": "Nhập tỉnh/thành phố",
+    "note_placeholder": "Ghi chú (tùy chọn)",
+    "other_receiver": "Giao cho người khác",
+    "vat": "Xuất hóa đơn VAT",
+    "payment_method": "Phương thức thanh toán",
+    "payment_cod": "Thanh toán khi nhận hàng (COD)",
+    "payment_online": "Thanh toán online",
+    "payment_online_note": "Thẻ tín dụng, ví điện tử",
     "discount_code_placeholder": "Nhập mã giảm giá",
-    "apply": "ÁP DỤNG",
-    "promotion_expiry": "HSD: {{date}}",
-    "promotion_not_qualified": "Đơn hàng chưa đủ điều kiện",
-    "loading": "Đang tải giỏ hàng..."
+    "apply": "Áp dụng",
+    "promotion_expiry": "Hết hạn: {{date}}",
+    "promotion_not_qualified": "Chưa đủ điều kiện",
+    "no_address_selected": "Chưa chọn địa chỉ giao hàng",
+    "select_address": "Chọn địa chỉ",
+    "salutation": {
+      "default": "Danh xưng",
+      "male": "Anh",
+      "female": "Chị",
+      "other": "Khác"
+    },
+    "select_province": "Chọn tỉnh/thành phố",
+    "select_district": "Chọn quận/huyện",
+    "select_ward": "Chọn phường/xã"
+  },
+  "address": {
+    "address_book": "Sổ địa chỉ",
+    "add_title": "Thêm địa chỉ mới",
+    "edit_title": "Chỉnh sửa địa chỉ",
+    "add_new": "Thêm mới",
+    "add_first": "Thêm địa chỉ đầu tiên",
+    "show_map": "Hiện bản đồ",
+    "hide_map": "Ẩn bản đồ",
+    "select_on_map": "Chọn địa chỉ trên bản đồ",
+    "current_location": "Vị trí hiện tại",
+    "map_instruction": "Nhấp vào bản đồ để chọn địa chỉ hoặc nhập thủ công bên dưới",
+    "default_description": "Địa chỉ này sẽ được chọn mặc định khi đặt hàng",
+    "fullName": "Họ và tên",
+    "fullName_placeholder": "Nhập họ và tên đầy đủ",
+    "phone": "Số điện thoại",
+    "phone_placeholder": "Nhập số điện thoại",
+    "country": "Quốc gia",
+    "country_placeholder": "Nhập quốc gia",
+    "city": "Tỉnh/Thành phố",
+    "city_placeholder": "Nhập tỉnh/thành phố",
+    "district": "Quận/Huyện",
+    "district_placeholder": "Nhập quận/huyện",
+    "ward": "Phường/Xã",
+    "ward_placeholder": "Nhập phường/xã",
+    "street": "Địa chỉ cụ thể",
+    "street_placeholder": "Số nhà, tên đường...",
+    "set_default": "Đặt làm địa chỉ mặc định",
+    "default": "Mặc định",
+
+    "empty_message": "Bạn chưa có địa chỉ nào được lưu",
+    "confirm_delete": "Bạn có chắc chắn muốn xóa địa chỉ này?",
+
+    "errors": {
+      "fullName_required": "Họ và tên không được để trống",
+      "phone_required": "Số điện thoại không được để trống",
+      "country_required": "Quốc gia không được để trống",
+      "city_required": "Tỉnh/Thành phố không được để trống",
+      "district_required": "Quận/Huyện không được để trống",
+      "ward_required": "Phường/Xã không được để trống",
+      "street_required": "Địa chỉ cụ thể không được để trống"
+    }
+  },
+  "common": {
+    "loading": "Đang tải",
+    "saving": "Đang lưu",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "add": "Thêm",
+    "confirm": "Xác nhận",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "sort": "Sắp xếp",
+    "view_details": "Xem chi tiết",
+    "close": "Đóng",
+    "select": "Chọn",
+    "submit": "Gửi",
+    "reset": "Đặt lại"
   },
 
   "admin": {
@@ -491,6 +562,23 @@
       "active_categories": "Đang hoạt động",
       "inactive_categories": "Không hoạt động",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
+      "messages": {
+        "staff_create_denied": "Nhân viên không có quyền tạo danh mục!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa danh mục!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái danh mục!"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách danh mục",
+        "can_view_details": "✓ Xem chi tiết danh mục",
+        "cannot_create": "✗ Không thể tạo danh mục mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa danh mục",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái danh mục",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
+      },
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động"
@@ -586,10 +674,27 @@
       "inactive_promotions": "Không hoạt động",
       "expired_promotions": "Hết hạn sử dụng",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động",
         "expired": "Hết hạn"
+      },
+      "messages": {
+        "staff_create_denied": "Nhân viên không có quyền tạo khuyến mãi!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa khuyến mãi!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách khuyến mãi",
+        "can_view_details": "✓ Xem chi tiết khuyến mãi",
+        "cannot_create": "✗ Không thể tạo khuyến mãi mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa khuyến mãi",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái khuyến mãi",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
       },
       "type": {
         "PERCENTAGE": "Phần trăm",
@@ -951,6 +1056,8 @@
       "no_products": "Không có sản phẩm nào phù hợp với bộ lọc.",
       "loading_data": "Đang tải dữ liệu...",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động",
@@ -1006,7 +1113,10 @@
         "create_success": "Tạo sản phẩm thành công!",
         "update_success": "Cập nhật sản phẩm thành công!",
         "create_error": "Có lỗi xảy ra khi tạo sản phẩm!",
-        "update_error": "Có lỗi xảy ra khi cập nhật sản phẩm!"
+        "update_error": "Có lỗi xảy ra khi cập nhật sản phẩm!",
+        "staff_create_denied": "Nhân viên không có quyền tạo sản phẩm!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa sản phẩm!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái sản phẩm!"
       },
       "values": {
         "no_image": "No img",
@@ -1099,6 +1209,16 @@
         "inactive": "Không hoạt động",
         "out_of_stock": "Hết hàng",
         "discontinued": "Ngừng bán"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách sản phẩm",
+        "can_view_details": "✓ Xem chi tiết sản phẩm",
+        "cannot_create": "✗ Không thể tạo sản phẩm mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa sản phẩm",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái sản phẩm",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
       }
     },
     "sidebar": {
@@ -1325,6 +1445,12 @@
       "error_invalid_quantity": "Vui lòng nhập số lượng mới hợp lệ (>= 0)",
       "error_reason_required": "Vui lòng nhập lý do điều chỉnh",
       "error_adjust": "Có lỗi khi điều chỉnh tồn kho!"
+    }
+  },
+
+  "staff": {
+    "dashboard": {
+      "title": "Bảng điều khiển nhân viên"
     }
   }
 }

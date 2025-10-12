@@ -340,36 +340,107 @@
   "cart": {
     "title": "Cart",
     "shipping_info": "Shipping Information",
-    "salutation": {
-      "default": "Mr/Ms",
-      "male": "Mr",
-      "female": "Ms",
-      "other": "Prefer not to say"
-    },
-    "name_placeholder": "Enter your full name",
-    "phone_placeholder": "Phone number",
-    "email_placeholder": "Email",
-    "address_placeholder": "Address",
-    "province_placeholder": "Select province/city",
-    "note_placeholder": "Enter note",
-    "other_receiver": "Call another receiver (if any)",
+    "choose_from_address_book": "Choose from Address Book",
+    "selected_address": "Selected Address",
+    "change": "Change",
+    "title": "Shopping Cart",
+    "loading": "Loading...",
+    "select_all": "Select All",
+    "clear_all": "Clear All",
+    "empty_title": "Cart is Empty",
+    "empty_subtitle": "Add products to start shopping",
+    "shop_now": "Shop Now",
+    "remove": "Remove",
+    "name_placeholder": "Enter full name",
+    "phone_placeholder": "Enter phone number",
+    "email_placeholder": "Enter email address",
+    "address_placeholder": "Enter address",
+    "province_placeholder": "Enter province/city",
+    "note_placeholder": "Notes (optional)",
+    "other_receiver": "Deliver to someone else",
     "vat": "Issue VAT invoice",
     "payment_method": "Payment Method",
-    "payment_cod": "Cash on delivery",
-    "payment_online": "Pay via Paypal",
-    "payment_online_note": "Supports all payment methods",
-    "choose_from_address_book": "Choose from address book",
-    "select_all": "All products",
-    "clear_all": "Clear all",
-    "empty_title": "Your cart is empty",
-    "empty_subtitle": "Buy more products to receive attractive offers!",
-    "shop_now": "Shop now",
-    "remove": "Remove",
+    "payment_cod": "Cash on Delivery (COD)",
+    "payment_online": "Online Payment",
+    "payment_online_note": "Credit card, e-wallet",
     "discount_code_placeholder": "Enter discount code",
-    "apply": "APPLY",
-    "promotion_expiry": "Expiry: {{date}}",
-    "promotion_not_qualified": "Order does not meet conditions",
-    "loading": "Loading cart..."
+    "apply": "Apply",
+    "promotion_expiry": "Expires: {{date}}",
+    "promotion_not_qualified": "Not qualified",
+    "no_address_selected": "No delivery address selected",
+    "select_address": "Select Address",
+    "salutation": {
+      "default": "Salutation",
+      "male": "Mr.",
+      "female": "Ms.",
+      "other": "Other"
+    },
+    "select_province": "Select Province/City",
+    "select_district": "Select District",
+    "select_ward": "Select Ward/Commune"
+  },
+  "address": {
+    "address_book": "Address Book",
+    "add_title": "Add New Address",
+    "edit_title": "Edit Address",
+    "add_new": "Add New",
+    "add_first": "Add First Address",
+    "show_map": "Show Map",
+    "hide_map": "Hide Map",
+    "select_on_map": "Select Address on Map",
+    "current_location": "Current Location",
+    "map_instruction": "Click on the map to select an address or enter manually below",
+    "default_description": "This address will be selected by default when placing orders",
+    "fullName": "Full Name",
+    "fullName_placeholder": "Enter full name",
+    "phone": "Phone Number",
+    "phone_placeholder": "Enter phone number",
+    "country": "Country",
+    "country_placeholder": "Enter country",
+    "city": "City/Province",
+    "city_placeholder": "Enter city or province",
+    "district": "District",
+    "district_placeholder": "Enter district",
+    "ward": "Ward/Commune",
+    "ward_placeholder": "Enter ward or commune",
+    "street": "Street Address",
+    "street_placeholder": "House number, street name...",
+    "set_default": "Set as default address",
+    "default": "Default",
+
+    "empty_message": "You don't have any saved addresses",
+    "confirm_delete": "Are you sure you want to delete this address?",
+
+    "errors": {
+      "fullName_required": "Full name is required",
+      "phone_required": "Phone number is required",
+      "country_required": "Country is required",
+      "city_required": "City/Province is required",
+      "district_required": "District is required",
+      "ward_required": "Ward/Commune is required",
+      "street_required": "Street address is required"
+    }
+  },
+  "common": {
+    "loading": "Loading",
+    "saving": "Saving",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "view_details": "View Details",
+    "close": "Close",
+    "select": "Select",
+    "submit": "Submit",
+    "reset": "Reset"
   },
 
   "admin": {
@@ -491,6 +562,23 @@
       "active_categories": "Active",
       "inactive_categories": "Inactive",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
+      "messages": {
+        "staff_create_denied": "Staff cannot create categories!",
+        "staff_edit_denied": "Staff cannot edit categories!",
+        "staff_status_denied": "Staff cannot change category status!"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View category list",
+        "can_view_details": "✓ View category details",
+        "cannot_create": "✗ Cannot create new categories",
+        "cannot_edit": "✗ Cannot edit categories",
+        "cannot_change_status": "✗ Cannot change category status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
+      },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
@@ -586,10 +674,27 @@
       "inactive_promotions": "Inactive",
       "expired_promotions": "Expired",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
       "status": {
         "active": "Active",
         "inactive": "Inactive",
         "expired": "Expired"
+      },
+      "messages": {
+        "staff_create_denied": "Staff cannot create promotions!",
+        "staff_edit_denied": "Staff cannot edit promotions!",
+        "staff_status_denied": "Staff cannot change promotion status!"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View promotion list",
+        "can_view_details": "✓ View promotion details",
+        "cannot_create": "✗ Cannot create new promotions",
+        "cannot_edit": "✗ Cannot edit promotions",
+        "cannot_change_status": "✗ Cannot change promotion status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
       },
       "type": {
         "PERCENTAGE": "Percentage",
@@ -951,6 +1056,8 @@
       "no_products": "No products match the filter.",
       "loading_data": "Loading data...",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
       "status": {
         "active": "Active",
         "inactive": "Inactive",
@@ -1006,7 +1113,10 @@
         "create_success": "Product created successfully!",
         "update_success": "Product updated successfully!",
         "create_error": "An error occurred while creating product!",
-        "update_error": "An error occurred while updating product!"
+        "update_error": "An error occurred while updating product!",
+        "staff_create_denied": "Staff cannot create products!",
+        "staff_edit_denied": "Staff cannot edit products!",
+        "staff_status_denied": "Staff cannot change product status!"
       },
       "values": {
         "no_image": "No image",
@@ -1099,6 +1209,16 @@
         "inactive": "Inactive",
         "out_of_stock": "Out of Stock",
         "discontinued": "Discontinued"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View product list",
+        "can_view_details": "✓ View product details",
+        "cannot_create": "✗ Cannot create new products",
+        "cannot_edit": "✗ Cannot edit products",
+        "cannot_change_status": "✗ Cannot change product status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
       }
     },
     "sidebar": {
@@ -1325,6 +1445,12 @@
       "error_invalid_quantity": "Please enter a valid new quantity (>= 0)",
       "error_reason_required": "Please enter adjustment reason",
       "error_adjust": "Error adjusting stock!"
+    }
+  },
+
+  "staff": {
+    "dashboard": {
+      "title": "Staff Dashboard"
     }
   }
 }
