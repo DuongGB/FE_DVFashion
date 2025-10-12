@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import Pagination from "../../components/common/Pagination";
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
 import ProductForm from "../../components/ui/product/ProductForm";
-import { useBrand } from "../../hooks/useBrand";
+// import { useBrand } from "../../hooks/useBrand";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
 import { toast } from "react-toastify";
@@ -23,13 +23,13 @@ export default function ProductPage() {
 
   const { products: getAllProducts, isLoading: isLoadingProducts } =
     useProduct(language);
-  const { brands: getAllBrands, isLoading: isLoadingBrands } =
-    useBrand(language);
+  // const { brands: getAllBrands, isLoading: isLoadingBrands } =
+  //   useBrand(language);
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
     useCategory(language);
 
   const [products, setProducts] = useState([]);
-  const [brands, setBrands] = useState([]);
+  // const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -102,12 +102,12 @@ export default function ProductPage() {
               p.id === product.id ? { ...p, status: newStatus } : p
             )
           );
-          toast.success(
-            `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
-              "admin.brand.actions.success"
-            )}!`,
-            { autoClose: 2000, position: "top-center" }
-          );
+          // toast.success(
+          //   `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
+          //     "admin.brand.actions.success"
+          //   )}!`,
+          //   { autoClose: 2000, position: "top-center" }
+          // );
         } catch (error) {
           toast.error(
             t("admin.product.actions.error") ||
@@ -127,7 +127,7 @@ export default function ProductPage() {
     colors: [],
     sizes: [],
     materials: [],
-    brandIds: [],
+    // brandIds: [],
     categoryIds: [],
   });
 
@@ -144,13 +144,13 @@ export default function ProductPage() {
 
   useEffect(() => {
     setProducts(getAllProducts || []);
-    setBrands(getAllBrands || []);
+    // setBrands(getAllBrands || []);
     setCategories(getAllCategories || []);
     // Lưu thứ tự ban đầu khi load lần đầu
     if (getAllProducts && originalOrder.length === 0) {
       setOriginalOrder(getAllProducts.map((p) => p.id));
     }
-  }, [getAllProducts, getAllBrands, getAllCategories]);
+  }, [getAllProducts, getAllCategories]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -240,7 +240,7 @@ export default function ProductPage() {
       colors: [],
       sizes: [],
       materials: [],
-      brandIds: [],
+      // brandIds: [],
       categoryIds: [],
     });
     setStatusFilter("all");
@@ -304,12 +304,12 @@ export default function ProductPage() {
         );
 
       // Lọc theo thương hiệu
-      const matchesBrands =
-        filters.brandIds.length === 0 ||
-        filters.brandIds.some((brandId) => {
-          const brand = brands.find((b) => b.id === brandId);
-          return brand && product.brandName === brand.name;
-        });
+      // const matchesBrands =
+      //   filters.brandIds.length === 0 ||
+      //   filters.brandIds.some((brandId) => {
+      //     const brand = brands.find((b) => b.id === brandId);
+      //     return brand && product.brandName === brand.name;
+      //   });
 
       // Lọc theo danh mục
       const matchesCategories =
@@ -326,7 +326,7 @@ export default function ProductPage() {
         matchesColors &&
         matchesSizes &&
         matchesMaterials &&
-        matchesBrands &&
+        // matchesBrands &&
         matchesCategories
       );
     })
@@ -348,7 +348,7 @@ export default function ProductPage() {
     if (filters.colors.length > 0) count += filters.colors.length;
     if (filters.sizes.length > 0) count += filters.sizes.length;
     if (filters.materials.length > 0) count += filters.materials.length;
-    if (filters.brandIds.length > 0) count += filters.brandIds.length;
+    // if (filters.brandIds.length > 0) count += filters.brandIds.length;
     if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
     if (statusFilter !== "all") count++;
     return count;
@@ -437,7 +437,7 @@ export default function ProductPage() {
     totalValue: products.reduce((sum, p) => sum + (p.salePrice || p.price), 0),
   };
 
-  if (isLoadingProducts || isLoadingBrands || isLoadingCategories) {
+  if (isLoadingProducts || isLoadingCategories) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="flex items-center gap-2">
@@ -619,7 +619,7 @@ export default function ProductPage() {
             </div>
 
             {/* Brand */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("admin.product.filters.brand")}
               </label>
@@ -640,7 +640,7 @@ export default function ProductPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Category */}
             <div>
@@ -818,7 +818,7 @@ export default function ProductPage() {
             ))}
 
             {/* Brands */}
-            {filters.brandIds.map((brandId) => {
+            {/* {filters.brandIds.map((brandId) => {
               const brand = brands.find((b) => b.id === brandId);
               return (
                 brand && (
@@ -838,7 +838,7 @@ export default function ProductPage() {
                   </span>
                 )
               );
-            })}
+            })} */}
 
             {/* Categories */}
             {filters.categoryIds.map((categoryId) => {
@@ -897,7 +897,7 @@ export default function ProductPage() {
               <th className="p-2">{t("admin.product.columns.id")}</th>
               <th className="p-2">{t("admin.product.columns.image")}</th>
               <th className="p-2">{t("admin.product.columns.name")}</th>
-              <th className="p-2">{t("admin.product.columns.brand")}</th>
+              {/* <th className="p-2">{t("admin.product.columns.brand")}</th> */}
               <th className="p-2">{t("admin.product.columns.category")}</th>
               <th className="p-2">{t("admin.product.columns.material")}</th>
               <th className="p-2">
@@ -942,7 +942,7 @@ export default function ProductPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-2">{product.brandName}</td>
+                    {/* <td className="p-2">{product.brandName}</td> */}
                     <td className="p-2">{product.categoryName}</td>
                     <td className="p-2">
                       <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
@@ -1057,7 +1057,7 @@ export default function ProductPage() {
         isOpen={showForm}
         onClose={handleCloseForm}
         product={editingProduct}
-        brands={brands}
+        // brands={brands}
         categories={categories}
       />
     </div>

@@ -19,7 +19,7 @@ import {
   IconWorldWww,
   IconReceipt,
 } from "@tabler/icons-react";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import EmployeeCard from "../common/EmployeeCard";
@@ -69,45 +69,43 @@ export default function Sidebar({ onClose }) {
   // Xác định role dựa trên path hiện tại và roles của user
   const userRoles = user?.roles || [];
   const hasAdminRole = userRoles.includes("ROLE_ADMIN");
-  // const hasStaffRole = userRoles.includes("ROLE_STAFF");
+  const hasStaffRole = userRoles.includes("ROLE_STAFF");
 
   // Xác định đang ở path nào
   const isAdminPath = location.pathname.startsWith("/admin");
-  // const isStaffPath = location.pathname.startsWith("/staff");
+  const isStaffPath = location.pathname.startsWith("/staff");
 
   // Logic hiển thị sidebar dựa trên path và role
   let showAdminSidebar = false;
-  // let showStaffSidebar = false;
+  let showStaffSidebar = false;
   let roleDisplay = "";
 
   if (isAdminPath && hasAdminRole) {
     // Đang ở admin path và có admin role → hiển thị admin sidebar
     showAdminSidebar = true;
     roleDisplay = "ADMIN";
+  } else if (isStaffPath && (hasStaffRole || hasAdminRole)) {
+    // Đang ở staff path và có staff/admin role → hiển thị staff sidebar
+    showStaffSidebar = true;
+    roleDisplay = hasAdminRole ? "ADMIN" : "STAFF";
+  } else if (hasAdminRole) {
+    // Không ở path cụ thể nhưng có admin role → mặc định admin sidebar
+    showAdminSidebar = true;
+    roleDisplay = "ADMIN";
+  } else if (hasStaffRole) {
+    // Không ở path cụ thể nhưng có staff role → mặc định staff sidebar
+    showStaffSidebar = true;
+    roleDisplay = "STAFF";
   }
-  // else if (isStaffPath && (hasStaffRole || hasAdminRole)) {
-  //   // Đang ở staff path và có staff/admin role → hiển thị staff sidebar
-  //   showStaffSidebar = true;
-  //   roleDisplay = hasAdminRole ? "ADMIN" : "STAFF";
-  // } else if (hasAdminRole) {
-  //   // Không ở path cụ thể nhưng có admin role → mặc định admin sidebar
-  //   showAdminSidebar = true;
-  //   roleDisplay = "ADMIN";
-  // }
-  // else if (hasStaffRole) {
-  //   // Không ở path cụ thể nhưng có staff role → mặc định staff sidebar
-  //   showStaffSidebar = true;
-  //   roleDisplay = "STAFF";
-  // }
 
-  // console.log("Sidebar Debug:", {
-  //   userRoles,
-  //   hasAdminRole,
-  //   hasStaffRole,
-  //   showAdminSidebar,
-  //   showStaffSidebar,
-  //   roleDisplay,
-  // });
+  console.log("Sidebar Debug:", {
+    userRoles,
+    hasAdminRole,
+    hasStaffRole,
+    showAdminSidebar,
+    showStaffSidebar,
+    roleDisplay,
+  });
 
   const handleLogout = async () => {
     try {
@@ -123,9 +121,9 @@ export default function Sidebar({ onClose }) {
     window.open("/customer", "_blank");
   };
 
-  // const handleStaffPageClick = () => {
-  //   window.open("/staff", "_blank");
-  // };
+  const handleStaffPageClick = () => {
+    window.open("/staff", "_blank");
+  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -231,11 +229,17 @@ export default function Sidebar({ onClose }) {
                 {t("admin.sidebar.categories")}
               </SubMenuItem>
               <SubMenuItem
+                to={"/admin/employees"}
+                icon={<IconUsers size={16} />}
+              >
+                {t("admin.sidebar.employees")}
+              </SubMenuItem>
+              {/* <SubMenuItem
                 to="/admin/brands"
                 icon={<IconBuildingStore size={16} />}
               >
                 {t("admin.sidebar.brands")}
-              </SubMenuItem>
+              </SubMenuItem> */}
             </MenuWithSubmenu>
 
             {/* Khách hàng & phản hồi */}
@@ -244,9 +248,9 @@ export default function Sidebar({ onClose }) {
               icon={<IconUserHeart stroke={2} />}
               menuKey="customer"
             >
-              <SubMenuItem to="/admin/customers" icon={<IconUsers size={16} />}>
+              {/* <SubMenuItem to="/admin/customers" icon={<IconUsers size={16} />}>
                 {t("admin.sidebar.customers")}
-              </SubMenuItem>
+              </SubMenuItem> */}
               <SubMenuItem
                 to="/admin/reviews"
                 icon={<IconDevicesCheck size={16} />}
@@ -320,7 +324,7 @@ export default function Sidebar({ onClose }) {
                   </span>
                 </button>
               </li>
-              {/* <li>
+              <li>
                 <button
                   className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm cursor-pointer"
                   onClick={handleStaffPageClick}
@@ -328,7 +332,7 @@ export default function Sidebar({ onClose }) {
                   <IconHomeEdit size={16} />
                   <span className="ml-3">Trang nhân viên</span>
                 </button>
-              </li> */}
+              </li>
             </MenuWithSubmenu>
 
             {/* Button logout */}
@@ -347,7 +351,7 @@ export default function Sidebar({ onClose }) {
       )}
 
       {/* Navigation Links of STAFF */}
-      {/* {showStaffSidebar && (
+      {showStaffSidebar && (
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
@@ -363,6 +367,32 @@ export default function Sidebar({ onClose }) {
             </li>
             <li>
               <Link
+                to="/staff/products"
+                className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
+                  isActive("/staff/products")
+                    ? "bg-blue-600"
+                    : " hover:bg-blue-900"
+                }`}
+              >
+                <IconShirt stroke={2} />
+                <span className="ml-3">Sản phẩm</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/staff/inventories"
+                className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
+                  isActive("/staff/inventories")
+                    ? "bg-blue-600"
+                    : " hover:bg-blue-900"
+                }`}
+              >
+                <IconTruckDelivery stroke={2} />
+                <span className="ml-3">Kho hàng</span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/staff/orders"
                 className={`flex items-center rounded-lg px-4 py-2 ${
                   isActive("/staff/orders")
@@ -370,8 +400,8 @@ export default function Sidebar({ onClose }) {
                     : "hover:bg-blue-900"
                 }`}
               >
-                <IconTruckDelivery stroke={2} />
-                <span className="ml-3">Đơn hàng</span>
+                <IconReceipt stroke={2} />
+                <span className="ml-3">Hóa đơn</span>
               </Link>
             </li>
             <li>
@@ -413,7 +443,7 @@ export default function Sidebar({ onClose }) {
                 <span className="ml-3">Khuyến mãi</span>
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to={"/staff/customers"}
                 className={`flex items-center rounded-lg px-4 py-2 ${
@@ -425,8 +455,8 @@ export default function Sidebar({ onClose }) {
                 <IconUsers stroke={2} />
                 <span className="ml-3">Khách hàng</span>
               </Link>
-            </li>
-      <li>
+            </li> */}
+            <li>
               <button
                 className="flex items-center hover:bg-red-600 rounded-lg p-1 ml-4 bg-red-500 font-semibold cursor-pointer"
                 onClick={handleLogout}
@@ -437,7 +467,7 @@ export default function Sidebar({ onClose }) {
             </li>
           </ul>
         </nav>
-      )} */}
+      )}
     </aside>
   );
 }
