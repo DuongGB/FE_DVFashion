@@ -14,12 +14,16 @@ import ProductForm from "../../components/ui/product/ProductForm";
 // import { useBrand } from "../../hooks/useBrand";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
+import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
 export default function ProductPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
+
+  const { user } = useAuth();
+  const isStaff = user?.roles?.includes("ROLE_STAFF");
 
   const { products: getAllProducts, isLoading: isLoadingProducts } =
     useProduct(language);
@@ -46,6 +50,16 @@ export default function ProductPage() {
 
   // Toggle status handler (giống CategoryPage)
   const handleToggleStatus = (product) => {
+    // Kiểm tra quyền trước khi thực hiện
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_status_denied") ||
+          "Bạn không có quyền thực hiện thao tác này!",
+        { autoClose: 2000, position: "top-right" }
+      );
+      return;
+    }
+
     // Xác định trạng thái mới
     let newStatus;
     switch (product.status) {
@@ -356,12 +370,28 @@ export default function ProductPage() {
 
   // Xử lý tạo sản phẩm mới
   const handleCreateProduct = () => {
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_create_denied") ||
+          "Bạn không có quyền tạo sản phẩm mới!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
     setEditingProduct(null);
     setShowForm(true);
   };
 
   // Xử lý chỉnh sửa sản phẩm
   const handleEditProduct = (product) => {
+    if (isStaff) {
+      toast.error(
+        t("admin.product.messages.staff_edit_denied") ||
+          "Bạn không có quyền chỉnh sửa sản phẩm!",
+        { autoClose: 2000, position: "top-right" }
+      );
+      return;
+    }
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -453,13 +483,25 @@ export default function ProductPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{t("admin.product.title")}</h1>
-        <button
-          onClick={handleCreateProduct}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <IconPlus size={16} />
-          {t("admin.product.create_product")}
-        </button>
+        {/* Chỉ hiển thị nút tạo sản phẩm cho admin */}
+        {!isStaff && (
+          <button
+            onClick={handleCreateProduct}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IconPlus size={16} />
+            {t("admin.product.create_product")}
+          </button>
+        )}
+        {/* Hiển thị thông báo cho staff */}
+        {isStaff && (
+          <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+            <span className="font-medium text-yellow-800">
+              {t("admin.product.staff_view_only") ||
+                "Chế độ xem - Không thể chỉnh sửa"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Statistics Cards */}
@@ -965,26 +1007,38 @@ export default function ProductPage() {
                       </div>
                     </td>
                     <td className="p-2 w-32">
-                      <button
-                        onClick={() => handleToggleStatus(product)}
-                        disabled={loadingStatusId === product.id}
-                        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
-                          product.status
-                        )}`}
-                        title={
-                          product.status === "ACTIVE"
-                            ? t("admin.product.status.inactive")
-                            : t("admin.product.status.active")
-                        }
-                      >
-                        {loadingStatusId === product.id ? (
-                          <span className="flex items-center gap-1">
-                            <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
-                          </span>
-                        ) : (
-                          getStatusText(product.status)
-                        )}
-                      </button>
+                      {isStaff ? (
+                        // Staff chỉ xem, không thể thay đổi
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            product.status
+                          )}`}
+                        >
+                          {getStatusText(product.status)}
+                        </span>
+                      ) : (
+                        // Admin có thể click để thay đổi
+                        <button
+                          onClick={() => handleToggleStatus(product)}
+                          disabled={loadingStatusId === product.id}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                            product.status
+                          )}`}
+                          title={
+                            product.status === "ACTIVE"
+                              ? t("admin.product.status.inactive")
+                              : t("admin.product.status.active")
+                          }
+                        >
+                          {loadingStatusId === product.id ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
+                            </span>
+                          ) : (
+                            getStatusText(product.status)
+                          )}
+                        </button>
+                      )}
                     </td>
                     <td className="p-2 text-center">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-medium">
@@ -1004,6 +1058,7 @@ export default function ProductPage() {
                     </td>
                     <td className="p-2">
                       <div className="flex gap-2">
+                        {/* Nút xem chi tiết - tất cả đều có thể xem */}
                         <button
                           className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
                           onClick={() => handleViewProduct(product)}
@@ -1011,14 +1066,29 @@ export default function ProductPage() {
                         >
                           <IconEye size={24} />
                         </button>
-                        <button
-                          className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
-                          onClick={() => handleEditProduct(product)}
-                          title={t("admin.product.actions.edit")}
-                          // disabled={isUpdating}
-                        >
-                          <IconEdit size={24} />
-                        </button>
+
+                        {/* Nút chỉnh sửa - chỉ admin mới có */}
+                        {!isStaff ? (
+                          <button
+                            className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
+                            onClick={() => handleEditProduct(product)}
+                            title={t("admin.product.actions.edit")}
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        ) : (
+                          // Hiển thị icon disabled cho staff
+                          <button
+                            className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                            onClick={() => handleEditProduct(product)}
+                            title={
+                              t("admin.product.staff_no_permission") ||
+                              "Không có quyền chỉnh sửa"
+                            }
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1053,13 +1123,14 @@ export default function ProductPage() {
       />
 
       {/* Product Form Modal */}
-      <ProductForm
-        isOpen={showForm}
-        onClose={handleCloseForm}
-        product={editingProduct}
-        // brands={brands}
-        categories={categories}
-      />
+      {!isStaff && (
+        <ProductForm
+          isOpen={showForm}
+          onClose={handleCloseForm}
+          product={editingProduct}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }

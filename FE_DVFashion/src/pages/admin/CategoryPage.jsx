@@ -7,9 +7,15 @@ import CategoryDetailModal from "../../components/ui/category/CategoryDetailModa
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { useCategory } from "../../hooks/useCategory";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function CategoryPage() {
   const { t, i18n } = useTranslation();
+  const language = i18n.language || "VI";
+
+  const { user } = useAuth();
+  const isStaff = user?.roles?.includes("ROLE_STAFF");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,9 +28,6 @@ export default function CategoryPage() {
   });
   const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
-
-  // Get language from i18n instead of local state
-  const language = i18n.language || "VI";
 
   // Use the category hook with dynamic language
   const { categories, isLoading, error, update } = useCategory(language);
@@ -100,17 +103,43 @@ export default function CategoryPage() {
   };
 
   const handleEdit = (category) => {
+    if (isStaff) {
+      toast.error(
+        t("admin.category.messages.staff_edit_denied") ||
+          "Nhân viên không có quyền chỉnh sửa danh mục!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
     setSelectedCategory(category);
     setShowEditModal(true);
   };
 
   const handleCreate = () => {
+    if (isStaff) {
+      toast.error(
+        t("admin.category.messages.staff_create_denied") ||
+          "Nhân viên không có quyền tạo danh mục mới!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
     setSelectedCategory(null);
     setShowEditModal(true);
   };
 
   // Handle toggle status with position preservation
   const handleToggleStatus = async (category) => {
+    // Kiểm tra quyền trước khi thực hiện
+    if (isStaff) {
+      toast.error(
+        t("admin.category.messages.staff_status_denied") ||
+          "Nhân viên không có quyền thay đổi trạng thái danh mục!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
+
     const newStatus = !category.active;
     const actionText = newStatus
       ? t("admin.category.actions.activate")
@@ -221,13 +250,27 @@ export default function CategoryPage() {
         <h1 className="text-2xl font-bold text-gray-800">
           {t("admin.category.title")}
         </h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-        >
-          <IconPlus size={20} />
-          {t("admin.category.create_category")}
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Chỉ hiển thị nút tạo danh mục cho admin */}
+          {!isStaff && (
+            <button
+              onClick={handleCreate}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <IconPlus size={20} />
+              {t("admin.category.create_category")}
+            </button>
+          )}
+          {/* Hiển thị thông báo cho staff */}
+          {isStaff && (
+            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+              <span className="font-medium text-yellow-800">
+                {t("admin.category.staff_view_only") ||
+                  "Chế độ xem - Không thể chỉnh sửa"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -388,37 +431,55 @@ export default function CategoryPage() {
                     </div>
                   </td>
 
+                  {/* Status cell - chỉ admin mới có thể click để thay đổi */}
                   <td className="p-3">
-                    <button
-                      onClick={() => handleToggleStatus(category)}
-                      disabled={loadingItems.status === category.id}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
-                        category.active
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }`}
-                      title={
-                        category.active
-                          ? t("admin.category.actions.deactivate")
-                          : t("admin.category.actions.activate")
-                      }
-                    >
-                      {loadingItems.status === category.id ? (
-                        <div className="flex items-center gap-1">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                        </div>
-                      ) : (
-                        <>
-                          {category.active
-                            ? t("admin.category.status.active")
-                            : t("admin.category.status.inactive")}
-                        </>
-                      )}
-                    </button>
+                    {isStaff ? (
+                      // Staff chỉ xem, không thể thay đổi
+                      <span
+                        className={`px-3 py-1 rounded text-sm font-medium ${
+                          category.active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {category.active
+                          ? t("admin.category.status.active")
+                          : t("admin.category.status.inactive")}
+                      </span>
+                    ) : (
+                      // Admin có thể click để thay đổi
+                      <button
+                        onClick={() => handleToggleStatus(category)}
+                        disabled={loadingItems.status === category.id}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                          category.active
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                        }`}
+                        title={
+                          category.active
+                            ? t("admin.category.actions.deactivate")
+                            : t("admin.category.actions.activate")
+                        }
+                      >
+                        {loadingItems.status === category.id ? (
+                          <div className="flex items-center gap-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                          </div>
+                        ) : (
+                          <>
+                            {category.active
+                              ? t("admin.category.status.active")
+                              : t("admin.category.status.inactive")}
+                          </>
+                        )}
+                      </button>
+                    )}
                   </td>
 
                   <td className="p-3">
                     <div className="flex gap-2">
+                      {/* Nút xem chi tiết - tất cả đều có thể xem */}
                       <button
                         onClick={() => handleViewDetail(category)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
@@ -426,13 +487,29 @@ export default function CategoryPage() {
                       >
                         <IconEye size={24} />
                       </button>
-                      <button
-                        onClick={() => handleEdit(category)}
-                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                        title={t("admin.category.actions.edit")}
-                      >
-                        <IconEdit size={24} />
-                      </button>
+
+                      {/* Nút chỉnh sửa - chỉ admin mới có */}
+                      {!isStaff ? (
+                        <button
+                          onClick={() => handleEdit(category)}
+                          className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                          title={t("admin.category.actions.edit")}
+                        >
+                          <IconEdit size={24} />
+                        </button>
+                      ) : (
+                        // Hiển thị icon disabled cho staff
+                        <button
+                          className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                          onClick={() => handleEdit(category)}
+                          title={
+                            t("admin.category.staff_no_permission") ||
+                            "Không có quyền chỉnh sửa"
+                          }
+                        >
+                          <IconEdit size={24} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

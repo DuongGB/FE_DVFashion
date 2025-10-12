@@ -562,6 +562,23 @@
       "active_categories": "Đang hoạt động",
       "inactive_categories": "Không hoạt động",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
+      "messages": {
+        "staff_create_denied": "Nhân viên không có quyền tạo danh mục!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa danh mục!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái danh mục!"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách danh mục",
+        "can_view_details": "✓ Xem chi tiết danh mục",
+        "cannot_create": "✗ Không thể tạo danh mục mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa danh mục",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái danh mục",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
+      },
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động"
@@ -657,10 +674,27 @@
       "inactive_promotions": "Không hoạt động",
       "expired_promotions": "Hết hạn sử dụng",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động",
         "expired": "Hết hạn"
+      },
+      "messages": {
+        "staff_create_denied": "Nhân viên không có quyền tạo khuyến mãi!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa khuyến mãi!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách khuyến mãi",
+        "can_view_details": "✓ Xem chi tiết khuyến mãi",
+        "cannot_create": "✗ Không thể tạo khuyến mãi mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa khuyến mãi",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái khuyến mãi",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
       },
       "type": {
         "PERCENTAGE": "Phần trăm",
@@ -1022,6 +1056,8 @@
       "no_products": "Không có sản phẩm nào phù hợp với bộ lọc.",
       "loading_data": "Đang tải dữ liệu...",
       "all_status": "Tất cả trạng thái",
+      "staff_no_permission": "Bạn không có quyền thực hiện thao tác này!",
+      "staff_view_only": "Chế độ xem - Không thể chỉnh sửa",
       "status": {
         "active": "Hoạt động",
         "inactive": "Không hoạt động",
@@ -1077,7 +1113,10 @@
         "create_success": "Tạo sản phẩm thành công!",
         "update_success": "Cập nhật sản phẩm thành công!",
         "create_error": "Có lỗi xảy ra khi tạo sản phẩm!",
-        "update_error": "Có lỗi xảy ra khi cập nhật sản phẩm!"
+        "update_error": "Có lỗi xảy ra khi cập nhật sản phẩm!",
+        "staff_create_denied": "Nhân viên không có quyền tạo sản phẩm!",
+        "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa sản phẩm!",
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái sản phẩm!"
       },
       "values": {
         "no_image": "No img",
@@ -1170,6 +1209,16 @@
         "inactive": "Không hoạt động",
         "out_of_stock": "Hết hàng",
         "discontinued": "Ngừng bán"
+      },
+      "permissions": {
+        "staff_limitations": "Quyền hạn nhân viên",
+        "can_view": "✓ Xem danh sách sản phẩm",
+        "can_view_details": "✓ Xem chi tiết sản phẩm",
+        "cannot_create": "✗ Không thể tạo sản phẩm mới",
+        "cannot_edit": "✗ Không thể chỉnh sửa sản phẩm",
+        "cannot_change_status": "✗ Không thể thay đổi trạng thái sản phẩm",
+        "view_only_mode": "Chế độ chỉ xem",
+        "contact_admin": "Liên hệ quản trị viên để được cấp thêm quyền"
       }
     },
     "sidebar": {
@@ -1396,6 +1445,12 @@
       "error_invalid_quantity": "Vui lòng nhập số lượng mới hợp lệ (>= 0)",
       "error_reason_required": "Vui lòng nhập lý do điều chỉnh",
       "error_adjust": "Có lỗi khi điều chỉnh tồn kho!"
+    }
+  },
+
+  "staff": {
+    "dashboard": {
+      "title": "Bảng điều khiển nhân viên"
     }
   }
 }

@@ -7,10 +7,17 @@ import PromotionDetailModal from "../../components/ui/promotion/PromotionDetailM
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { usePromotion } from "../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function PromotionPage() {
   const { t, i18n } = useTranslation();
+  // Get language from i18n instead of local state
+  const language = i18n.language || "VI";
   const [search, setSearch] = useState("");
+
+  const { user } = useAuth();
+  const isStaff = user?.roles?.includes("ROLE_STAFF");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
@@ -23,18 +30,13 @@ export default function PromotionPage() {
   const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
 
-  // Get language from i18n instead of local state
-  const language = i18n.language || "VI";
-
   // Use promotion hook
   const { promotions, isLoading, error, updatePromotion } =
     usePromotion(language);
 
   // Force re-render when language changes
   useEffect(() => {
-    const handleLanguageChange = () => {
-      // Force component update
-    };
+    const handleLanguageChange = () => {};
 
     i18n.on("languageChanged", handleLanguageChange);
 
@@ -122,12 +124,28 @@ export default function PromotionPage() {
 
   // Xử lý tạo khuyến mãi mới
   const handleCreatePromotion = () => {
+    if (isStaff) {
+      toast.error(
+        t("admin.promotion.messages.staff_create_denied") ||
+          "Nhân viên không có quyền tạo khuyến mãi!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
     setSelectedPromotion(null);
     setShowForm(true);
   };
 
   // Xử lý chỉnh sửa khuyến mãi
   const handleEditPromotion = (promotion) => {
+    if (isStaff) {
+      toast.error(
+        t("admin.promotion.messages.staff_edit_denied") ||
+          "Nhân viên không có quyền chỉnh sửa khuyến mãi!",
+        { autoClose: 2000, position: "top-right" }
+      );
+      return;
+    }
     setSelectedPromotion(promotion);
     setShowForm(true);
   };
@@ -177,6 +195,16 @@ export default function PromotionPage() {
 
   // Handle toggle status with position preservation
   const handleToggleStatus = async (promotion) => {
+    // Kiểm tra quyền trước khi thực hiện
+    if (isStaff) {
+      toast.error(
+        t("admin.promotion.messages.staff_status_denied") ||
+          "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
+
     const newStatus = !promotion.active;
     const actionText = newStatus
       ? t("admin.promotion.actions.activate")
@@ -294,13 +322,27 @@ export default function PromotionPage() {
         <h1 className="text-2xl font-bold text-gray-800">
           {t("admin.promotion.title")}
         </h1>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
-          onClick={handleCreatePromotion}
-        >
-          <IconPlus size={16} />
-          {t("admin.promotion.create_promotion")}
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Chỉ hiển thị nút tạo khuyến mãi cho admin */}
+          {!isStaff && (
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
+              onClick={handleCreatePromotion}
+            >
+              <IconPlus size={16} />
+              {t("admin.promotion.create_promotion")}
+            </button>
+          )}
+          {/* Hiển thị thông báo cho staff */}
+          {isStaff && (
+            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+              <span className="font-medium text-yellow-800">
+                {t("admin.promotion.staff_view_only") ||
+                  "Chế độ xem - Không thể chỉnh sửa"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -473,36 +515,54 @@ export default function PromotionPage() {
                   </td>
                   <td className="p-2">{formatDateTime(promo.startDate)}</td>
                   <td className="p-2">{formatDateTime(promo.endDate)}</td>
+                  {/* Status cell - chỉ admin mới có thể click để thay đổi */}
                   <td className="p-2">
-                    <button
-                      onClick={() => handleToggleStatus(promo)}
-                      disabled={loadingItems.status === promo.id}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
-                        promo.active
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }`}
-                      title={
-                        promo.active
-                          ? t("admin.promotion.actions.tooltip_deactivate")
-                          : t("admin.promotion.actions.tooltip_activate")
-                      }
-                    >
-                      {loadingItems.status === promo.id ? (
-                        <div className="flex items-center gap-1">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                        </div>
-                      ) : (
-                        <>
-                          {promo.active
-                            ? t("admin.promotion.status.active")
-                            : t("admin.promotion.status.inactive")}
-                        </>
-                      )}
-                    </button>
+                    {isStaff ? (
+                      // Staff chỉ xem, không thể thay đổi
+                      <span
+                        className={`px-3 py-1 rounded text-sm font-medium ${
+                          promo.active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {promo.active
+                          ? t("admin.promotion.status.active")
+                          : t("admin.promotion.status.inactive")}
+                      </span>
+                    ) : (
+                      // Admin có thể click để thay đổi
+                      <button
+                        onClick={() => handleToggleStatus(promo)}
+                        disabled={loadingItems.status === promo.id}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                          promo.active
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                        }`}
+                        title={
+                          promo.active
+                            ? t("admin.promotion.actions.tooltip_deactivate")
+                            : t("admin.promotion.actions.tooltip_activate")
+                        }
+                      >
+                        {loadingItems.status === promo.id ? (
+                          <div className="flex items-center gap-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                          </div>
+                        ) : (
+                          <>
+                            {promo.active
+                              ? t("admin.promotion.status.active")
+                              : t("admin.promotion.status.inactive")}
+                          </>
+                        )}
+                      </button>
+                    )}
                   </td>
                   <td className="p-3">
                     <div className="flex gap-1">
+                      {/* Nút xem chi tiết - tất cả đều có thể xem */}
                       <button
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         onClick={() => handleViewPromotion(promo)}
@@ -510,13 +570,29 @@ export default function PromotionPage() {
                       >
                         <IconEye size={24} />
                       </button>
-                      <button
-                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                        onClick={() => handleEditPromotion(promo)}
-                        title={t("admin.promotion.actions.edit")}
-                      >
-                        <IconEdit size={24} />
-                      </button>
+
+                      {/* Nút chỉnh sửa - chỉ admin mới có */}
+                      {!isStaff ? (
+                        <button
+                          className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                          onClick={() => handleEditPromotion(promo)}
+                          title={t("admin.promotion.actions.edit")}
+                        >
+                          <IconEdit size={24} />
+                        </button>
+                      ) : (
+                        // Hiển thị icon disabled cho staff
+                        <button
+                          className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                          onClick={() => handleEditPromotion(promo)}
+                          title={
+                            t("admin.promotion.staff_no_permission") ||
+                            "Không có quyền chỉnh sửa"
+                          }
+                        >
+                          <IconEdit size={24} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -540,7 +616,7 @@ export default function PromotionPage() {
         onPageChange={(page) => setCurrentPage(page)}
       />
 
-      {showForm && (
+      {!isStaff && showForm && (
         <PromotionForm
           isOpen={showForm}
           promotion={selectedPromotion}

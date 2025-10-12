@@ -562,6 +562,23 @@
       "active_categories": "Active",
       "inactive_categories": "Inactive",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
+      "messages": {
+        "staff_create_denied": "Staff cannot create categories!",
+        "staff_edit_denied": "Staff cannot edit categories!",
+        "staff_status_denied": "Staff cannot change category status!"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View category list",
+        "can_view_details": "✓ View category details",
+        "cannot_create": "✗ Cannot create new categories",
+        "cannot_edit": "✗ Cannot edit categories",
+        "cannot_change_status": "✗ Cannot change category status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
+      },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
@@ -657,10 +674,27 @@
       "inactive_promotions": "Inactive",
       "expired_promotions": "Expired",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
       "status": {
         "active": "Active",
         "inactive": "Inactive",
         "expired": "Expired"
+      },
+      "messages": {
+        "staff_create_denied": "Staff cannot create promotions!",
+        "staff_edit_denied": "Staff cannot edit promotions!",
+        "staff_status_denied": "Staff cannot change promotion status!"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View promotion list",
+        "can_view_details": "✓ View promotion details",
+        "cannot_create": "✗ Cannot create new promotions",
+        "cannot_edit": "✗ Cannot edit promotions",
+        "cannot_change_status": "✗ Cannot change promotion status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
       },
       "type": {
         "PERCENTAGE": "Percentage",
@@ -1022,6 +1056,8 @@
       "no_products": "No products match the filter.",
       "loading_data": "Loading data...",
       "all_status": "All Status",
+      "staff_no_permission": "You don't have permission to perform this action!",
+      "staff_view_only": "View Only Mode - Cannot Edit",
       "status": {
         "active": "Active",
         "inactive": "Inactive",
@@ -1077,7 +1113,10 @@
         "create_success": "Product created successfully!",
         "update_success": "Product updated successfully!",
         "create_error": "An error occurred while creating product!",
-        "update_error": "An error occurred while updating product!"
+        "update_error": "An error occurred while updating product!",
+        "staff_create_denied": "Staff cannot create products!",
+        "staff_edit_denied": "Staff cannot edit products!",
+        "staff_status_denied": "Staff cannot change product status!"
       },
       "values": {
         "no_image": "No image",
@@ -1170,6 +1209,16 @@
         "inactive": "Inactive",
         "out_of_stock": "Out of Stock",
         "discontinued": "Discontinued"
+      },
+      "permissions": {
+        "staff_limitations": "Staff Permissions",
+        "can_view": "✓ View product list",
+        "can_view_details": "✓ View product details",
+        "cannot_create": "✗ Cannot create new products",
+        "cannot_edit": "✗ Cannot edit products",
+        "cannot_change_status": "✗ Cannot change product status",
+        "view_only_mode": "View Only Mode",
+        "contact_admin": "Contact administrator for additional permissions"
       }
     },
     "sidebar": {
@@ -1396,6 +1445,12 @@
       "error_invalid_quantity": "Please enter a valid new quantity (>= 0)",
       "error_reason_required": "Please enter adjustment reason",
       "error_adjust": "Error adjusting stock!"
+    }
+  },
+
+  "staff": {
+    "dashboard": {
+      "title": "Staff Dashboard"
     }
   }
 }
