@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { IconX, IconMapPin, IconMap } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import showConfirmationToast from "../../../utils/showConfirmationToast";
 import AddressMap from "./AddressMap";
 
 export default function AddressModal({
