@@ -1,4 +1,5 @@
 import { toast } from "react-toastify";
+import i18n from "i18next";
 
 /**
  * Hiển thị toast confirmation với custom message và actions
@@ -19,13 +20,19 @@ export const showConfirmationToast = ({
   message,
   onConfirm,
   onCancel = null,
-  confirmText = "Đồng ý",
-  cancelText = "Hủy",
+  confirmText,
+  cancelText,
   confirmButtonClass = "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer",
   cancelButtonClass = "bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition-colors cursor-pointer",
   uniqueId = null,
 }) => {
   const toastId = uniqueId || `confirmation-${Date.now()}-${Math.random()}`;
+
+  const t = i18n.t;
+
+  const finalTitle = title || t("confirm.title");
+  const finalConfirmText = confirmText || t("common.confirm");
+  const finalCancelText = cancelText || t("common.cancel");
 
   const handleCancel = () => {
     toast.dismiss(toastId);
@@ -40,15 +47,15 @@ export const showConfirmationToast = ({
   const warningToastId = toast.warn(
     <div className="flex flex-col gap-3">
       <div>
-        <strong>{title}</strong>
+        <strong>{finalTitle}</strong>
       </div>
       <div>{message}</div>
       <div className="flex gap-2 justify-end">
         <button className={cancelButtonClass} onClick={handleCancel}>
-          {cancelText}
+          {finalCancelText}
         </button>
         <button className={confirmButtonClass} onClick={handleConfirm}>
-          {confirmText}
+          {finalConfirmText}
         </button>
       </div>
     </div>,
@@ -84,21 +91,29 @@ export const showDeleteConfirmationToast = ({
   onCancel = null,
   uniqueId = null,
 }) => {
-  const action = isActive ? "vô hiệu hóa" : "kích hoạt";
-  const title = "Xác nhận thao tác";
-  const message = `Bạn có chắc chắn muốn ${action} ${itemType} "${itemName}" không?`;
+  const t = i18n.t;
+  const action = isActive
+    ? t("confirm.action_deactivate")
+    : t("confirm.action_activate");
+  const finalItemType = itemType || t("confirm.itemType_default");
+  const title = t("confirm.title");
+  const message = t("confirm.delete_message", {
+    action: action,
+    itemType: finalItemType,
+    itemName: itemName,
+  });
 
   return showConfirmationToast({
     title,
     message,
     onConfirm,
     onCancel,
-    confirmText: "Đồng ý",
-    cancelText: "Hủy",
+    confirmText: t("common.confirm"),
+    cancelText: t("common.cancel"),
     confirmButtonClass: isActive
       ? "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer"
       : "bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors cursor-pointer",
-    uniqueId: uniqueId || `delete-${itemType}-${Date.now()}`,
+    uniqueId: uniqueId || `delete-${finalItemType}-${Date.now()}`,
   });
 };
 
@@ -110,13 +125,14 @@ export const showDeleteConfirmationToast = ({
  * @returns {string} Toast ID
  */
 export const showSimpleConfirmation = (message, onConfirm, onCancel = null) => {
+  const t = i18n.t;
   return showConfirmationToast({
-    title: "Xác nhận",
+    title: t("confirm.simple_title"),
     message,
     onConfirm,
     onCancel,
-    confirmText: "Có",
-    cancelText: "Không",
+    confirmText: t("common.yes"),
+    cancelText: t("common.no"),
     confirmButtonClass:
       "bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors cursor-pointer",
   });

@@ -12,11 +12,13 @@ import {
   IconStar,
   IconHelp,
 } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next"; // Import translation hook
+import { useTranslation } from "react-i18next";
+import OrderHistory from "../../components/ui/account/OrderHistory";
 
-const SidebarItem = ({ icon, text, active }) => {
+const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
     <div
+      onClick={onClick}
       className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer ${
         active ? "bg-black text-white font-bold" : "bg-white text-black"
       }`}
@@ -39,103 +41,154 @@ const InfoRow = ({ label, value }) => {
   );
 };
 
-export default function AccountPage() {
-  const { user } = useAuth();
-  const [showModal, setShowModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
+const AccountInfo = ({ user, onUpdateClick, onPasswordChangeClick }) => {
   const { t } = useTranslation();
-
   return (
-    <div className="flex bg-gray-100 min-h-screen">
-      {/* Sidebar */}
-      <div className="w-[320px] p-6">
-        <div className="flex flex-col gap-3">
-          <SidebarItem
-            active
-            icon={<IconUser size={24} />}
-            text={t("account.sidebar.account_info")}
-          />
-          <SidebarItem
-            icon={<IconUsers size={24} />}
-            text={t("account.sidebar.refer_friends")}
-          />
-          <SidebarItem
-            icon={<IconShoppingCart size={24} />}
-            text={t("account.sidebar.order_history")}
-          />
-          <SidebarItem
-            icon={<IconCoin size={24} />}
-            text={t("account.sidebar.dvf_cash_history")}
-          />
-          <SidebarItem
-            icon={<IconTicket size={24} />}
-            text={t("account.sidebar.voucher_wallet")}
-          />
-          <SidebarItem
-            icon={<IconHome size={24} />}
-            text={t("account.sidebar.address_book")}
-          />
-          <SidebarItem
-            icon={<IconStar size={24} />}
-            text={t("account.sidebar.reviews_feedback")}
-          />
-          <SidebarItem
-            icon={<IconHelp size={24} />}
-            text={t("account.sidebar.policies_faq")}
-          />
-        </div>
-      </div>
-      {/* Main content */}
-      <div className="flex-1 p-10 bg-white rounded-lg m-6">
-        <h2 className="text-3xl font-bold mb-8">
-          {t("account.main.account_info")}
-        </h2>
-        <div className="mb-8">
-          <InfoRow
-            label={t("account.main.full_name")}
-            value={user?.fullName || t("account.main.not_updated")}
-          />
-          <InfoRow
-            label={t("account.main.phone")}
-            value={user?.phone || t("account.main.not_updated")}
-          />
-          <InfoRow
-            label={t("account.main.gender")}
-            value={user?.gender || t("account.main.not_updated")}
-          />
-          <InfoRow
-            label={t("account.main.dob")}
-            value={user?.dob || t("account.main.dob_placeholder")}
-          />
-          <button
-            className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
-            onClick={() => setShowUpdateModal(true)}
-          >
-            {t("account.main.update")}
-          </button>
-          <ModalUpdateAccount
-            show={showUpdateModal}
-            onClose={() => setShowUpdateModal(false)}
-            user={user}
-          />
-        </div>
-        <h3 className="text-xl font-bold mb-4">
-          {t("account.main.login_info")}
-        </h3>
+    <>
+      <h2 className="text-3xl font-bold mb-8">
+        {t("account.main.account_info")}
+      </h2>
+      <div className="mb-8">
         <InfoRow
-          label={t("account.main.email")}
-          value={user?.email || t("account.main.not_updated")}
+          label={t("account.main.full_name")}
+          value={user?.fullName || t("account.main.not_updated")}
         />
-        <InfoRow label={t("account.main.password")} value="************" />
+        <InfoRow
+          label={t("account.main.phone")}
+          value={user?.phone || t("account.main.not_updated")}
+        />
+        <InfoRow
+          label={t("account.main.gender")}
+          value={user?.gender || t("account.main.not_updated")}
+        />
+        <InfoRow
+          label={t("account.main.dob")}
+          value={user?.dob || t("account.main.dob_placeholder")}
+        />
         <button
           className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
-          onClick={() => setShowModal(true)}
+          onClick={onUpdateClick}
         >
           {t("account.main.update")}
         </button>
+      </div>
+      <h3 className="text-xl font-bold mb-4">{t("account.main.login_info")}</h3>
+      <InfoRow
+        label={t("account.main.email")}
+        value={user?.email || t("account.main.not_updated")}
+      />
+      <InfoRow label={t("account.main.password")} value="************" />
+      <button
+        className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
+        onClick={onPasswordChangeClick}
+      >
+        {t("account.main.update")}
+      </button>
+    </>
+  );
+};
+
+export default function AccountPage() {
+  const { user } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("account_info");
+  const { t } = useTranslation();
+
+  const sidebarItems = [
+    {
+      id: "account_info",
+      icon: <IconUser size={24} />,
+      text: t("account.sidebar.account_info"),
+    },
+    {
+      id: "refer_friends",
+      icon: <IconUsers size={24} />,
+      text: t("account.sidebar.refer_friends"),
+    },
+    {
+      id: "order_history",
+      icon: <IconShoppingCart size={24} />,
+      text: t("account.sidebar.order_history"),
+    },
+    {
+      id: "dvf_cash_history",
+      icon: <IconCoin size={24} />,
+      text: t("account.sidebar.dvf_cash_history"),
+    },
+    {
+      id: "voucher_wallet",
+      icon: <IconTicket size={24} />,
+      text: t("account.sidebar.voucher_wallet"),
+    },
+    {
+      id: "address_book",
+      icon: <IconHome size={24} />,
+      text: t("account.sidebar.address_book"),
+    },
+    {
+      id: "reviews_feedback",
+      icon: <IconStar size={24} />,
+      text: t("account.sidebar.reviews_feedback"),
+    },
+    {
+      id: "policies_faq",
+      icon: <IconHelp size={24} />,
+      text: t("account.sidebar.policies_faq"),
+    },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "account_info":
+        return (
+          <AccountInfo
+            user={user}
+            onUpdateClick={() => setShowUpdateModal(true)}
+            onPasswordChangeClick={() => setShowPasswordModal(true)}
+          />
+        );
+      case "order_history":
+        return <OrderHistory />;
+      // Add other cases for other tabs here
+      default:
+        return (
+          <AccountInfo
+            user={user}
+            onUpdateClick={() => setShowUpdateModal(true)}
+            onPasswordChangeClick={() => setShowPasswordModal(true)}
+          />
+        );
+    }
+  };
+
+  return (
+    <div className="flex bg-gray-100 min-h-screen p-6 gap-6">
+      {/* Sidebar */}
+      <div className="w-[320px] flex-shrink-0">
+        <div className="flex flex-col gap-3 bg-white p-4 rounded-lg h-full">
+          {sidebarItems.map((item) => (
+            <SidebarItem
+              key={item.id}
+              active={activeTab === item.id}
+              icon={item.icon}
+              text={item.text}
+              onClick={() => setActiveTab(item.id)}
+            />
+          ))}
+        </div>
+      </div>
+      {/* Main content */}
+      <div className="flex-1 p-10 bg-white rounded-lg">
+        {renderContent()}
+        <ModalUpdateAccount
+          show={showUpdateModal}
+          onClose={() => setShowUpdateModal(false)}
+          user={user}
+        />
         <ModalChangePassword
-          show={showModal}
-          onClose={() => setShowModal(false)}
+          show={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
         />
       </div>
     </div>

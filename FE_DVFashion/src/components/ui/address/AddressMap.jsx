@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import axios from "axios";
 import { IconMapPin, IconCurrentLocation } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
   const { t } = useTranslation();
-  const [position, setPosition] = useState([10.762622, 106.660172]); // default HCM
+  const [position, setPosition] = useState([10.762622, 106.660172]);
   const [marker, setMarker] = useState(null);
   const [address, setAddress] = useState({
     country: "Vietnam",
@@ -17,9 +23,18 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Component để cập nhật view của map khi position thay đổi
+  const ChangeView = ({ center, zoom }) => {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(center, zoom);
+    }, [center, zoom, map]);
+    return null;
+  };
+
   // Lấy vị trí hiện tại của user
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (!marker && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const newPosition = [pos.coords.latitude, pos.coords.longitude];
@@ -30,7 +45,7 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
         (err) => console.error("Geolocation error:", err)
       );
     }
-  }, []);
+  }, [marker]);
 
   // Set initial address if provided
   useEffect(() => {
@@ -44,7 +59,9 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
     useMapEvents({
       click(e) {
         const { lat, lng } = e.latlng;
-        setMarker([lat, lng]);
+        const newPosition = [lat, lng];
+        setPosition(newPosition);
+        setMarker(newPosition);
         fetchAddress(lat, lng);
       },
     });
@@ -75,9 +92,9 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
         district: data.county || data.state_district || data.suburb || "",
         ward: data.suburb || data.village || data.neighbourhood || "",
         street:
-          data.road || data.house_number
-            ? `${data.house_number} ${data.road}`
-            : data.neighbourhood || "",
+          [data.house_number, data.road].filter(Boolean).join(" ") ||
+          data.neighbourhood ||
+          "",
       };
 
       setAddress(newAddress);
@@ -124,8 +141,9 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
           {t("address.select_on_map")}
         </h3>
         <button
+          type="button"
           onClick={getCurrentLocation}
-          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer"
         >
           <IconCurrentLocation size={16} />
           {t("address.current_location")}
@@ -139,6 +157,7 @@ const AddressMap = ({ onAddressSelect, initialAddress = null }) => {
           style={{ height: "300px", width: "100%" }}
           className="rounded-lg border border-gray-300"
         >
+          <ChangeView center={position} zoom={15} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -3,7 +3,7 @@
     "about_dvfashion": "ABOUT DVFASHION",
     "dvfclub": "DVFclub",
     "blog": "Blog",
-    "customer_service": "Customer Service",
+    "customer_service": "CS",
     "login": "Login",
     "account": "Account",
     "search_placeholder": "Search...",
@@ -361,7 +361,7 @@
     "vat": "Issue VAT invoice",
     "payment_method": "Payment Method",
     "payment_cod": "Cash on Delivery (COD)",
-    "payment_online": "Online Payment",
+    "payment_online": "PayPal Payment",
     "payment_online_note": "Credit card, e-wallet",
     "discount_code_placeholder": "Enter discount code",
     "apply": "Apply",
@@ -369,6 +369,7 @@
     "promotion_not_qualified": "Not qualified",
     "no_address_selected": "No delivery address selected",
     "select_address": "Select Address",
+    "cancel_selection": "Cancel Selection",
     "salutation": {
       "default": "Salutation",
       "male": "Mr.",
@@ -377,7 +378,45 @@
     },
     "select_province": "Select Province/City",
     "select_district": "Select District",
-    "select_ward": "Select Ward/Commune"
+    "select_ward": "Select Ward/Commune",
+    "voucher": "Voucher",
+    "save_amount": "Save",
+    "place_order": "PLACE ORDER",
+    "processing": "PROCESSING...",
+    "select_product_to_order": "Please select products to order.",
+    "fill_shipping_info": "Please fill in all shipping information."
+  },
+  "order": {
+    "create_success": "Order created successfully!",
+    "create_fail": "Failed to create order.",
+    "payment_confirm_success": "Payment confirmed successfully!",
+    "payment_confirm_fail": "Failed to confirm payment.",
+    "payment_cancel_warn": "Payment has been cancelled.",
+    "payment_cancel_error": "An error occurred.",
+    "update_success": "Order updated successfully!",
+    "update_fail": "Failed to update order.",
+    "total_amount": "Total Amount",
+    "return_exchange": "Return/Exchange",
+    "review": "Review",
+    "your_orders": "Your orders",
+    "orders_count": "orders",
+    "no_orders_found": "You have no orders yet.",
+    "return_policy_60_days": "60-day return policy",
+    "gift": "Gift",
+    "payment_method": {
+      "title": "Payment Method",
+      "cod": "Cash on Delivery",
+      "paypal": "PayPal"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "canceled": "Canceled",
+      "returned": "Returned"
+    }
   },
   "address": {
     "address_book": "Address Book",
@@ -409,7 +448,8 @@
     "default": "Default",
 
     "empty_message": "You don't have any saved addresses",
-    "confirm_delete": "Are you sure you want to delete this address?",
+    "confirm_delete_title": "Confirm Address Deletion",
+    "confirm_delete_message": "Are you sure you want to delete the address for {{fullName}}?",
 
     "errors": {
       "fullName_required": "Full name is required",
@@ -418,8 +458,17 @@
       "city_required": "City/Province is required",
       "district_required": "District is required",
       "ward_required": "Ward/Commune is required",
-      "street_required": "Street address is required"
+      "street_required": "Street address is required",
+      "phone_invalid": "Invalid phone number"
     }
+  },
+  "confirm": {
+    "title": "Confirm Action",
+    "simple_title": "Confirmation",
+    "action_deactivate": "deactivate",
+    "action_activate": "activate",
+    "itemType_default": "item",
+    "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
   "common": {
     "loading": "Loading",

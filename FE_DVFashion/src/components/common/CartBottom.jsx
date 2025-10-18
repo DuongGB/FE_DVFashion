@@ -1,11 +1,21 @@
 import {
   IconCircleDashedPercentage,
+  IconCreditCard,
   IconTruckDelivery,
 } from "@tabler/icons-react";
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
-export default function CartBottom({ cart, total, discount }) {
+export default function CartBottom({
+  cart,
+  total,
+  discount,
+  onOrder,
+  isLoading,
+  paymentMethod,
+}) {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const authModal = useAuthModal();
 
@@ -26,29 +36,15 @@ export default function CartBottom({ cart, total, discount }) {
           0
         ) - computedTotal;
 
-  // // Tính tổng tiền thực trả
-  // const total = cart?.reduce(
-  //   (acc, item) => acc + item.unitPrice * item.quantity,
-  //   0
-  // );
-
-  // // Tính tổng tiền gốc (chưa giảm giá)
-  // const originalTotal = cart?.reduce(
-  //   (acc, item) =>
-  //     acc + (item.oldPrice ? item.oldPrice : item.unitPrice) * item.quantity,
-  //   0
-  // );
-
-  // // Tính tổng giảm giá
-  // const discount = originalTotal - total;
-
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleOrderClick = () => {
     if (!isAuthenticated) {
       authModal.openLogin({ stayOnPage: true });
       return;
     }
-    // Xử lý đặt hàng ở đây (chuyển đến trang thanh toán hoặc hiển thị modal)
+    if (onOrder) {
+      onOrder();
+    }
   };
 
   return (
@@ -57,15 +53,24 @@ export default function CartBottom({ cart, total, discount }) {
       <div className="fixed bottom-0 left-0 w-full flex z-20">
         <div className="flex-1 flex items-center gap-8 bg-[#edeffe] px-12 py-4 border-t">
           <div className="flex items-center gap-2 font-semibold text-gray-700 text-lg">
-            <IconTruckDelivery size={24} />
-            Thanh toán khi nhận hàng
+            {paymentMethod === "cod" ? (
+              <>
+                <IconTruckDelivery size={24} />
+                {t("cart.payment_cod")}
+              </>
+            ) : (
+              <>
+                <IconCreditCard size={24} />
+                {t("cart.payment_online")}
+              </>
+            )}
           </div>
           <div className="border-l h-8 mx-6" />
           <div className="flex items-center gap-2 font-medium">
             <span className="bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
               <IconCircleDashedPercentage size={24} />
             </span>
-            Voucher
+            {t("cart.voucher")}
           </div>
         </div>
         <div className="w-[600px] flex items-center justify-between bg-white px-10 py-4 border-t">
@@ -74,7 +79,7 @@ export default function CartBottom({ cart, total, discount }) {
               {computedTotal?.toLocaleString()}đ
             </span>
             <span className="ml-4 text-xs text-gray-500">
-              Tiết kiệm{" "}
+              {t("cart.save_amount")}{" "}
               <span className="font-bold">
                 {computedDiscount > 0 ? discount?.toLocaleString() : "0"}đ
               </span>
@@ -85,7 +90,7 @@ export default function CartBottom({ cart, total, discount }) {
             disabled={cart?.length === 0}
             onClick={handleOrderClick}
           >
-            ĐẶT HÀNG
+            {isLoading ? t("cart.processing") : t("cart.place_order")}
           </button>
         </div>
       </div>

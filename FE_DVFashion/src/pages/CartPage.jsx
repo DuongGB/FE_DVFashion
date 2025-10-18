@@ -13,12 +13,15 @@ import { useTranslation } from "react-i18next";
 import { useCart } from "../hooks/useCart";
 import { useAddress } from "../hooks/useAddress";
 import AddressList from "../components/ui/address/AddressList";
+import { useCreateOrder } from "../hooks/useOrder";
+import { toast } from "react-toastify";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
-  const { defaultAddress } = useAddress();
+  const { defaultAddress, addresses } = useAddress();
+  const { mutate: createOrder, isLoading: isCreatingOrder } = useCreateOrder();
 
   // Lấy giỏ hàng từ API
   const {
@@ -30,6 +33,14 @@ export default function CartPage() {
     isUpdating,
   } = useCart();
 
+  // Lọc ra các khuyến mãi còn hạn
+  const activePromotions = useMemo(() => {
+    if (!promotions) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Đặt về đầu ngày để so sánh
+    return promotions.filter((promo) => new Date(promo.endDate) >= today);
+  }, [promotions]);
+
   // Chuyển đổi dữ liệu từ API sang định dạng dùng trong UI
   const cartItems = cart?.items || [];
 
@@ -40,17 +51,30 @@ export default function CartPage() {
   const [shipping, setShipping] = useState({
     name: "",
     phone: "",
-    email: "",
     address: "",
+    country: "Vietnam",
     province: "",
+    district: "",
     ward: "",
     note: "",
     otherReceiver: false,
     vat: false,
+    shippingFee: 0,
   });
+  const [payment, setPayment] = useState("cod");
+  const [showAddressList, setShowAddressList] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [manualDeselect, setManualDeselect] = useState(false);
 
+  // Lưu thứ tự cartItemId ban đầu
+  const [itemOrder, setItemOrder] = useState(
+    cartItems.map((i) => i.cartItemId)
+  );
+
+  // Add location data state
   const [locationData, setLocationData] = useState({
     provinces: [],
+    districts: [],
     wards: [],
     isLoading: false,
   });
@@ -64,11 +88,12 @@ export default function CartPage() {
   const loadProvinces = async () => {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch("https://provinces.open-api.vn/api/v2/");
+      const response = await fetch("https://provinces.open-api.vn/api/p/");
       const provinces = await response.json();
       setLocationData((prev) => ({
         ...prev,
         provinces,
+        districts: [],
         wards: [],
         isLoading: false,
       }));
@@ -78,15 +103,47 @@ export default function CartPage() {
     }
   };
 
-  // Load wards when province changes
+  // Load districts when province changes
   const handleProvinceChange = async (provinceCode) => {
     setShipping((prev) => ({
       ...prev,
       province: provinceCode,
+      district: "",
       ward: "",
     }));
 
     if (!provinceCode) {
+      setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch(
+        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`
+      );
+      const data = await response.json();
+      setLocationData((prev) => ({
+        ...prev,
+        districts: data.districts || [],
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading districts:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Load wards when district changes
+  const handleDistrictChange = async (districtCode) => {
+    setShipping((prev) => ({
+      ...prev,
+      district: districtCode,
+      ward: "",
+    }));
+
+    if (!districtCode) {
       setLocationData((prev) => ({ ...prev, wards: [] }));
       return;
     }
@@ -94,14 +151,12 @@ export default function CartPage() {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
       const response = await fetch(
-        `https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`
+        `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`
       );
       const data = await response.json();
-      // Lấy tất cả ward
-      const allWards = data.wards || [];
       setLocationData((prev) => ({
         ...prev,
-        wards: allWards,
+        wards: data.wards || [],
         isLoading: false,
       }));
     } catch (error) {
@@ -135,34 +190,42 @@ export default function CartPage() {
     return ward ? ward.name : "";
   };
 
-  const [payment, setPayment] = useState("cod");
-  const [showAddressList, setShowAddressList] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  // Auto-select default address when component mounts or defaultAddress changes
+  useEffect(() => {
+    if (defaultAddress && !selectedAddress && !manualDeselect) {
+      handleSelectAddress(defaultAddress);
+    }
+  }, [defaultAddress, selectedAddress, manualDeselect]);
 
-  // Lưu thứ tự cartItemId ban đầu
-  const [itemOrder, setItemOrder] = useState(
-    cartItems.map((i) => i.cartItemId)
-  );
+  // Sync selectedAddress if it's deleted from the address list
+  useEffect(() => {
+    if (selectedAddress && addresses) {
+      const updatedSelectedAddress = addresses.find(
+        (addr) => addr.id === selectedAddress.id
+      );
+
+      // If the address is deleted, updatedSelectedAddress will be undefined
+      if (!updatedSelectedAddress) {
+        // Fall back to the new default address or null
+        handleSelectAddress(defaultAddress || null);
+      } else {
+        // If the address was edited, its data might have changed.
+        // We update the selectedAddress state to reflect these changes.
+        // JSON.stringify is a simple way to check for object inequality.
+        if (
+          JSON.stringify(updatedSelectedAddress) !==
+          JSON.stringify(selectedAddress)
+        ) {
+          setSelectedAddress(updatedSelectedAddress);
+        }
+      }
+    }
+  }, [addresses, selectedAddress, defaultAddress]);
 
   // Mặc định selected tất cả khi cartItems thay đổi
   useEffect(() => {
     setSelected(cartItems.map((item) => item.cartItemId));
   }, [cartItems]);
-
-  // Auto-select default address when component mounts or defaultAddress changes
-  useEffect(() => {
-    if (defaultAddress && !selectedAddress) {
-      setSelectedAddress(defaultAddress);
-      setShipping((prev) => ({
-        ...prev,
-        name: defaultAddress.fullName,
-        phone: defaultAddress.phone,
-        address: `${defaultAddress.street}, ${defaultAddress.ward}, ${defaultAddress.city}`,
-        province: "",
-        ward: "",
-      }));
-    }
-  }, [defaultAddress, selectedAddress]);
 
   // Đồng bộ selected khi giỏ hàng thay đổi
   useEffect(() => {
@@ -187,12 +250,41 @@ export default function CartPage() {
   // Handle address selection
   const handleSelectAddress = (address) => {
     setSelectedAddress(address);
-    setShipping((prev) => ({
-      ...prev,
-      name: address.fullName,
-      phone: address.phone,
-      address: `${address.street}, ${address.ward}, ${address.city}`,
-    }));
+    if (address) {
+      setManualDeselect(false);
+      setShipping((prev) => ({
+        ...prev,
+        name: address.fullName,
+        phone: address.phone,
+        address: address.street,
+        // We will find and set the codes for province, district, ward
+      }));
+
+      // Find and set province, then trigger district and ward loading
+      const province = locationData.provinces.find(
+        (p) => p.name === address.city
+      );
+      if (province) {
+        handleProvinceChange(province.code.toString(), address);
+      }
+    } else {
+      setManualDeselect(true);
+      // Clear shipping form if no address is selected
+      setShipping({
+        name: "",
+        phone: "",
+        address: "",
+        country: "Vietnam",
+        province: "",
+        district: "",
+        ward: "",
+        note: "",
+        otherReceiver: false,
+        vat: false,
+        shippingFee: 0,
+      });
+    }
+
     setShowAddressList(false);
   };
 
@@ -286,6 +378,86 @@ export default function CartPage() {
   const totalAfterPromotion =
     total - promotionDiscount > 0 ? total - promotionDiscount : 0;
 
+  // Tổng cuối cùng bao gồm phí vận chuyển
+  const finalTotal = totalAfterPromotion + (shipping.shippingFee || 0);
+
+  // Hàm xử lý khi nhấn nút Đặt hàng
+  const handleCreateOrder = () => {
+    if (filteredCart.length === 0) {
+      toast.warn(t("cart.select_product_to_order"));
+      return;
+    }
+
+    let shippingInfoPayload;
+
+    // Ưu tiên lấy thông tin từ địa chỉ đã chọn
+    if (selectedAddress) {
+      shippingInfoPayload = {
+        fullName: selectedAddress.fullName,
+        phone: selectedAddress.phone,
+        country: selectedAddress.country || "Vietnam",
+        city: selectedAddress.city,
+        district: selectedAddress.district,
+        ward: selectedAddress.ward,
+        street: selectedAddress.street,
+      };
+    } else {
+      // Nếu không có địa chỉ được chọn, lấy từ form và kiểm tra
+      if (
+        !shipping.name ||
+        !shipping.phone ||
+        !shipping.address ||
+        !shipping.province ||
+        !shipping.district ||
+        !shipping.ward
+      ) {
+        toast.warn(t("cart.fill_shipping_info"));
+        return;
+      }
+      shippingInfoPayload = {
+        fullName: shipping.name,
+        phone: shipping.phone,
+        country: shipping.country,
+        city: getProvinceName(shipping.province),
+        district: getDistrictName(shipping.district),
+        ward: getWardName(shipping.ward),
+        street: shipping.address,
+      };
+    }
+
+    const orderData = {
+      orderItems: filteredCart.map((item) => ({ cartItemId: item.cartItemId })),
+      shippingInfo: shippingInfoPayload,
+      notes: shipping.note,
+      paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+      promotionId: selectedPromotionId,
+      shippingFee: shipping.shippingFee || 0,
+    };
+
+    // createOrder(orderData);
+    createOrder(orderData, {
+      onSuccess: (data) => {
+        if (orderData.paymentMethod === "PAYPAL") {
+          // Nếu backend trả về URL thanh toán trong data.paymentUrl
+          if (data && data.paymentUrl) {
+            window.location.href = data.paymentUrl;
+          } else {
+            toast.error(t("cart.paypal_url_error"));
+          }
+        } else {
+          // Xử lý thành công cho COD
+          toast.success(t("cart.order_success_cod"));
+        }
+      },
+      onError: (error) => {
+        // Xử lý lỗi chung
+        const errorMessage =
+          error.response?.data?.message || t("cart.order_failed");
+        toast.error(errorMessage);
+      },
+    });
+  };
+
   // Loading state
   if (isCartLoading) {
     return (
@@ -326,6 +498,12 @@ export default function CartPage() {
                   </span>
                 )}
               </div>
+              <button
+                onClick={() => handleSelectAddress(null)}
+                className="text-red-500 text-xs font-semibold hover:underline cursor-pointer"
+              >
+                {t("cart.cancel_selection")}
+              </button>
             </div>
             <div className="text-sm text-blue-800">
               <p className="font-medium">
@@ -362,22 +540,7 @@ export default function CartPage() {
             }
           />
         </div>
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.email_placeholder")}
-          value={shipping.email}
-          onChange={(e) =>
-            setShipping((s) => ({ ...s, email: e.target.value }))
-          }
-        />
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.address_placeholder")}
-          value={shipping.address}
-          onChange={(e) =>
-            setShipping((s) => ({ ...s, address: e.target.value }))
-          }
-        />
+
         {/* Location Selection */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Province/City */}
@@ -391,6 +554,21 @@ export default function CartPage() {
             {locationData.provinces.map((province) => (
               <option key={province.code} value={province.code}>
                 {province.name}
+              </option>
+            ))}
+          </select>
+
+          {/* District */}
+          <select
+            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            value={shipping.district}
+            onChange={(e) => handleDistrictChange(e.target.value)}
+            disabled={!shipping.province || locationData.isLoading}
+          >
+            <option value="">{t("cart.select_district")}</option>
+            {locationData.districts.map((district) => (
+              <option key={district.code} value={district.code}>
+                {district.name}
               </option>
             ))}
           </select>
@@ -413,20 +591,34 @@ export default function CartPage() {
 
         <input
           className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.note_placeholder")}
-          value={shipping.note}
-          onChange={(e) => setShipping((s) => ({ ...s, note: e.target.value }))}
+          placeholder={t("cart.address_placeholder")}
+          value={shipping.address}
+          onChange={(e) =>
+            setShipping((s) => ({ ...s, address: e.target.value }))
+          }
         />
-        <div className="flex items-center mb-8">
+
+        <div className="flex gap-3 mb-4">
           <input
-            type="checkbox"
-            className="mr-2 accent-blue-600"
-            checked={shipping.vat}
+            className="border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500"
+            placeholder={t("cart.note_placeholder")}
+            value={shipping.note}
             onChange={(e) =>
-              setShipping((s) => ({ ...s, vat: e.target.checked }))
+              setShipping((s) => ({ ...s, note: e.target.value }))
             }
           />
-          <span className="text-gray-700">{t("cart.vat")}</span>
+          <input
+            type="number"
+            className="border border-gray-300 rounded-full px-4 py-2 w-48 bg-white focus:outline-blue-500"
+            placeholder={t("cart.shipping_fee_placeholder", "Phí vận chuyển")}
+            value={shipping.shippingFee}
+            onChange={(e) =>
+              setShipping((s) => ({
+                ...s,
+                shippingFee: parseInt(e.target.value) || 0,
+              }))
+            }
+          />
         </div>
         <h3 className="text-xl font-bold mb-4 text-gray-900">
           {t("cart.payment_method")}
@@ -449,8 +641,8 @@ export default function CartPage() {
             <input
               type="radio"
               name="payment"
-              checked={payment === "zalopay"}
-              onChange={() => setPayment("zalopay")}
+              checked={payment === "PAYPAL"}
+              onChange={() => setPayment("PAYPAL")}
               className="mr-3 accent-blue-600"
             />
             <span className="flex items-center gap-2 text-gray-800">
@@ -582,7 +774,7 @@ export default function CartPage() {
           {/* Promotions section - existing code remains the same */}
           <div className="mb-4">
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {promotions?.map((promo) => {
+              {activePromotions?.map((promo) => {
                 const canUse = total >= promo.minOrderAmount;
                 return (
                   <div
@@ -644,6 +836,9 @@ export default function CartPage() {
           cart={filteredCart}
           total={totalAfterPromotion}
           discount={promotionDiscount}
+          onOrder={handleCreateOrder}
+          isLoading={isCreatingOrder}
+          paymentMethod={payment}
         />
       </div>
 

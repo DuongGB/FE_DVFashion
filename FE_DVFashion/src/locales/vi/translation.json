@@ -361,7 +361,7 @@
     "vat": "Xuất hóa đơn VAT",
     "payment_method": "Phương thức thanh toán",
     "payment_cod": "Thanh toán khi nhận hàng (COD)",
-    "payment_online": "Thanh toán online",
+    "payment_online": "Thanh toán PayPal",
     "payment_online_note": "Thẻ tín dụng, ví điện tử",
     "discount_code_placeholder": "Nhập mã giảm giá",
     "apply": "Áp dụng",
@@ -369,6 +369,7 @@
     "promotion_not_qualified": "Chưa đủ điều kiện",
     "no_address_selected": "Chưa chọn địa chỉ giao hàng",
     "select_address": "Chọn địa chỉ",
+    "cancel_selection": "Hủy chọn",
     "salutation": {
       "default": "Danh xưng",
       "male": "Anh",
@@ -377,7 +378,45 @@
     },
     "select_province": "Chọn tỉnh/thành phố",
     "select_district": "Chọn quận/huyện",
-    "select_ward": "Chọn phường/xã"
+    "select_ward": "Chọn phường/xã",
+    "voucher": "Voucher",
+    "save_amount": "Tiết kiệm",
+    "place_order": "ĐẶT HÀNG",
+    "processing": "ĐANG XỬ LÝ...",
+    "select_product_to_order": "Vui lòng chọn sản phẩm để đặt hàng.",
+    "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng."
+  },
+  "order": {
+    "create_success": "Tạo đơn hàng thành công!",
+    "create_fail": "Tạo đơn hàng thất bại.",
+    "payment_confirm_success": "Thanh toán đã được xác nhận thành công!",
+    "payment_confirm_fail": "Không thể xác nhận thanh toán.",
+    "payment_cancel_warn": "Thanh toán đã bị hủy.",
+    "payment_cancel_error": "Có lỗi xảy ra.",
+    "update_success": "Cập nhật đơn hàng thành công!",
+    "update_fail": "Cập nhật đơn hàng thất bại.",
+    "total_amount": "Thành tiền",
+    "return_exchange": "Đổi/Trả",
+    "review": "Đánh giá",
+    "your_orders": "Đơn hàng của bạn",
+    "orders_count": "đơn hàng",
+    "no_orders_found": "Bạn chưa có đơn hàng nào.",
+    "return_policy_60_days": "Chính sách đổi trả 60 ngày",
+    "gift": "Quà tặng",
+    "payment_method": {
+      "title": "Hình thức thanh toán",
+      "cod": "Thanh toán khi nhận hàng",
+      "paypal": "Thanh toán PayPal"
+    },
+    "status": {
+      "pending": "Chờ xác nhận",
+      "confirmed": "Đã xác nhận",
+      "processing": "Đang xử lý",
+      "shipped": "Đang giao hàng",
+      "delivered": "Giao thành công",
+      "canceled": "Đã hủy",
+      "returned": "Đã trả hàng"
+    }
   },
   "address": {
     "address_book": "Sổ địa chỉ",
@@ -409,7 +448,8 @@
     "default": "Mặc định",
 
     "empty_message": "Bạn chưa có địa chỉ nào được lưu",
-    "confirm_delete": "Bạn có chắc chắn muốn xóa địa chỉ này?",
+    "confirm_delete_title": "Xác nhận xóa địa chỉ",
+    "confirm_delete_message": "Bạn có chắc chắn muốn xóa địa chỉ của {{fullName}} không?",
 
     "errors": {
       "fullName_required": "Họ và tên không được để trống",
@@ -418,8 +458,17 @@
       "city_required": "Tỉnh/Thành phố không được để trống",
       "district_required": "Quận/Huyện không được để trống",
       "ward_required": "Phường/Xã không được để trống",
-      "street_required": "Địa chỉ cụ thể không được để trống"
+      "street_required": "Địa chỉ cụ thể không được để trống",
+      "phone_invalid": "Số điện thoại không hợp lệ"
     }
+  },
+  "confirm": {
+    "title": "Xác nhận thao tác",
+    "simple_title": "Xác nhận",
+    "action_deactivate": "vô hiệu hóa",
+    "action_activate": "kích hoạt",
+    "itemType_default": "mục",
+    "delete_message": "Bạn có chắc chắn muốn {{action}} {{itemType}} \"{{itemName}}\" không?"
   },
   "common": {
     "loading": "Đang tải",
