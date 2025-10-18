@@ -13,12 +13,15 @@ import { useTranslation } from "react-i18next";
 import { useCart } from "../hooks/useCart";
 import { useAddress } from "../hooks/useAddress";
 import AddressList from "../components/ui/address/AddressList";
+import { useCreateOrder } from "../hooks/useOrder";
+import { toast } from "react-toastify";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
   const { defaultAddress, addresses } = useAddress();
+  const { mutate: createOrder, isLoading: isCreatingOrder } = useCreateOrder();
 
   // Lấy giỏ hàng từ API
   const {
@@ -29,6 +32,14 @@ export default function CartPage() {
     clearCart,
     isUpdating,
   } = useCart();
+
+  // Lọc ra các khuyến mãi còn hạn
+  const activePromotions = useMemo(() => {
+    if (!promotions) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Đặt về đầu ngày để so sánh
+    return promotions.filter((promo) => new Date(promo.endDate) >= today);
+  }, [promotions]);
 
   // Chuyển đổi dữ liệu từ API sang định dạng dùng trong UI
   const cartItems = cart?.items || [];
@@ -48,10 +59,12 @@ export default function CartPage() {
     note: "",
     otherReceiver: false,
     vat: false,
+    shippingFee: 0,
   });
   const [payment, setPayment] = useState("cod");
   const [showAddressList, setShowAddressList] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [manualDeselect, setManualDeselect] = useState(false);
 
   // Lưu thứ tự cartItemId ban đầu
   const [itemOrder, setItemOrder] = useState(
@@ -179,10 +192,10 @@ export default function CartPage() {
 
   // Auto-select default address when component mounts or defaultAddress changes
   useEffect(() => {
-    if (defaultAddress && !selectedAddress) {
+    if (defaultAddress && !selectedAddress && !manualDeselect) {
       handleSelectAddress(defaultAddress);
     }
-  }, [defaultAddress, selectedAddress]);
+  }, [defaultAddress, selectedAddress, manualDeselect]);
 
   // Sync selectedAddress if it's deleted from the address list
   useEffect(() => {
@@ -238,6 +251,7 @@ export default function CartPage() {
   const handleSelectAddress = (address) => {
     setSelectedAddress(address);
     if (address) {
+      setManualDeselect(false);
       setShipping((prev) => ({
         ...prev,
         name: address.fullName,
@@ -254,6 +268,7 @@ export default function CartPage() {
         handleProvinceChange(province.code.toString(), address);
       }
     } else {
+      setManualDeselect(true);
       // Clear shipping form if no address is selected
       setShipping({
         name: "",
@@ -266,6 +281,7 @@ export default function CartPage() {
         note: "",
         otherReceiver: false,
         vat: false,
+        shippingFee: 0,
       });
     }
 
@@ -362,6 +378,86 @@ export default function CartPage() {
   const totalAfterPromotion =
     total - promotionDiscount > 0 ? total - promotionDiscount : 0;
 
+  // Tổng cuối cùng bao gồm phí vận chuyển
+  const finalTotal = totalAfterPromotion + (shipping.shippingFee || 0);
+
+  // Hàm xử lý khi nhấn nút Đặt hàng
+  const handleCreateOrder = () => {
+    if (filteredCart.length === 0) {
+      toast.warn(t("cart.select_product_to_order"));
+      return;
+    }
+
+    let shippingInfoPayload;
+
+    // Ưu tiên lấy thông tin từ địa chỉ đã chọn
+    if (selectedAddress) {
+      shippingInfoPayload = {
+        fullName: selectedAddress.fullName,
+        phone: selectedAddress.phone,
+        country: selectedAddress.country || "Vietnam",
+        city: selectedAddress.city,
+        district: selectedAddress.district,
+        ward: selectedAddress.ward,
+        street: selectedAddress.street,
+      };
+    } else {
+      // Nếu không có địa chỉ được chọn, lấy từ form và kiểm tra
+      if (
+        !shipping.name ||
+        !shipping.phone ||
+        !shipping.address ||
+        !shipping.province ||
+        !shipping.district ||
+        !shipping.ward
+      ) {
+        toast.warn(t("cart.fill_shipping_info"));
+        return;
+      }
+      shippingInfoPayload = {
+        fullName: shipping.name,
+        phone: shipping.phone,
+        country: shipping.country,
+        city: getProvinceName(shipping.province),
+        district: getDistrictName(shipping.district),
+        ward: getWardName(shipping.ward),
+        street: shipping.address,
+      };
+    }
+
+    const orderData = {
+      orderItems: filteredCart.map((item) => ({ cartItemId: item.cartItemId })),
+      shippingInfo: shippingInfoPayload,
+      notes: shipping.note,
+      paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+      promotionId: selectedPromotionId,
+      shippingFee: shipping.shippingFee || 0,
+    };
+
+    // createOrder(orderData);
+    createOrder(orderData, {
+      onSuccess: (data) => {
+        if (orderData.paymentMethod === "PAYPAL") {
+          // Nếu backend trả về URL thanh toán trong data.paymentUrl
+          if (data && data.paymentUrl) {
+            window.location.href = data.paymentUrl;
+          } else {
+            toast.error(t("cart.paypal_url_error"));
+          }
+        } else {
+          // Xử lý thành công cho COD
+          toast.success(t("cart.order_success_cod"));
+        }
+      },
+      onError: (error) => {
+        // Xử lý lỗi chung
+        const errorMessage =
+          error.response?.data?.message || t("cart.order_failed");
+        toast.error(errorMessage);
+      },
+    });
+  };
+
   // Loading state
   if (isCartLoading) {
     return (
@@ -402,6 +498,12 @@ export default function CartPage() {
                   </span>
                 )}
               </div>
+              <button
+                onClick={() => handleSelectAddress(null)}
+                className="text-red-500 text-xs font-semibold hover:underline cursor-pointer"
+              >
+                {t("cart.cancel_selection")}
+              </button>
             </div>
             <div className="text-sm text-blue-800">
               <p className="font-medium">
@@ -496,22 +598,27 @@ export default function CartPage() {
           }
         />
 
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.note_placeholder")}
-          value={shipping.note}
-          onChange={(e) => setShipping((s) => ({ ...s, note: e.target.value }))}
-        />
-        <div className="flex items-center mb-8">
+        <div className="flex gap-3 mb-4">
           <input
-            type="checkbox"
-            className="mr-2 accent-blue-600"
-            checked={shipping.vat}
+            className="border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500"
+            placeholder={t("cart.note_placeholder")}
+            value={shipping.note}
             onChange={(e) =>
-              setShipping((s) => ({ ...s, vat: e.target.checked }))
+              setShipping((s) => ({ ...s, note: e.target.value }))
             }
           />
-          <span className="text-gray-700">{t("cart.vat")}</span>
+          <input
+            type="number"
+            className="border border-gray-300 rounded-full px-4 py-2 w-48 bg-white focus:outline-blue-500"
+            placeholder={t("cart.shipping_fee_placeholder", "Phí vận chuyển")}
+            value={shipping.shippingFee}
+            onChange={(e) =>
+              setShipping((s) => ({
+                ...s,
+                shippingFee: parseInt(e.target.value) || 0,
+              }))
+            }
+          />
         </div>
         <h3 className="text-xl font-bold mb-4 text-gray-900">
           {t("cart.payment_method")}
@@ -534,8 +641,8 @@ export default function CartPage() {
             <input
               type="radio"
               name="payment"
-              checked={payment === "zalopay"}
-              onChange={() => setPayment("zalopay")}
+              checked={payment === "PAYPAL"}
+              onChange={() => setPayment("PAYPAL")}
               className="mr-3 accent-blue-600"
             />
             <span className="flex items-center gap-2 text-gray-800">
@@ -667,7 +774,7 @@ export default function CartPage() {
           {/* Promotions section - existing code remains the same */}
           <div className="mb-4">
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {promotions?.map((promo) => {
+              {activePromotions?.map((promo) => {
                 const canUse = total >= promo.minOrderAmount;
                 return (
                   <div
@@ -729,6 +836,9 @@ export default function CartPage() {
           cart={filteredCart}
           total={totalAfterPromotion}
           discount={promotionDiscount}
+          onOrder={handleCreateOrder}
+          isLoading={isCreatingOrder}
+          paymentMethod={payment}
         />
       </div>
 
