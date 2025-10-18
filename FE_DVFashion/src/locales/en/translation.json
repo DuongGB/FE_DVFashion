@@ -409,7 +409,8 @@
     "default": "Default",
 
     "empty_message": "You don't have any saved addresses",
-    "confirm_delete": "Are you sure you want to delete this address?",
+    "confirm_delete_title": "Confirm Address Deletion",
+    "confirm_delete_message": "Are you sure you want to delete the address for {{fullName}}?",
 
     "errors": {
       "fullName_required": "Full name is required",
@@ -418,8 +419,17 @@
       "city_required": "City/Province is required",
       "district_required": "District is required",
       "ward_required": "Ward/Commune is required",
-      "street_required": "Street address is required"
+      "street_required": "Street address is required",
+      "phone_invalid": "Invalid phone number"
     }
+  },
+  "confirm": {
+    "title": "Confirm Action",
+    "simple_title": "Confirmation",
+    "action_deactivate": "deactivate",
+    "action_activate": "activate",
+    "itemType_default": "item",
+    "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
   "common": {
     "loading": "Loading",

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { IconX, IconMapPin, IconMap } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import showConfirmationToast from "../../../utils/showConfirmationToast";
 import AddressMap from "./AddressMap";
 
 export default function AddressModal({
@@ -12,6 +13,7 @@ export default function AddressModal({
 }) {
   const { t } = useTranslation();
   const [showMap, setShowMap] = useState(false);
+  const [isMapSelection, setIsMapSelection] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -28,6 +30,7 @@ export default function AddressModal({
   // Location data for provinces and wards
   const [locationData, setLocationData] = useState({
     provinces: [],
+    districts: [],
     wards: [],
     isLoading: false,
   });
@@ -44,7 +47,10 @@ export default function AddressModal({
       setFormData(editAddress);
       // Load wards for the existing city if it exists
       if (editAddress.city) {
-        loadWardsForExistingCity(editAddress.city);
+        loadDistrictsAndWardsForExistingCity(
+          editAddress.city,
+          editAddress.district
+        );
       }
     } else {
       setFormData({
@@ -60,17 +66,19 @@ export default function AddressModal({
     }
     setErrors({});
     setShowMap(false);
+    setIsMapSelection(false);
   }, [editAddress, isOpen]);
 
   // Load provinces
   const loadProvinces = async () => {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch("https://provinces.open-api.vn/api/v2/");
+      const response = await fetch("https://provinces.open-api.vn/api/p/");
       const provinces = await response.json();
       setLocationData((prev) => ({
         ...prev,
         provinces,
+        districts: [],
         wards: [],
         isLoading: false,
       }));
@@ -80,39 +88,53 @@ export default function AddressModal({
     }
   };
 
-  // Load wards for existing city (when editing)
-  const loadWardsForExistingCity = async (cityName) => {
+  // Load districts and wards for existing city (when editing)
+  const loadDistrictsAndWardsForExistingCity = async (
+    cityName,
+    districtName
+  ) => {
     if (!cityName) return;
 
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      // Find province by name
-      const response = await fetch("https://provinces.open-api.vn/api/v2/");
-      const provinces = await response.json();
+      // Find province by name to get its code
+      const provinceResponse = await fetch(
+        "https://provinces.open-api.vn/api/p/"
+      );
+      const provinces = await provinceResponse.json();
       const province = provinces.find((p) => p.name === cityName);
 
       if (province) {
-        const wardResponse = await fetch(
-          `https://provinces.open-api.vn/api/v2/p/${province.code}?depth=2`
+        // Fetch districts for the province
+        const districtResponse = await fetch(
+          `https://provinces.open-api.vn/api/p/${province.code}?depth=2`
         );
-        const data = await wardResponse.json();
-        const allWards = data.wards || [];
+        const provinceData = await districtResponse.json();
+        const districts = provinceData.districts || [];
+
+        // Find the current district to populate wards
+        const currentDistrict = districts.find((d) => d.name === districtName);
+        const wards = currentDistrict ? currentDistrict.wards : [];
 
         setLocationData((prev) => ({
           ...prev,
           provinces,
-          wards: allWards,
+          districts,
+          wards,
           isLoading: false,
         }));
+      } else {
+        setLocationData((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
-      console.error("Error loading wards for existing city:", error);
+      console.error("Error loading location data for existing city:", error);
       setLocationData((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
   // Handle province change
   const handleProvinceChange = async (provinceCode) => {
+    setIsMapSelection(false);
     const province = locationData.provinces.find(
       (p) => p.code.toString() === provinceCode
     );
@@ -120,6 +142,7 @@ export default function AddressModal({
     setFormData((prev) => ({
       ...prev,
       city: province ? province.name : "",
+      district: "",
       ward: "",
     }));
 
@@ -129,6 +152,46 @@ export default function AddressModal({
     }
 
     if (!provinceCode) {
+      setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch(
+        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`
+      );
+      const data = await response.json();
+      setLocationData((prev) => ({
+        ...prev,
+        districts: data.districts || [],
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading districts:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Handle district change
+  const handleDistrictChange = async (districtCode) => {
+    setIsMapSelection(false);
+    const district = locationData.districts.find(
+      (d) => d.code.toString() === districtCode
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      district: district ? district.name : "",
+      ward: "",
+    }));
+
+    if (errors.district) {
+      setErrors((prev) => ({ ...prev, district: "" }));
+    }
+
+    if (!districtCode) {
       setLocationData((prev) => ({ ...prev, wards: [] }));
       return;
     }
@@ -136,13 +199,12 @@ export default function AddressModal({
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
       const response = await fetch(
-        `https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`
+        `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`
       );
       const data = await response.json();
-      const allWards = data.wards || [];
       setLocationData((prev) => ({
         ...prev,
-        wards: allWards,
+        wards: data.wards || [],
         isLoading: false,
       }));
     } catch (error) {
@@ -153,6 +215,7 @@ export default function AddressModal({
 
   // Handle ward change
   const handleWardChange = (wardCode) => {
+    setIsMapSelection(false);
     const ward = locationData.wards.find((w) => w.code.toString() === wardCode);
 
     setFormData((prev) => ({
@@ -172,6 +235,14 @@ export default function AddressModal({
     return province ? province.code.toString() : "";
   };
 
+  // Get district code by name for select value
+  const getDistrictCodeByName = (districtName) => {
+    const district = locationData.districts.find(
+      (d) => d.name === districtName
+    );
+    return district ? district.code.toString() : "";
+  };
+
   // Get ward code by name for select value
   const getWardCodeByName = (wardName) => {
     const ward = locationData.wards.find((w) => w.name === wardName);
@@ -187,6 +258,8 @@ export default function AddressModal({
 
     if (!formData.phone.trim()) {
       newErrors.phone = t("address.errors.phone_required");
+    } else if (!/^\d+$/.test(formData.phone.trim())) {
+      newErrors.phone = t("address.errors.phone_invalid");
     }
 
     if (!formData.city.trim()) {
@@ -217,6 +290,9 @@ export default function AddressModal({
   };
 
   const handleChange = (field, value) => {
+    if (["street", "country"].includes(field)) {
+      setIsMapSelection(false);
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -224,6 +300,7 @@ export default function AddressModal({
   };
 
   const handleMapAddressSelect = (mapAddress) => {
+    setIsMapSelection(true);
     setFormData((prev) => ({
       ...prev,
       country: mapAddress.country,
@@ -232,6 +309,13 @@ export default function AddressModal({
       ward: mapAddress.ward,
       street: mapAddress.street,
     }));
+    // Reload location data based on map selection
+    if (mapAddress.city) {
+      loadDistrictsAndWardsForExistingCity(
+        mapAddress.city,
+        mapAddress.district
+      );
+    }
     // Clear related errors
     setErrors((prev) => ({
       ...prev,
@@ -240,6 +324,15 @@ export default function AddressModal({
       ward: "",
       street: "",
     }));
+  };
+
+  const handleToggleMap = () => {
+    // Nếu đang hiển thị bản đồ và sắp ẩn đi, hãy cho phép chỉnh sửa thủ công trở lại
+    if (showMap) {
+      setIsMapSelection(false);
+      setFormData((prev) => ({ ...prev, street: "" }));
+    }
+    setShowMap(!showMap);
   };
 
   if (!isOpen) return null;
@@ -261,7 +354,7 @@ export default function AddressModal({
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setShowMap(!showMap)}
+              onClick={handleToggleMap}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${
                 showMap
                   ? "bg-green-100 text-green-700 hover:bg-green-200"
@@ -281,7 +374,7 @@ export default function AddressModal({
         </div>
 
         <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             {/* Map Section */}
             {showMap && (
               <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
@@ -347,7 +440,7 @@ export default function AddressModal({
                 <select
                   value={getProvinceCodeByName(formData.city)}
                   onChange={(e) => handleProvinceChange(e.target.value)}
-                  disabled={locationData.isLoading}
+                  disabled={isMapSelection || locationData.isLoading}
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
                     errors.city ? "border-red-500" : "border-gray-300"
                   }`}
@@ -364,23 +457,32 @@ export default function AddressModal({
                 )}
               </div>
 
-              {/* <div>
+              {/* District Selection */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t("address.district")} *
                 </label>
-                <input
-                  type="text"
-                  value={formData.district}
-                  onChange={(e) => handleChange("district", e.target.value)}
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                <select
+                  value={getDistrictCodeByName(formData.district)}
+                  onChange={(e) => handleDistrictChange(e.target.value)}
+                  disabled={
+                    isMapSelection || !formData.city || locationData.isLoading
+                  }
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
                     errors.district ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder={t("address.district_placeholder")}
-                />
+                >
+                  <option value="">{t("cart.select_district")}</option>
+                  {locationData.districts.map((district) => (
+                    <option key={district.code} value={district.code}>
+                      {district.name}
+                    </option>
+                  ))}
+                </select>
                 {errors.district && (
                   <p className="text-red-500 text-xs mt-1">{errors.district}</p>
                 )}
-              </div> */}
+              </div>
 
               {/* Ward Selection */}
               <div>
@@ -390,7 +492,11 @@ export default function AddressModal({
                 <select
                   value={getWardCodeByName(formData.ward)}
                   onChange={(e) => handleWardChange(e.target.value)}
-                  disabled={!formData.city || locationData.isLoading}
+                  disabled={
+                    isMapSelection ||
+                    !formData.district ||
+                    locationData.isLoading
+                  }
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
                     errors.ward ? "border-red-500" : "border-gray-300"
                   }`}
@@ -416,6 +522,7 @@ export default function AddressModal({
                   type="text"
                   value={formData.country}
                   onChange={(e) => handleChange("country", e.target.value)}
+                  disabled={isMapSelection}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder={t("address.country_placeholder")}
                 />
@@ -430,6 +537,7 @@ export default function AddressModal({
                 value={formData.street}
                 onChange={(e) => handleChange("street", e.target.value)}
                 rows={3}
+                disabled={isMapSelection}
                 className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
                   errors.street ? "border-red-500" : "border-gray-300"
                 }`}
@@ -440,6 +548,7 @@ export default function AddressModal({
               )}
             </div>
 
+            {/* Check default */}
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -463,8 +572,9 @@ export default function AddressModal({
               </button>
               <button
                 type="submit"
+                onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? t("common.saving") : t("common.save")}
               </button>

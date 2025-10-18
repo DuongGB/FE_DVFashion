@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useAddress } from "../../../hooks/useAddress";
 import AddressModal from "./AddressModal";
+import { showConfirmationToast } from "../../../utils/showConfirmationToast";
 
 export default function AddressList({
   isOpen,
@@ -49,10 +50,14 @@ export default function AddressList({
     setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (confirm(t("address.confirm_delete"))) {
-      deleteAddress(id);
-    }
+  const handleDelete = (address) => {
+    showConfirmationToast({
+      title: t("address.confirm_delete_title"),
+      message: t("address.confirm_delete_message", {
+        fullName: address.fullName,
+      }),
+      onConfirm: () => deleteAddress(address.id),
+    });
   };
 
   const formatAddress = (address) => {
@@ -154,7 +159,7 @@ export default function AddressList({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(address.id);
+                            handleDelete(address);
                           }}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded cursor-pointer"
                         >

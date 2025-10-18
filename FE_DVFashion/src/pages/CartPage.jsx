@@ -18,7 +18,7 @@ export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
-  const { defaultAddress } = useAddress();
+  const { defaultAddress, addresses } = useAddress();
 
   // Lấy giỏ hàng từ API
   const {
@@ -40,17 +40,28 @@ export default function CartPage() {
   const [shipping, setShipping] = useState({
     name: "",
     phone: "",
-    email: "",
     address: "",
+    country: "Vietnam",
     province: "",
+    district: "",
     ward: "",
     note: "",
     otherReceiver: false,
     vat: false,
   });
+  const [payment, setPayment] = useState("cod");
+  const [showAddressList, setShowAddressList] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
+  // Lưu thứ tự cartItemId ban đầu
+  const [itemOrder, setItemOrder] = useState(
+    cartItems.map((i) => i.cartItemId)
+  );
+
+  // Add location data state
   const [locationData, setLocationData] = useState({
     provinces: [],
+    districts: [],
     wards: [],
     isLoading: false,
   });
@@ -64,11 +75,12 @@ export default function CartPage() {
   const loadProvinces = async () => {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch("https://provinces.open-api.vn/api/v2/");
+      const response = await fetch("https://provinces.open-api.vn/api/p/");
       const provinces = await response.json();
       setLocationData((prev) => ({
         ...prev,
         provinces,
+        districts: [],
         wards: [],
         isLoading: false,
       }));
@@ -78,15 +90,47 @@ export default function CartPage() {
     }
   };
 
-  // Load wards when province changes
+  // Load districts when province changes
   const handleProvinceChange = async (provinceCode) => {
     setShipping((prev) => ({
       ...prev,
       province: provinceCode,
+      district: "",
       ward: "",
     }));
 
     if (!provinceCode) {
+      setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch(
+        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`
+      );
+      const data = await response.json();
+      setLocationData((prev) => ({
+        ...prev,
+        districts: data.districts || [],
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading districts:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Load wards when district changes
+  const handleDistrictChange = async (districtCode) => {
+    setShipping((prev) => ({
+      ...prev,
+      district: districtCode,
+      ward: "",
+    }));
+
+    if (!districtCode) {
       setLocationData((prev) => ({ ...prev, wards: [] }));
       return;
     }
@@ -94,14 +138,12 @@ export default function CartPage() {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
       const response = await fetch(
-        `https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`
+        `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`
       );
       const data = await response.json();
-      // Lấy tất cả ward
-      const allWards = data.wards || [];
       setLocationData((prev) => ({
         ...prev,
-        wards: allWards,
+        wards: data.wards || [],
         isLoading: false,
       }));
     } catch (error) {
@@ -135,34 +177,42 @@ export default function CartPage() {
     return ward ? ward.name : "";
   };
 
-  const [payment, setPayment] = useState("cod");
-  const [showAddressList, setShowAddressList] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  // Auto-select default address when component mounts or defaultAddress changes
+  useEffect(() => {
+    if (defaultAddress && !selectedAddress) {
+      handleSelectAddress(defaultAddress);
+    }
+  }, [defaultAddress, selectedAddress]);
 
-  // Lưu thứ tự cartItemId ban đầu
-  const [itemOrder, setItemOrder] = useState(
-    cartItems.map((i) => i.cartItemId)
-  );
+  // Sync selectedAddress if it's deleted from the address list
+  useEffect(() => {
+    if (selectedAddress && addresses) {
+      const updatedSelectedAddress = addresses.find(
+        (addr) => addr.id === selectedAddress.id
+      );
+
+      // If the address is deleted, updatedSelectedAddress will be undefined
+      if (!updatedSelectedAddress) {
+        // Fall back to the new default address or null
+        handleSelectAddress(defaultAddress || null);
+      } else {
+        // If the address was edited, its data might have changed.
+        // We update the selectedAddress state to reflect these changes.
+        // JSON.stringify is a simple way to check for object inequality.
+        if (
+          JSON.stringify(updatedSelectedAddress) !==
+          JSON.stringify(selectedAddress)
+        ) {
+          setSelectedAddress(updatedSelectedAddress);
+        }
+      }
+    }
+  }, [addresses, selectedAddress, defaultAddress]);
 
   // Mặc định selected tất cả khi cartItems thay đổi
   useEffect(() => {
     setSelected(cartItems.map((item) => item.cartItemId));
   }, [cartItems]);
-
-  // Auto-select default address when component mounts or defaultAddress changes
-  useEffect(() => {
-    if (defaultAddress && !selectedAddress) {
-      setSelectedAddress(defaultAddress);
-      setShipping((prev) => ({
-        ...prev,
-        name: defaultAddress.fullName,
-        phone: defaultAddress.phone,
-        address: `${defaultAddress.street}, ${defaultAddress.ward}, ${defaultAddress.city}`,
-        province: "",
-        ward: "",
-      }));
-    }
-  }, [defaultAddress, selectedAddress]);
 
   // Đồng bộ selected khi giỏ hàng thay đổi
   useEffect(() => {
@@ -187,12 +237,38 @@ export default function CartPage() {
   // Handle address selection
   const handleSelectAddress = (address) => {
     setSelectedAddress(address);
-    setShipping((prev) => ({
-      ...prev,
-      name: address.fullName,
-      phone: address.phone,
-      address: `${address.street}, ${address.ward}, ${address.city}`,
-    }));
+    if (address) {
+      setShipping((prev) => ({
+        ...prev,
+        name: address.fullName,
+        phone: address.phone,
+        address: address.street,
+        // We will find and set the codes for province, district, ward
+      }));
+
+      // Find and set province, then trigger district and ward loading
+      const province = locationData.provinces.find(
+        (p) => p.name === address.city
+      );
+      if (province) {
+        handleProvinceChange(province.code.toString(), address);
+      }
+    } else {
+      // Clear shipping form if no address is selected
+      setShipping({
+        name: "",
+        phone: "",
+        address: "",
+        country: "Vietnam",
+        province: "",
+        district: "",
+        ward: "",
+        note: "",
+        otherReceiver: false,
+        vat: false,
+      });
+    }
+
     setShowAddressList(false);
   };
 
@@ -362,22 +438,7 @@ export default function CartPage() {
             }
           />
         </div>
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.email_placeholder")}
-          value={shipping.email}
-          onChange={(e) =>
-            setShipping((s) => ({ ...s, email: e.target.value }))
-          }
-        />
-        <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
-          placeholder={t("cart.address_placeholder")}
-          value={shipping.address}
-          onChange={(e) =>
-            setShipping((s) => ({ ...s, address: e.target.value }))
-          }
-        />
+
         {/* Location Selection */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Province/City */}
@@ -391,6 +452,21 @@ export default function CartPage() {
             {locationData.provinces.map((province) => (
               <option key={province.code} value={province.code}>
                 {province.name}
+              </option>
+            ))}
+          </select>
+
+          {/* District */}
+          <select
+            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            value={shipping.district}
+            onChange={(e) => handleDistrictChange(e.target.value)}
+            disabled={!shipping.province || locationData.isLoading}
+          >
+            <option value="">{t("cart.select_district")}</option>
+            {locationData.districts.map((district) => (
+              <option key={district.code} value={district.code}>
+                {district.name}
               </option>
             ))}
           </select>
@@ -410,6 +486,15 @@ export default function CartPage() {
             ))}
           </select>
         </div>
+
+        <input
+          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
+          placeholder={t("cart.address_placeholder")}
+          value={shipping.address}
+          onChange={(e) =>
+            setShipping((s) => ({ ...s, address: e.target.value }))
+          }
+        />
 
         <input
           className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
