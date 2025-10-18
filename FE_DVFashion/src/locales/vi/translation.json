@@ -409,7 +409,8 @@
     "default": "Mặc định",
 
     "empty_message": "Bạn chưa có địa chỉ nào được lưu",
-    "confirm_delete": "Bạn có chắc chắn muốn xóa địa chỉ này?",
+    "confirm_delete_title": "Xác nhận xóa địa chỉ",
+    "confirm_delete_message": "Bạn có chắc chắn muốn xóa địa chỉ của {{fullName}} không?",
 
     "errors": {
       "fullName_required": "Họ và tên không được để trống",
@@ -418,8 +419,17 @@
       "city_required": "Tỉnh/Thành phố không được để trống",
       "district_required": "Quận/Huyện không được để trống",
       "ward_required": "Phường/Xã không được để trống",
-      "street_required": "Địa chỉ cụ thể không được để trống"
+      "street_required": "Địa chỉ cụ thể không được để trống",
+      "phone_invalid": "Số điện thoại không hợp lệ"
     }
+  },
+  "confirm": {
+    "title": "Xác nhận thao tác",
+    "simple_title": "Xác nhận",
+    "action_deactivate": "vô hiệu hóa",
+    "action_activate": "kích hoạt",
+    "itemType_default": "mục",
+    "delete_message": "Bạn có chắc chắn muốn {{action}} {{itemType}} \"{{itemName}}\" không?"
   },
   "common": {
     "loading": "Đang tải",
