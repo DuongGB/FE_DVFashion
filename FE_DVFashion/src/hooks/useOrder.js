@@ -94,11 +94,12 @@ export const useMyOrders = () => {
   });
 };
 
-export const useMyOrdersPaging = (pageable) => {
+export const useMyOrdersPaging = (params) => {
   return useQuery({
-    queryKey: ["myOrders", pageable],
-    queryFn: () => getMyOrdersPaging(pageable),
+    queryKey: ["myOrders", params],
+    queryFn: () => getMyOrdersPaging(params),
     keepPreviousData: true,
+    staleTime: 1000 * 30,
   });
 };
 

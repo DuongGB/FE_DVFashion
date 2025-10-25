@@ -45,19 +45,30 @@ export const useProductReviews = (productId, params) => {
   });
 };
 
-export const useCreateReview = () => {
+export const useCreateReview = (options) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createReview,
-    onSuccess: () => {
+    onSuccess: (data, variables, context) => {
       toast.success("Gửi đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
       queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+      if (options?.onSuccess) {
+        options.onSuccess(data, variables, context);
+      }
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
       toast.error(
         error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá!"
       );
+      if (options?.onError) {
+        options.onError(error, variables, context);
+      }
+    },
+    onSettled: (data, error, variables, context) => {
+      if (options?.onSettled) {
+        options.onSettled(data, error, variables, context);
+      }
     },
   });
 };

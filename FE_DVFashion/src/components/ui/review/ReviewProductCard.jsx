@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { IconStar, IconPhoto } from "@tabler/icons-react";
+import { IconStar, IconPhoto, IconX } from "@tabler/icons-react";
+import { useDropzone } from "react-dropzone";
+import { useEffect, useState } from "react";
 
 const FitOption = ({ label, value, emoji, checked, onChange }) => (
   <label
@@ -34,11 +36,40 @@ export default function ReviewProductCard({
     fit = null,
     height = "",
     weight = "",
+    imageFiles = [],
   } = reviewData || {};
 
+  const [previews, setPreviews] = useState([]);
   const handleFieldChange = (field, value) => {
     onReviewChange(item.productId, { ...reviewData, [field]: value });
   };
+
+  const onDrop = (acceptedFiles) => {
+    const newFiles = [...imageFiles, ...acceptedFiles].slice(0, 5); // Giới hạn 5 ảnh
+    handleFieldChange("imageFiles", newFiles);
+  };
+
+  useEffect(() => {
+    const newPreviews = imageFiles.map((file) =>
+      typeof file === "string" ? file : URL.createObjectURL(file)
+    );
+    setPreviews(newPreviews);
+
+    // Cleanup function
+    return () => newPreviews.forEach((url) => URL.revokeObjectURL(url));
+  }, [imageFiles]);
+
+  const removeImage = (indexToRemove) => {
+    const newFiles = imageFiles.filter((_, index) => index !== indexToRemove);
+    handleFieldChange("imageFiles", newFiles);
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+    maxFiles: 5,
+    multiple: true,
+  });
 
   return (
     <div className="bg-gray-50 p-6 rounded-lg mb-6">
@@ -87,7 +118,11 @@ export default function ReviewProductCard({
 
       {/* Image Upload */}
       <div className="mb-6">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+        <div
+          {...getRootProps()}
+          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100"
+        >
+          <input {...getInputProps()} />
           <IconPhoto className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2 font-semibold text-blue-600">
             {t("review.upload_images")} {t("review.upload_images_limit")}
@@ -96,6 +131,25 @@ export default function ReviewProductCard({
             {t("review.upload_images_desc")}
           </p>
         </div>
+        {previews.length > 0 && (
+          <div className="mt-4 grid grid-cols-5 gap-3">
+            {previews.map((preview, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={preview}
+                  alt={`Preview ${index}`}
+                  className="w-full h-24 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
+                >
+                  <IconX size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Fit */}

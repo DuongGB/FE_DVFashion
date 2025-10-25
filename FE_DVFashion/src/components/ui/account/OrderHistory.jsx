@@ -1,10 +1,12 @@
 import { useMyOrdersPaging } from "../../../hooks/useOrder";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getOrderStatusLabel } from "../../../utils/getOrderStatusLabel";
 import Pagination from "../../common/Pagination";
 import { getPaymentMethodLabel } from "../../../utils/getPaymentMethodLabel";
+import { queryClient } from "../../../lib/queryClient";
+import { getMyOrdersPaging } from "../../../services/orderAPI";
 
 const OrderCard = ({ order, onReviewClick }) => {
   const { t } = useTranslation();
@@ -81,15 +83,17 @@ const OrderCard = ({ order, onReviewClick }) => {
           )}
         </div>
         <div className="flex gap-3">
-          <button className="border border-gray-400 rounded-full px-6 py-2 font-bold text-sm hover:bg-gray-100">
+          <button className="border border-gray-400 rounded-full px-6 py-2 font-bold text-sm hover:bg-gray-100 cursor-pointer">
             {t("order.return_exchange")}
           </button>
-          <button
-            onClick={() => onReviewClick(order)}
-            className="bg-black text-white rounded-full px-6 py-2 font-bold text-sm hover:opacity-80"
-          >
-            {t("order.review")}
-          </button>
+          {order.status === "DELIVERED" && (
+            <button
+              onClick={() => onReviewClick(order)}
+              className="bg-black text-white rounded-full px-6 py-2 font-bold text-sm hover:opacity-80 cursor-pointer"
+            >
+              {t("order.review")}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -99,24 +103,34 @@ const OrderCard = ({ order, onReviewClick }) => {
 export default function OrderHistory({ onReviewClick }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
-  const { data: responseData, isLoading } = useMyOrdersPaging({
+
+  const {
+    data: responseData,
+    isLoading,
+    isFetching,
+  } = useMyOrdersPaging({
     page,
     size: 2,
   });
 
   const pagedData = responseData?.data;
-  const orders = pagedData?.values || []; // Sửa từ content thành values
+  const orders = pagedData?.values || [];
   const totalElements = pagedData?.totalElements || 0;
   const totalPages = pagedData?.totalPages || 0;
 
-  const handlePageChange = (newPage) => {
-    // Pagination component uses 1-based index, so convert to 0-based for API
-    setPage(newPage - 1);
-  };
+  useEffect(() => {
+    if (page < totalPages - 1) {
+      queryClient.prefetchQuery({
+        queryKey: ["myOrders", { page: page + 1, size: 2 }],
+        queryFn: () => getMyOrdersPaging({ page: page + 1, size: 2 }),
+      });
+    }
+  }, [page, totalPages]);
+
+  const handlePageChange = (newPage) => setPage(newPage - 1);
 
   if (isLoading) {
     return (
-      // Thêm return
       <div className="text-center py-10 border rounded-lg">
         <p>{t("loading")}...</p>
       </div>
@@ -125,6 +139,7 @@ export default function OrderHistory({ onReviewClick }) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header */}
       <div className="flex-shrink-0">
         <h2 className="text-3xl font-bold mb-2">
           {t("account.sidebar.order_history")}
@@ -142,25 +157,36 @@ export default function OrderHistory({ onReviewClick }) {
         </div>
       </div>
 
-      <div className="flex-grow overflow-y-auto pr-2">
+      {/* Danh sách đơn hàng */}
+      <div className="relative flex-grow overflow-y-auto pr-2">
         {orders.length > 0 ? (
-          orders.map((order) => (
-            <OrderCard
-              key={order.orderNumber}
-              order={order}
-              onReviewClick={onReviewClick}
-            />
-          ))
+          <>
+            {orders.map((order) => (
+              <OrderCard
+                key={order.orderNumber}
+                order={order}
+                onReviewClick={onReviewClick}
+              />
+            ))}
+            {isFetching && (
+              <div className="absolute top-2 right-2 text-sm text-gray-500 animate-pulse">
+                {t("loading")}...
+              </div>
+            )}
+          </>
         ) : (
-          <div className="text-center py-10 border rounded-lg">
-            <p>{t("order.no_orders_found")}</p>
-          </div>
+          !isFetching && (
+            <div className="text-center py-10 border rounded-lg">
+              <p>{t("order.no_orders_found")}</p>
+            </div>
+          )
         )}
       </div>
 
+      {/* Pagination */}
       <div className="flex-shrink-0 mt-4">
         <Pagination
-          currentPage={page + 1} // Convert back to 1-based for display
+          currentPage={page + 1}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />

@@ -1,15 +1,27 @@
+import { IconCircleCheck, IconX } from "@tabler/icons-react";
+import { useQueries } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
-import { IconX } from "@tabler/icons-react";
+import { useCreateReview } from "../../../hooks/useReview";
+import { canReviewProduct } from "../../../services/reviewAPI";
 import ReviewProductCard from "./ReviewProductCard";
 
-const SelectableProduct = ({ item, isSelected, onSelect }) => (
+const SelectableProduct = ({ item, isSelected, onSelect, canReview }) => (
   <div
-    className={`border-2 rounded-lg p-2 cursor-pointer transition-all ${
-      isSelected ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-white"
-    }`}
-    onClick={() => onSelect(item.productId)}
+    className={`border-2 rounded-lg p-2 transition-all relative ${
+      isSelected
+        ? "border-blue-500 bg-blue-50"
+        : canReview
+        ? "border-gray-300 bg-white"
+        : "border-gray-200 bg-gray-100"
+    } ${canReview ? "cursor-pointer" : "cursor-not-allowed"}`}
+    onClick={() => canReview && onSelect(item.productId)}
   >
+    {!canReview && (
+      <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg z-10">
+        <IconCircleCheck className="text-green-500" size={32} />
+      </div>
+    )}
     <div className="flex items-start gap-3 flex-col">
       <div className="flex-shrink-0">
         <img
@@ -21,8 +33,14 @@ const SelectableProduct = ({ item, isSelected, onSelect }) => (
           <input
             type="checkbox"
             checked={isSelected}
-            readOnly
-            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            onChange={(e) => {
+              e.stopPropagation(); // Ngăn event click lan ra div ngoài
+              if (canReview) onSelect(item.productId);
+            }}
+            disabled={!canReview}
+            className={`h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
+              canReview ? "cursor-pointer" : "cursor-not-allowed"
+            }`}
           />
         </div>
       </div>
@@ -42,24 +60,81 @@ export default function ModalReview({ show, onClose, order }) {
   const { t } = useTranslation();
   const [reviews, setReviews] = useState({});
   const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [submissionCount, setSubmissionCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Sử dụng useQueries để kiểm tra trạng thái review cho tất cả sản phẩm
+  const reviewabilityResults = useQueries({
+    queries:
+      order?.items.map((item) => ({
+        queryKey: [
+          "canReview",
+          { orderId: order.id, productVariantId: item.productVariantId },
+        ],
+        queryFn: () =>
+          canReviewProduct({
+            orderId: order.id,
+            productVariantId: item.productVariantId,
+          }),
+        enabled: !!order && show,
+        staleTime: 5 * 60 * 1000, // Cache trong 5 phút
+      })) ?? [],
+  });
+
+  const isCheckingReviewability = reviewabilityResults.some((q) => q.isLoading);
+
+  // Hàm đóng modal và reset state
+  const handleClose = useCallback(() => {
+    onClose();
+    // Reset state sau một khoảng trễ để animation đóng modal được mượt mà
+    setTimeout(() => {
+      setSubmissionCount(0);
+      setIsSubmitting(false);
+    }, 300);
+  }, [onClose]);
+
+  const { mutate: createReviewMutation } = useCreateReview({
+    onSuccess: () => {
+      setSubmissionCount((prev) => prev + 1);
+    },
+  });
+
+  // Khởi tạo state khi modal được mở hoặc dữ liệu reviewability đã sẵn sàng
   useEffect(() => {
-    if (order) {
+    if (order && show && !isCheckingReviewability) {
       const initialReviews = {};
-      const allProductIds = order.items.map((item) => item.productId);
-      allProductIds.forEach((id) => {
-        initialReviews[id] = {
+      const reviewableProductIds = order.items
+        .filter((_, index) => reviewabilityResults[index]?.data?.data === true)
+        .map((item) => item.productId);
+
+      order.items.forEach((item) => {
+        initialReviews[item.productId] = {
           rating: 0,
           comment: "",
           fit: null,
           height: "",
           weight: "",
+          imageFiles: [],
         };
       });
+
       setReviews(initialReviews);
-      setSelectedProductIds(allProductIds);
+      setSelectedProductIds(reviewableProductIds); // Mặc định chọn tất cả sản phẩm có thể review
+      setSubmissionCount(0);
+      setIsSubmitting(false);
     }
-  }, [order]);
+  }, [order, show, isCheckingReviewability]);
+
+  // Tự động đóng modal sau khi submit thành công tất cả review
+  useEffect(() => {
+    if (
+      submissionCount > 0 &&
+      selectedProductIds.length > 0 &&
+      submissionCount === selectedProductIds.length
+    ) {
+      handleClose();
+    }
+  }, [submissionCount, selectedProductIds.length, handleClose]);
 
   // Ngăn cuộn trang khi modal đang mở
   useEffect(() => {
@@ -89,16 +164,39 @@ export default function ModalReview({ show, onClose, order }) {
     }));
   };
 
-  const handleSubmit = () => {
-    const reviewsToSubmit = selectedProductIds.map((id) => ({
-      productId: id,
-      ...reviews[id],
-    }));
-    console.log("Submitting reviews:", {
-      orderId: order.orderId,
-      reviews: reviewsToSubmit,
+  const handleSubmit = async () => {
+    if (selectedProductIds.length === 0) {
+      handleClose();
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmissionCount(0);
+
+    const reviewsToSubmit = selectedProductIds.map((productId) => {
+      const reviewData = reviews[productId];
+      const product = order.items.find((item) => item.productId === productId);
+      return {
+        review: {
+          orderId: order.id,
+          productVariantId: product.productVariantId,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        },
+        imageFiles: reviewData.imageFiles || [],
+      };
     });
-    onClose();
+
+    if (reviewsToSubmit.length === 0) {
+      onClose();
+      return;
+    }
+
+    // Gửi từng đánh giá một cách tuần tự
+    for (const payload of reviewsToSubmit) {
+      await new Promise((resolve) =>
+        createReviewMutation(payload, { onSettled: resolve })
+      );
+    }
   };
 
   if (!show || !order) {
@@ -110,9 +208,9 @@ export default function ModalReview({ show, onClose, order }) {
   );
   return (
     <div className="fixed inset-0 bg-black/50 bg-opacity-70 z-50 flex justify-center items-start p-4 sm:p-6 md:p-10">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col relative">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col relative">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute -top-3 -right-3 bg-black rounded-full p-1.5 text-white hover:bg-gray-700 z-10 cursor-pointer"
         >
           <IconX size={24} />
@@ -125,14 +223,23 @@ export default function ModalReview({ show, onClose, order }) {
               {t("review.select_products_title")}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-3">
-              {order.items.map((item) => (
-                <SelectableProduct
-                  key={item.productId}
-                  item={item}
-                  isSelected={selectedProductIds.includes(item.productId)}
-                  onSelect={handleProductSelect}
-                />
-              ))}
+              {isCheckingReviewability ? (
+                <p>{t("loading")}...</p>
+              ) : (
+                order.items.map((item, index) => {
+                  const canReview =
+                    reviewabilityResults[index]?.data?.data === true;
+                  return (
+                    <SelectableProduct
+                      key={item.productId}
+                      item={item}
+                      isSelected={selectedProductIds.includes(item.productId)}
+                      onSelect={handleProductSelect}
+                      canReview={canReview}
+                    />
+                  );
+                })
+              )}
             </div>
             <p className="text-sm text-gray-600">
               {t("review.selected_products_count", {
@@ -161,13 +268,15 @@ export default function ModalReview({ show, onClose, order }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-6 border-t bg-white sticky bottom-0 rounded-b-2xl">
+        <div className="p-4  border-t bg-white sticky bottom-0 rounded-b-2xl">
           <button
             onClick={handleSubmit}
-            disabled={selectedProductIds.length === 0}
-            className="w-full bg-black text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            disabled={selectedProductIds.length === 0 || isSubmitting}
+            className="w-full bg-black text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
           >
-            {t("review.submit_review_arrow")}
+            {isSubmitting
+              ? t("review.submitting")
+              : t("review.submit_review_arrow")}
           </button>
         </div>
       </div>
