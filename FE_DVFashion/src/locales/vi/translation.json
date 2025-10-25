@@ -334,7 +334,9 @@
       "policy_easy_return": "Đổi trả cực dễ chỉ cần số điện thoại",
       "policy_hotline": "Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h",
       "policy_60days": "60 ngày đổi trả (sản phẩm chưa qua sử dụng và còn nguyên nhãn mác)",
-      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h"
+      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h",
+      "recommendations": "Gợi ý sản phẩm",
+      "loading_recommendations": "Đang tải sản phẩm gợi ý..."
     }
   },
   "cart": {
@@ -343,7 +345,6 @@
     "choose_from_address_book": "Chọn từ sổ địa chỉ",
     "selected_address": "Địa chỉ đã chọn",
     "change": "Thay đổi",
-    "title": "Giỏ hàng",
     "loading": "Đang tải...",
     "select_all": "Chọn tất cả",
     "clear_all": "Xóa tất cả",

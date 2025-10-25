@@ -334,7 +334,9 @@
       "policy_easy_return": "Easy returns with just a phone number",
       "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
       "policy_60days": "60-day returns (unused and with original tags)",
-      "policy_fast_refund": "Home pickup & refund within 24h"
+      "policy_fast_refund": "Home pickup & refund within 24h",
+      "recommendations": "You may also like",
+      "loading_recommendations": "Loading recommendations..."
     }
   },
   "cart": {
@@ -343,7 +345,6 @@
     "choose_from_address_book": "Choose from Address Book",
     "selected_address": "Selected Address",
     "change": "Change",
-    "title": "Shopping Cart",
     "loading": "Loading...",
     "select_all": "Select All",
     "clear_all": "Clear All",
