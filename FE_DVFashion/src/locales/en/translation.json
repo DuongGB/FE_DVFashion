@@ -384,7 +384,8 @@
     "place_order": "PLACE ORDER",
     "processing": "PROCESSING...",
     "select_product_to_order": "Please select products to order.",
-    "fill_shipping_info": "Please fill in all shipping information."
+    "fill_shipping_info": "Please fill in all shipping information.",
+    "quantity": "Quantity"
   },
   "order": {
     "create_success": "Order created successfully!",
@@ -403,6 +404,17 @@
     "no_orders_found": "You have no orders yet.",
     "return_policy_60_days": "60-day return policy",
     "gift": "Gift",
+    "success_title": "Order Placed Successfully!",
+    "success_message": "Thank you for your purchase. Your order #{{orderNumber}} has been confirmed.",
+    "loading_details": "Loading order details...",
+    "load_details_fail": "Failed to load order details. Please try again.",
+    "summary": "Order Summary",
+    "number": "Order Number",
+    "date": "Order Date",
+    "status_label": "Status",
+    "items_title": "Ordered Items",
+    "continue_shopping": "Continue Shopping",
+    "back_to_home": "Back to Home",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",
@@ -489,7 +501,8 @@
     "close": "Close",
     "select": "Select",
     "submit": "Submit",
-    "reset": "Reset"
+    "reset": "Reset",
+    "error": "An error occurred"
   },
 
   "admin": {

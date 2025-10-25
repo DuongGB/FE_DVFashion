@@ -384,7 +384,8 @@
     "place_order": "ĐẶT HÀNG",
     "processing": "ĐANG XỬ LÝ...",
     "select_product_to_order": "Vui lòng chọn sản phẩm để đặt hàng.",
-    "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng."
+    "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng.",
+    "quantity": "Số lượng"
   },
   "order": {
     "create_success": "Tạo đơn hàng thành công!",
@@ -403,6 +404,17 @@
     "no_orders_found": "Bạn chưa có đơn hàng nào.",
     "return_policy_60_days": "Chính sách đổi trả 60 ngày",
     "gift": "Quà tặng",
+    "success_title": "Đặt hàng thành công!",
+    "success_message": "Cảm ơn bạn đã mua sắm. Đơn hàng #{{orderNumber}} của bạn đã được xác nhận.",
+    "loading_details": "Đang tải chi tiết đơn hàng...",
+    "load_details_fail": "Không thể tải chi tiết đơn hàng. Vui lòng thử lại.",
+    "summary": "Tóm tắt đơn hàng",
+    "number": "Mã đơn hàng",
+    "date": "Ngày đặt",
+    "status_label": "Trạng thái",
+    "items_title": "Sản phẩm đã đặt",
+    "continue_shopping": "Tiếp tục mua sắm",
+    "back_to_home": "Về trang chủ",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",
@@ -489,7 +501,8 @@
     "close": "Đóng",
     "select": "Chọn",
     "submit": "Gửi",
-    "reset": "Đặt lại"
+    "reset": "Đặt lại",
+    "error": "Đã có lỗi xảy ra"
   },
 
   "admin": {

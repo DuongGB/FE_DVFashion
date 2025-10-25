@@ -1,20 +1,20 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { queryClient } from "../lib/queryClient";
 import {
-  createOrder,
-  confirmPayPalPayment,
+  adminUpdateOrder,
   cancelPayPalPayment,
+  confirmPayPalPayment,
+  createOrder,
   getMyOrders,
   getMyOrdersPaging,
   getOrderByOrderNumber,
-  updateOrderByUser,
-  adminUpdateOrder,
   getOrdersByCustomerId,
   getOrdersByCustomerIdPaging,
+  updateOrderByUser,
 } from "../services/orderAPI";
-import { toast } from "react-toastify";
-import { queryClient } from "../lib/queryClient";
-import { useTranslation } from "react-i18next";
 
 export const useCreateOrder = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export const useCreateOrder = () => {
       } else {
         // For COD or other methods, navigate to order success page
         queryClient.invalidateQueries({ queryKey: ["cart"] });
-        // navigate(`/order-success/${orderResponse.orderNumber}`);
+        navigate(`/order-success/${orderResponse.orderNumber}`);
       }
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
@@ -54,6 +54,7 @@ export const useConfirmPayPal = () => {
       toast.success(data.message || t("order.payment_confirm_success"));
       localStorage.removeItem("pendingOrderNumber");
       const orderNumber = data.data.orderNumber;
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
       navigate(`/order-success/${orderNumber}`);
     },
     onError: (error) => {
@@ -62,7 +63,7 @@ export const useConfirmPayPal = () => {
       );
       const orderNumber = localStorage.getItem("pendingOrderNumber");
       localStorage.removeItem("pendingOrderNumber");
-      navigate(orderNumber ? `/order-fail/${orderNumber}` : "/cart");
+      navigate("/cart");
     },
   });
 };
