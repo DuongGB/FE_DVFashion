@@ -6,7 +6,7 @@ import { getOrderStatusLabel } from "../../../utils/getOrderStatusLabel";
 import Pagination from "../../common/Pagination";
 import { getPaymentMethodLabel } from "../../../utils/getPaymentMethodLabel";
 
-const OrderCard = ({ order }) => {
+const OrderCard = ({ order, onReviewClick }) => {
   const { t } = useTranslation();
   const orderDate = new Date(order.orderDate).toLocaleDateString("vi-VN");
   const paymentMethod = order?.payment?.paymentMethod;
@@ -84,7 +84,10 @@ const OrderCard = ({ order }) => {
           <button className="border border-gray-400 rounded-full px-6 py-2 font-bold text-sm hover:bg-gray-100">
             {t("order.return_exchange")}
           </button>
-          <button className="bg-black text-white rounded-full px-6 py-2 font-bold text-sm hover:opacity-80">
+          <button
+            onClick={() => onReviewClick(order)}
+            className="bg-black text-white rounded-full px-6 py-2 font-bold text-sm hover:opacity-80"
+          >
             {t("order.review")}
           </button>
         </div>
@@ -93,7 +96,7 @@ const OrderCard = ({ order }) => {
   );
 };
 
-export default function OrderHistory() {
+export default function OrderHistory({ onReviewClick }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const { data: responseData, isLoading } = useMyOrdersPaging({
@@ -142,7 +145,11 @@ export default function OrderHistory() {
       <div className="flex-grow overflow-y-auto pr-2">
         {orders.length > 0 ? (
           orders.map((order) => (
-            <OrderCard key={order.orderNumber} order={order} />
+            <OrderCard
+              key={order.orderNumber}
+              order={order}
+              onReviewClick={onReviewClick}
+            />
           ))
         ) : (
           <div className="text-center py-10 border rounded-lg">

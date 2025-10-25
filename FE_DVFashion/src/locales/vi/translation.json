@@ -475,6 +475,29 @@
       "phone_invalid": "Số điện thoại không hợp lệ"
     }
   },
+  "review": {
+    "title": "Đánh giá sản phẩm",
+    "rating": "Đánh giá của bạn",
+    "comment": "Cảm nhận về sản phẩm",
+    "comment_placeholder": "Hãy chia sẻ cảm nhận của bạn về sản phẩm này nhé...",
+    "submit": "Gửi đánh giá",
+    "select_products_title": "Chọn sản phẩm bạn muốn đánh giá",
+    "selected_products_count": "Bạn đã chọn {{count}}/{{total}} sản phẩm",
+    "review_section_title": "Đánh giá sản phẩm",
+    "upload_images": "Tải lên hình ảnh",
+    "upload_images_desc": "Click để thêm ảnh, hoặc kéo thả ảnh vào đây",
+    "upload_images_limit": "(Tối đa 5 ảnh)",
+    "fit_title": "Phù hợp với cơ thể",
+    "fit_tight": "Chật",
+    "fit_true_to_size": "Đúng kích thước",
+    "fit_loose": "Rộng",
+    "body_info_title": "Thông tin kích thước",
+    "height_cm": "Chiều cao (cm)",
+    "weight_kg": "Cân nặng (kg)",
+    "save_info": "Lưu thông tin",
+    "cancel_edit": "Hủy sửa",
+    "submit_review_arrow": "GỬI ĐÁNH GIÁ"
+  },
   "confirm": {
     "title": "Xác nhận thao tác",
     "simple_title": "Xác nhận",

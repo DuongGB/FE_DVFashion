@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import OrderHistory from "../../components/ui/account/OrderHistory";
+import ModalReview from "../../components/ui/review/ModalReview";
 
 const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
@@ -92,8 +93,15 @@ export default function AccountPage() {
   const { user } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeTab, setActiveTab] = useState("account_info");
   const { t } = useTranslation();
+
+  const handleReviewClick = (order) => {
+    setSelectedOrder(order);
+    setShowReviewModal(true);
+  };
 
   const sidebarItems = [
     {
@@ -149,8 +157,7 @@ export default function AccountPage() {
           />
         );
       case "order_history":
-        return <OrderHistory />;
-      // Add other cases for other tabs here
+        return <OrderHistory onReviewClick={handleReviewClick} />;
       default:
         return (
           <AccountInfo
@@ -189,6 +196,11 @@ export default function AccountPage() {
         <ModalChangePassword
           show={showPasswordModal}
           onClose={() => setShowPasswordModal(false)}
+        />
+        <ModalReview
+          show={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          order={selectedOrder}
         />
       </div>
     </div>
