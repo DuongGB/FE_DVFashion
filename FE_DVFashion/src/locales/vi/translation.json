@@ -1508,6 +1508,51 @@
       "error_invalid_quantity": "Vui lòng nhập số lượng mới hợp lệ (>= 0)",
       "error_reason_required": "Vui lòng nhập lý do điều chỉnh",
       "error_adjust": "Có lỗi khi điều chỉnh tồn kho!"
+    },
+    "review": {
+      "title": "Quản lý đánh giá",
+      "search_placeholder": "Tìm theo tên khách hàng, sản phẩm, bình luận...",
+      "all_status": "Tất cả trạng thái",
+      "all_ratings": "Tất cả điểm",
+      "rating_option": "{{star}} sao",
+      "loading": "Đang tải dữ liệu...",
+      "no_reviews": "Không tìm thấy đánh giá nào.",
+      "error_loading": "Lỗi khi tải dữ liệu: {{message}}",
+      "columns": {
+        "customer": "Khách hàng",
+        "product": "Sản phẩm",
+        "rating": "Đánh giá",
+        "comment": "Bình luận",
+        "status": "Trạng thái",
+        "created_at": "Ngày tạo",
+        "actions": "Hành động"
+      },
+      "actions": {
+        "view_detail": "Xem chi tiết",
+        "approve": "Duyệt",
+        "reject": "Từ chối",
+        "hide": "Ẩn"
+      },
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "AUTO_APPROVED": "Tự động duyệt",
+        "APPROVED": "Đã duyệt",
+        "NEED_REVIEW": "Cần xem lại",
+        "REJECTED": "Từ chối",
+        "HIDDEN": "Đã ẩn"
+      },
+      "stats": {
+        "total": "Tổng đánh giá",
+        "pending": "Chờ duyệt",
+        "approved": "Đã duyệt",
+        "average_rating": "Điểm TB"
+      },
+      "moderate": {
+        "confirm_title": "Xác nhận {{action}} đánh giá",
+        "confirm_message": "Bạn có chắc chắn muốn {{action}} đánh giá của khách hàng \"{{customerName}}\" không?",
+        "success": "Cập nhật trạng thái đánh giá thành công!",
+        "error": "Có lỗi xảy ra khi cập nhật!"
+      }
     }
   },
 

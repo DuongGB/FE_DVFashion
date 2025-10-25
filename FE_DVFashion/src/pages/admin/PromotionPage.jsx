@@ -16,7 +16,8 @@ export default function PromotionPage() {
   const [search, setSearch] = useState("");
 
   const { user } = useAuth();
-  const isStaff = user?.roles?.includes("ROLE_STAFF");
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+  const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);

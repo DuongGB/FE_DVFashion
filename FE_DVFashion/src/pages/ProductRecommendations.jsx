@@ -1,12 +1,15 @@
 import { useTranslation } from "react-i18next";
-import { useProductRecommendations } from "../hooks/useProductRecomendations";
+import { useHybridRecommendations } from "../hooks/useProductRecomendations";
 import ProductCard from "../components/common/ProductCard";
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "react-feather";
 
 export default function ProductRecommendations({ productId }) {
   const { t } = useTranslation();
-  const { data: response, isLoading } = useProductRecommendations(productId, 5);
+  const { data: response, isLoading } = useHybridRecommendations({
+    productId,
+    limit: 10,
+  });
   const recommendations = response?.data || [];
   const scrollContainerRef = useRef(null);
 

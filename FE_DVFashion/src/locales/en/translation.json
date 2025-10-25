@@ -1508,6 +1508,51 @@
       "error_invalid_quantity": "Please enter a valid new quantity (>= 0)",
       "error_reason_required": "Please enter adjustment reason",
       "error_adjust": "Error adjusting stock!"
+    },
+    "review": {
+      "title": "Review Management",
+      "search_placeholder": "Search by customer name, product, comment...",
+      "all_status": "All Statuses",
+      "all_ratings": "All Ratings",
+      "rating_option": "{{star}} star(s)",
+      "loading": "Loading data...",
+      "no_reviews": "No reviews found.",
+      "error_loading": "Error loading data: {{message}}",
+      "columns": {
+        "customer": "Customer",
+        "product": "Product",
+        "rating": "Rating",
+        "comment": "Comment",
+        "status": "Status",
+        "created_at": "Created At",
+        "actions": "Actions"
+      },
+      "actions": {
+        "view_detail": "View Detail",
+        "approve": "Approve",
+        "reject": "Reject",
+        "hide": "Hide"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "AUTO_APPROVED": "Auto Approved",
+        "APPROVED": "Approved",
+        "NEED_REVIEW": "Need Review",
+        "REJECTED": "Rejected",
+        "HIDDEN": "Hidden"
+      },
+      "stats": {
+        "total": "Total Reviews",
+        "pending": "Pending",
+        "approved": "Approved",
+        "average_rating": "Avg. Rating"
+      },
+      "moderate": {
+        "confirm_title": "Confirm to {{action}} review",
+        "confirm_message": "Are you sure you want to {{action}} the review from \"{{customerName}}\"?",
+        "success": "Review status updated successfully!",
+        "error": "An error occurred while updating!"
+      }
     }
   },
 
