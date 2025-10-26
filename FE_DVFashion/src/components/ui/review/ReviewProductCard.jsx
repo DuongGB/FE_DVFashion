@@ -33,9 +33,9 @@ export default function ReviewProductCard({
   const {
     rating = 0,
     comment = "",
-    fit = null,
-    height = "",
-    weight = "",
+    // fit = null,
+    // height = "",
+    // weight = "",
     imageFiles = [],
   } = reviewData || {};
 
@@ -153,7 +153,7 @@ export default function ReviewProductCard({
       </div>
 
       {/* Fit */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <p className="font-medium mb-3">{t("review.fit_title")}</p>
         <div className="flex gap-3">
           <FitOption
@@ -178,10 +178,10 @@ export default function ReviewProductCard({
             onChange={() => handleFieldChange("fit", "loose")}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Body Info */}
-      <div>
+      {/* <div>
         <p className="font-medium mb-3">{t("review.body_info_title")}</p>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -217,7 +217,7 @@ export default function ReviewProductCard({
             {t("review.cancel_edit")}
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

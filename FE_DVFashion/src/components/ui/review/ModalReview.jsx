@@ -14,8 +14,7 @@ const SelectableProduct = ({ item, isSelected, onSelect, canReview }) => (
         : canReview
         ? "border-gray-300 bg-white"
         : "border-gray-200 bg-gray-100"
-    } ${canReview ? "cursor-pointer" : "cursor-not-allowed"}`}
-    onClick={() => canReview && onSelect(item.productId)}
+    } ${canReview ? "" : "cursor-not-allowed"}`}
   >
     {!canReview && (
       <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg z-10">
@@ -33,9 +32,10 @@ const SelectableProduct = ({ item, isSelected, onSelect, canReview }) => (
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={(e) => {
-              e.stopPropagation(); // Ngăn event click lan ra div ngoài
-              if (canReview) onSelect(item.productId);
+            onChange={() => {
+              if (canReview) {
+                onSelect(item.productVariantId);
+              }
             }}
             disabled={!canReview}
             className={`h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
@@ -105,15 +105,15 @@ export default function ModalReview({ show, onClose, order }) {
       const initialReviews = {};
       const reviewableProductIds = order.items
         .filter((_, index) => reviewabilityResults[index]?.data?.data === true)
-        .map((item) => item.productId);
+        .map((item) => item.productVariantId);
 
       order.items.forEach((item) => {
-        initialReviews[item.productId] = {
+        initialReviews[item.productVariantId] = {
           rating: 0,
           comment: "",
-          fit: null,
-          height: "",
-          weight: "",
+          // fit: null,
+          // height: "",
+          // weight: "",
           imageFiles: [],
         };
       });
@@ -149,18 +149,18 @@ export default function ModalReview({ show, onClose, order }) {
     };
   }, [show]);
 
-  const handleProductSelect = (productId) => {
+  const handleProductSelect = (variantId) => {
     setSelectedProductIds((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+      prev.includes(variantId)
+        ? prev.filter((id) => id !== variantId)
+        : [...prev, variantId]
     );
   };
 
-  const handleReviewChange = (productId, reviewData) => {
+  const handleReviewChange = (variantId, reviewData) => {
     setReviews((prev) => ({
       ...prev,
-      [productId]: reviewData,
+      [variantId]: reviewData,
     }));
   };
 
@@ -172,9 +172,11 @@ export default function ModalReview({ show, onClose, order }) {
     setIsSubmitting(true);
     setSubmissionCount(0);
 
-    const reviewsToSubmit = selectedProductIds.map((productId) => {
-      const reviewData = reviews[productId];
-      const product = order.items.find((item) => item.productId === productId);
+    const reviewsToSubmit = selectedProductIds.map((variantId) => {
+      const reviewData = reviews[variantId];
+      const product = order.items.find(
+        (item) => item.productVariantId === variantId
+      );
       return {
         review: {
           orderId: order.id,
@@ -204,7 +206,7 @@ export default function ModalReview({ show, onClose, order }) {
   }
 
   const selectedItems = order.items.filter((item) =>
-    selectedProductIds.includes(item.productId)
+    selectedProductIds.includes(item.productVariantId)
   );
   return (
     <div className="fixed inset-0 bg-black/50 bg-opacity-70 z-50 flex justify-center items-start p-4 sm:p-6 md:p-10">
@@ -231,9 +233,11 @@ export default function ModalReview({ show, onClose, order }) {
                     reviewabilityResults[index]?.data?.data === true;
                   return (
                     <SelectableProduct
-                      key={item.productId}
+                      key={item.productVariantId}
                       item={item}
-                      isSelected={selectedProductIds.includes(item.productId)}
+                      isSelected={selectedProductIds.includes(
+                        item.productVariantId
+                      )}
                       onSelect={handleProductSelect}
                       canReview={canReview}
                     />
@@ -257,10 +261,12 @@ export default function ModalReview({ show, onClose, order }) {
               </h3>
               {selectedItems.map((item) => (
                 <ReviewProductCard
-                  key={item.productId}
+                  key={item.productVariantId}
                   item={item}
-                  reviewData={reviews[item.productId]}
-                  onReviewChange={handleReviewChange}
+                  reviewData={reviews[item.productVariantId]}
+                  onReviewChange={(reviewData) =>
+                    handleReviewChange(item.productVariantId, reviewData)
+                  }
                 />
               ))}
             </div>
