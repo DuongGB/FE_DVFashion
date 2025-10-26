@@ -334,7 +334,9 @@
       "policy_easy_return": "Easy returns with just a phone number",
       "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
       "policy_60days": "60-day returns (unused and with original tags)",
-      "policy_fast_refund": "Home pickup & refund within 24h"
+      "policy_fast_refund": "Home pickup & refund within 24h",
+      "recommendations": "You may also like",
+      "loading_recommendations": "Loading recommendations..."
     }
   },
   "cart": {
@@ -343,7 +345,6 @@
     "choose_from_address_book": "Choose from Address Book",
     "selected_address": "Selected Address",
     "change": "Change",
-    "title": "Shopping Cart",
     "loading": "Loading...",
     "select_all": "Select All",
     "clear_all": "Clear All",
@@ -482,6 +483,38 @@
     "itemType_default": "item",
     "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
+  "review": {
+    "title": "Product Review",
+    "rating": "Your Rating",
+    "comment": "Your thoughts on the product",
+    "comment_placeholder": "Please share your thoughts about this product...",
+    "submit": "Submit Review",
+    "select_products_title": "Select products you want to review",
+    "selected_products_count": "You have selected {{count}}/{{total}} products",
+    "review_section_title": "Review Products",
+    "upload_images": "Upload Images",
+    "upload_images_desc": "Click to add photos, or drag and drop here",
+    "upload_images_limit": "(Up to 5 photos)",
+    "fit_title": "Body Fit",
+    "fit_tight": "Tight",
+    "fit_true_to_size": "True to size",
+    "fit_loose": "Loose",
+    "body_info_title": "Body Information",
+    "height_cm": "Height (cm)",
+    "weight_kg": "Weight (kg)",
+    "save_info": "Save Info",
+    "cancel_edit": "Cancel Edit",
+    "submit_review_arrow": "SUBMIT REVIEW"
+  },
+  "toast": {
+    "review": {
+      "moderate_success": "Review status updated successfully!",
+      "create_success": "Review submitted successfully!",
+      "update_success": "Review updated successfully!",
+      "create_failed": "You have not filled in the review information!",
+      "update_failed": "An error occurred while updating!"
+    }
+  },
   "common": {
     "loading": "Loading",
     "saving": "Saving",
@@ -502,7 +535,8 @@
     "select": "Select",
     "submit": "Submit",
     "reset": "Reset",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "processing": "Processing..."
   },
 
   "admin": {
@@ -1507,6 +1541,91 @@
       "error_invalid_quantity": "Please enter a valid new quantity (>= 0)",
       "error_reason_required": "Please enter adjustment reason",
       "error_adjust": "Error adjusting stock!"
+    },
+    "review": {
+      "title": "Review Management",
+      "search_placeholder": "Search by customer name, product, comment...",
+      "all_status": "All Statuses",
+      "all_ratings": "All Ratings",
+      "rating_option": "{{star}} star(s)",
+      "loading": "Loading data...",
+      "no_reviews": "No reviews found.",
+      "error_loading": "Error loading data: {{message}}",
+      "columns": {
+        "customer": "Customer",
+        "product": "Product",
+        "rating": "Rating",
+        "comment": "Comment",
+        "status": "Status",
+        "created_at": "Created At",
+        "actions": "Actions"
+      },
+      "actions": {
+        "view_detail": "View Detail",
+        "approve": "Approve",
+        "reject": "Reject",
+        "hide": "Hide",
+        "restore": "Restore",
+        "need_review": "Need Review"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "AUTO_APPROVED": "Auto Approved",
+        "APPROVED": "Approved",
+        "NEED_REVIEW": "Need Review",
+        "REJECTED": "Rejected",
+        "HIDDEN": "Hidden"
+      },
+      "stats": {
+        "total": "Total Reviews",
+        "pending": "Pending",
+        "approved": "Approved",
+        "average_rating": "Avg. Rating"
+      },
+      "moderate": {
+        "confirm_title": "Confirm to {{action}} review",
+        "confirm_message": "Are you sure you want to {{action}} the review from \"{{customerName}}\"?",
+        "success": "Review status updated successfully!",
+        "error": "An error occurred while updating!",
+        "comment_title": "Reason for {{action}} review",
+        "comment_required": "Please enter a reason.",
+        "reason_label": "Reason",
+        "reason_placeholder": "Enter your reason here..."
+      },
+      "detail": {
+        "title": "Review Details",
+        "description": "View detailed information for {{name}}'s review",
+        "rating_summary": "Rating Summary",
+        "customer_info": "Customer Information",
+        "customer_name": "Customer Name",
+        "product_order_info": "Product & Order Information",
+        "product_name": "Product Name",
+        "variant": "Variant",
+        "order_code": "Order Code",
+        "order_status": "Order Status",
+        "review_content": "Review Content",
+        "no_comment": "No comment provided",
+        "admin_feedback": "Admin Feedback",
+        "attached_images": "Attached Images ({{count}})",
+        "timestamps": "Timestamps",
+        "created_at": "Created At",
+        "updated_at": "Last Updated",
+        "status_desc": {
+          "PENDING": "The review is awaiting moderation.",
+          "APPROVED": "The review has been approved and is publicly visible.",
+          "AUTO_APPROVED": "The review was automatically approved by the system.",
+          "REJECTED": "The review was rejected due to a policy violation.",
+          "HIDDEN": "The review has been hidden from public view.",
+          "NEED_REVIEW": "The review requires manual review by an administrator."
+        },
+        "rating_level": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "average": "Average",
+          "poor": "Poor",
+          "very_poor": "Very Poor"
+        }
+      }
     }
   },
 

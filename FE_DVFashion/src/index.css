@@ -21,3 +21,13 @@
 .leaflet-control-zoom a {
   border-radius: 4px !important;
 }
+
+/* Tiện ích ẩn thanh cuộn */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
