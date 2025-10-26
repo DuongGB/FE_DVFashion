@@ -1,6 +1,6 @@
 import { IconCircleCheck, IconX } from "@tabler/icons-react";
 import { useQueries } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useCreateReview } from "../../../hooks/useReview";
 import { canReviewProduct } from "../../../services/reviewAPI";
@@ -62,6 +62,7 @@ export default function ModalReview({ show, onClose, order }) {
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [submissionCount, setSubmissionCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasInitialized = useRef(false);
 
   // Sử dụng useQueries để kiểm tra trạng thái review cho tất cả sản phẩm
   const reviewabilityResults = useQueries({
@@ -101,7 +102,7 @@ export default function ModalReview({ show, onClose, order }) {
 
   // Khởi tạo state khi modal được mở hoặc dữ liệu reviewability đã sẵn sàng
   useEffect(() => {
-    if (order && show && !isCheckingReviewability) {
+    if (order && show && !isCheckingReviewability && !hasInitialized.current) {
       const initialReviews = {};
       const reviewableProductIds = order.items
         .filter((_, index) => reviewabilityResults[index]?.data?.data === true)
@@ -111,9 +112,6 @@ export default function ModalReview({ show, onClose, order }) {
         initialReviews[item.productVariantId] = {
           rating: 0,
           comment: "",
-          // fit: null,
-          // height: "",
-          // weight: "",
           imageFiles: [],
         };
       });
@@ -122,6 +120,11 @@ export default function ModalReview({ show, onClose, order }) {
       setSelectedProductIds(reviewableProductIds);
       setSubmissionCount(0);
       setIsSubmitting(false);
+      hasInitialized.current = true;
+    }
+    // Reset flag khi modal đóng
+    if (!show) {
+      hasInitialized.current = false;
     }
   }, [order, show, isCheckingReviewability]);
 
@@ -149,18 +152,18 @@ export default function ModalReview({ show, onClose, order }) {
     };
   }, [show]);
 
-  const handleProductSelect = (variantId) => {
+  const handleProductSelect = (productVariantId) => {
     setSelectedProductIds((prev) =>
-      prev.includes(variantId)
-        ? prev.filter((id) => id !== variantId)
-        : [...prev, variantId]
+      prev.includes(productVariantId)
+        ? prev.filter((id) => id !== productVariantId)
+        : [...prev, productVariantId]
     );
   };
 
-  const handleReviewChange = (variantId, reviewData) => {
+  const handleReviewChange = (productVariantId, reviewData) => {
     setReviews((prev) => ({
       ...prev,
-      [variantId]: reviewData,
+      [productVariantId]: reviewData,
     }));
   };
 
@@ -231,6 +234,13 @@ export default function ModalReview({ show, onClose, order }) {
                 order.items.map((item, index) => {
                   const canReview =
                     reviewabilityResults[index]?.data?.data === true;
+                  console.log(
+                    "item",
+                    item.productVariantId,
+                    "canReview",
+                    canReview,
+                    reviewabilityResults[index]
+                  );
                   return (
                     <SelectableProduct
                       key={item.productVariantId}
