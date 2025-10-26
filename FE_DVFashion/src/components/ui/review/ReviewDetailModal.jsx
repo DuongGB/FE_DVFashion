@@ -205,7 +205,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
               />
               <InfoRow
                 label={t("admin.review.detail.order_status")}
-                value={t(`order.status.${review.orderStatus?.toLowerCase()}`)}
+                value={t(`order.status.${review.status?.toLowerCase()}`)}
               />
             </div>
           </div>

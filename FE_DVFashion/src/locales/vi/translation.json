@@ -422,13 +422,19 @@
       "paypal": "Thanh toán PayPal"
     },
     "status": {
+      "approved": "Đã duyệt",
+      "rejected": "Đã từ chối",
+      "hidden": "Đã ẩn",
+      "auto_approved": "Tự động duyệt",
+      "need_review": "Cần xem lại",
       "pending": "Chờ xác nhận",
       "confirmed": "Đã xác nhận",
       "processing": "Đang xử lý",
       "shipped": "Đang giao hàng",
       "delivered": "Giao thành công",
       "canceled": "Đã hủy",
-      "returned": "Đã trả hàng"
+      "returned": "Đã trả hàng",
+      "undefined": "Không xác định"
     }
   },
   "address": {
@@ -1443,7 +1449,19 @@
       "view_detail": "Xem chi tiết",
       "import": "Nhập kho",
       "export": "Xuất kho",
-      "adjust": "Điều chỉnh tồn kho"
+      "adjust": "Điều chỉnh tồn kho",
+      "import_stock": "Nhập kho"
+    },
+    "general_import": {
+      "title": "Nhập kho chung theo Size ID",
+      "size_id_label": "Tìm sản phẩm theo Size ID",
+      "size_id_placeholder": "Nhập Size ID...",
+      "find": "Tìm kiếm",
+      "finding": "Đang tìm...",
+      "find_another": "Tìm sản phẩm khác",
+      "error_size_id_required": "Vui lòng nhập Size ID để tìm kiếm.",
+      "error_not_found": "Không tìm thấy sản phẩm với Size ID này.",
+      "error_fetch": "Có lỗi xảy ra khi tìm kiếm sản phẩm."
     },
     "inventory_detail": {
       "title": "Chi tiết tồn kho",

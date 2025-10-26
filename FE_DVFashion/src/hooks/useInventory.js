@@ -13,6 +13,7 @@ export const useInventory = () => {
     queryKey: ["inventories"],
     queryFn: () =>
       inventoryAPI.getInventoryReport().then((res) => res.data.data),
+    staleTime: 600000,
   });
 
   // Nhập kho
@@ -20,6 +21,7 @@ export const useInventory = () => {
     mutationFn: (importData) => inventoryAPI.importStock(importData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
+      queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
 
@@ -28,6 +30,7 @@ export const useInventory = () => {
     mutationFn: (adjustData) => inventoryAPI.adjustStock(adjustData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
+      queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
 
@@ -36,8 +39,35 @@ export const useInventory = () => {
     mutationFn: (exportData) => inventoryAPI.exportStock(exportData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
+      queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
+
+  // Hàm để lấy inventory bằng sizeId (không dùng react-query hook trực tiếp)
+  const getInventoryBySize = async (sizeId) => {
+    // Ưu tiên tìm trong cache inventories
+    if (inventories && inventories.length > 0) {
+      const found = inventories.find(
+        (inv) => String(inv.sizeId) === String(sizeId)
+      );
+      if (found) return found;
+    }
+    // Nếu không có trong cache, fallback gọi API
+    const res = await inventoryAPI.getInventoryBySize(sizeId);
+    return res.data.data;
+  };
+
+  // Hàm để lấy chi tiết inventory bằng inventoryId
+  const useInventoryDetails = (inventoryId) => {
+    return useQuery({
+      queryKey: ["inventoryDetails", inventoryId],
+      queryFn: () =>
+        inventoryAPI
+          .getInventoryDetails(inventoryId)
+          .then((res) => res.data.data),
+      enabled: !!inventoryId, // Chỉ chạy query khi inventoryId có giá trị
+    });
+  };
 
   return {
     inventories,
@@ -49,5 +79,7 @@ export const useInventory = () => {
     isAdjusting: adjustStockMutation.isPending,
     exportStock: exportStockMutation.mutateAsync,
     isExporting: exportStockMutation.isPending,
+    getInventoryBySize,
+    useInventoryDetails,
   };
 };
