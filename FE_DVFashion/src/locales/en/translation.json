@@ -422,6 +422,11 @@
       "paypal": "PayPal"
     },
     "status": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "hidden": "Hidden",
+      "auto_approved": "Auto Approved",
+      "need_review": "Need Review",
       "pending": "Pending",
       "confirmed": "Confirmed",
       "processing": "Processing",
@@ -1443,7 +1448,19 @@
       "view_detail": "View Details",
       "import": "Import",
       "export": "Export",
-      "adjust": "Adjust Stock"
+      "adjust": "Adjust Stock",
+      "import_stock": "Import Stock"
+    },
+    "general_import": {
+      "title": "General Stock Import by Size ID",
+      "size_id_label": "Find Product by Size ID",
+      "size_id_placeholder": "Enter Size ID...",
+      "find": "Find",
+      "finding": "Finding...",
+      "find_another": "Find Another Product",
+      "error_size_id_required": "Please enter a Size ID to search.",
+      "error_not_found": "No product found with this Size ID.",
+      "error_fetch": "An error occurred while finding the product."
     },
     "inventory_detail": {
       "title": "Inventory Details",

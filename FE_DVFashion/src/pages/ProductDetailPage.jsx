@@ -36,8 +36,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     setIsInitialized(false);
-    setQuantity(1); // Reset số lượng về 1
-    window.scrollTo(0, 0); // Cuộn lên đầu trang
+    setQuantity(1);
   }, [id]);
 
   // Khi có product thì set variant và size mặc định

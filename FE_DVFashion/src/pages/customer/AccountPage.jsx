@@ -110,11 +110,6 @@ export default function AccountPage() {
       text: t("account.sidebar.account_info"),
     },
     {
-      id: "refer_friends",
-      icon: <IconUsers size={24} />,
-      text: t("account.sidebar.refer_friends"),
-    },
-    {
       id: "order_history",
       icon: <IconShoppingCart size={24} />,
       text: t("account.sidebar.order_history"),

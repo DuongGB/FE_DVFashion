@@ -41,7 +41,7 @@ export default function ReviewProductCard({
 
   const [previews, setPreviews] = useState([]);
   const handleFieldChange = (field, value) => {
-    onReviewChange(item.productId, { ...reviewData, [field]: value });
+    onReviewChange({ ...reviewData, [field]: value });
   };
 
   const onDrop = (acceptedFiles) => {

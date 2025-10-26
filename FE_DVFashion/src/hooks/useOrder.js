@@ -94,12 +94,13 @@ export const useMyOrders = () => {
   });
 };
 
-export const useMyOrdersPaging = (params) => {
+export const useMyOrdersPaging = (params, options = {}) => {
   return useQuery({
     queryKey: ["myOrders", params],
     queryFn: () => getMyOrdersPaging(params),
-    keepPreviousData: true,
     staleTime: 1000 * 30,
+    keepPreviousData: true, // Luôn giữ lại data cũ khi chuyển trang
+    ...options,
   });
 };
 

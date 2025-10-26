@@ -108,10 +108,13 @@ export default function OrderHistory({ onReviewClick }) {
     data: responseData,
     isLoading,
     isFetching,
-  } = useMyOrdersPaging({
-    page,
-    size: 2,
-  });
+  } = useMyOrdersPaging(
+    {
+      page,
+      size: 2,
+    },
+    { keepPreviousData: true }
+  );
 
   const pagedData = responseData?.data;
   const orders = pagedData?.values || [];
