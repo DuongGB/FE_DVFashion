@@ -4,6 +4,7 @@ import {
   IconClock,
   IconEye,
   IconMessage,
+  IconRestore,
   IconStarFilled,
   IconX,
 } from "@tabler/icons-react";
@@ -14,6 +15,7 @@ import Pagination from "../../components/common/Pagination";
 import ReviewDetailModal from "../../components/ui/review/ReviewDetailModal";
 import { useAdminReviews, useModerateReview } from "../../hooks/useReview";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import { toast } from "react-toastify";
 
 const statusKeys = [
   "PENDING",
@@ -49,6 +51,12 @@ export default function ReviewPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedReview, setSelectedReview] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [moderationState, setModerationState] = useState({
+    isOpen: false,
+    review: null,
+    newStatus: "",
+    actionText: "",
+  });
   const pageSize = 10;
 
   const params = {
@@ -74,29 +82,55 @@ export default function ReviewPage() {
   }, [debouncedSearch, statusFilter, ratingFilter]);
 
   const handleModerate = (review, newStatus, actionText) => {
-    showConfirmationToast({
-      title: t("admin.review.moderate.confirm_title", { action: actionText }),
-      message: t("admin.review.moderate.confirm_message", {
-        action: actionText.toLowerCase(),
-        customerName: review.user.fullName,
-      }),
-      confirmText: actionText,
-      onConfirm: () => {
-        moderateReview({ reviewId: review.id, request: { status: newStatus } });
-      },
-    });
+    const needsComment = newStatus === "REJECTED" || newStatus === "HIDDEN";
+
+    const performModeration = (adminComment = null) => {
+      const request = { newStatus };
+      if (needsComment && adminComment) {
+        request.adminComment = adminComment;
+      }
+      moderateReview(
+        { reviewId: review.id, request },
+        {
+          onSuccess: () => {
+            setModerationState({ isOpen: false, review: null });
+          },
+        }
+      );
+    };
+
+    if (needsComment) {
+      setModerationState({ isOpen: true, review, newStatus, actionText });
+    } else {
+      showConfirmationToast({
+        title: t("admin.review.moderate.confirm_title", {
+          action: actionText,
+        }),
+        message: t("admin.review.moderate.confirm_message", {
+          action: actionText.toLowerCase(),
+          customerName: review.user.fullName,
+        }),
+        confirmText: actionText,
+        onConfirm: () => performModeration(),
+      });
+    }
+  };
+
+  const handleModerationSubmit = (adminComment) => {
+    const { review, newStatus, actionText } = moderationState;
+    const request = { newStatus, adminComment };
+    moderateReview(
+      { reviewId: review.id, request },
+      {
+        onSuccess: () => {
+          setModerationState({ isOpen: false, review: null });
+        },
+      }
+    );
   };
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString("vi-VN");
-  const renderStars = (rating) =>
-    [...Array(5)].map((_, i) => (
-      <IconStarFilled
-        key={i}
-        size={14}
-        className={i < rating ? "text-yellow-400" : "text-gray-300"}
-      />
-    ));
 
   if (isError) {
     return (
@@ -212,7 +246,12 @@ export default function ReviewPage() {
                       {review.variantName}
                     </p>
                   </td>
-                  <td className="p-3">{renderStars(review.rating)}</td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-1 font-semibold">
+                      {review.rating}
+                      <IconStarFilled size={16} className="text-yellow-400" />
+                    </div>
+                  </td>
                   <td className="p-3 max-w-xs truncate">{review.comment}</td>
                   <td className="p-3">
                     <span
@@ -231,11 +270,12 @@ export default function ReviewPage() {
                           setSelectedReview(review);
                           setShowDetailModal(true);
                         }}
+                        className="hover:text-blue-600 cursor-pointer"
                         title={t("admin.review.actions.view_detail")}
                       >
                         <IconEye size={20} />
                       </button>
-                      {/* Actions for reviews needing moderation */}
+                      {/* Actions for PENDING or NEED_REVIEW reviews */}
                       {(review.status === "PENDING" ||
                         review.status === "NEED_REVIEW") && (
                         <>
@@ -248,8 +288,9 @@ export default function ReviewPage() {
                               )
                             }
                             title={t("admin.review.actions.approve")}
+                            className="hover:text-green-600 cursor-pointer"
                           >
-                            <IconCheck size={20} className="text-green-600" />
+                            <IconCheck size={20} />
                           </button>
                           <button
                             onClick={() =>
@@ -260,24 +301,62 @@ export default function ReviewPage() {
                               )
                             }
                             title={t("admin.review.actions.reject")}
+                            className="hover:text-orange-600 cursor-pointer"
                           >
-                            <IconX size={20} className="text-orange-600" />
+                            <IconX size={20} />
                           </button>
                         </>
                       )}
-                      {/* Hide action is available for all non-hidden reviews */}
-                      {review.status !== "HIDDEN" && (
+
+                      {/* Actions for AUTO_APPROVED reviews */}
+                      {review.status === "AUTO_APPROVED" && (
                         <button
                           onClick={() =>
                             handleModerate(
                               review,
-                              "HIDDEN",
-                              t("admin.review.actions.hide")
+                              "NEED_REVIEW",
+                              t("admin.review.actions.need_review")
                             )
                           }
-                          title={t("admin.review.actions.hide")}
+                          title={t("admin.review.actions.need_review")}
+                          className="hover:text-orange-600 cursor-pointer"
                         >
-                          <IconBan size={20} className="text-red-600" />
+                          <IconMessage size={20} />
+                        </button>
+                      )}
+
+                      {/* Hide action is available for non-rejected/hidden reviews */}
+                      {review.status !== "REJECTED" &&
+                        review.status !== "HIDDEN" && (
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "HIDDEN",
+                                t("admin.review.actions.hide")
+                              )
+                            }
+                            title={t("admin.review.actions.hide")}
+                            className="hover:text-red-600 cursor-pointer"
+                          >
+                            <IconBan size={20} />
+                          </button>
+                        )}
+
+                      {/* Restore action for hidden reviews */}
+                      {review.status === "HIDDEN" && (
+                        <button
+                          onClick={() =>
+                            handleModerate(
+                              review,
+                              "APPROVED",
+                              t("admin.review.actions.restore")
+                            )
+                          }
+                          title={t("admin.review.actions.restore")}
+                          className="hover:text-green-600 cursor-pointer"
+                        >
+                          <IconRestore size={20} />
                         </button>
                       )}
                     </div>
@@ -304,7 +383,18 @@ export default function ReviewPage() {
       <ReviewDetailModal
         review={selectedReview}
         open={showDetailModal}
-        onClose={() => setSelectedReview(null)}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedReview(null);
+        }}
+      />
+
+      <ModerationCommentModal
+        open={moderationState.isOpen}
+        actionText={moderationState.actionText}
+        isModerating={isModerating}
+        onClose={() => setModerationState({ isOpen: false, review: null })}
+        onSubmit={handleModerationSubmit}
       />
     </div>
   );
@@ -321,3 +411,86 @@ const StatCard = ({ title, value, icon }) => (
     </div>
   </div>
 );
+
+const ModerationCommentModal = ({
+  open,
+  onClose,
+  onSubmit,
+  actionText,
+  isModerating,
+}) => {
+  const [comment, setComment] = useState("");
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (open) {
+      setComment("");
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!comment.trim()) {
+      toast.error(t("admin.review.moderate.comment_required"));
+      return;
+    }
+    onSubmit(comment);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-bold text-gray-800">
+            {t("admin.review.moderate.comment_title", {
+              action: actionText.toLowerCase(),
+            })}
+          </h2>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="p-6">
+            <label
+              htmlFor="adminComment"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              {t("admin.review.moderate.reason_label")}
+            </label>
+            <textarea
+              id="adminComment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={t("admin.review.moderate.reason_placeholder")}
+            />
+          </div>
+          <div className="flex justify-end gap-4 p-6 bg-gray-50 rounded-b-lg">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isModerating}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="submit"
+              disabled={isModerating}
+              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:bg-blue-400 cursor-pointer"
+            >
+              {isModerating ? t("common.processing") : t("common.submit")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

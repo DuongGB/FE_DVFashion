@@ -535,7 +535,8 @@
     "select": "Select",
     "submit": "Submit",
     "reset": "Reset",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "processing": "Processing..."
   },
 
   "admin": {
@@ -1563,7 +1564,9 @@
         "view_detail": "View Detail",
         "approve": "Approve",
         "reject": "Reject",
-        "hide": "Hide"
+        "hide": "Hide",
+        "restore": "Restore",
+        "need_review": "Need Review"
       },
       "status": {
         "PENDING": "Pending",
@@ -1583,7 +1586,45 @@
         "confirm_title": "Confirm to {{action}} review",
         "confirm_message": "Are you sure you want to {{action}} the review from \"{{customerName}}\"?",
         "success": "Review status updated successfully!",
-        "error": "An error occurred while updating!"
+        "error": "An error occurred while updating!",
+        "comment_title": "Reason for {{action}} review",
+        "comment_required": "Please enter a reason.",
+        "reason_label": "Reason",
+        "reason_placeholder": "Enter your reason here..."
+      },
+      "detail": {
+        "title": "Review Details",
+        "description": "View detailed information for {{name}}'s review",
+        "rating_summary": "Rating Summary",
+        "customer_info": "Customer Information",
+        "customer_name": "Customer Name",
+        "product_order_info": "Product & Order Information",
+        "product_name": "Product Name",
+        "variant": "Variant",
+        "order_code": "Order Code",
+        "order_status": "Order Status",
+        "review_content": "Review Content",
+        "no_comment": "No comment provided",
+        "admin_feedback": "Admin Feedback",
+        "attached_images": "Attached Images ({{count}})",
+        "timestamps": "Timestamps",
+        "created_at": "Created At",
+        "updated_at": "Last Updated",
+        "status_desc": {
+          "PENDING": "The review is awaiting moderation.",
+          "APPROVED": "The review has been approved and is publicly visible.",
+          "AUTO_APPROVED": "The review was automatically approved by the system.",
+          "REJECTED": "The review was rejected due to a policy violation.",
+          "HIDDEN": "The review has been hidden from public view.",
+          "NEED_REVIEW": "The review requires manual review by an administrator."
+        },
+        "rating_level": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "average": "Average",
+          "poor": "Poor",
+          "very_poor": "Very Poor"
+        }
       }
     }
   },

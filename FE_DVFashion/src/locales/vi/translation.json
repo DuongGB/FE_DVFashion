@@ -535,7 +535,8 @@
     "select": "Chọn",
     "submit": "Gửi",
     "reset": "Đặt lại",
-    "error": "Đã có lỗi xảy ra"
+    "error": "Đã có lỗi xảy ra",
+    "processing": "Đang xử lý..."
   },
 
   "admin": {
@@ -1563,7 +1564,9 @@
         "view_detail": "Xem chi tiết",
         "approve": "Duyệt",
         "reject": "Từ chối",
-        "hide": "Ẩn"
+        "hide": "Ẩn",
+        "restore": "Khôi phục",
+        "need_review": "Cần xem lại"
       },
       "status": {
         "PENDING": "Chờ duyệt",
@@ -1583,7 +1586,45 @@
         "confirm_title": "Xác nhận {{action}} đánh giá",
         "confirm_message": "Bạn có chắc chắn muốn {{action}} đánh giá của khách hàng \"{{customerName}}\" không?",
         "success": "Cập nhật trạng thái đánh giá thành công!",
-        "error": "Có lỗi xảy ra khi cập nhật!"
+        "error": "Có lỗi xảy ra khi cập nhật!",
+        "comment_title": "Lý do {{action}} đánh giá",
+        "comment_required": "Vui lòng nhập lý do.",
+        "reason_label": "Lý do",
+        "reason_placeholder": "Nhập lý do của bạn ở đây..."
+      },
+      "detail": {
+        "title": "Chi tiết đánh giá",
+        "description": "Xem thông tin chi tiết về đánh giá của {{name}}",
+        "rating_summary": "Tóm tắt đánh giá",
+        "customer_info": "Thông tin khách hàng",
+        "customer_name": "Tên khách hàng",
+        "product_order_info": "Thông tin sản phẩm & Đơn hàng",
+        "product_name": "Tên sản phẩm",
+        "variant": "Biến thể",
+        "order_code": "Mã đơn hàng",
+        "order_status": "Trạng thái đơn hàng",
+        "review_content": "Nội dung đánh giá",
+        "no_comment": "Không có bình luận",
+        "admin_feedback": "Phản hồi từ quản trị viên",
+        "attached_images": "Hình ảnh đính kèm ({{count}})",
+        "timestamps": "Thông tin thời gian",
+        "created_at": "Ngày tạo",
+        "updated_at": "Cập nhật lần cuối",
+        "status_desc": {
+          "PENDING": "Đánh giá đang chờ được kiểm duyệt.",
+          "APPROVED": "Đánh giá đã được phê duyệt và hiển thị công khai.",
+          "AUTO_APPROVED": "Đánh giá được hệ thống tự động phê duyệt.",
+          "REJECTED": "Đánh giá bị từ chối do vi phạm quy định.",
+          "HIDDEN": "Đánh giá đã được ẩn khỏi hiển thị công khai.",
+          "NEED_REVIEW": "Đánh giá cần được quản trị viên xem xét thủ công."
+        },
+        "rating_level": {
+          "excellent": "Xuất sắc",
+          "good": "Tốt",
+          "average": "Trung bình",
+          "poor": "Kém",
+          "very_poor": "Rất kém"
+        }
       }
     }
   },
