@@ -498,6 +498,15 @@
     "cancel_edit": "Hủy sửa",
     "submit_review_arrow": "GỬI ĐÁNH GIÁ"
   },
+  "toast": {
+    "review": {
+      "moderate_success": "Cập nhật trạng thái đánh giá thành công!",
+      "create_success": "Gửi đánh giá thành công!",
+      "update_success": "Cập nhật đánh giá thành công!",
+      "create_failed": "Bạn chưa điền thông tin đánh giá!",
+      "update_failed": "Có lỗi xảy ra khi cập nhật!"
+    }
+  },
   "confirm": {
     "title": "Xác nhận thao tác",
     "simple_title": "Xác nhận",

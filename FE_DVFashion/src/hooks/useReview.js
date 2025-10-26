@@ -9,6 +9,7 @@ import {
   canEditReview,
 } from "../services/reviewAPI";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 // For Admin
 export const useAdminReviews = (params) => {
@@ -21,6 +22,7 @@ export const useAdminReviews = (params) => {
 
 export const useModerateReview = () => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   return useMutation({
     mutationFn: ({ reviewId, request }) => moderateReview(reviewId, request),
     onSuccess: () => {
@@ -30,7 +32,7 @@ export const useModerateReview = () => {
     },
     onError: (error) => {
       toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi cập nhật!"
+        error.response?.data?.message || t("toast.review.update_failed")
       );
     },
   });
@@ -47,10 +49,11 @@ export const useProductReviews = (productId, params) => {
 
 export const useCreateReview = (options) => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   return useMutation({
     mutationFn: createReview,
     onSuccess: (data, variables, context) => {
-      toast.success("Gửi đánh giá thành công!");
+      toast.success(t("toast.review.create_success"));
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
       queryClient.invalidateQueries({ queryKey: ["myOrders"] });
       if (options?.onSuccess) {
@@ -59,7 +62,7 @@ export const useCreateReview = (options) => {
     },
     onError: (error, variables, context) => {
       toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá!"
+        error.response?.data?.message || t("toast.review.create_failed")
       );
       if (options?.onError) {
         options.onError(error, variables, context);
@@ -75,15 +78,16 @@ export const useCreateReview = (options) => {
 
 export const useUpdateReview = () => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   return useMutation({
     mutationFn: updateReview,
     onSuccess: () => {
-      toast.success("Cập nhật đánh giá thành công!");
+      toast.success(t("toast.review.update_success"));
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
     },
     onError: (error) => {
       toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi cập nhật!"
+        error.response?.data?.message || t("toast.review.update_failed")
       );
     },
   });

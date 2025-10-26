@@ -119,7 +119,7 @@ export default function ModalReview({ show, onClose, order }) {
       });
 
       setReviews(initialReviews);
-      setSelectedProductIds(reviewableProductIds); // Mặc định chọn tất cả sản phẩm có thể review
+      setSelectedProductIds(reviewableProductIds);
       setSubmissionCount(0);
       setIsSubmitting(false);
     }
@@ -275,7 +275,7 @@ export default function ModalReview({ show, onClose, order }) {
             className="w-full bg-black text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
           >
             {isSubmitting
-              ? t("review.submitting")
+              ? t("review.submit")
               : t("review.submit_review_arrow")}
           </button>
         </div>

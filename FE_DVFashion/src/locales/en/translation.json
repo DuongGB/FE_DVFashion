@@ -506,6 +506,15 @@
     "cancel_edit": "Cancel Edit",
     "submit_review_arrow": "SUBMIT REVIEW"
   },
+  "toast": {
+    "review": {
+      "moderate_success": "Review status updated successfully!",
+      "create_success": "Review submitted successfully!",
+      "update_success": "Review updated successfully!",
+      "create_failed": "You have not filled in the review information!",
+      "update_failed": "An error occurred while updating!"
+    }
+  },
   "common": {
     "loading": "Loading",
     "saving": "Saving",
