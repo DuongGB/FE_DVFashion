@@ -3,15 +3,20 @@ import api from "./api";
 /**
  * Creates a new order.
  * @param {object} orderData - The data for the new order.
- * @param {Array<object>} orderData.orderItems - List of items in the order, e.g., [{ cartItemId: number }].
+ * @param {Array<object>} orderData.orderItems - List of items in the order[{ cartItemId: number }].
  * @param {object} orderData.shippingInfo - The shipping information.
  * @param {string} [orderData.notes] - Optional notes for the order.
  * @param {string} orderData.paymentMethod - Payment method ('CASH_ON_DELIVERY', 'PAYPAL').
  * @param {number} [orderData.promotionId] - Optional promotion ID.
  * @param {number} orderData.shippingFee - The shipping fee.
- * @returns {Promise<object>} The created order response. If payment is PayPal, it includes a paypalApprovalUrl.
+ * @returns {Promise<object>} Dữ liệu phản hồi từ API.
  */
 export const createOrder = async (orderData) => {
+  if (orderData.paymentMethod === "PAYPAL") {
+    const successUrl = `${window.location.origin}/payment/paypal/success`;
+    const cancelUrl = `${window.location.origin}/cart`;
+    orderData = { ...orderData, successUrl, cancelUrl };
+  }
   const response = await api.post("/orders", orderData);
   return response.data;
 };
@@ -100,7 +105,7 @@ export const getOrdersByCustomerIdPaging = async (customerId, params) => {
 export const confirmPayPalPayment = async (token, orderNumber) => {
   // Note: The backend implementation for this was not in the controller.
   // Assuming an endpoint like '/orders/paypal/confirm' exists. Please adjust if needed.
-  const response = await api.get("/orders/paypal/confirm", {
+  const response = await api.get("/payments/paypal/success", {
     params: { token, orderNumber },
   });
   return response.data;
@@ -115,8 +120,18 @@ export const confirmPayPalPayment = async (token, orderNumber) => {
 export const cancelPayPalPayment = async (orderNumber) => {
   // Note: The backend implementation for this was not in the controller.
   // Assuming an endpoint like '/orders/paypal/cancel' exists. Please adjust if needed.
-  const response = await api.get("/orders/paypal/cancel", {
+  const response = await api.get("/payments/paypal/cancel", {
     params: { orderNumber },
   });
   return response.data;
+};
+
+/**
+ * Retrieves paginated orders for admin/staff (all orders).
+ * Accepts pageable params: page (0-based), size, sort (e.g. "orderDate,desc").
+ * Returns PageResponse<OrderResponse>.
+ */
+export const getAllOrdersPaging = async (params) => {
+  const response = await api.get("/orders", { params });
+  return response.data?.data;
 };

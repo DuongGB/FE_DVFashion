@@ -92,18 +92,30 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
 
 // Main menu component
 function MainMenu({ isAuthenticated, user, onUserClick }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showSearch, setShowSearch] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const { cart, isLoading, removeItem } = useCart();
+  const [hideTimeout, setHideTimeout] = useState(null);
+  const { cart, removeItem } = useCart();
   const searchRef = useRef();
   const cartRef = useRef();
+
+  const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   const [activeMenu, setActiveMenu] = useState(null);
 
   // Xử lý hover vào từng menu item
-  const handleMouseEnter = (menuKey) => setActiveMenu(menuKey);
-  const handleMouseLeave = () => setActiveMenu(null);
+  const handleMouseEnter = (menuKey) => {
+    if (hideTimeout) clearTimeout(hideTimeout);
+    setActiveMenu(menuKey);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveMenu(null);
+    }, 150); // delay 150ms tránh flicker
+    setHideTimeout(timeout);
+  };
 
   const menuItems = [
     {
@@ -210,6 +222,9 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
               <MegaMenu
                 onMouseEnter={() => handleMouseEnter(item.key)}
                 onMouseLeave={handleMouseLeave}
+                categories={categories}
+                isLoading={isLoading}
+                error={error}
               />
             )}
           </div>
@@ -282,9 +297,14 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 }
 
 // MegaMenu component
-function MegaMenu({ onMouseEnter, onMouseLeave }) {
+function MegaMenu({
+  onMouseEnter,
+  onMouseLeave,
+  categories,
+  isLoading,
+  error,
+}) {
   const { t, i18n } = useTranslation();
-  const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   // Chỉ lấy các category active
   const activeCategories = categories?.filter((cat) => cat.active) || [];

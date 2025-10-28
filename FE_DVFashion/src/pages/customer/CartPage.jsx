@@ -6,14 +6,14 @@ import {
   IconTrash,
   IconMapPin,
 } from "@tabler/icons-react";
-import CartBottom from "../components/common/CartBottom";
+import CartBottom from "../../components/common/CartBottom";
 import { Link } from "react-router-dom";
-import { usePromotion } from "../hooks/usePromotion";
+import { usePromotion } from "../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
-import { useCart } from "../hooks/useCart";
-import { useAddress } from "../hooks/useAddress";
-import AddressList from "../components/ui/address/AddressList";
-import { useCreateOrder } from "../hooks/useOrder";
+import { useCart } from "../../hooks/useCart";
+import { useAddress } from "../../hooks/useAddress";
+import AddressList from "../../components/ui/address/AddressList";
+import { useCreateOrder } from "../../hooks/useOrder";
 import { toast } from "react-toastify";
 
 export default function CartPage() {
@@ -434,28 +434,7 @@ export default function CartPage() {
       shippingFee: shipping.shippingFee || 0,
     };
 
-    // createOrder(orderData);
-    createOrder(orderData, {
-      onSuccess: (data) => {
-        if (orderData.paymentMethod === "PAYPAL") {
-          // Nếu backend trả về URL thanh toán trong data.paymentUrl
-          if (data && data.paymentUrl) {
-            window.location.href = data.paymentUrl;
-          } else {
-            toast.error(t("cart.paypal_url_error"));
-          }
-        } else {
-          // Xử lý thành công cho COD
-          toast.success(t("cart.order_success_cod"));
-        }
-      },
-      onError: (error) => {
-        // Xử lý lỗi chung
-        const errorMessage =
-          error.response?.data?.message || t("cart.order_failed");
-        toast.error(errorMessage);
-      },
-    });
+    createOrder(orderData);
   };
 
   // Loading state

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ export default function ModalAccount({ show, onClose, user }) {
   const { logout, isLogoutLoading } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const [isVisible, setIsVisible] = useState(false);
 
   // Force re-render when language changes
   useEffect(() => {
@@ -21,6 +22,15 @@ export default function ModalAccount({ show, onClose, user }) {
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, [i18n]);
+
+  // Điều khiển animation khi show thay đổi
+  useEffect(() => {
+    if (show) {
+      setTimeout(() => setIsVisible(true), 10); // delay nhỏ để kích hoạt transition
+    } else {
+      setIsVisible(false);
+    }
+  }, [show]);
 
   if (!show) return null;
 
@@ -40,7 +50,11 @@ export default function ModalAccount({ show, onClose, user }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-lg p-6 relative min-w-[400px] max-w-[420px] h-auto overflow-y-auto"
+        className={`
+          bg-white rounded-lg shadow-lg p-6 relative min-w-[400px] max-w-[420px] h-auto overflow-y-auto
+          transition-transform duration-300
+          ${isVisible ? "translate-x-0" : "translate-x-full"}
+        `}
         onClick={(e) => e.stopPropagation()}
         style={{ right: 0 }}
       >

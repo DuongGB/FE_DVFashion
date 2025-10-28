@@ -32,6 +32,11 @@ export const inventoryAPI = {
     return api.get(`/inventories/size/${sizeId}?lang=${lang}`);
   },
 
+  // Lấy chi tiết một mục tồn kho (bao gồm cả transactions)
+  getInventoryDetails: (inventoryId, lang = "VI") => {
+    return api.get(`/inventories/${inventoryId}/details?lang=${lang}`);
+  },
+
   // Lấy số liệu thống kê tồn kho
   getInventoryStats: () => api.get("/inventories/stats"),
 

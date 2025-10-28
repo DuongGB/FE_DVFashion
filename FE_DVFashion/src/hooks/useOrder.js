@@ -1,20 +1,21 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { queryClient } from "../lib/queryClient";
 import {
-  createOrder,
-  confirmPayPalPayment,
+  adminUpdateOrder,
   cancelPayPalPayment,
+  confirmPayPalPayment,
+  createOrder,
   getMyOrders,
   getMyOrdersPaging,
   getOrderByOrderNumber,
-  updateOrderByUser,
-  adminUpdateOrder,
   getOrdersByCustomerId,
   getOrdersByCustomerIdPaging,
+  updateOrderByUser,
+  getAllOrdersPaging,
 } from "../services/orderAPI";
-import { toast } from "react-toastify";
-import { queryClient } from "../lib/queryClient";
-import { useTranslation } from "react-i18next";
 
 export const useCreateOrder = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export const useCreateOrder = () => {
       } else {
         // For COD or other methods, navigate to order success page
         queryClient.invalidateQueries({ queryKey: ["cart"] });
-        // navigate(`/order-success/${orderResponse.orderNumber}`);
+        navigate(`/order-success/${orderResponse.orderNumber}`);
       }
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
@@ -54,6 +55,7 @@ export const useConfirmPayPal = () => {
       toast.success(data.message || t("order.payment_confirm_success"));
       localStorage.removeItem("pendingOrderNumber");
       const orderNumber = data.data.orderNumber;
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
       navigate(`/order-success/${orderNumber}`);
     },
     onError: (error) => {
@@ -62,7 +64,7 @@ export const useConfirmPayPal = () => {
       );
       const orderNumber = localStorage.getItem("pendingOrderNumber");
       localStorage.removeItem("pendingOrderNumber");
-      navigate(orderNumber ? `/order-fail/${orderNumber}` : "/cart");
+      navigate("/cart");
     },
   });
 };
@@ -93,11 +95,13 @@ export const useMyOrders = () => {
   });
 };
 
-export const useMyOrdersPaging = (pageable) => {
+export const useMyOrdersPaging = (params, options = {}) => {
   return useQuery({
-    queryKey: ["myOrders", pageable],
-    queryFn: () => getMyOrdersPaging(pageable),
-    keepPreviousData: true,
+    queryKey: ["myOrders", params],
+    queryFn: () => getMyOrdersPaging(params),
+    staleTime: 1000 * 30,
+    keepPreviousData: true, // Luôn giữ lại data cũ khi chuyển trang
+    ...options,
   });
 };
 
@@ -159,5 +163,19 @@ export const useOrdersByCustomerIdPaging = (customerId, pageable) => {
     queryFn: () => getOrdersByCustomerIdPaging(customerId, pageable),
     enabled: !!customerId,
     keepPreviousData: true,
+  });
+};
+
+/**
+ * Hook to fetch all orders with server-side paging for admin/staff.
+ * `params` example: { page: 0, size: 10, sort: "orderDate,desc" }
+ */
+export const useAllOrdersPaging = (params, options = {}) => {
+  return useQuery({
+    queryKey: ["orders", params],
+    queryFn: () => getAllOrdersPaging(params),
+    staleTime: 1000 * 30,
+    keepPreviousData: true,
+    ...options,
   });
 };

@@ -23,7 +23,8 @@ export default function ProductPage() {
   const language = i18n.language || "VI";
 
   const { user } = useAuth();
-  const isStaff = user?.roles?.includes("ROLE_STAFF");
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+  const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
   const { products: getAllProducts, isLoading: isLoadingProducts } =
     useProduct(language);

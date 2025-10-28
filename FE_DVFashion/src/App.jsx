@@ -3,8 +3,11 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OAuth2RedirectHandler from "./components/ui/auth/OAuth2RedirectHandler";
 import ProtectedRoute from "./components/ui/auth/ProtectedRoute";
+import { AuthModalProvider } from "./contexts/AuthModalContext";
 import AdminLayout from "./layouts/AdminLayout";
+import CartLayout from "./layouts/CartLayout";
 import MainLayout from "./layouts/MainLayout";
+import StaffLayout from "./layouts/StaffLayout";
 import AdminPage from "./pages/admin/AdminPage";
 import AnalystReportPage from "./pages/admin/AnalystReportPage";
 import BrandPage from "./pages/admin/BrandPage";
@@ -13,22 +16,23 @@ import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
 import EmployeePage from "./pages/admin/EmployeePage";
 import ForecastPage from "./pages/admin/ForecastPage";
 import InventoryPage from "./pages/admin/InventoryPage";
+import {
+  default as OrderPage,
+  default as OrdersPage,
+} from "./pages/admin/OrderPage";
 import ProductPage from "./pages/admin/ProductPage";
 import PromotionPage from "./pages/admin/PromotionPage";
 import ReviewPage from "./pages/admin/ReviewPage";
 import BlogPage from "./pages/BlogPage";
 import AccountPage from "./pages/customer/AccountPage";
+import CartPage from "./pages/customer/CartPage";
 import CustomerPage from "./pages/customer/CustomerPage";
-import OrderPage from "./pages/admin/OrderPage";
+import OrderSuccessPage from "./pages/customer/OrderSuccessPage";
+import PayPalSuccessHandler from "./pages/customer/PayPalSuccessHandler";
 import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
-import CartPage from "./pages/CartPage";
-import CartLayout from "./layouts/CartLayout";
 import SearchProductPage from "./pages/SearchProductPage";
-import StaffLayout from "./layouts/StaffLayout";
 import StaffPage from "./pages/staff/StaffPage";
-import OrdersPage from "./pages/admin/OrderPage";
-import { AuthModalProvider } from "./contexts/AuthModalContext";
 
 function App() {
   return (
@@ -96,6 +100,14 @@ function App() {
           {/* Cart layout */}
           <Route element={<CartLayout />}>
             <Route path="/cart" element={<CartPage />} />
+            <Route
+              path="/order-success/:orderNumber"
+              element={<OrderSuccessPage />}
+            />
+            <Route
+              path="/payment/paypal/success"
+              element={<PayPalSuccessHandler />}
+            />
           </Route>
         </Routes>
         <ToastContainer

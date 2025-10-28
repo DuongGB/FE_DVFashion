@@ -326,15 +326,18 @@
     "detail": {
       "cashback": "Earn up to",
       "color": "Color:",
-      "size": "Size:",
+      "size": "Size",
       "size_guide": "Size guide",
+      "price": "Price",
       "add_to_cart": "Add to cart",
       "description": "Product description",
       "no_description": "No product description.",
       "policy_easy_return": "Easy returns with just a phone number",
       "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
       "policy_60days": "60-day returns (unused and with original tags)",
-      "policy_fast_refund": "Home pickup & refund within 24h"
+      "policy_fast_refund": "Home pickup & refund within 24h",
+      "recommendations": "You may also like",
+      "loading_recommendations": "Loading recommendations..."
     }
   },
   "cart": {
@@ -343,7 +346,6 @@
     "choose_from_address_book": "Choose from Address Book",
     "selected_address": "Selected Address",
     "change": "Change",
-    "title": "Shopping Cart",
     "loading": "Loading...",
     "select_all": "Select All",
     "clear_all": "Clear All",
@@ -384,11 +386,13 @@
     "place_order": "PLACE ORDER",
     "processing": "PROCESSING...",
     "select_product_to_order": "Please select products to order.",
-    "fill_shipping_info": "Please fill in all shipping information."
+    "fill_shipping_info": "Please fill in all shipping information.",
+    "quantity": "Quantity"
   },
   "order": {
+    "update_note": "Only orders with 'Pending' status or 'Processing' status can be update!",
     "create_success": "Order created successfully!",
-    "create_fail": "Failed to create order.",
+    "create_fail": "Only orders with 'Pending' status or 'Processing' status can be update!",
     "payment_confirm_success": "Payment confirmed successfully!",
     "payment_confirm_fail": "Failed to confirm payment.",
     "payment_cancel_warn": "Payment has been cancelled.",
@@ -403,12 +407,31 @@
     "no_orders_found": "You have no orders yet.",
     "return_policy_60_days": "60-day return policy",
     "gift": "Gift",
+    "success_title": "Order Placed Successfully!",
+    "success_message": "Thank you for your purchase. Your order #{{orderNumber}} has been confirmed.",
+    "loading_details": "Loading order details...",
+    "load_details_fail": "Failed to load order details. Please try again.",
+    "summary": "Order Summary",
+    "number": "Order Number",
+    "date": "Order Date",
+    "status_label": "Status",
+    "items_title": "Ordered Items",
+    "continue_shopping": "Continue Shopping",
+    "back_to_home": "Back to Home",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",
       "paypal": "PayPal"
     },
     "status": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "hidden": "Hidden",
+      "auto_approved": "Auto Approved",
+      "need_review": "Need Review",
       "pending": "Pending",
       "confirmed": "Confirmed",
       "processing": "Processing",
@@ -416,6 +439,9 @@
       "delivered": "Delivered",
       "canceled": "Canceled",
       "returned": "Returned"
+    },
+    "stats": {
+      "total_orders": "Total Orders"
     }
   },
   "address": {
@@ -446,7 +472,7 @@
     "street_placeholder": "House number, street name...",
     "set_default": "Set as default address",
     "default": "Default",
-
+    "address_book_title": "My Addresses",
     "empty_message": "You don't have any saved addresses",
     "confirm_delete_title": "Confirm Address Deletion",
     "confirm_delete_message": "Are you sure you want to delete the address for {{fullName}}?",
@@ -470,7 +496,45 @@
     "itemType_default": "item",
     "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
+  "review": {
+    "title": "Product Review",
+    "rating": "Your Rating",
+    "comment": "Your thoughts on the product",
+    "comment_placeholder": "Please share your thoughts about this product...",
+    "submit": "Submit Review",
+    "select_products_title": "Select products you want to review",
+    "selected_products_count": "You have selected {{count}}/{{total}} products",
+    "review_section_title": "Review Products",
+    "upload_images": "Upload Images",
+    "upload_images_desc": "Click to add photos, or drag and drop here",
+    "upload_images_limit": "(Up to 5 photos)",
+    "fit_title": "Body Fit",
+    "fit_tight": "Tight",
+    "fit_true_to_size": "True to size",
+    "fit_loose": "Loose",
+    "body_info_title": "Body Information",
+    "height_cm": "Height (cm)",
+    "weight_kg": "Weight (kg)",
+    "save_info": "Save Info",
+    "cancel_edit": "Cancel Edit",
+    "submit_review_arrow": "SUBMIT REVIEW",
+    "update_review": "Update Review",
+    "updating": "Updating...",
+    "update": "Update",
+    "image_upload_note": "JPG, JPEG, PNG (max 2MB), up to 5 files.",
+    "no_reviews": "You have not reviewed any products yet."
+  },
+  "toast": {
+    "review": {
+      "moderate_success": "Review status updated successfully!",
+      "create_success": "Review submitted successfully!",
+      "update_success": "Review updated successfully!",
+      "create_failed": "You have not filled in the review information!",
+      "update_failed": "An error occurred while updating!"
+    }
+  },
   "common": {
+    "all": "All",
     "loading": "Loading",
     "saving": "Saving",
     "save": "Save",
@@ -489,7 +553,11 @@
     "close": "Close",
     "select": "Select",
     "submit": "Submit",
-    "reset": "Reset"
+    "reset": "Reset",
+    "error": "An error occurred",
+    "processing": "Processing...",
+    "note": "Note",
+    "none": "None"
   },
 
   "admin": {
@@ -1396,7 +1464,19 @@
       "view_detail": "View Details",
       "import": "Import",
       "export": "Export",
-      "adjust": "Adjust Stock"
+      "adjust": "Adjust Stock",
+      "import_stock": "Import Stock"
+    },
+    "general_import": {
+      "title": "General Stock Import by Size ID",
+      "size_id_label": "Find Product by Size ID",
+      "size_id_placeholder": "Enter Size ID...",
+      "find": "Find",
+      "finding": "Finding...",
+      "find_another": "Find Another Product",
+      "error_size_id_required": "Please enter a Size ID to search.",
+      "error_not_found": "No product found with this Size ID.",
+      "error_fetch": "An error occurred while finding the product."
     },
     "inventory_detail": {
       "title": "Inventory Details",
@@ -1494,12 +1574,106 @@
       "error_invalid_quantity": "Please enter a valid new quantity (>= 0)",
       "error_reason_required": "Please enter adjustment reason",
       "error_adjust": "Error adjusting stock!"
+    },
+    "review": {
+      "title": "Review Management",
+      "search_placeholder": "Search by customer name, product, comment...",
+      "all_status": "All Statuses",
+      "all_ratings": "All Ratings",
+      "rating_option": "{{star}} star(s)",
+      "loading": "Loading data...",
+      "no_reviews": "No reviews found.",
+      "error_loading": "Error loading data: {{message}}",
+      "columns": {
+        "customer": "Customer",
+        "product": "Product",
+        "rating": "Rating",
+        "comment": "Comment",
+        "status": "Status",
+        "created_at": "Created At",
+        "actions": "Actions"
+      },
+      "actions": {
+        "view_detail": "View Detail",
+        "approve": "Approve",
+        "reject": "Reject",
+        "hide": "Hide",
+        "restore": "Restore",
+        "need_review": "Need Review"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "AUTO_APPROVED": "Auto Approved",
+        "APPROVED": "Approved",
+        "NEED_REVIEW": "Need Review",
+        "REJECTED": "Rejected",
+        "HIDDEN": "Hidden"
+      },
+      "stats": {
+        "total": "Total Reviews",
+        "pending": "Pending",
+        "approved": "Approved",
+        "average_rating": "Avg. Rating"
+      },
+      "moderate": {
+        "confirm_title": "Confirm to {{action}} review",
+        "confirm_message": "Are you sure you want to {{action}} the review from \"{{customerName}}\"?",
+        "success": "Review status updated successfully!",
+        "error": "An error occurred while updating!",
+        "comment_title": "Reason for {{action}} review",
+        "comment_required": "Please enter a reason.",
+        "reason_label": "Reason",
+        "reason_placeholder": "Enter your reason here..."
+      },
+      "detail": {
+        "title": "Review Details",
+        "description": "View detailed information for {{name}}'s review",
+        "rating_summary": "Rating Summary",
+        "customer_info": "Customer Information",
+        "customer_name": "Customer Name",
+        "product_order_info": "Product & Order Information",
+        "product_name": "Product Name",
+        "variant": "Variant",
+        "order_code": "Order Code",
+        "order_status": "Order Status",
+        "review_content": "Review Content",
+        "no_comment": "No comment provided",
+        "admin_feedback": "Admin Feedback",
+        "attached_images": "Attached Images ({{count}})",
+        "timestamps": "Timestamps",
+        "created_at": "Created At",
+        "updated_at": "Last Updated",
+        "status_desc": {
+          "PENDING": "The review is awaiting moderation.",
+          "APPROVED": "The review has been approved and is publicly visible.",
+          "AUTO_APPROVED": "The review was automatically approved by the system.",
+          "REJECTED": "The review was rejected due to a policy violation.",
+          "HIDDEN": "The review has been hidden from public view.",
+          "NEED_REVIEW": "The review requires manual review by an administrator."
+        },
+        "rating_level": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "average": "Average",
+          "poor": "Poor",
+          "very_poor": "Very Poor"
+        }
+      }
     }
   },
 
   "staff": {
     "dashboard": {
       "title": "Staff Dashboard"
+    },
+    "sidebar": {
+      "home": "Home",
+      "products": "Products",
+      "inventories": "Inventories",
+      "orders": "Orders",
+      "categories": "Categories",
+      "reviews": "Reviews",
+      "promotions": "Promotions"
     }
   }
 }

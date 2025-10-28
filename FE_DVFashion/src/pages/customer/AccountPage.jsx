@@ -4,7 +4,6 @@ import ModalUpdateAccount from "../../components/ui/account/ModalUpdateAccount";
 import { useAuth } from "../../hooks/useAuth";
 import {
   IconUser,
-  IconUsers,
   IconShoppingCart,
   IconCoin,
   IconTicket,
@@ -14,6 +13,9 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import OrderHistory from "../../components/ui/account/OrderHistory";
+import ModalReview from "../../components/ui/review/ModalReview";
+import MyReviews from "../../components/ui/account/MyReviews";
+import MyAddresses from "../../components/ui/account/MyAddresses";
 
 const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
@@ -92,19 +94,29 @@ export default function AccountPage() {
   const { user } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
   const [activeTab, setActiveTab] = useState("account_info");
   const { t } = useTranslation();
+
+  const handleReviewClick = (orderOrReview) => {
+    // Nếu là order thì mở modal đánh giá mới, nếu là review thì mở modal sửa
+    if (orderOrReview.orderNumber) {
+      setSelectedOrder(orderOrReview);
+      setSelectedReview(null);
+    } else {
+      setSelectedOrder(null);
+      setSelectedReview(orderOrReview);
+    }
+    setShowReviewModal(true);
+  };
 
   const sidebarItems = [
     {
       id: "account_info",
       icon: <IconUser size={24} />,
       text: t("account.sidebar.account_info"),
-    },
-    {
-      id: "refer_friends",
-      icon: <IconUsers size={24} />,
-      text: t("account.sidebar.refer_friends"),
     },
     {
       id: "order_history",
@@ -149,8 +161,11 @@ export default function AccountPage() {
           />
         );
       case "order_history":
-        return <OrderHistory />;
-      // Add other cases for other tabs here
+        return <OrderHistory onReviewClick={handleReviewClick} />;
+      case "reviews_feedback":
+        return <MyReviews onUpdateClick={handleReviewClick} />;
+      case "address_book":
+        return <MyAddresses />;
       default:
         return (
           <AccountInfo
@@ -163,7 +178,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="flex bg-gray-100 min-h-screen p-6 gap-6">
+    <div className="flex bg-gray-200 min-h-screen p-6 gap-6">
       {/* Sidebar */}
       <div className="w-[320px] flex-shrink-0">
         <div className="flex flex-col gap-3 bg-white p-4 rounded-lg h-full">
@@ -189,6 +204,12 @@ export default function AccountPage() {
         <ModalChangePassword
           show={showPasswordModal}
           onClose={() => setShowPasswordModal(false)}
+        />
+        <ModalReview
+          show={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          order={selectedOrder}
+          review={selectedReview}
         />
       </div>
     </div>

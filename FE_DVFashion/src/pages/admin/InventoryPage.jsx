@@ -5,26 +5,27 @@ import {
   IconAdjustments,
   IconPackageExport,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Pagination from "../../components/common/Pagination";
 import InventoryDetailModal from "../../components/ui/inventory/InventoryDetailModal";
 import { useInventory } from "../../hooks/useInventory";
-import ImportStockModal from "../../components/ui/inventory/ImportStockModal";
-import ExportStockModal from "../../components/ui/inventory/ExportStockModal";
 import AdjustStockModal from "../../components/ui/inventory/AdjustStockModal";
 import { useTranslation } from "react-i18next";
+import GeneralImportStockModal from "../../components/ui/inventory/GeneralImportStockModal";
+import GeneralExportStockModal from "../../components/ui/inventory/GeneralExportStockModal";
 
 export default function InventoryPage() {
   const { t } = useTranslation();
   const { inventories, isLoading, error } = useInventory();
   const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showGeneralImportModal, setShowGeneralImportModal] = useState(false);
+  const [showGeneralExportModal, setShowGeneralExportModal] = useState(false);
 
   // Thêm state cho bộ lọc nâng cao
   const [filters, setFilters] = useState({
@@ -34,6 +35,18 @@ export default function InventoryPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const pageSize = 10;
+
+  // Debounce cho việc tìm kiếm
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchTerm);
+      setCurrentPage(1); // Reset về trang đầu khi có tìm kiếm mới
+    }, 300); // Đợi 300ms sau khi người dùng ngừng gõ
+
+    return () => {
+      clearTimeout(handler); // Cleanup timeout
+    };
+  }, [searchTerm]);
 
   // Lấy danh sách màu và size có trong kho
   const availableColors = Array.from(
@@ -147,7 +160,25 @@ export default function InventoryPage() {
   return (
     <div>
       {/* Header */}
-      <h1 className="text-2xl font-bold">{t("admin.inventory.title")}</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">{t("admin.inventory.title")}</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowGeneralImportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+          >
+            <IconPackageImport size={16} />
+            {t("admin.inventory.import_stock")}
+          </button>
+          <button
+            onClick={() => setShowGeneralExportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
+          >
+            <IconPackageExport size={16} />
+            {t("admin.inventory.export")}
+          </button>
+        </div>
+      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -202,8 +233,8 @@ export default function InventoryPage() {
             <input
               type="text"
               placeholder={t("admin.inventory.search_placeholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -247,6 +278,13 @@ export default function InventoryPage() {
               className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
             >
               {t("admin.inventory.clear_all")}
+            </button>
+            <button
+              onClick={() => setShowGeneralExportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
+            >
+              <IconPackageExport size={16} />
+              {t("admin.inventory.export")}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -308,6 +346,21 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* General Import Stock Modal */}
+      {showGeneralImportModal && (
+        <GeneralImportStockModal
+          open={showGeneralImportModal}
+          onClose={() => setShowGeneralImportModal(false)}
+        />
+      )}
+      {/* General Export Stock Modal */}
+      {showGeneralExportModal && (
+        <GeneralExportStockModal
+          open={showGeneralExportModal}
+          onClose={() => setShowGeneralExportModal(false)}
+        />
       )}
 
       {/* Active Filters Display */}
@@ -452,26 +505,6 @@ export default function InventoryPage() {
                       <IconEye size={24} />
                     </button>
                     <button
-                      className="text-green-600 hover:text-green-800 p-1 cursor-pointer"
-                      title={t("admin.inventory.import")}
-                      onClick={() => {
-                        setSelectedInventory(inventory);
-                        setShowImportModal(true);
-                      }}
-                    >
-                      <IconPackageImport size={24} />
-                    </button>
-                    <button
-                      className="text-orange-600 hover:text-orange-800 p-1 cursor-pointer"
-                      title={t("admin.inventory.export")}
-                      onClick={() => {
-                        setSelectedInventory(inventory);
-                        setShowExportModal(true);
-                      }}
-                    >
-                      <IconPackageExport size={24} />
-                    </button>
-                    <button
                       className="text-purple-600 hover:text-purple-800 p-1 cursor-pointer"
                       title={t("admin.inventory.adjust")}
                       onClick={() => {
@@ -510,24 +543,6 @@ export default function InventoryPage() {
         open={showDetailModal}
         onClose={handleCloseDetailModal}
       />
-
-      {/* Import Stock Modal */}
-      {showImportModal && (
-        <ImportStockModal
-          open={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          inventory={selectedInventory}
-        />
-      )}
-
-      {/* Export Stock Modal */}
-      {showExportModal && (
-        <ExportStockModal
-          open={showExportModal}
-          onClose={() => setShowExportModal(false)}
-          inventory={selectedInventory}
-        />
-      )}
 
       {/* Adjust Stock Modal */}
       {showAdjustModal && (

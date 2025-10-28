@@ -123,7 +123,7 @@
       "voucher_wallet": "Ví Voucher",
       "address_book": "Sổ địa chỉ",
       "reviews_feedback": "Đánh giá và phản hồi",
-      "policies_faq": "Chính sách & Câu hỏi thường gặp"
+      "policies_faq": "Chính sách"
     },
     "main": {
       "account_info": "Thông tin tài khoản",
@@ -325,16 +325,19 @@
     },
     "detail": {
       "cashback": "Được hoàn lên đến",
-      "color": "Màu sắc:",
-      "size": "Kích thước:",
+      "color": "Màu sắc",
+      "size": "Kích thước",
       "size_guide": "Hướng dẫn chọn size",
+      "price": "Giá:",
       "add_to_cart": "Thêm vào giỏ",
       "description": "Mô tả sản phẩm",
       "no_description": "Chưa có mô tả sản phẩm.",
       "policy_easy_return": "Đổi trả cực dễ chỉ cần số điện thoại",
       "policy_hotline": "Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h",
       "policy_60days": "60 ngày đổi trả (sản phẩm chưa qua sử dụng và còn nguyên nhãn mác)",
-      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h"
+      "policy_fast_refund": "Đến tận nơi nhận hàng trả, hoàn tiền trong 24h",
+      "recommendations": "Gợi ý sản phẩm",
+      "loading_recommendations": "Đang tải sản phẩm gợi ý..."
     }
   },
   "cart": {
@@ -343,7 +346,6 @@
     "choose_from_address_book": "Chọn từ sổ địa chỉ",
     "selected_address": "Địa chỉ đã chọn",
     "change": "Thay đổi",
-    "title": "Giỏ hàng",
     "loading": "Đang tải...",
     "select_all": "Chọn tất cả",
     "clear_all": "Xóa tất cả",
@@ -384,9 +386,12 @@
     "place_order": "ĐẶT HÀNG",
     "processing": "ĐANG XỬ LÝ...",
     "select_product_to_order": "Vui lòng chọn sản phẩm để đặt hàng.",
-    "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng."
+    "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng.",
+    "quantity": "Số lượng"
   },
   "order": {
+    "update_order": "Cập nhật đơn hàng",
+    "update_note": "Chỉ cập nhật được đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
     "create_success": "Tạo đơn hàng thành công!",
     "create_fail": "Tạo đơn hàng thất bại.",
     "payment_confirm_success": "Thanh toán đã được xác nhận thành công!",
@@ -394,7 +399,7 @@
     "payment_cancel_warn": "Thanh toán đã bị hủy.",
     "payment_cancel_error": "Có lỗi xảy ra.",
     "update_success": "Cập nhật đơn hàng thành công!",
-    "update_fail": "Cập nhật đơn hàng thất bại.",
+    "update_fail": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý!",
     "total_amount": "Thành tiền",
     "return_exchange": "Đổi/Trả",
     "review": "Đánh giá",
@@ -403,19 +408,42 @@
     "no_orders_found": "Bạn chưa có đơn hàng nào.",
     "return_policy_60_days": "Chính sách đổi trả 60 ngày",
     "gift": "Quà tặng",
+    "success_title": "Đặt hàng thành công!",
+    "success_message": "Cảm ơn bạn đã mua sắm. Đơn hàng #{{orderNumber}} của bạn đã được xác nhận.",
+    "loading_details": "Đang tải chi tiết đơn hàng...",
+    "load_details_fail": "Không thể tải chi tiết đơn hàng. Vui lòng thử lại.",
+    "summary": "Tóm tắt đơn hàng",
+    "number": "Mã đơn hàng",
+    "date": "Ngày đặt",
+    "status_label": "Trạng thái",
+    "items_title": "Sản phẩm đã đặt",
+    "continue_shopping": "Tiếp tục mua sắm",
+    "back_to_home": "Về trang chủ",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",
       "paypal": "Thanh toán PayPal"
     },
     "status": {
+      "approved": "Đã duyệt",
+      "rejected": "Đã từ chối",
+      "hidden": "Đã ẩn",
+      "completed": "Hoàn thành",
+      "failed": "Thất bại",
+      "refunded": "Đã hoàn tiền",
+      "auto_approved": "Tự động duyệt",
+      "need_review": "Cần xem lại",
       "pending": "Chờ xác nhận",
       "confirmed": "Đã xác nhận",
       "processing": "Đang xử lý",
       "shipped": "Đang giao hàng",
       "delivered": "Giao thành công",
       "canceled": "Đã hủy",
-      "returned": "Đã trả hàng"
+      "returned": "Đã trả hàng",
+      "undefined": "Không xác định"
+    },
+    "stats": {
+      "total_orders": "Tổng đơn hàng"
     }
   },
   "address": {
@@ -446,7 +474,7 @@
     "street_placeholder": "Số nhà, tên đường...",
     "set_default": "Đặt làm địa chỉ mặc định",
     "default": "Mặc định",
-
+    "address_book_title": "Sổ địa chỉ",
     "empty_message": "Bạn chưa có địa chỉ nào được lưu",
     "confirm_delete_title": "Xác nhận xóa địa chỉ",
     "confirm_delete_message": "Bạn có chắc chắn muốn xóa địa chỉ của {{fullName}} không?",
@@ -462,6 +490,43 @@
       "phone_invalid": "Số điện thoại không hợp lệ"
     }
   },
+  "review": {
+    "title": "Đánh giá sản phẩm",
+    "rating": "Đánh giá của bạn",
+    "comment": "Cảm nhận về sản phẩm",
+    "comment_placeholder": "Hãy chia sẻ cảm nhận của bạn về sản phẩm này nhé...",
+    "submit": "Gửi đánh giá",
+    "select_products_title": "Chọn sản phẩm bạn muốn đánh giá",
+    "selected_products_count": "Bạn đã chọn {{count}}/{{total}} sản phẩm",
+    "review_section_title": "Đánh giá sản phẩm",
+    "upload_images": "Tải lên hình ảnh",
+    "upload_images_desc": "Click để thêm ảnh, hoặc kéo thả ảnh vào đây",
+    "upload_images_limit": "(Tối đa 5 ảnh)",
+    "fit_title": "Phù hợp với cơ thể",
+    "fit_tight": "Chật",
+    "fit_true_to_size": "Đúng kích thước",
+    "fit_loose": "Rộng",
+    "body_info_title": "Thông tin kích thước",
+    "height_cm": "Chiều cao (cm)",
+    "weight_kg": "Cân nặng (kg)",
+    "save_info": "Lưu thông tin",
+    "cancel_edit": "Hủy sửa",
+    "submit_review_arrow": "GỬI ĐÁNH GIÁ",
+    "update_review": "Cập nhật đánh giá",
+    "updating": "Đang cập nhật...",
+    "update": "Cập nhật",
+    "image_upload_note": "Chỉ nhận JPG, JPEG, PNG (tối đa 2MB, tối đa 5 ảnh).",
+    "no_reviews": "Bạn chưa có bài nhận xét nào."
+  },
+  "toast": {
+    "review": {
+      "moderate_success": "Cập nhật trạng thái đánh giá thành công!",
+      "create_success": "Gửi đánh giá thành công!",
+      "update_success": "Cập nhật đánh giá thành công!",
+      "create_failed": "Bạn chưa điền thông tin đánh giá!",
+      "update_failed": "Có lỗi xảy ra khi cập nhật!"
+    }
+  },
   "confirm": {
     "title": "Xác nhận thao tác",
     "simple_title": "Xác nhận",
@@ -471,6 +536,7 @@
     "delete_message": "Bạn có chắc chắn muốn {{action}} {{itemType}} \"{{itemName}}\" không?"
   },
   "common": {
+    "all": "Tất cả",
     "loading": "Đang tải",
     "saving": "Đang lưu",
     "save": "Lưu",
@@ -489,7 +555,11 @@
     "close": "Đóng",
     "select": "Chọn",
     "submit": "Gửi",
-    "reset": "Đặt lại"
+    "reset": "Đặt lại",
+    "error": "Đã có lỗi xảy ra",
+    "processing": "Đang xử lý...",
+    "note": "Ghi chú",
+    "none": "Không có"
   },
 
   "admin": {
@@ -1396,7 +1466,19 @@
       "view_detail": "Xem chi tiết",
       "import": "Nhập kho",
       "export": "Xuất kho",
-      "adjust": "Điều chỉnh tồn kho"
+      "adjust": "Điều chỉnh tồn kho",
+      "import_stock": "Nhập kho"
+    },
+    "general_import": {
+      "title": "Nhập kho chung theo Size ID",
+      "size_id_label": "Tìm sản phẩm theo Size ID",
+      "size_id_placeholder": "Nhập Size ID...",
+      "find": "Tìm kiếm",
+      "finding": "Đang tìm...",
+      "find_another": "Tìm sản phẩm khác",
+      "error_size_id_required": "Vui lòng nhập Size ID để tìm kiếm.",
+      "error_not_found": "Không tìm thấy sản phẩm với Size ID này.",
+      "error_fetch": "Có lỗi xảy ra khi tìm kiếm sản phẩm."
     },
     "inventory_detail": {
       "title": "Chi tiết tồn kho",
@@ -1494,12 +1576,106 @@
       "error_invalid_quantity": "Vui lòng nhập số lượng mới hợp lệ (>= 0)",
       "error_reason_required": "Vui lòng nhập lý do điều chỉnh",
       "error_adjust": "Có lỗi khi điều chỉnh tồn kho!"
+    },
+    "review": {
+      "title": "Quản lý đánh giá",
+      "search_placeholder": "Tìm theo tên khách hàng, sản phẩm, bình luận...",
+      "all_status": "Tất cả trạng thái",
+      "all_ratings": "Tất cả điểm",
+      "rating_option": "{{star}} sao",
+      "loading": "Đang tải dữ liệu...",
+      "no_reviews": "Không tìm thấy đánh giá nào.",
+      "error_loading": "Lỗi khi tải dữ liệu: {{message}}",
+      "columns": {
+        "customer": "Khách hàng",
+        "product": "Sản phẩm",
+        "rating": "Đánh giá",
+        "comment": "Bình luận",
+        "status": "Trạng thái",
+        "created_at": "Ngày tạo",
+        "actions": "Hành động"
+      },
+      "actions": {
+        "view_detail": "Xem chi tiết",
+        "approve": "Duyệt",
+        "reject": "Từ chối",
+        "hide": "Ẩn",
+        "restore": "Khôi phục",
+        "need_review": "Cần xem lại"
+      },
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "AUTO_APPROVED": "Tự động duyệt",
+        "APPROVED": "Đã duyệt",
+        "NEED_REVIEW": "Cần xem lại",
+        "REJECTED": "Từ chối",
+        "HIDDEN": "Đã ẩn"
+      },
+      "stats": {
+        "total": "Tổng đánh giá",
+        "pending": "Chờ duyệt",
+        "approved": "Đã duyệt",
+        "average_rating": "Điểm TB"
+      },
+      "moderate": {
+        "confirm_title": "Xác nhận {{action}} đánh giá",
+        "confirm_message": "Bạn có chắc chắn muốn {{action}} đánh giá của khách hàng \"{{customerName}}\" không?",
+        "success": "Cập nhật trạng thái đánh giá thành công!",
+        "error": "Có lỗi xảy ra khi cập nhật!",
+        "comment_title": "Lý do {{action}} đánh giá",
+        "comment_required": "Vui lòng nhập lý do.",
+        "reason_label": "Lý do",
+        "reason_placeholder": "Nhập lý do của bạn ở đây..."
+      },
+      "detail": {
+        "title": "Chi tiết đánh giá",
+        "description": "Xem thông tin chi tiết về đánh giá của {{name}}",
+        "rating_summary": "Tóm tắt đánh giá",
+        "customer_info": "Thông tin khách hàng",
+        "customer_name": "Tên khách hàng",
+        "product_order_info": "Thông tin sản phẩm & Đơn hàng",
+        "product_name": "Tên sản phẩm",
+        "variant": "Biến thể",
+        "order_code": "Mã đơn hàng",
+        "order_status": "Trạng thái đơn hàng",
+        "review_content": "Nội dung đánh giá",
+        "no_comment": "Không có bình luận",
+        "admin_feedback": "Phản hồi từ quản trị viên",
+        "attached_images": "Hình ảnh đính kèm ({{count}})",
+        "timestamps": "Thông tin thời gian",
+        "created_at": "Ngày tạo",
+        "updated_at": "Cập nhật lần cuối",
+        "status_desc": {
+          "PENDING": "Đánh giá đang chờ được kiểm duyệt.",
+          "APPROVED": "Đánh giá đã được phê duyệt và hiển thị công khai.",
+          "AUTO_APPROVED": "Đánh giá được hệ thống tự động phê duyệt.",
+          "REJECTED": "Đánh giá bị từ chối do vi phạm quy định.",
+          "HIDDEN": "Đánh giá đã được ẩn khỏi hiển thị công khai.",
+          "NEED_REVIEW": "Đánh giá cần được quản trị viên xem xét thủ công."
+        },
+        "rating_level": {
+          "excellent": "Xuất sắc",
+          "good": "Tốt",
+          "average": "Trung bình",
+          "poor": "Kém",
+          "very_poor": "Rất kém"
+        }
+      }
     }
   },
 
   "staff": {
     "dashboard": {
       "title": "Bảng điều khiển nhân viên"
+    },
+    "sidebar": {
+      "home": "Trang chủ",
+      "products": "Sản phẩm",
+      "inventories": "Kho hàng",
+      "orders": "Hóa đơn",
+      "categories": "Danh mục",
+      "reviews": "Bài nhận xét",
+      "promotions": "Khuyến mãi"
     }
   }
 }
