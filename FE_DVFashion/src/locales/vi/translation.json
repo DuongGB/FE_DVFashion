@@ -325,9 +325,10 @@
     },
     "detail": {
       "cashback": "Được hoàn lên đến",
-      "color": "Màu sắc:",
-      "size": "Kích thước:",
+      "color": "Màu sắc",
+      "size": "Kích thước",
       "size_guide": "Hướng dẫn chọn size",
+      "price": "Giá:",
       "add_to_cart": "Thêm vào giỏ",
       "description": "Mô tả sản phẩm",
       "no_description": "Chưa có mô tả sản phẩm.",
@@ -389,6 +390,8 @@
     "quantity": "Số lượng"
   },
   "order": {
+    "update_order": "Cập nhật đơn hàng",
+    "update_note": "Chỉ cập nhật được đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
     "create_success": "Tạo đơn hàng thành công!",
     "create_fail": "Tạo đơn hàng thất bại.",
     "payment_confirm_success": "Thanh toán đã được xác nhận thành công!",
@@ -396,7 +399,7 @@
     "payment_cancel_warn": "Thanh toán đã bị hủy.",
     "payment_cancel_error": "Có lỗi xảy ra.",
     "update_success": "Cập nhật đơn hàng thành công!",
-    "update_fail": "Cập nhật đơn hàng thất bại.",
+    "update_fail": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý!",
     "total_amount": "Thành tiền",
     "return_exchange": "Đổi/Trả",
     "review": "Đánh giá",
@@ -425,6 +428,9 @@
       "approved": "Đã duyệt",
       "rejected": "Đã từ chối",
       "hidden": "Đã ẩn",
+      "completed": "Hoàn thành",
+      "failed": "Thất bại",
+      "refunded": "Đã hoàn tiền",
       "auto_approved": "Tự động duyệt",
       "need_review": "Cần xem lại",
       "pending": "Chờ xác nhận",
@@ -435,6 +441,9 @@
       "canceled": "Đã hủy",
       "returned": "Đã trả hàng",
       "undefined": "Không xác định"
+    },
+    "stats": {
+      "total_orders": "Tổng đơn hàng"
     }
   },
   "address": {
@@ -522,6 +531,7 @@
     "delete_message": "Bạn có chắc chắn muốn {{action}} {{itemType}} \"{{itemName}}\" không?"
   },
   "common": {
+    "all": "Tất cả",
     "loading": "Đang tải",
     "saving": "Đang lưu",
     "save": "Lưu",
@@ -542,7 +552,9 @@
     "submit": "Gửi",
     "reset": "Đặt lại",
     "error": "Đã có lỗi xảy ra",
-    "processing": "Đang xử lý..."
+    "processing": "Đang xử lý...",
+    "note": "Ghi chú",
+    "none": "Không có"
   },
 
   "admin": {
@@ -1650,6 +1662,15 @@
   "staff": {
     "dashboard": {
       "title": "Bảng điều khiển nhân viên"
+    },
+    "sidebar": {
+      "home": "Trang chủ",
+      "products": "Sản phẩm",
+      "inventories": "Kho hàng",
+      "orders": "Hóa đơn",
+      "categories": "Danh mục",
+      "reviews": "Bài nhận xét",
+      "promotions": "Khuyến mãi"
     }
   }
 }

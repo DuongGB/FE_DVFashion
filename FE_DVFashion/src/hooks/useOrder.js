@@ -14,6 +14,7 @@ import {
   getOrdersByCustomerId,
   getOrdersByCustomerIdPaging,
   updateOrderByUser,
+  getAllOrdersPaging,
 } from "../services/orderAPI";
 
 export const useCreateOrder = () => {
@@ -162,5 +163,19 @@ export const useOrdersByCustomerIdPaging = (customerId, pageable) => {
     queryFn: () => getOrdersByCustomerIdPaging(customerId, pageable),
     enabled: !!customerId,
     keepPreviousData: true,
+  });
+};
+
+/**
+ * Hook to fetch all orders with server-side paging for admin/staff.
+ * `params` example: { page: 0, size: 10, sort: "orderDate,desc" }
+ */
+export const useAllOrdersPaging = (params, options = {}) => {
+  return useQuery({
+    queryKey: ["orders", params],
+    queryFn: () => getAllOrdersPaging(params),
+    staleTime: 1000 * 30,
+    keepPreviousData: true,
+    ...options,
   });
 };

@@ -362,7 +362,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconHomeInfinity stroke={2} />
-                <span className="ml-3">Trang chủ</span>
+                <span className="ml-3">{t("staff.sidebar.home")}</span>
               </Link>
             </li>
             <li>
@@ -375,7 +375,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconShirt stroke={2} />
-                <span className="ml-3">Sản phẩm</span>
+                <span className="ml-3">{t("staff.sidebar.products")}</span>
               </Link>
             </li>
             <li>
@@ -388,7 +388,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconTruckDelivery stroke={2} />
-                <span className="ml-3">Kho hàng</span>
+                <span className="ml-3">{t("staff.sidebar.inventories")}</span>
               </Link>
             </li>
             <li>
@@ -401,7 +401,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconReceipt stroke={2} />
-                <span className="ml-3">Hóa đơn</span>
+                <span className="ml-3">{t("staff.sidebar.orders")}</span>
               </Link>
             </li>
             <li>
@@ -414,7 +414,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconCategory stroke={2} />
-                <span className="ml-3">Danh mục</span>
+                <span className="ml-3">{t("staff.sidebar.categories")}</span>
               </Link>
             </li>
             <li>
@@ -427,7 +427,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconDevicesCheck stroke={2} />
-                <span className="ml-3">Bài nhận xét</span>
+                <span className="ml-3">{t("staff.sidebar.reviews")}</span>
               </Link>
             </li>
             <li>
@@ -440,7 +440,7 @@ export default function Sidebar({ onClose }) {
                 }`}
               >
                 <IconAdCircle stroke={2} />
-                <span className="ml-3">Khuyến mãi</span>
+                <span className="ml-3">{t("staff.sidebar.promotions")}</span>
               </Link>
             </li>
             {/* <li>
