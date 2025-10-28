@@ -123,7 +123,7 @@
       "voucher_wallet": "Ví Voucher",
       "address_book": "Sổ địa chỉ",
       "reviews_feedback": "Đánh giá và phản hồi",
-      "policies_faq": "Chính sách & Câu hỏi thường gặp"
+      "policies_faq": "Chính sách"
     },
     "main": {
       "account_info": "Thông tin tài khoản",
@@ -474,7 +474,7 @@
     "street_placeholder": "Số nhà, tên đường...",
     "set_default": "Đặt làm địa chỉ mặc định",
     "default": "Mặc định",
-
+    "address_book_title": "Sổ địa chỉ",
     "empty_message": "Bạn chưa có địa chỉ nào được lưu",
     "confirm_delete_title": "Xác nhận xóa địa chỉ",
     "confirm_delete_message": "Bạn có chắc chắn muốn xóa địa chỉ của {{fullName}} không?",

@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import OrderHistory from "../../components/ui/account/OrderHistory";
 import ModalReview from "../../components/ui/review/ModalReview";
 import MyReviews from "../../components/ui/account/MyReviews";
+import MyAddresses from "../../components/ui/account/MyAddresses";
 
 const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
@@ -163,6 +164,8 @@ export default function AccountPage() {
         return <OrderHistory onReviewClick={handleReviewClick} />;
       case "reviews_feedback":
         return <MyReviews onUpdateClick={handleReviewClick} />;
+      case "address_book":
+        return <MyAddresses />;
       default:
         return (
           <AccountInfo
@@ -175,7 +178,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="flex bg-gray-100 min-h-screen p-6 gap-6">
+    <div className="flex bg-gray-200 min-h-screen p-6 gap-6">
       {/* Sidebar */}
       <div className="w-[320px] flex-shrink-0">
         <div className="flex flex-col gap-3 bg-white p-4 rounded-lg h-full">
