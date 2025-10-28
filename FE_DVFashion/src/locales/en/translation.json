@@ -517,7 +517,12 @@
     "weight_kg": "Weight (kg)",
     "save_info": "Save Info",
     "cancel_edit": "Cancel Edit",
-    "submit_review_arrow": "SUBMIT REVIEW"
+    "submit_review_arrow": "SUBMIT REVIEW",
+    "update_review": "Update Review",
+    "updating": "Updating...",
+    "update": "Update",
+    "image_upload_note": "JPG, JPEG, PNG (max 2MB), up to 5 files.",
+    "no_reviews": "You have not reviewed any products yet."
   },
   "toast": {
     "review": {

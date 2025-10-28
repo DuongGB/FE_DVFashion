@@ -2,7 +2,7 @@ import { IconCircleCheck, IconX } from "@tabler/icons-react";
 import { useQueries } from "@tanstack/react-query";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useCreateReview } from "../../../hooks/useReview";
+import { useCreateReview, useUpdateReview } from "../../../hooks/useReview";
 import { canReviewProduct } from "../../../services/reviewAPI";
 import ReviewProductCard from "./ReviewProductCard";
 
@@ -56,7 +56,13 @@ const SelectableProduct = ({ item, isSelected, onSelect, canReview }) => (
   </div>
 );
 
-export default function ModalReview({ show, onClose, order }) {
+export default function ModalReview({
+  show,
+  onClose,
+  order,
+  review,
+  onSuccess,
+}) {
   const { t } = useTranslation();
   const [reviews, setReviews] = useState({});
   const [selectedProductIds, setSelectedProductIds] = useState([]);
@@ -94,11 +100,36 @@ export default function ModalReview({ show, onClose, order }) {
     }, 300);
   }, [onClose]);
 
+  // Nếu là sửa review
+  const [editData, setEditData] = useState({
+    rating: review?.rating || 0,
+    comment: review?.comment || "",
+    imageFiles: [],
+  });
+
   const { mutate: createReviewMutation } = useCreateReview({
     onSuccess: () => {
       setSubmissionCount((prev) => prev + 1);
     },
   });
+
+  const handleEditSubmit = () => {
+    updateReviewMutation(
+      {
+        reviewId: review.id,
+        review: {
+          rating: editData.rating,
+          comment: editData.comment,
+        },
+        imageFiles: editData.imageFiles,
+      },
+      {
+        onSuccess: () => {
+          if (onSuccess) onSuccess();
+        },
+      }
+    );
+  };
 
   // Khởi tạo state khi modal được mở hoặc dữ liệu reviewability đã sẵn sàng
   useEffect(() => {

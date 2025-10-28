@@ -511,7 +511,12 @@
     "weight_kg": "Cân nặng (kg)",
     "save_info": "Lưu thông tin",
     "cancel_edit": "Hủy sửa",
-    "submit_review_arrow": "GỬI ĐÁNH GIÁ"
+    "submit_review_arrow": "GỬI ĐÁNH GIÁ",
+    "update_review": "Cập nhật đánh giá",
+    "updating": "Đang cập nhật...",
+    "update": "Cập nhật",
+    "image_upload_note": "Chỉ nhận JPG, JPEG, PNG (tối đa 2MB, tối đa 5 ảnh).",
+    "no_reviews": "Bạn chưa có bài nhận xét nào."
   },
   "toast": {
     "review": {
