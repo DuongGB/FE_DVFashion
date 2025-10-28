@@ -1,21 +1,40 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getMyReviews } from "../../../services/reviewAPI";
+import { useGetMyReviews } from "../../../hooks/useReview";
 import { IconStarFilled } from "@tabler/icons-react";
+import Pagination from "../../common/Pagination";
+import { useState } from "react";
+import ModalUpdateReview from "../review/ModalUpdateReview";
 
-export default function MyReviews({ onUpdateClick }) {
+export default function MyReviews() {
   const { t } = useTranslation();
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  useEffect(() => {
-    getMyReviews().then((data) => {
-      setReviews(data || []);
-      setLoading(false);
-    });
-  }, []);
+  // Lấy dữ liệu phân trang
+  const {
+    data: pagedData = [],
+    isLoading,
+    refetch,
+  } = useGetMyReviews({ page, size: 4 });
 
-  if (loading) {
+  const reviews = Array.isArray(pagedData) ? pagedData : pagedData.values || [];
+  const totalPages = pagedData.totalPages || 1;
+
+  // Khi click update
+  const handleUpdateClick = (review) => {
+    setSelectedReview(review);
+    setShowEditModal(true);
+  };
+
+  // Khi cập nhật xong, đóng modal và refetch
+  const handleEditSuccess = () => {
+    setShowEditModal(false);
+    setSelectedReview(null);
+    refetch();
+  };
+
+  if (isLoading) {
     return <div className="py-10 text-center">{t("loading")}...</div>;
   }
 
@@ -47,39 +66,59 @@ export default function MyReviews({ onUpdateClick }) {
                   }
                 />
               ))}
-              {review.rating % 1 >= 0.5 && (
-                <IconStarFilled
-                  size={22}
-                  className="text-yellow-400 opacity-50"
-                />
-              )}
             </div>
             <div className="mb-2">
               <span className="font-semibold">{t("review.comment")}:</span>{" "}
               {review.comment}
             </div>
             <div className="flex gap-4 items-center">
-              <img
-                src={review.productImage}
-                alt={review.productName}
-                className="w-20 h-20 object-cover rounded-md border"
-              />
+              {review.imageUrls && review.imageUrls.length > 0 && (
+                <div className="flex gap-2">
+                  {review.imageUrls.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={review.productName}
+                      className="w-20 h-20 object-cover rounded-md border"
+                    />
+                  ))}
+                </div>
+              )}
               <div>
                 <div className="font-bold">{review.productName}</div>
                 <div className="text-gray-500 text-sm">
-                  {review.color} / {review.size}
+                  {review.variantName}
                 </div>
               </div>
             </div>
             <button
-              className="border rounded-full px-6 py-2 font-bold mt-4 w-fit"
-              onClick={() => onUpdateClick(review)}
+              className="border rounded-full px-6 py-2 font-bold mt-4 w-fit cursor-pointer hover:bg-gray-200 transition"
+              onClick={() => handleUpdateClick(review)}
             >
               {t("review.update")}
             </button>
           </div>
         ))}
       </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination
+            currentPage={page + 1}
+            totalPages={totalPages}
+            onPageChange={(p) => setPage(p - 1)}
+          />
+        </div>
+      )}
+      {/* Modal sửa nhận xét */}
+      {showEditModal && (
+        <ModalUpdateReview
+          show={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          review={selectedReview}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 }

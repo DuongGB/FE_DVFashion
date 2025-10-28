@@ -5,8 +5,9 @@ import {
   getProductReviewsFilter,
   createReview,
   updateReview,
-  canReviewProduct,
-  canEditReview,
+  getMyReviews,
+  // canReviewProduct,
+  // canEditReview,
 } from "../services/reviewAPI";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
@@ -93,18 +94,26 @@ export const useUpdateReview = () => {
   });
 };
 
-export const useCanReviewProduct = (params, options) => {
+export const useGetMyReviews = (params = {}, options) => {
   return useQuery({
-    queryKey: ["canReview", params],
-    queryFn: () => canReviewProduct(params),
+    queryKey: ["myReviews", params],
+    queryFn: () => getMyReviews(params),
     ...options,
   });
 };
 
-export const useCanEditReview = (reviewId, options) => {
-  return useQuery({
-    queryKey: ["canEditReview", reviewId],
-    queryFn: () => canEditReview(reviewId),
-    ...options,
-  });
-};
+// export const useCanReviewProduct = (params, options) => {
+//   return useQuery({
+//     queryKey: ["canReview", params],
+//     queryFn: () => canReviewProduct(params),
+//     ...options,
+//   });
+// };
+
+// export const useCanEditReview = (reviewId, options) => {
+//   return useQuery({
+//     queryKey: ["canEditReview", reviewId],
+//     queryFn: () => canEditReview(reviewId),
+//     ...options,
+//   });
+// };

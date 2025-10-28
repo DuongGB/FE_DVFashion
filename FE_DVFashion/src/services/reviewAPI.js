@@ -104,3 +104,13 @@ export const canEditReview = async (reviewId) => {
   const response = await api.get(`/reviews/${reviewId}/can-edit`);
   return response.data;
 };
+
+/**
+ * Lấy danh sách đánh giá của chính user hiện tại.
+ * @returns {Promise<Array>} Danh sách review của user.
+ * @param {object} params - Tham số lọc và phân trang.
+ */
+export const getMyReviews = async (params = {}) => {
+  const response = await api.get("/reviews/my-reviews", { params });
+  return response.data.data;
+};

@@ -125,3 +125,13 @@ export const cancelPayPalPayment = async (orderNumber) => {
   });
   return response.data;
 };
+
+/**
+ * Retrieves paginated orders for admin/staff (all orders).
+ * Accepts pageable params: page (0-based), size, sort (e.g. "orderDate,desc").
+ * Returns PageResponse<OrderResponse>.
+ */
+export const getAllOrdersPaging = async (params) => {
+  const response = await api.get("/orders", { params });
+  return response.data?.data;
+};

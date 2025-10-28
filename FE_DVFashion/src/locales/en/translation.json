@@ -326,8 +326,9 @@
     "detail": {
       "cashback": "Earn up to",
       "color": "Color:",
-      "size": "Size:",
+      "size": "Size",
       "size_guide": "Size guide",
+      "price": "Price",
       "add_to_cart": "Add to cart",
       "description": "Product description",
       "no_description": "No product description.",
@@ -389,8 +390,9 @@
     "quantity": "Quantity"
   },
   "order": {
+    "update_note": "Only orders with 'Pending' status or 'Processing' status can be update!",
     "create_success": "Order created successfully!",
-    "create_fail": "Failed to create order.",
+    "create_fail": "Only orders with 'Pending' status or 'Processing' status can be update!",
     "payment_confirm_success": "Payment confirmed successfully!",
     "payment_confirm_fail": "Failed to confirm payment.",
     "payment_cancel_warn": "Payment has been cancelled.",
@@ -422,6 +424,9 @@
       "paypal": "PayPal"
     },
     "status": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "refunded": "Refunded",
       "approved": "Approved",
       "rejected": "Rejected",
       "hidden": "Hidden",
@@ -434,6 +439,9 @@
       "delivered": "Delivered",
       "canceled": "Canceled",
       "returned": "Returned"
+    },
+    "stats": {
+      "total_orders": "Total Orders"
     }
   },
   "address": {
@@ -464,7 +472,7 @@
     "street_placeholder": "House number, street name...",
     "set_default": "Set as default address",
     "default": "Default",
-
+    "address_book_title": "My Addresses",
     "empty_message": "You don't have any saved addresses",
     "confirm_delete_title": "Confirm Address Deletion",
     "confirm_delete_message": "Are you sure you want to delete the address for {{fullName}}?",
@@ -509,7 +517,12 @@
     "weight_kg": "Weight (kg)",
     "save_info": "Save Info",
     "cancel_edit": "Cancel Edit",
-    "submit_review_arrow": "SUBMIT REVIEW"
+    "submit_review_arrow": "SUBMIT REVIEW",
+    "update_review": "Update Review",
+    "updating": "Updating...",
+    "update": "Update",
+    "image_upload_note": "JPG, JPEG, PNG (max 2MB), up to 5 files.",
+    "no_reviews": "You have not reviewed any products yet."
   },
   "toast": {
     "review": {
@@ -521,6 +534,7 @@
     }
   },
   "common": {
+    "all": "All",
     "loading": "Loading",
     "saving": "Saving",
     "save": "Save",
@@ -541,7 +555,9 @@
     "submit": "Submit",
     "reset": "Reset",
     "error": "An error occurred",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "note": "Note",
+    "none": "None"
   },
 
   "admin": {
@@ -1649,6 +1665,15 @@
   "staff": {
     "dashboard": {
       "title": "Staff Dashboard"
+    },
+    "sidebar": {
+      "home": "Home",
+      "products": "Products",
+      "inventories": "Inventories",
+      "orders": "Orders",
+      "categories": "Categories",
+      "reviews": "Reviews",
+      "promotions": "Promotions"
     }
   }
 }

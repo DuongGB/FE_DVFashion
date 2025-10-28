@@ -16,6 +16,7 @@ import ReviewDetailModal from "../../components/ui/review/ReviewDetailModal";
 import { useAdminReviews, useModerateReview } from "../../hooks/useReview";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { toast } from "react-toastify";
+import { useAuth } from "../../hooks/useAuth";
 
 const statusKeys = [
   "PENDING",
@@ -71,6 +72,9 @@ export default function ReviewPage() {
   const { data, isLoading, isError, error } = useAdminReviews(params);
   const { mutate: moderateReview, isLoading: isModerating } =
     useModerateReview();
+  const { user } = useAuth();
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+  const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
   const reviews = data?.data?.reviews || [];
   const stats = data?.data?.statistics || {};
@@ -275,89 +279,88 @@ export default function ReviewPage() {
                       >
                         <IconEye size={20} />
                       </button>
-                      {/* Actions for PENDING or NEED_REVIEW reviews */}
-                      {(review.status === "PENDING" ||
-                        review.status === "NEED_REVIEW") && (
+
+                      {/* Chỉ admin mới thấy các nút moderate */}
+                      {isAdmin && (
                         <>
-                          <button
-                            onClick={() =>
-                              handleModerate(
-                                review,
-                                "APPROVED",
-                                t("admin.review.actions.approve")
-                              )
-                            }
-                            title={t("admin.review.actions.approve")}
-                            className="hover:text-green-600 cursor-pointer"
-                          >
-                            <IconCheck size={20} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleModerate(
-                                review,
-                                "REJECTED",
-                                t("admin.review.actions.reject")
-                              )
-                            }
-                            title={t("admin.review.actions.reject")}
-                            className="hover:text-orange-600 cursor-pointer"
-                          >
-                            <IconX size={20} />
-                          </button>
+                          {(review.status === "PENDING" ||
+                            review.status === "NEED_REVIEW") && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "APPROVED",
+                                    t("admin.review.actions.approve")
+                                  )
+                                }
+                                title={t("admin.review.actions.approve")}
+                                className="hover:text-green-600 cursor-pointer"
+                              >
+                                <IconCheck size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "REJECTED",
+                                    t("admin.review.actions.reject")
+                                  )
+                                }
+                                title={t("admin.review.actions.reject")}
+                                className="hover:text-orange-600 cursor-pointer"
+                              >
+                                <IconX size={20} />
+                              </button>
+                            </>
+                          )}
+                          {review.status === "AUTO_APPROVED" && (
+                            <button
+                              onClick={() =>
+                                handleModerate(
+                                  review,
+                                  "NEED_REVIEW",
+                                  t("admin.review.actions.need_review")
+                                )
+                              }
+                              title={t("admin.review.actions.need_review")}
+                              className="hover:text-orange-600 cursor-pointer"
+                            >
+                              <IconMessage size={20} />
+                            </button>
+                          )}
+                          {review.status !== "REJECTED" &&
+                            review.status !== "HIDDEN" && (
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "HIDDEN",
+                                    t("admin.review.actions.hide")
+                                  )
+                                }
+                                title={t("admin.review.actions.hide")}
+                                className="hover:text-red-600 cursor-pointer"
+                              >
+                                <IconBan size={20} />
+                              </button>
+                            )}
+                          {review.status === "HIDDEN" && (
+                            <button
+                              onClick={() =>
+                                handleModerate(
+                                  review,
+                                  "APPROVED",
+                                  t("admin.review.actions.restore")
+                                )
+                              }
+                              title={t("admin.review.actions.restore")}
+                              className="hover:text-green-600 cursor-pointer"
+                            >
+                              <IconRestore size={20} />
+                            </button>
+                          )}
                         </>
-                      )}
-
-                      {/* Actions for AUTO_APPROVED reviews */}
-                      {review.status === "AUTO_APPROVED" && (
-                        <button
-                          onClick={() =>
-                            handleModerate(
-                              review,
-                              "NEED_REVIEW",
-                              t("admin.review.actions.need_review")
-                            )
-                          }
-                          title={t("admin.review.actions.need_review")}
-                          className="hover:text-orange-600 cursor-pointer"
-                        >
-                          <IconMessage size={20} />
-                        </button>
-                      )}
-
-                      {/* Hide action is available for non-rejected/hidden reviews */}
-                      {review.status !== "REJECTED" &&
-                        review.status !== "HIDDEN" && (
-                          <button
-                            onClick={() =>
-                              handleModerate(
-                                review,
-                                "HIDDEN",
-                                t("admin.review.actions.hide")
-                              )
-                            }
-                            title={t("admin.review.actions.hide")}
-                            className="hover:text-red-600 cursor-pointer"
-                          >
-                            <IconBan size={20} />
-                          </button>
-                        )}
-
-                      {/* Restore action for hidden reviews */}
-                      {review.status === "HIDDEN" && (
-                        <button
-                          onClick={() =>
-                            handleModerate(
-                              review,
-                              "APPROVED",
-                              t("admin.review.actions.restore")
-                            )
-                          }
-                          title={t("admin.review.actions.restore")}
-                          className="hover:text-green-600 cursor-pointer"
-                        >
-                          <IconRestore size={20} />
-                        </button>
                       )}
                     </div>
                   </td>
