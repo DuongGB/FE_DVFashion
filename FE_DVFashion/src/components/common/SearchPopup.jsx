@@ -17,6 +17,7 @@ export default function SearchPopup({ show, onClose }) {
 
   // Đóng popup khi click ngoài
   useEffect(() => {
+    // console.log("SearchPopup render, show =", show);
     if (!show) return;
     function handleClickOutside(event) {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -25,7 +26,7 @@ export default function SearchPopup({ show, onClose }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show]);
+  }, [show, onClose]);
 
   // Lọc sản phẩm theo search
   useEffect(() => {
@@ -66,6 +67,12 @@ export default function SearchPopup({ show, onClose }) {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-gray-300 rounded-full px-12 py-3 text-lg shadow focus:outline-none"
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  navigate(`/search?q=${encodeURIComponent(search)}`);
+                  onClose();
+                }
+              }}
             />
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
               <svg

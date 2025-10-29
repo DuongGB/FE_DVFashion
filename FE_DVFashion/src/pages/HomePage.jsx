@@ -7,6 +7,7 @@ import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
+import { useHybridRecommendations } from "../hooks/useProductRecomendations";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -17,6 +18,10 @@ export default function HomePage() {
   // Lấy danh sách sản phẩm từ API
   const language = i18n.language || "VI";
   const { products = [], isLoading: isLoadingProducts } = useProduct(language);
+
+  // Lấy sản phẩm gợi ý dựa trên behavior (không cần productId ở trang chủ)
+  const { data: recommendedProducts, isLoading: isLoadingRecommendations } =
+    useHybridRecommendations({ productId: null, limit: 12 });
 
   useEffect(() => {
     // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
@@ -102,10 +107,14 @@ export default function HomePage() {
       </div>
 
       {/* Content */}
-      {isLoadingProducts ? (
+      {isLoadingRecommendations || isLoadingProducts ? (
         <div className="text-center py-10">Đang tải sản phẩm...</div>
       ) : (
-        <ProductCarousel products={products} />
+        <ProductCarousel
+          products={
+            recommendedProducts?.length > 0 ? recommendedProducts : products
+          }
+        />
       )}
     </div>
   );

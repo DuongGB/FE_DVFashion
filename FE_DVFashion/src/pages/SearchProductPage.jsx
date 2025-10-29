@@ -4,6 +4,7 @@ import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import { usePublicCategories } from "../hooks/useCategory";
 import ProductCard from "../components/common/ProductCard";
+import Pagination from "../components/common/Pagination";
 
 export default function SearchProductPage() {
   const { t, i18n } = useTranslation();
@@ -20,13 +21,17 @@ export default function SearchProductPage() {
   const [search, setSearch] = useState(initialKeyword);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Thêm useEffect này để cập nhật khi query param thay đổi
+  const pageSize = 20;
+
+  // Cập nhật khi query param thay đổi
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const keyword = params.get("q") || "";
     setSearchInput(keyword);
     setSearch(keyword);
+    setCurrentPage(1); // Reset về trang đầu khi search mới
   }, [location.search]);
 
   useEffect(() => {
@@ -44,7 +49,15 @@ export default function SearchProductPage() {
             String(p.categoryId) === String(selectedCategory))
       )
     );
+    setCurrentPage(1); // Reset về trang đầu khi filter mới
   }, [search, products, selectedCategory]);
+
+  // Tính toán phân trang
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
@@ -63,7 +76,7 @@ export default function SearchProductPage() {
           }}
         />
         {/* Bộ lọc */}
-        <select
+        {/* <select
           className="border rounded-full px-4 py-3 text-lg"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -76,16 +89,16 @@ export default function SearchProductPage() {
               {cat.name}
             </option>
           ))}
-        </select>
+        </select> */}
       </div>
       <div className="font-bold text-lg mb-4">
         {t("search.result_title", "Kết quả")}
       </div>
 
       {/* Hiển thị sản phẩm */}
-      {filteredProducts.length > 0 ? (
+      {paginatedProducts.length > 0 ? (
         <div className="grid grid-cols-5 gap-6">
-          {filteredProducts.map((product) => (
+          {paginatedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -93,6 +106,15 @@ export default function SearchProductPage() {
         <div className="text-gray-500 mt-8">
           {t("search.no_result", "Không tìm thấy sản phẩm phù hợp")}
         </div>
+      )}
+
+      {/* Phân trang */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
     </div>
   );

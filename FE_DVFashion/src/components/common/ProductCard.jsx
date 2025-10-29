@@ -112,20 +112,19 @@ export default function ProductCard({ product }) {
             {t("product.card.quick_add")}
           </span>
           <div className="flex gap-2">
-            {sizes.map((size) => (
+            {activeVariant?.sizes?.map((s) => (
               <button
-                key={size}
+                key={s.id || `${activeColor}-${s.sizeName}`}
                 className="bg-white px-2 py-1 rounded text-xs font-medium hover:bg-gray-200"
                 type="button"
                 tabIndex={-1}
-                // Không cho click chuyển trang khi bấm size
                 onClick={async (e) => {
                   e.preventDefault();
-                  await handleQuickAddToCart(size);
+                  await handleQuickAddToCart(s.sizeName);
                 }}
                 disabled={isAdding}
               >
-                {size}
+                {s.sizeName}
               </button>
             ))}
           </div>
@@ -133,9 +132,9 @@ export default function ProductCard({ product }) {
       </div>
       {/* Màu sắc */}
       <div className="flex gap-2 mt-2 ">
-        {colors.map((color) => (
+        {colors.map((color, idx) => (
           <span
-            key={color}
+            key={`${color}-${idx}`}
             className={`w-6 h-6 rounded-full border ${
               activeColor === color ? "border-blue-600" : "border-gray-300"
             } cursor-pointer`}

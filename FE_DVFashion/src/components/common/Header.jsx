@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ShoppingCart, User } from "react-feather";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
@@ -103,6 +103,9 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   const [activeMenu, setActiveMenu] = useState(null);
+
+  // Đóng popup search
+  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
 
   // Xử lý hover vào từng menu item
   const handleMouseEnter = (menuKey) => {
@@ -235,7 +238,9 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         {/* Nút mở popup search */}
         <div
           className="flex-1 flex items-center"
-          onClick={() => setShowSearch(true)}
+          onClick={() => {
+            if (!showSearch) setShowSearch(true);
+          }}
         >
           {/* Thanh search chỉ là khung giả, không nhập được */}
           <div className="relative w-[350px] cursor-pointer">
@@ -260,7 +265,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             </span>
           </div>
         </div>
-        <SearchPopup show={showSearch} onClose={() => setShowSearch(false)} />
+        <SearchPopup show={showSearch} onClose={handleCloseSearch} />
         {/* Account và Cart giữ nguyên */}
         <div
           className="flex items-center gap-2 cursor-pointer"
