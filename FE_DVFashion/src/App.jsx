@@ -61,7 +61,7 @@ function App() {
           </Route>
 
           {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
-          <Route
+          {/* <Route
             element={
               <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
             }
@@ -76,7 +76,7 @@ function App() {
               <Route path="products" element={<ProductPage />} />
               <Route path="inventories" element={<InventoryPage />} />
             </Route>
-          </Route>
+          </Route> */}
 
           {/* Main layout routes */}
           <Route element={<MainLayout />}>

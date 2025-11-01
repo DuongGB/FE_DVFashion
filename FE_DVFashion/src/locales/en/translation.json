@@ -360,6 +360,7 @@
     "province_placeholder": "Enter province/city",
     "note_placeholder": "Notes (optional)",
     "other_receiver": "Deliver to someone else",
+    "shipping_fee": "Shipping Fee",
     "vat": "Issue VAT invoice",
     "payment_method": "Payment Method",
     "payment_cod": "Cash on Delivery (COD)",
@@ -372,6 +373,7 @@
     "no_address_selected": "No delivery address selected",
     "select_address": "Select Address",
     "cancel_selection": "Cancel Selection",
+    "using_selected_address_note": "Using address from address book",
     "salutation": {
       "default": "Salutation",
       "male": "Mr.",
@@ -387,7 +389,9 @@
     "processing": "PROCESSING...",
     "select_product_to_order": "Please select products to order.",
     "fill_shipping_info": "Please fill in all shipping information.",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "empty_cart": "Your cart is empty",
+    "processing_order": "Processing order, please waiting..."
   },
   "order": {
     "update_note": "Only orders with 'Pending' status or 'Processing' status can be update!",
@@ -418,6 +422,8 @@
     "items_title": "Ordered Items",
     "continue_shopping": "Continue Shopping",
     "back_to_home": "Back to Home",
+    "shipping_fee": "Shipping Fee",
+    "estimated_delivery": "Estimated Delivery",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",

@@ -38,8 +38,9 @@ export default function SearchPopup({ show, onClose }) {
     setFilteredProducts(
       products.filter(
         (p) =>
-          p.name?.toLowerCase().includes(keyword) ||
-          p.brandName?.toLowerCase().includes(keyword)
+          (p.name?.toLowerCase().includes(keyword) && p.status === "ACTIVE") ||
+          (p.brandName?.toLowerCase().includes(keyword) &&
+            p.status === "ACTIVE")
       )
     );
   }, [search, products]);

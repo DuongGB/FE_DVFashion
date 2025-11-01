@@ -360,6 +360,7 @@
     "province_placeholder": "Nhập tỉnh/thành phố",
     "note_placeholder": "Ghi chú (tùy chọn)",
     "other_receiver": "Giao cho người khác",
+    "shipping_fee": "Phí vận chuyển",
     "vat": "Xuất hóa đơn VAT",
     "payment_method": "Phương thức thanh toán",
     "payment_cod": "Thanh toán khi nhận hàng (COD)",
@@ -372,6 +373,7 @@
     "no_address_selected": "Chưa chọn địa chỉ giao hàng",
     "select_address": "Chọn địa chỉ",
     "cancel_selection": "Hủy chọn",
+    "using_selected_address_note": "Đang sử dụng địa chỉ từ sổ địa chỉ",
     "salutation": {
       "default": "Danh xưng",
       "male": "Anh",
@@ -387,7 +389,9 @@
     "processing": "ĐANG XỬ LÝ...",
     "select_product_to_order": "Vui lòng chọn sản phẩm để đặt hàng.",
     "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng.",
-    "quantity": "Số lượng"
+    "quantity": "Số lượng",
+    "empty_cart": "Giỏ hàng của bạn đang trống.",
+    "processing_order": "Đang xử lý đơn, xin vui lòng đợi..."
   },
   "order": {
     "update_order": "Cập nhật đơn hàng",
@@ -419,6 +423,8 @@
     "items_title": "Sản phẩm đã đặt",
     "continue_shopping": "Tiếp tục mua sắm",
     "back_to_home": "Về trang chủ",
+    "shipping_fee": "Phí vận chuyển",
+    "estimated_delivery": "Dự kiến giao hàng",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",

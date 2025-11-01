@@ -6,6 +6,7 @@ import {
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 export default function CartBottom({
   cart,
@@ -38,6 +39,14 @@ export default function CartBottom({
 
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleOrderClick = () => {
+    if (isLoading) return;
+
+    // Handle empty cart with translated toast
+    if (!cart || cart.length === 0) {
+      toast.info(t("cart.empty_cart"));
+      return;
+    }
+
     if (!isAuthenticated) {
       authModal.openLogin({ stayOnPage: true });
       return;
@@ -87,7 +96,7 @@ export default function CartBottom({
           </div>
           <button
             className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
-            disabled={cart?.length === 0}
+            disabled={isLoading} // allow click when cart empty so we can show toast
             onClick={handleOrderClick}
           >
             {isLoading ? t("cart.processing") : t("cart.place_order")}
