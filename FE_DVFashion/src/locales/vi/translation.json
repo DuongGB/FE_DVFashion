@@ -59,8 +59,7 @@
   },
   "category": {
     "error_loading": "Không thể tải danh mục. Vui lòng thử lại sau.",
-    "no_categories": "Không có danh mục nào để hiển thị.",
-    "tagline": "↠ Tự do vươn mình ↞"
+    "no_categories": "Không có danh mục nào để hiển thị."
   },
   "footer": {
     "feedback_title": "DVFashion lắng nghe bạn!",

@@ -99,10 +99,15 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { cart, removeItem } = useCart();
   const searchRef = useRef();
   const cartRef = useRef();
+  const navigate = useNavigate();
 
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   const [activeMenu, setActiveMenu] = useState(null);
+
+  const handleCategoryClick = (category) => {
+    navigate(`/products?category=${category.id}`);
+  };
 
   // Đóng popup search
   const handleCloseSearch = useCallback(() => setShowSearch(false), []);
@@ -212,7 +217,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             onMouseLeave={handleMouseLeave}
           >
             <Link
-              to="/"
+              onClick={handleCategoryClick}
               className={`cursor-pointer w-full text-center ${item.color}`}
             >
               {item.label}
@@ -381,12 +386,6 @@ function MegaMenu({
             Pickleball Nam
           </div>
         </div>
-      </div>
-      {/* Submenu bottom */}
-      <div className="absolute left-0 bottom-0 w-full bg-gray-50 border-t flex justify-center items-center gap-8 py-4 px-2 text-base font-bold rounded-b-2xl">
-        <Link to="#" className="text-gray-500 font-normal">
-          {t("category.tagline")}
-        </Link>
       </div>
     </div>
   );

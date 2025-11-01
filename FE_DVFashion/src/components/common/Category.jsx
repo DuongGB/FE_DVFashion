@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { usePublicCategories } from "../../hooks/useCategory";
 import { useNavigate } from "react-router-dom";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"; // Import icons
-import { useTranslation } from "react-i18next"; // Import useTranslation
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+import { encodeId } from "../../utils/encodeId";
 
 export default function Category() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export default function Category() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/products?category=${category.id}`);
+    navigate(`/products?category=${encodeId(category.id)}`);
   };
 
   if (isLoading) {

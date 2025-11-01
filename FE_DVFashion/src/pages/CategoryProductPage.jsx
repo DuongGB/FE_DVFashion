@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { usePublicCategories } from "../hooks/useCategory";
 import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
+import { decodeId, encodeId } from "../utils/encodeId";
 
 export default function CategoryProductPage() {
   const { t, i18n } = useTranslation();
@@ -16,7 +17,11 @@ export default function CategoryProductPage() {
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const initialCategory = params.get("category") || "";
+  const initialCategoryRaw = params.get("category") || "";
+  const initialCategory = (() => {
+    const decoded = decodeId(initialCategoryRaw);
+    return decoded === null ? initialCategoryRaw : decoded;
+  })();
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -25,14 +30,15 @@ export default function CategoryProductPage() {
 
   useEffect(() => {
     const p = new URLSearchParams(location.search);
-    setSelectedCategory(p.get("category") || "");
+    const raw = p.get("category") || "";
+    const decoded = decodeId(raw);
+    setSelectedCategory(decoded === null ? raw : decoded);
     setCurrentPage(1);
   }, [location.search]);
 
   useEffect(() => {
     // Lọc sản phẩm theo category
-    // Category param có thể là id (chuỗi số) do component Category truyền ?category=id
-    // Products từ API có thể dùng categoryId hoặc categoryName -> hỗ trợ cả hai
+    // Category param có thể là id (được encode) hoặc categoryName
     const all = products || [];
 
     // Lọc chỉ product ACTIVE (nếu muốn show cả inactive thì bỏ điều kiện này)
@@ -79,8 +85,20 @@ export default function CategoryProductPage() {
     currentPage * pageSize
   );
 
+  const currentCategoryObj = categories.find((c) => {
+    if (String(c.id) === String(selectedCategory)) return true;
+    if (
+      c.name &&
+      String(c.name).toLowerCase() === String(selectedCategory).toLowerCase()
+    )
+      return true;
+    if (initialCategoryRaw && encodeId(c.id) === initialCategoryRaw)
+      return true;
+    return false;
+  });
+
   const currentCategoryName =
-    categories.find((c) => String(c.id) === String(selectedCategory))?.name ||
+    currentCategoryObj?.name ||
     (selectedCategory ? selectedCategory : t("category.all", "Tất cả"));
 
   return (
