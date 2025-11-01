@@ -20,6 +20,14 @@ export default function CartBottom({
   const { isAuthenticated } = useAuth();
   const authModal = useAuthModal();
 
+  // simple lock check from localStorage (same key used in useCreateOrder)
+  const creatingTimestamp =
+    typeof window !== "undefined"
+      ? Number(localStorage.getItem("creatingOrderInProgress") || 0)
+      : 0;
+  const creatingLock =
+    isLoading || (creatingTimestamp && Date.now() - creatingTimestamp < 60_000);
+
   // Nếu truyền total từ trên xuống thì dùng, không thì tự tính
   const computedTotal =
     typeof total === "number"
@@ -44,6 +52,13 @@ export default function CartBottom({
     // Handle empty cart with translated toast
     if (!cart || cart.length === 0) {
       toast.info(t("cart.empty_cart"));
+      return;
+    }
+
+    if (creatingLock) {
+      toast.info(
+        t("order.create_in_progress") || "Đang tạo đơn hàng, vui lòng chờ..."
+      );
       return;
     }
 
@@ -96,10 +111,10 @@ export default function CartBottom({
           </div>
           <button
             className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
-            disabled={isLoading} // allow click when cart empty so we can show toast
+            disabled={creatingLock} // disable while creating
             onClick={handleOrderClick}
           >
-            {isLoading ? t("cart.processing") : t("cart.place_order")}
+            {creatingLock ? t("cart.processing") : t("cart.place_order")}
           </button>
         </div>
       </div>

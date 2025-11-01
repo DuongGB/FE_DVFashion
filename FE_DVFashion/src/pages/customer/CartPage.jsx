@@ -784,9 +784,6 @@ export default function CartPage() {
   const totalAfterPromotion =
     total - promotionDiscount > 0 ? total - promotionDiscount : 0;
 
-  // Tổng cuối cùng bao gồm phí vận chuyển
-  const finalTotal = totalAfterPromotion + (shipping.shippingFee || 0);
-
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleCreateOrder = async () => {
     if (filteredCart.length === 0) {

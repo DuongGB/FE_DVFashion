@@ -14,7 +14,10 @@ export default function PayPalSuccessHandler() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
-    const orderNumber = localStorage.getItem("pendingOrderNumber");
+    const orderNumberFromQuery = params.get("orderNumber");
+    // prefer orderNumber from query, fallback to pendingOrderNumber in localStorage
+    const orderNumber =
+      orderNumberFromQuery || localStorage.getItem("pendingOrderNumber");
 
     if (token && orderNumber) {
       confirmPayment({ token, orderNumber });
@@ -23,7 +26,7 @@ export default function PayPalSuccessHandler() {
       navigate("/cart");
     }
     // Hook `useConfirmPayPal` will handle navigation on success/error.
-  }, [location, confirmPayment, t, navigate]);
+  }, [location.search, confirmPayment, t, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen text-gray-600">
