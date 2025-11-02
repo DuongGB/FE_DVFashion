@@ -8,6 +8,7 @@ import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { usePromotion } from "../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function PromotionPage() {
   const { t, i18n } = useTranslation();
@@ -19,6 +20,8 @@ export default function PromotionPage() {
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
   const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
+  const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
@@ -28,11 +31,10 @@ export default function PromotionPage() {
   const [loadingItems, setLoadingItems] = useState({
     status: null,
   });
-  const [originalOrder, setOriginalOrder] = useState([]);
   const pageSize = 10;
 
   // Use promotion hook
-  const { promotions, isLoading, error, updatePromotion } =
+  const { promotions, isLoading, error, updatePromotion, createPromotion } =
     usePromotion(language);
 
   // Force re-render when language changes
@@ -64,30 +66,15 @@ export default function PromotionPage() {
     return `${time} ${day}/${month}/${year}`;
   };
 
-  // Store original order when promotions first load
-  useEffect(() => {
-    if (promotions && promotions.length > 0) {
-      setOriginalOrder((prev) => {
-        if (
-          prev.length === 0 ||
-          Math.abs(prev.length - promotions.length) > 1
-        ) {
-          return promotions.map((promotion) => promotion.id);
-        }
-        return prev;
-      });
-    }
-  }, [promotions]);
-
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Sort promotions by original order to maintain position
+  // Sort promotions by id
   const sortedPromotions = useMemo(() => {
     if (!promotions) return [];
-    return [...promotions].sort((a, b) => a.id - b.id);
+    return [...promotions].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
   }, [promotions]);
 
   // Lọc theo tên và trạng thái
@@ -119,8 +106,10 @@ export default function PromotionPage() {
     active: sortedPromotions?.filter((p) => p.active).length || 0,
     inactive: sortedPromotions?.filter((p) => !p.active).length || 0,
     expired:
-      sortedPromotions?.filter((p) => p.currentUsage >= p.maxUsages).length ||
-      0,
+      sortedPromotions?.filter(
+        (p) =>
+          (p.currentUsage ?? 0) >= (p.maxUsages ?? Number.POSITIVE_INFINITY)
+      ).length || 0,
   };
 
   // Xử lý tạo khuyến mãi mới
@@ -191,6 +180,11 @@ export default function PromotionPage() {
       startDate: formatDateForAPI(promotion.startDate),
       endDate: formatDateForAPI(promotion.endDate),
       active: newStatus !== null ? newStatus : promotion.active,
+      // keep promotionProducts if exists (backend requires it on create; on update it can be omitted)
+      ...(promotion.promotionProducts
+        ? { promotionProducts: promotion.promotionProducts }
+        : {}),
+      // bannerFile should be handled by PromotionForm when submitting; toggle action doesn't include file
     };
   };
 
@@ -259,25 +253,29 @@ export default function PromotionPage() {
         } catch (error) {
           console.error("Error updating promotion status:", error);
 
-          // Log chi tiết lỗi để debug
-          if (error.response) {
-            console.error("Response data:", error.response.data);
-            console.error("Response status:", error.response.status);
-            console.error("Response headers:", error.response.headers);
+          // If unauthorized, show message and optionally redirect to login
+          const status = error?.response?.status;
+          const respData = error?.response?.data;
+
+          if (status === 401) {
+            const msg =
+              respData?.error?.message ||
+              respData?.message ||
+              t("admin.promotion.errors.unauthorized") ||
+              "Unauthorized. Please login.";
+            toast.error(msg, { autoClose: 3000, position: "top-center" });
+            // optional: navigate to login page
+            // navigate("/login");
+            return;
           }
 
+          // Build friendly error message
           let errorMessage = t("admin.promotion.actions.error_activate");
 
-          if (error.response?.data?.message) {
-            errorMessage = error.response.data.message;
-          } else if (error.response?.data?.error) {
-            errorMessage = error.response.data.error;
-          } else if (error.response?.data) {
-            // Nếu response.data là string
-            errorMessage =
-              typeof error.response.data === "string"
-                ? error.response.data
-                : JSON.stringify(error.response.data);
+          if (respData?.message) {
+            errorMessage = respData.message;
+          } else if (respData?.error?.message) {
+            errorMessage = respData.error.message;
           } else if (error.message) {
             errorMessage = error.message;
           } else {
@@ -297,14 +295,24 @@ export default function PromotionPage() {
 
   // Handle error state
   if (error) {
+    // Normalize possible axios error shapes
+    const resp = error?.response?.data ?? error;
+    const message =
+      resp?.error?.message ||
+      resp?.message ||
+      (language === "VI"
+        ? "Có lỗi xảy ra khi tải danh sách khuyến mãi"
+        : "Error loading promotions");
+
+    const details =
+      resp?.error?.code || resp?.statusCode
+        ? ` (${resp?.error?.code ?? resp?.statusCode})`
+        : "";
+
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
-          <p className="text-red-500 text-lg">
-            {language === "VI"
-              ? "Có lỗi xảy ra khi tải danh sách khuyến mãi"
-              : "Error loading promotions"}
-          </p>
+          <p className="text-red-500 text-lg">{message + details}</p>
           <p className="text-gray-500 mt-2">
             {error.message ||
               (language === "VI"

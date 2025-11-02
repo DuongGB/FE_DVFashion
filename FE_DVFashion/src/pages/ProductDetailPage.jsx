@@ -103,10 +103,12 @@ export default function ProductDetailPage() {
     product.image ||
     "https://shpetro.com/images/no_image.png";
 
-  // Tính phần trăm giảm giá
+  // Tính phần trăm giảm giá dựa trên price và currentPrice
   const discountPercent =
-    product.price && product.salePrice
-      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+    product.price && product.currentPrice
+      ? Math.round(
+          ((product.price - product.currentPrice) / product.price) * 100
+        )
       : null;
 
   return (
@@ -146,11 +148,7 @@ export default function ProductDetailPage() {
               {product.price?.toLocaleString()}đ
             </span>
             <span className="text-2xl font-bold text-black">
-              {product.salePrice
-                ? `${product.salePrice.toLocaleString()}đ`
-                : product.price
-                ? `${product.price.toLocaleString()}₫`
-                : ""}
+              {product.currentPrice?.toLocaleString()}đ
             </span>
             {discountPercent && (
               <span className="bg-blue-700 text-white text-sm px-3 py-1 rounded-full font-bold">

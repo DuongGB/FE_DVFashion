@@ -4,7 +4,6 @@ import { productAPI } from "../services/productAPI";
 export const useProduct = (lang = "VI") => {
   const queryClient = useQueryClient();
 
-  // Fetch all products
   const {
     data: products,
     isLoading,
@@ -15,13 +14,15 @@ export const useProduct = (lang = "VI") => {
       try {
         const res = await productAPI.getAllProducts(lang);
         console.log("Products response:", res.data);
-        return res.data.data || res.data || [];
+        // ApiResponse wrapper: res.data.data contains the payload list
+        const list = res.data?.data ?? res.data ?? [];
+        // Ensure currentPrice exists and normalized for frontend
+        return (Array.isArray(list) ? list : []).map((p) => ({
+          ...p,
+          currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
+        }));
       } catch (error) {
         console.error("Error fetching products:", error);
-        // if (error.response?.status === 401) {
-        //   throw new Error("Bạn cần đăng nhập để xem danh sách sản phẩm");
-        // }
-        // throw error;
         return [];
       }
     },
@@ -77,4 +78,69 @@ export const useProduct = (lang = "VI") => {
     isUpdating: updateProductMutation.isPending,
     updateError: updateProductMutation.error,
   };
+};
+
+// hook to fetch products by category (list)
+export const useProductsByCategory = (categoryId, lang = "VI") => {
+  return useQuery({
+    queryKey: ["products", "byCategory", categoryId, lang],
+    queryFn: async () => {
+      if (!categoryId) return [];
+      const res = await productAPI.getProductsByCategoryId(categoryId, lang);
+      const list = res.data?.data ?? res.data ?? [];
+      return (Array.isArray(list) ? list : []).map((p) => ({
+        ...p,
+        currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
+      }));
+    },
+    enabled: !!categoryId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+//hook to fetch products by category with paging (returns page response)
+export const useProductsByCategoryPaging = (
+  categoryId,
+  page = 0,
+  size = 12,
+  lang = "VI"
+) => {
+  return useQuery({
+    queryKey: ["products", "byCategoryPaging", categoryId, page, size, lang],
+    queryFn: async () => {
+      if (!categoryId) return { content: [], totalElements: 0, page: 0, size };
+      const res = await productAPI.getProductsByCategoryIdPaging(
+        categoryId,
+        page,
+        size,
+        lang
+      );
+
+      const data = res.data?.data ?? res.data ?? {};
+
+      // support both backend shapes: { content: [...], totalElements } OR { values: [...], totalElements } OR direct array
+      let content = [];
+      if (Array.isArray(data.content)) content = data.content;
+      else if (Array.isArray(data.values)) content = data.values;
+      else if (Array.isArray(data)) content = data;
+
+      // normalize items
+      content = content.map((p) => ({
+        ...p,
+        currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
+      }));
+
+      const totalElements =
+        data.totalElements ?? data.total ?? data.total_count ?? content.length;
+
+      return {
+        content,
+        totalElements,
+        page: data.page ?? data.pageIndex ?? page,
+        size: data.size ?? data.pageSize ?? size,
+      };
+    },
+    enabled: !!categoryId,
+    staleTime: 1000 * 60 * 5,
+  });
 };

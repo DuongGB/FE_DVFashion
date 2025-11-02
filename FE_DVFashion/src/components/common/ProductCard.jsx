@@ -52,10 +52,12 @@ export default function ProductCard({ product }) {
   const activeVariant = product.variants?.find((v) => v.color === activeColor);
   const sizes = activeVariant?.sizes?.map((s) => s.sizeName) || [];
 
-  // Tính phần trăm giảm giá nếu có
+  // Tính phần trăm giảm giá dựa trên price và currentPrice
   const discountPercent =
-    product.price && product.salePrice
-      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+    product.price && product.currentPrice
+      ? Math.round(
+          ((product.price - product.currentPrice) / product.price) * 100
+        )
       : null;
 
   // Hàm xử lý thêm nhanh vào giỏ hàng
@@ -151,17 +153,14 @@ export default function ProductCard({ product }) {
       <h3 className="text-sm mt-2">{product.name}</h3>
       <div className="flex items-center gap-2">
         <span className="font-bold text-base text-black">
-          {product.salePrice
-            ? `${product.salePrice.toLocaleString()}₫`
+          {product.currentPrice
+            ? `${product.currentPrice.toLocaleString()}₫`
             : product.price
             ? `${product.price.toLocaleString()}₫`
             : ""}
         </span>
-        {product.salePrice && (
-          <span className="line-through text-gray-400 text-sm">
-            {product.price?.toLocaleString()}₫
-          </span>
-        )}
+
+        {/* Không hiển thị giá gốc theo yêu cầu; chỉ show % giảm nếu có */}
         {product.onSale && discountPercent && (
           <span className="text-blue-600 text-xs font-semibold">
             -{discountPercent}%

@@ -106,9 +106,6 @@ export default function Category() {
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-orange-500 text-white text-xs font-semibold py-1 flex justify-center gap-2">
-                <span>{t("category.tagline")}</span>
-              </div>
             </div>
             <h3 className="mt-3 text-base font-bold text-gray-800 hover:text-orange-600 transition-colors">
               {cat.name}
