@@ -787,6 +787,8 @@
       }
     },
     "promotion": {
+      "select_all": "Select all",
+      "clear_selection": "Clear selection",
       "select_products": "Selected products",
       "selected_products": "Products selected",
       "search_placeholder": "Search by name, description, ID...",
@@ -997,6 +999,100 @@
         },
         "close": "Close"
       }
+    },
+    "voucher": {
+      "title": "Voucher Management",
+      "create": "Create Voucher",
+      "edit": "Edit Voucher",
+      "search_placeholder": "Search voucher by id, code or name...",
+      "create_description": "Create new vouchers to offer discounts to customers",
+      "edit_description": "Update existing voucher information",
+      "all_status": "All status",
+      "status": { "active": "Active", "inactive": "Inactive" },
+      "shop_wide_notice": "This voucher applies to all products in the shop.",
+      "table": {
+        "index": "#",
+        "product": "Product",
+        "price": "Price",
+        "status": "Status"
+      },
+      "type": {
+        "shop_wide": "Shop wide",
+        "product_specific": "Product specific"
+      },
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "discount": "Discount",
+        "min_order": "Min Order",
+        "usage": "Usage",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "loading": "Loading...",
+      "no_vouchers": "No vouchers found",
+      "showing": "Showing {{current}} of {{total}} vouchers",
+      "stats": {
+        "total": "Total products",
+        "active": "Active",
+        "inactive": "Inactive",
+        "expired": "Expired"
+      },
+      "messages": {
+        "staff_create_denied": "Staff cannot create vouchers!",
+        "staff_edit_denied": "Staff cannot edit vouchers!",
+        "staff_delete_denied": "Staff cannot delete vouchers!"
+      },
+      "form": {
+        "max_usage_user_invalid": "Max usage per user must be < max usage overall",
+        "no_max_discount": "No max discount",
+        "no_products_added": "No products added",
+        "basic_info": "Basic information",
+        "product_ids": "Product IDs",
+        "name_required": "Voucher name is required (>= 3 chars)",
+        "name_placeholder": "Enter voucher name...",
+        "code_invalid": "Voucher code must be 3-20 chars (A-Z, 0-9, _ or -)",
+        "start_date_required": "Start date is required",
+        "end_date_required": "End date is required",
+        "end_after_start": "End date must be after start date",
+        "time_limits": "Time & options",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "allow_save_before_active": "Allow save before active",
+        "discount_section": "Discount",
+        "discount_type": "Discount Type",
+        "discount_value": "Discount Value",
+        "discount_value_required": "Discount value must be > 0",
+        "discount_value_percent": "Percentage cannot exceed 100",
+        "has_max_discount": "Has max discount",
+        "max_discount_amount": "Max discount amount",
+        "usage_section": "Usage & Products",
+        "min_order_placeholder": "Minimum order amount (VND)",
+        "product_ids_required": "Please provide at least one product id for product-specific voucher",
+        "product_ids_note": "Only active products accepted by server",
+        "product_ids_placeholder": "e.g. 12,34,56",
+        "product_not_found": "Product not found or inactive",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "cancel": "Cancel",
+        "min_order_amount": "Min order"
+      },
+      "actions": {
+        "confirm_delete": "Confirm delete voucher",
+        "confirm_delete_message": "Are you sure you want to delete voucher \"{{name}}\"?",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "delete_success": "Voucher deleted successfully!",
+        "delete_error": "Error deleting voucher!",
+        "create_button": "Create",
+        "update_button": "Update",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "create_success": "Voucher created successfully!",
+        "update_success": "Voucher updated successfully!",
+        "save_error": "Error saving voucher!"
+      },
+      "staff_no_permission": "You don't have permission to perform this action"
     },
     "customer": {
       "title": "Customer Management",

@@ -234,7 +234,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
               )}
 
               {/* Footer */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-300 ">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-300">
                 <button
                   type="button"
                   onClick={resetSearch}

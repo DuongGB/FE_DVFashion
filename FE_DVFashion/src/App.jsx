@@ -34,6 +34,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import SearchProductPage from "./pages/SearchProductPage";
 import StaffPage from "./pages/staff/StaffPage";
 import CategoryProductPage from "./pages/CategoryProductPage";
+import VoucherPage from "./pages/admin/VoucherPage";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
               <Route path="reports" element={<AnalystReportPage />} />
               <Route path="forecasts" element={<ForecastPage />} />
               <Route path="orders" element={<OrderPage />} />
+              <Route path="vouchers" element={<VoucherPage />} />
             </Route>
           </Route>
 

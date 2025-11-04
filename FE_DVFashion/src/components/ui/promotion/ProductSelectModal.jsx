@@ -70,6 +70,22 @@ export default function ProductSelectModal({
     );
   }, [list, search]);
 
+  // chọn tất cả sản phẩm hiển thị (ngoại trừ existingIds và disabledIds)
+  const selectAll = () => {
+    const selectable = filtered
+      .map((p) => p.id)
+      .filter(
+        (id) => id != null && !existingIds.has(id) && !disabledIds.has(id)
+      );
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      selectable.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
   const toggle = (id) => {
     // Tránh chọn những sản phẩm đã tồn tại hoặc bị vô hiệu hóa
     if (existingIds.has(id) || disabledIds.has(id)) return;
@@ -135,6 +151,30 @@ export default function ProductSelectModal({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+            </div>
+
+            {/* select all */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={selectAll}
+                className="px-1 py-1 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200 cursor-pointer transition-all"
+                disabled={
+                  filtered.filter(
+                    (p) => !existingIds.has(p.id) && !disabledIds.has(p.id)
+                  ).length === 0
+                }
+                title={t("admin.promotion.select_all")}
+              >
+                {t("admin.promotion.select_all")}
+              </button>
+              <button
+                onClick={clearSelection}
+                className="px-1 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 cursor-pointer transition-all"
+                disabled={selectedIds.size === 0}
+                title={t("admin.promotion.clear_selection")}
+              >
+                {t("admin.promotion.clear_selection")}
+              </button>
             </div>
 
             <button
@@ -232,18 +272,11 @@ export default function ProductSelectModal({
         <div className="sticky bottom-0 z-20 bg-white border border-gray-200 rounded-md shadow-sm px-6 py-3 flex items-center justify-end gap-3">
           <div className="flex items-center gap-3">
             <button
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-200 rounded-md shadow-sm text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer hover:shadow-md"
-            >
-              {t("admin.promotion.cancel") || "Cancel"}
-            </button>
-
-            <button
               onClick={handleConfirm}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-all"
               disabled={selectedIds.size === 0}
             >
-              {t("admin.promotion.add_selected") || "Add selected"}
+              {t("admin.promotion.add_selected")}
             </button>
           </div>
         </div>

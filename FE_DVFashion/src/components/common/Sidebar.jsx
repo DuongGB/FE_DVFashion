@@ -18,6 +18,7 @@ import {
   IconUsers,
   IconWorldWww,
   IconReceipt,
+  IconGift,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -228,12 +229,12 @@ export default function Sidebar({ onClose }) {
               >
                 {t("admin.sidebar.categories")}
               </SubMenuItem>
-              <SubMenuItem
+              {/* <SubMenuItem
                 to={"/admin/employees"}
                 icon={<IconUsers size={16} />}
               >
                 {t("admin.sidebar.employees")}
-              </SubMenuItem>
+              </SubMenuItem> */}
               {/* <SubMenuItem
                 to="/admin/brands"
                 icon={<IconBuildingStore size={16} />}
@@ -270,6 +271,9 @@ export default function Sidebar({ onClose }) {
                 icon={<IconAdCircle size={16} />}
               >
                 {t("admin.sidebar.promotions")}
+              </SubMenuItem>
+              <SubMenuItem to="/admin/vouchers" icon={<IconGift size={16} />}>
+                Vouchers
               </SubMenuItem>
             </MenuWithSubmenu>
 

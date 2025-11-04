@@ -629,7 +629,7 @@ export default function PromotionPage() {
                         onClick={() => handleViewPromotion(promo)}
                         title={t("admin.promotion.actions.view_details")}
                       >
-                        <IconEye size={24} />
+                        <IconEye size={18} />
                       </button>
 
                       {/* Nút chỉnh sửa - chỉ admin mới có */}
@@ -639,7 +639,7 @@ export default function PromotionPage() {
                           onClick={() => handleEditPromotion(promo)}
                           title={t("admin.promotion.actions.edit")}
                         >
-                          <IconEdit size={24} />
+                          <IconEdit size={18} />
                         </button>
                       ) : (
                         // Hiển thị icon disabled cho staff
@@ -651,7 +651,7 @@ export default function PromotionPage() {
                             "Không có quyền chỉnh sửa"
                           }
                         >
-                          <IconEdit size={24} />
+                          <IconEdit size={18} />
                         </button>
                       )}
                       {/* Delete button - admin only */}
@@ -661,7 +661,7 @@ export default function PromotionPage() {
                           onClick={() => handleDeletePromotion(promo)}
                           title={t("admin.promotion.actions.delete")}
                         >
-                          <IconTrash size={20} />
+                          <IconTrash size={18} />
                         </button>
                       )}
                     </div>

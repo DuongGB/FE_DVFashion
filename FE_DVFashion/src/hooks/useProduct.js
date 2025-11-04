@@ -67,6 +67,7 @@ export const useProduct = (lang = "VI") => {
   return {
     // Fetched data
     products,
+
     isLoading,
     error,
 
@@ -141,6 +142,24 @@ export const useProductsByCategoryPaging = (
       };
     },
     enabled: !!categoryId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useProductById = (productId, lang = "VI") => {
+  return useQuery({
+    queryKey: ["product", productId, lang],
+    queryFn: async () => {
+      if (!productId) return null;
+      const res = await productAPI.getProductById(productId, lang);
+      const p = res.data?.data ?? res.data ?? null;
+      if (!p) return null;
+      return {
+        ...p,
+        currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
+      };
+    },
+    enabled: !!productId,
     staleTime: 1000 * 60 * 5,
   });
 };
