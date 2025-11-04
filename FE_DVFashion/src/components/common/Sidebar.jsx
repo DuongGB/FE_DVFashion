@@ -18,6 +18,7 @@ import {
   IconUsers,
   IconWorldWww,
   IconReceipt,
+  IconGift,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -121,9 +122,9 @@ export default function Sidebar({ onClose }) {
     window.open("/customer", "_blank");
   };
 
-  const handleStaffPageClick = () => {
-    window.open("/staff", "_blank");
-  };
+  // const handleStaffPageClick = () => {
+  //   window.open("/staff", "_blank");
+  // };
 
   const isActive = (path) => location.pathname === path;
 
@@ -228,12 +229,12 @@ export default function Sidebar({ onClose }) {
               >
                 {t("admin.sidebar.categories")}
               </SubMenuItem>
-              <SubMenuItem
+              {/* <SubMenuItem
                 to={"/admin/employees"}
                 icon={<IconUsers size={16} />}
               >
                 {t("admin.sidebar.employees")}
-              </SubMenuItem>
+              </SubMenuItem> */}
               {/* <SubMenuItem
                 to="/admin/brands"
                 icon={<IconBuildingStore size={16} />}
@@ -270,6 +271,9 @@ export default function Sidebar({ onClose }) {
                 icon={<IconAdCircle size={16} />}
               >
                 {t("admin.sidebar.promotions")}
+              </SubMenuItem>
+              <SubMenuItem to="/admin/vouchers" icon={<IconGift size={16} />}>
+                Vouchers
               </SubMenuItem>
             </MenuWithSubmenu>
 
@@ -324,7 +328,7 @@ export default function Sidebar({ onClose }) {
                   </span>
                 </button>
               </li>
-              <li>
+              {/* <li>
                 <button
                   className="flex items-center hover:bg-blue-800 rounded-lg px-4 py-2 w-full text-left text-sm cursor-pointer"
                   onClick={handleStaffPageClick}
@@ -332,7 +336,7 @@ export default function Sidebar({ onClose }) {
                   <IconHomeEdit size={16} />
                   <span className="ml-3">Trang nhân viên</span>
                 </button>
-              </li>
+              </li> */}
             </MenuWithSubmenu>
 
             {/* Button logout */}
@@ -351,7 +355,7 @@ export default function Sidebar({ onClose }) {
       )}
 
       {/* Navigation Links of STAFF */}
-      {showStaffSidebar && (
+      {/* {showStaffSidebar && (
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
@@ -442,8 +446,8 @@ export default function Sidebar({ onClose }) {
                 <IconAdCircle stroke={2} />
                 <span className="ml-3">{t("staff.sidebar.promotions")}</span>
               </Link>
-            </li>
-            {/* <li>
+            </li> */}
+      {/* <li>
               <Link
                 to={"/staff/customers"}
                 className={`flex items-center rounded-lg px-4 py-2 ${
@@ -456,7 +460,7 @@ export default function Sidebar({ onClose }) {
                 <span className="ml-3">Khách hàng</span>
               </Link>
             </li> */}
-            <li>
+      {/* <li>
               <button
                 className="flex items-center hover:bg-red-600 rounded-lg p-1 ml-4 bg-red-500 font-semibold cursor-pointer"
                 onClick={handleLogout}
@@ -467,7 +471,7 @@ export default function Sidebar({ onClose }) {
             </li>
           </ul>
         </nav>
-      )}
+      )} */}
     </aside>
   );
 }

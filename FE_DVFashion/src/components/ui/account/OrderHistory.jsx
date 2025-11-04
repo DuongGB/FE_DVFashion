@@ -18,9 +18,9 @@ const OrderCard = ({ order, onReviewClick }) => {
       {/* Header */}
       <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-t-lg">
         <div>
-          <p className="font-bold text-lg tracking-wider">
+          {/* <p className="font-bold text-lg tracking-wider">
             {order.orderNumber}
-          </p>
+          </p> */}
           <p className="text-sm opacity-90">{orderDate}</p>
         </div>
         <span className="bg-white text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">

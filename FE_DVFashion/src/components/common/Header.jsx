@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ShoppingCart, User } from "react-feather";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
@@ -99,10 +99,18 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const { cart, removeItem } = useCart();
   const searchRef = useRef();
   const cartRef = useRef();
+  const navigate = useNavigate();
 
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
 
   const [activeMenu, setActiveMenu] = useState(null);
+
+  const handleCategoryClick = (category) => {
+    navigate(`/products?category=${category.id}`);
+  };
+
+  // Đóng popup search
+  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
 
   // Xử lý hover vào từng menu item
   const handleMouseEnter = (menuKey) => {
@@ -209,7 +217,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             onMouseLeave={handleMouseLeave}
           >
             <Link
-              to="/"
+              onClick={handleCategoryClick}
               className={`cursor-pointer w-full text-center ${item.color}`}
             >
               {item.label}
@@ -235,7 +243,9 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         {/* Nút mở popup search */}
         <div
           className="flex-1 flex items-center"
-          onClick={() => setShowSearch(true)}
+          onClick={() => {
+            if (!showSearch) setShowSearch(true);
+          }}
         >
           {/* Thanh search chỉ là khung giả, không nhập được */}
           <div className="relative w-[350px] cursor-pointer">
@@ -260,7 +270,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             </span>
           </div>
         </div>
-        <SearchPopup show={showSearch} onClose={() => setShowSearch(false)} />
+        <SearchPopup show={showSearch} onClose={handleCloseSearch} />
         {/* Account và Cart giữ nguyên */}
         <div
           className="flex items-center gap-2 cursor-pointer"
@@ -376,12 +386,6 @@ function MegaMenu({
             Pickleball Nam
           </div>
         </div>
-      </div>
-      {/* Submenu bottom */}
-      <div className="absolute left-0 bottom-0 w-full bg-gray-50 border-t flex justify-center items-center gap-8 py-4 px-2 text-base font-bold rounded-b-2xl">
-        <Link to="#" className="text-gray-500 font-normal">
-          {t("category.tagline")}
-        </Link>
       </div>
     </div>
   );

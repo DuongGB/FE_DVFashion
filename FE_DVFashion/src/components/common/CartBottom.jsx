@@ -6,6 +6,7 @@ import {
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 export default function CartBottom({
   cart,
@@ -18,6 +19,14 @@ export default function CartBottom({
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const authModal = useAuthModal();
+
+  // simple lock check from localStorage (same key used in useCreateOrder)
+  const creatingTimestamp =
+    typeof window !== "undefined"
+      ? Number(localStorage.getItem("creatingOrderInProgress") || 0)
+      : 0;
+  const creatingLock =
+    isLoading || (creatingTimestamp && Date.now() - creatingTimestamp < 60_000);
 
   // Nếu truyền total từ trên xuống thì dùng, không thì tự tính
   const computedTotal =
@@ -38,6 +47,21 @@ export default function CartBottom({
 
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleOrderClick = () => {
+    if (isLoading) return;
+
+    // Handle empty cart with translated toast
+    if (!cart || cart.length === 0) {
+      toast.info(t("cart.empty_cart"));
+      return;
+    }
+
+    if (creatingLock) {
+      toast.info(
+        t("order.create_in_progress") || "Đang tạo đơn hàng, vui lòng chờ..."
+      );
+      return;
+    }
+
     if (!isAuthenticated) {
       authModal.openLogin({ stayOnPage: true });
       return;
@@ -87,10 +111,10 @@ export default function CartBottom({
           </div>
           <button
             className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
-            disabled={cart?.length === 0}
+            disabled={creatingLock} // disable while creating
             onClick={handleOrderClick}
           >
-            {isLoading ? t("cart.processing") : t("cart.place_order")}
+            {creatingLock ? t("cart.processing") : t("cart.place_order")}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import api from "./api";
+import { useQuery } from "@tanstack/react-query";
 
 export const productAPI = {
   // Fetch all products
@@ -37,5 +38,20 @@ export const productAPI = {
   // Get product by ID
   getProductById: (productId, lang) => {
     return api.get(`/products/${productId}?lang=${lang}`);
+  },
+
+  getProductsByCategoryId: (categoryId, lang = "VI") => {
+    return api.get(`/products/category/${categoryId}?lang=${lang}`);
+  },
+
+  getProductsByCategoryIdPaging: (
+    categoryId,
+    page = 0,
+    size = 12,
+    lang = "VI"
+  ) => {
+    return api.get(
+      `/products/category/${categoryId}/paging?page=${page}&size=${size}&lang=${lang}`
+    );
   },
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ModalChangePassword from "../../components/ui/account/ModalChangePassword";
 import ModalUpdateAccount from "../../components/ui/account/ModalUpdateAccount";
 import { useAuth } from "../../hooks/useAuth";
@@ -98,6 +98,7 @@ export default function AccountPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
   const [activeTab, setActiveTab] = useState("account_info");
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
   const { t } = useTranslation();
 
   const handleReviewClick = (orderOrReview) => {
@@ -110,6 +111,10 @@ export default function AccountPage() {
       setSelectedReview(orderOrReview);
     }
     setShowReviewModal(true);
+  };
+
+  const handleReviewSuccess = () => {
+    setReviewRefreshKey((prev) => prev + 1);
   };
 
   const sidebarItems = [
@@ -161,9 +166,19 @@ export default function AccountPage() {
           />
         );
       case "order_history":
-        return <OrderHistory onReviewClick={handleReviewClick} />;
+        return (
+          <OrderHistory
+            onReviewClick={handleReviewClick}
+            refreshKey={reviewRefreshKey}
+          />
+        );
       case "reviews_feedback":
-        return <MyReviews onUpdateClick={handleReviewClick} />;
+        return (
+          <MyReviews
+            onUpdateClick={handleReviewClick}
+            refreshKey={reviewRefreshKey}
+          />
+        );
       case "address_book":
         return <MyAddresses />;
       default:
@@ -210,6 +225,7 @@ export default function AccountPage() {
           onClose={() => setShowReviewModal(false)}
           order={selectedOrder}
           review={selectedReview}
+          onSuccess={handleReviewSuccess}
         />
       </div>
     </div>

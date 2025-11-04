@@ -15,13 +15,28 @@ import { useAddress } from "../../hooks/useAddress";
 import AddressList from "../../components/ui/address/AddressList";
 import { useCreateOrder } from "../../hooks/useOrder";
 import { toast } from "react-toastify";
+import { useShipping } from "../../hooks/useShipping";
+import { formatVND } from "../../utils/formatVND";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
-  const { defaultAddress, addresses } = useAddress();
-  const { mutate: createOrder, isLoading: isCreatingOrder } = useCreateOrder();
+  const {
+    defaultAddress,
+    addresses,
+    fetchProvinces,
+    fetchDistricts,
+    fetchWards,
+  } = useAddress();
+  const {
+    mutate: createOrder,
+    mutateAsync: createOrderAsync,
+    isLoading: isCreatingOrder,
+  } = useCreateOrder();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { calculate: calculateShippingApi, isCalculating: isCalculatingShip } =
+    useShipping();
 
   // Lấy giỏ hàng từ API
   const {
@@ -44,7 +59,6 @@ export default function CartPage() {
   // Chuyển đổi dữ liệu từ API sang định dạng dùng trong UI
   const cartItems = cart?.items || [];
 
-  // Quản lý selected theo cartItemId
   const [selected, setSelected] = useState([]);
   const [selectedPromotionId, setSelectedPromotionId] = useState(null);
   const [input, setInput] = useState("");
@@ -65,6 +79,299 @@ export default function CartPage() {
   const [showAddressList, setShowAddressList] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [manualDeselect, setManualDeselect] = useState(false);
+  const [deliveryText, setDeliveryText] = useState("");
+
+  // Lọc giỏ hàng theo mục đã chọn (moved up to avoid TDZ)
+  const filteredCart = useMemo(
+    () =>
+      cartItems && selected
+        ? cartItems.filter((item) => selected?.includes(item.cartItemId))
+        : [],
+    [cartItems, selected]
+  );
+
+  // helper to build shippingInfo payload (returns null if missing required fields)
+  const buildShippingInfoForCalc = (useSelectedAddress = false) => {
+    const items = filteredCart.map((it) => ({ cartItemId: it.cartItemId }));
+    if (!items.length) return null;
+
+    const infoSource =
+      useSelectedAddress && selectedAddress
+        ? selectedAddress
+        : {
+            fullName: shipping.name,
+            phone: shipping.phone,
+            country: shipping.country,
+            city: getProvinceName(shipping.province),
+            district: getDistrictName(shipping.district),
+            ward: getWardName(shipping.ward),
+            street: shipping.address,
+          };
+
+    // find toDistrictId + toWardCode from loaded locationData
+    let toDistrictId = null;
+    let toWardCode = "";
+    if (selectedAddress) {
+      // try map by names
+      const prov = locationData.provinces.find(
+        (p) => p.name === selectedAddress.city
+      );
+      if (prov) {
+        const districts = locationData.districts;
+        const d = districts.find((dd) => dd.name === selectedAddress.district);
+        if (d) {
+          toDistrictId = d.id;
+          // try find ward code by ward name (may not be loaded yet)
+          const ward = locationData.wards.find(
+            (w) => w.name === selectedAddress.ward
+          );
+          if (ward) toWardCode = ward.code;
+        }
+      }
+    } else {
+      const dObj = locationData.districts.find(
+        (d) => d.code?.toString() === shipping.district?.toString()
+      );
+      if (dObj) toDistrictId = dObj.id;
+      const wObj = locationData.wards.find(
+        (w) => w.code?.toString() === shipping.ward?.toString()
+      );
+      if (wObj) toWardCode = wObj.code;
+    }
+
+    if (
+      !infoSource.fullName ||
+      !infoSource.phone ||
+      !infoSource.country ||
+      !infoSource.city ||
+      !infoSource.district ||
+      !infoSource.ward ||
+      !infoSource.street ||
+      !toDistrictId ||
+      !toWardCode
+    ) {
+      return null; // thiếu dữ liệu để tính
+    }
+
+    const shippingInfo = {
+      fullName: infoSource.fullName,
+      phone: infoSource.phone,
+      country: infoSource.country,
+      city: infoSource.city,
+      district: infoSource.district,
+      ward: infoSource.ward,
+      street: infoSource.street,
+      toDistrictId: parseInt(toDistrictId, 10),
+      toWardCode: toWardCode?.toString(),
+    };
+
+    const payload = {
+      orderItems: items,
+      shippingInfo,
+      notes: shipping.note || "",
+      paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+    };
+
+    return payload;
+  };
+
+  // map an address (from address book) to toDistrictId/toWardCode, loading location data if needed
+  const mapAddressToCodes = async (addr) => {
+    let toDistrictId = null;
+    let toWardCode = null;
+
+    try {
+      // ensure provinces loaded
+      if (!locationData.provinces.length) {
+        const provincesRaw = await fetchProvinces();
+        const mapped = (provincesRaw || []).map((p) => ({
+          code: p.provinceId,
+          name: p.provinceName,
+        }));
+        setLocationData((prev) => ({ ...prev, provinces: mapped }));
+      }
+
+      // find province object (may be in state after the step above)
+      const province = (
+        locationData.provinces.length ? locationData.provinces : []
+      ).find((p) => p.name === addr.city);
+
+      if (!province) {
+        // try to reload provinces once more from API and try again
+        try {
+          const provincesRaw = await fetchProvinces();
+          const mapped = (provincesRaw || []).map((p) => ({
+            code: p.provinceId,
+            name: p.provinceName,
+          }));
+          setLocationData((prev) => ({ ...prev, provinces: mapped }));
+          const prov2 = mapped.find((p) => p.name === addr.city);
+          if (!prov2) return { toDistrictId, toWardCode };
+          // continue with prov2
+          const districtsRaw = await fetchDistricts(parseInt(prov2.code, 10));
+          const mappedDistricts = (districtsRaw || []).map((d) => ({
+            code: d.code,
+            name: d.districtName,
+            id: d.districtId,
+          }));
+          setLocationData((prev) => ({ ...prev, districts: mappedDistricts }));
+          const districtObj = mappedDistricts.find(
+            (d) => d.name === addr.district
+          );
+          if (!districtObj) return { toDistrictId, toWardCode };
+          toDistrictId = districtObj.id;
+          const wardsRaw = await fetchWards(districtObj.id);
+          const mappedWards = (wardsRaw || []).map((w) => ({
+            code: w.wardCode,
+            name: w.wardName,
+          }));
+          setLocationData((prev) => ({ ...prev, wards: mappedWards }));
+          const wardObj = mappedWards.find((w) => w.name === addr.ward);
+          if (wardObj) toWardCode = wardObj.code?.toString();
+          return { toDistrictId, toWardCode };
+        } catch (err) {
+          console.error("mapAddressToCodes fallback failed:", err);
+          return { toDistrictId, toWardCode };
+        }
+      }
+
+      // load districts for province
+      const districtsRaw = await fetchDistricts(parseInt(province.code, 10));
+      const mappedDistricts = (districtsRaw || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
+      setLocationData((prev) => ({ ...prev, districts: mappedDistricts }));
+
+      const districtObj = mappedDistricts.find((d) => d.name === addr.district);
+      if (!districtObj) return { toDistrictId, toWardCode };
+      toDistrictId = districtObj.id;
+
+      // load wards for district
+      const wardsRaw = await fetchWards(districtObj.id);
+      const mappedWards = (wardsRaw || []).map((w) => ({
+        code: w.wardCode,
+        name: w.wardName,
+      }));
+      setLocationData((prev) => ({ ...prev, wards: mappedWards }));
+
+      const wardObj = mappedWards.find((w) => w.name === addr.ward);
+      if (wardObj) toWardCode = wardObj.code?.toString();
+    } catch (err) {
+      console.error("Mapping address to codes failed:", err);
+    }
+
+    return { toDistrictId, toWardCode };
+  };
+
+  // Debounced effect: recalc when address/selection/cart changes
+  useEffect(() => {
+    let timer = null;
+
+    const doCalc = async () => {
+      // prefer selectedAddress if exists
+      const payload =
+        buildShippingInfoForCalc(!!selectedAddress) ||
+        buildShippingInfoForCalc(false);
+      if (payload) {
+        try {
+          const res = await calculateShippingApi(payload);
+          const data = res?.data ?? res;
+          const fee =
+            data?.shippingFee ??
+            data?.shippingFee?.value ??
+            data?.shippingFee?.amount ??
+            null;
+          const text =
+            data?.deliveryTimeText ??
+            (data?.estimatedDeliveryTime
+              ? new Date(data.estimatedDeliveryTime).toLocaleString()
+              : "");
+          if (fee != null) {
+            setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+          }
+          setDeliveryText(text || "");
+        } catch (e) {
+          console.error("Shipping calc failed:", e);
+        }
+        return;
+      }
+
+      // if payload is null but we have a selectedAddress, try to map it to codes and calculate
+      if (selectedAddress && filteredCart.length > 0) {
+        try {
+          const { toDistrictId, toWardCode } = await mapAddressToCodes(
+            selectedAddress
+          );
+          if (!toDistrictId || !toWardCode) {
+            setDeliveryText("");
+            return;
+          }
+
+          const shippingInfo = {
+            fullName: selectedAddress.fullName,
+            phone: selectedAddress.phone,
+            country: selectedAddress.country || "Vietnam",
+            city: selectedAddress.city,
+            district: selectedAddress.district,
+            ward: selectedAddress.ward,
+            street: selectedAddress.street,
+            toDistrictId: parseInt(toDistrictId, 10),
+            toWardCode: toWardCode?.toString(),
+          };
+
+          const items = filteredCart.map((it) => ({
+            cartItemId: it.cartItemId,
+          }));
+          const calcPayload = {
+            orderItems: items,
+            shippingInfo,
+            notes: shipping.note || "",
+            paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+          };
+
+          const res = await calculateShippingApi(calcPayload);
+          const data = res?.data ?? res;
+          const fee =
+            data?.shippingFee ??
+            data?.shippingFee?.value ??
+            data?.shippingFee?.amount ??
+            null;
+          const text =
+            data?.deliveryTimeText ??
+            (data?.estimatedDeliveryTime
+              ? new Date(data.estimatedDeliveryTime).toLocaleString()
+              : "");
+          if (fee != null) {
+            setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+          }
+          setDeliveryText(text || "");
+        } catch (e) {
+          console.error("Shipping calc with selectedAddress failed:", e);
+        }
+      } else {
+        setDeliveryText("");
+      }
+    };
+
+    // wait 600ms after last change
+    timer = setTimeout(() => {
+      doCalc();
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [
+    shipping.province,
+    shipping.district,
+    shipping.ward,
+    shipping.address,
+    shipping.name,
+    shipping.phone,
+    selectedAddress,
+    filteredCart.length,
+    payment,
+  ]);
 
   // Lưu thứ tự cartItemId ban đầu
   const [itemOrder, setItemOrder] = useState(
@@ -88,11 +395,15 @@ export default function CartPage() {
   const loadProvinces = async () => {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch("https://provinces.open-api.vn/api/p/");
-      const provinces = await response.json();
+      const provinces = await fetchProvinces();
+      // backend returns records like { provinceId, provinceName }
+      const mapped = (provinces || []).map((p) => ({
+        code: p.provinceId,
+        name: p.provinceName,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        provinces,
+        provinces: mapped,
         districts: [],
         wards: [],
         isLoading: false,
@@ -105,6 +416,9 @@ export default function CartPage() {
 
   // Load districts when province changes
   const handleProvinceChange = async (provinceCode) => {
+    // provinceCode may come as string from select; convert to integer if possible
+    const provinceId = provinceCode ? parseInt(provinceCode, 10) : null;
+
     setShipping((prev) => ({
       ...prev,
       province: provinceCode,
@@ -112,20 +426,23 @@ export default function CartPage() {
       ward: "",
     }));
 
-    if (!provinceCode) {
+    if (!provinceId) {
       setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
       return;
     }
 
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch(
-        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`
-      );
-      const data = await response.json();
+      const districts = await fetchDistricts(provinceId);
+      // backend districts: { districtId, provinceId, districtName, code }
+      const mapped = (districts || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        districts: data.districts || [],
+        districts: mapped,
         wards: [],
         isLoading: false,
       }));
@@ -137,6 +454,7 @@ export default function CartPage() {
 
   // Load wards when district changes
   const handleDistrictChange = async (districtCode) => {
+    // districtCode here is the district.code (string) — backend expects districtId for wards endpoint
     setShipping((prev) => ({
       ...prev,
       district: districtCode,
@@ -148,15 +466,29 @@ export default function CartPage() {
       return;
     }
 
+    // We need districtId to fetch wards. Try to find it from locationData.districts
+    const districtObj = locationData.districts.find(
+      (d) => d.code === districtCode
+    );
+    const districtId = districtObj ? districtObj.id : null;
+
+    if (!districtId) {
+      // fallback: try to parse as number
+      setLocationData((prev) => ({ ...prev, wards: [] }));
+      return;
+    }
+
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch(
-        `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`
-      );
-      const data = await response.json();
+      const wards = await fetchWards(districtId);
+      // backend ward: { wardCode, districtId, wardName }
+      const mapped = (wards || []).map((w) => ({
+        code: w.wardCode,
+        name: w.wardName,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        wards: data.wards || [],
+        wards: mapped,
         isLoading: false,
       }));
     } catch (error) {
@@ -170,23 +502,25 @@ export default function CartPage() {
     setShipping((prev) => ({ ...prev, ward: wardCode }));
   };
 
-  // Get display names
+  // Get display names (adapt to mapped shape)
   const getProvinceName = (code) => {
     const province = locationData.provinces.find(
-      (p) => p.code.toString() === code
+      (p) => p.code?.toString() === code?.toString()
     );
     return province ? province.name : "";
   };
 
   const getDistrictName = (code) => {
     const district = locationData.districts.find(
-      (d) => d.code.toString() === code
+      (d) => d.code?.toString() === code?.toString()
     );
     return district ? district.name : "";
   };
 
   const getWardName = (code) => {
-    const ward = locationData.wards.find((w) => w.code.toString() === code);
+    const ward = locationData.wards.find(
+      (w) => w.code?.toString() === code?.toString()
+    );
     return ward ? ward.name : "";
   };
 
@@ -247,29 +581,110 @@ export default function CartPage() {
       .filter(Boolean);
   }, [cartItems, itemOrder]);
 
-  // Handle address selection
-  const handleSelectAddress = (address) => {
+  // When selecting address from address book: attempt to set province/district/ward by names/codes
+  const handleSelectAddress = async (address) => {
+    // set selected address immediately for UI
     setSelectedAddress(address);
+
     if (address) {
       setManualDeselect(false);
+      // Clear manual form fields (so form shows empty / uses selectedAddress display)
       setShipping((prev) => ({
         ...prev,
-        name: address.fullName,
-        phone: address.phone,
-        address: address.street,
-        // We will find and set the codes for province, district, ward
+        name: "",
+        phone: "",
+        address: "",
+        country: address.country || "Vietnam",
       }));
 
-      // Find and set province, then trigger district and ward loading
-      const province = locationData.provinces.find(
-        (p) => p.name === address.city
-      );
-      if (province) {
-        handleProvinceChange(province.code.toString(), address);
+      try {
+        // try find province by name in already loaded provinces
+        const province = locationData.provinces.find(
+          (p) => p.name === address.city
+        );
+
+        if (province) {
+          // fetch districts for that province (ensure we have ids)
+          const districtsRaw = await fetchDistricts(
+            parseInt(province.code, 10)
+          );
+          const mappedDistricts = (districtsRaw || []).map((d) => ({
+            code: d.code,
+            name: d.districtName,
+            id: d.districtId,
+          }));
+
+          // find district object by name
+          const districtObj = mappedDistricts.find(
+            (d) => d.name === address.district
+          );
+
+          // fetch wards if district found
+          let mappedWards = [];
+          if (districtObj && districtObj.id) {
+            const wardsRaw = await fetchWards(districtObj.id);
+            mappedWards = (wardsRaw || []).map((w) => ({
+              code: w.wardCode,
+              name: w.wardName,
+            }));
+          }
+
+          // update locationData with loaded districts/wards so later lookups work
+          setLocationData((prev) => ({
+            ...prev,
+            provinces: prev.provinces.length
+              ? prev.provinces
+              : locationData.provinces,
+            districts: mappedDistricts,
+            wards: mappedWards,
+          }));
+
+          // set shipping codes (use codes if we have them) — keep selects synced
+          setShipping((prev) => ({
+            ...prev,
+            province: province.code?.toString() ?? "",
+            district: districtObj ? districtObj.code?.toString() ?? "" : "",
+            ward:
+              mappedWards.length > 0
+                ? mappedWards
+                    .find((w) => w.name === address.ward)
+                    ?.code?.toString() ?? ""
+                : "",
+          }));
+
+          // build payload and calculate shipping immediately
+          const payload =
+            buildShippingInfoForCalc(true) || buildShippingInfoForCalc(false);
+          if (payload) {
+            try {
+              const res = await calculateShippingApi(payload);
+              const data = res?.data ?? res;
+              const fee =
+                data?.shippingFee ??
+                data?.shippingFee?.value ??
+                data?.shippingFee?.amount ??
+                null;
+              const text =
+                data?.deliveryTimeText ??
+                (data?.estimatedDeliveryTime
+                  ? new Date(data.estimatedDeliveryTime).toLocaleString()
+                  : "");
+              if (fee != null) {
+                setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+              }
+              setDeliveryText(text || "");
+            } catch (err) {
+              console.error("Shipping calc after address select failed:", err);
+            }
+          }
+        } else {
+          // province name not found in loaded list — do nothing special (user can pick manually)
+        }
+      } catch (err) {
+        console.error("Error mapping selected address to location codes:", err);
       }
     } else {
       setManualDeselect(true);
-      // Clear shipping form if no address is selected
       setShipping({
         name: "",
         phone: "",
@@ -335,15 +750,6 @@ export default function CartPage() {
     setSelected([]);
   };
 
-  // Lọc giỏ hàng theo mục đã chọn
-  const filteredCart = useMemo(
-    () =>
-      cartItems && selected
-        ? cartItems.filter((item) => selected?.includes(item.cartItemId))
-        : [],
-    [cartItems, selected]
-  );
-
   // Hàm format LocaldeDate
   const formatDate = (dateString) => {
     const options = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -378,20 +784,36 @@ export default function CartPage() {
   const totalAfterPromotion =
     total - promotionDiscount > 0 ? total - promotionDiscount : 0;
 
-  // Tổng cuối cùng bao gồm phí vận chuyển
-  const finalTotal = totalAfterPromotion + (shipping.shippingFee || 0);
-
   // Hàm xử lý khi nhấn nút Đặt hàng
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (filteredCart.length === 0) {
       toast.warn(t("cart.select_product_to_order"));
       return;
     }
+    if (isCreatingOrder || isSubmitting) {
+      toast.warn(
+        t("cart.processing_order") || "Đang xử lý đơn, vui lòng đợi..."
+      );
+      return;
+    }
 
-    let shippingInfoPayload;
+    let shippingInfoPayload = null;
 
-    // Ưu tiên lấy thông tin từ địa chỉ đã chọn
     if (selectedAddress) {
+      // try map toDistrictId / toWardCode
+      const { toDistrictId, toWardCode } = await mapAddressToCodes(
+        selectedAddress
+      );
+
+      if (!toDistrictId || !toWardCode) {
+        // mapping failed -> ask user to open address modal or fill manual form
+        toast.warn(
+          t("cart.fill_shipping_info") ||
+            "Không thể lấy mã quận/phường từ địa chỉ đã chọn. Vui lòng chọn lại hoặc điền thủ công."
+        );
+        return;
+      }
+
       shippingInfoPayload = {
         fullName: selectedAddress.fullName,
         phone: selectedAddress.phone,
@@ -400,9 +822,11 @@ export default function CartPage() {
         district: selectedAddress.district,
         ward: selectedAddress.ward,
         street: selectedAddress.street,
+        toDistrictId: parseInt(toDistrictId, 10),
+        toWardCode: toWardCode?.toString(),
       };
     } else {
-      // Nếu không có địa chỉ được chọn, lấy từ form và kiểm tra
+      // manual form
       if (
         !shipping.name ||
         !shipping.phone ||
@@ -414,6 +838,18 @@ export default function CartPage() {
         toast.warn(t("cart.fill_shipping_info"));
         return;
       }
+      // map codes from locationData
+      const dObj = locationData.districts.find(
+        (d) => d.code?.toString() === shipping.district?.toString()
+      );
+      const wObj = locationData.wards.find(
+        (w) => w.code?.toString() === shipping.ward?.toString()
+      );
+      if (!dObj || !wObj) {
+        toast.warn(t("cart.fill_shipping_info"));
+        return;
+      }
+
       shippingInfoPayload = {
         fullName: shipping.name,
         phone: shipping.phone,
@@ -422,6 +858,8 @@ export default function CartPage() {
         district: getDistrictName(shipping.district),
         ward: getWardName(shipping.ward),
         street: shipping.address,
+        toDistrictId: parseInt(dObj.id, 10),
+        toWardCode: wObj.code?.toString(),
       };
     }
 
@@ -434,7 +872,20 @@ export default function CartPage() {
       shippingFee: shipping.shippingFee || 0,
     };
 
-    createOrder(orderData);
+    try {
+      setIsSubmitting(true);
+      // prefer async mutate to avoid duplicate submissions
+      if (createOrderAsync) {
+        await createOrderAsync(orderData);
+      } else {
+        // fallback to mutate if async not provided
+        createOrder(orderData);
+      }
+    } catch (err) {
+      console.error("Create order failed:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Loading state
@@ -501,22 +952,35 @@ export default function CartPage() {
           </div>
         )}
 
+        {selectedAddress && (
+          <div className="mb-4 p-3 bg-gray-100 text-sm text-gray-700 rounded-md">
+            {t("cart.using_selected_address_note") ||
+              "Đang sử dụng địa chỉ đã chọn. Nhấn 'Hủy chọn' để chỉnh sửa thủ công."}
+          </div>
+        )}
+
         <div className="flex gap-3 mb-5">
           <input
-            className="border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500"
+            className={`border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500 ${
+              selectedAddress ? "opacity-60 cursor-not-allowed" : ""
+            }`}
             placeholder={t("cart.name_placeholder")}
             value={shipping.name}
             onChange={(e) =>
               setShipping((s) => ({ ...s, name: e.target.value }))
             }
+            disabled={!!selectedAddress}
           />
           <input
-            className="border border-gray-300 rounded-full px-4 py-2 w-56 bg-white focus:outline-blue-500"
+            className={`border border-gray-300 rounded-full px-4 py-2 w-56 bg-white focus:outline-blue-500 ${
+              selectedAddress ? "opacity-60 cursor-not-allowed" : ""
+            }`}
             placeholder={t("cart.phone_placeholder")}
             value={shipping.phone}
             onChange={(e) =>
               setShipping((s) => ({ ...s, phone: e.target.value }))
             }
+            disabled={!!selectedAddress}
           />
         </div>
 
@@ -524,10 +988,14 @@ export default function CartPage() {
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Province/City */}
           <select
-            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+              selectedAddress || locationData.isLoading
+                ? "opacity-60 cursor-not-allowed"
+                : ""
+            }`}
             value={shipping.province}
             onChange={(e) => handleProvinceChange(e.target.value)}
-            disabled={locationData.isLoading}
+            disabled={!!selectedAddress || locationData.isLoading}
           >
             <option value="">{t("cart.select_province")}</option>
             {locationData.provinces.map((province) => (
@@ -539,10 +1007,16 @@ export default function CartPage() {
 
           {/* District */}
           <select
-            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+              selectedAddress || !shipping.province || locationData.isLoading
+                ? "opacity-60 cursor-not-allowed"
+                : ""
+            }`}
             value={shipping.district}
             onChange={(e) => handleDistrictChange(e.target.value)}
-            disabled={!shipping.province || locationData.isLoading}
+            disabled={
+              !!selectedAddress || !shipping.province || locationData.isLoading
+            }
           >
             <option value="">{t("cart.select_district")}</option>
             {locationData.districts.map((district) => (
@@ -554,10 +1028,16 @@ export default function CartPage() {
 
           {/* Ward */}
           <select
-            className="border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500"
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+              selectedAddress || !shipping.province || locationData.isLoading
+                ? "opacity-60 cursor-not-allowed"
+                : ""
+            }`}
             value={shipping.ward}
             onChange={(e) => handleWardChange(e.target.value)}
-            disabled={!shipping.province || locationData.isLoading}
+            disabled={
+              !!selectedAddress || !shipping.province || locationData.isLoading
+            }
           >
             <option value="">{t("cart.select_ward")}</option>
             {locationData.wards.map((ward) => (
@@ -569,35 +1049,27 @@ export default function CartPage() {
         </div>
 
         <input
-          className="border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500"
+          className={`border border-gray-300 rounded-full px-4 py-2 w-full mb-4 bg-white focus:outline-blue-500 ${
+            selectedAddress ? "opacity-60 cursor-not-allowed" : ""
+          }`}
           placeholder={t("cart.address_placeholder")}
           value={shipping.address}
           onChange={(e) =>
             setShipping((s) => ({ ...s, address: e.target.value }))
           }
+          disabled={!!selectedAddress}
         />
 
         <div className="flex gap-3 mb-4">
-          <input
-            className="border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500"
-            placeholder={t("cart.note_placeholder")}
-            value={shipping.note}
-            onChange={(e) =>
-              setShipping((s) => ({ ...s, note: e.target.value }))
-            }
-          />
-          <input
-            type="number"
-            className="border border-gray-300 rounded-full px-4 py-2 w-48 bg-white focus:outline-blue-500"
-            placeholder={t("cart.shipping_fee_placeholder", "Phí vận chuyển")}
-            value={shipping.shippingFee}
-            onChange={(e) =>
-              setShipping((s) => ({
-                ...s,
-                shippingFee: parseInt(e.target.value) || 0,
-              }))
-            }
-          />
+          <span className="text-gray-700 text-lg flex items-center font-bold">
+            {t("cart.shipping_fee")}:
+          </span>
+          <div className="flex items-center gap-3">
+            {/* Hiển thị phí đã format */}
+            <div className="text-sm text-gray-700">
+              {formatVND(shipping.shippingFee)}
+            </div>
+          </div>
         </div>
         <h3 className="text-xl font-bold mb-4 text-gray-900">
           {t("cart.payment_method")}
@@ -816,7 +1288,7 @@ export default function CartPage() {
           total={totalAfterPromotion}
           discount={promotionDiscount}
           onOrder={handleCreateOrder}
-          isLoading={isCreatingOrder}
+          isLoading={isCreatingOrder || isSubmitting}
           paymentMethod={payment}
         />
       </div>

@@ -15,29 +15,38 @@ import {
 import { toast } from "react-toastify";
 import { usePromotion } from "../../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
+import ProductSelectModal from "./ProductSelectModal";
 
 const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    type: "PERCENTAGE", // PERCENTAGE, FIXED_AMOUNT, FREE_SHIPPING, BUY_ONE_GET_ONE
+    type: "GENERAL_DISCOUNT",
     value: "",
     minOrderAmount: "",
     maxUsages: "",
     startDate: "",
     endDate: "",
     active: true,
+    bannerFile: null,
+    promotionProducts: [],
   });
 
   const [errors, setErrors] = useState({});
+  const [removingProductId, setRemovingProductId] = useState(null);
 
   // Get language from i18n
   const language = i18n.language || "VI";
 
   // Use promotion hook
-  const { createPromotion, isCreating, updatePromotion, isUpdating } =
-    usePromotion(language);
+  const {
+    createPromotion,
+    isCreating,
+    updatePromotion,
+    isUpdating,
+    removeProduct,
+  } = usePromotion(language);
 
   const isSubmitting = isCreating || isUpdating;
 
@@ -57,36 +66,182 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   // Load dữ liệu khi edit promotion
   useEffect(() => {
     if (promotion && isOpen) {
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         name: promotion.name || "",
         description: promotion.description || "",
-        type: promotion.type || "PERCENTAGE",
-        value: promotion.value || "",
+        type: promotion.type || "GENERAL_DISCOUNT",
         minOrderAmount: promotion.minOrderAmount || "",
-        maxUsages: promotion.maxUsages || "",
         startDate: promotion.startDate ? promotion.startDate.split("T")[0] : "",
         endDate: promotion.endDate ? promotion.endDate.split("T")[0] : "",
         active: promotion.active !== undefined ? promotion.active : true,
-      });
+        bannerFile: null,
+        promotionProducts: (promotion.promotionProducts || []).map((pp) => ({
+          id: pp.id ?? null,
+          // prefer explicit productId from API, fall back to nested product.id
+          productId: pp.productId ?? pp.product?.id ?? null,
+          // name fallbacks in case API uses different keys
+          name:
+            pp.product?.name ??
+            pp.productName ??
+            pp.product?.title ??
+            pp.name ??
+            "",
+          originalPrice:
+            pp.originalPrice ??
+            pp.product?.currentPrice ??
+            pp.product?.salePrice ??
+            pp.product?.price ??
+            0,
+          promotionPrice: pp.promotionPrice ?? pp.promotionPrice ?? "",
+          discountPercentage:
+            pp.discountPercentage ?? pp.discountPercentage ?? "",
+          stockQuantity: pp.stockQuantity ?? pp.stockQuantity ?? 1,
+          maxQuantityPerUser:
+            pp.maxQuantityPerUser ?? pp.maxQuantityPerUser ?? 1,
+          active: pp.active !== undefined ? pp.active : true,
+        })),
+      }));
     } else if (!promotion && isOpen) {
       // Reset form cho create mới
       setFormData({
         name: "",
         description: "",
-        type: "PERCENTAGE",
+        type: "GENERAL_DISCOUNT",
         value: "",
         minOrderAmount: "",
         maxUsages: "",
         startDate: "",
         endDate: "",
         active: true,
+        bannerFile: null,
+        promotionProducts: [],
       });
     }
     setErrors({});
   }, [promotion, isOpen]);
 
+  // Product modal state
+  const [productModalOpen, setProductModalOpen] = useState(false);
+
+  // Xử lý thêm sản phẩm từ modal
+  const handleAddProducts = (selectedProducts) => {
+    // merge selected products into formData.promotionProducts, avoid duplicates
+    setFormData((prev) => {
+      const existingById = new Set(
+        prev.promotionProducts.map((p) => p.productId)
+      );
+      const newItems = selectedProducts
+        .filter((p) => !existingById.has(p.productId))
+        .map((p) => ({
+          id: null,
+          productId: p.productId,
+          name: p.name,
+          originalPrice: p.originalPrice ?? 0,
+          // use null for empty numeric fields so backend BigDecimal parsing won't fail
+          promotionPrice: null,
+          discountPercentage: null,
+          stockQuantity: 1,
+          maxQuantityPerUser: 1,
+          active: true,
+        }));
+      return {
+        ...prev,
+        promotionProducts: [...prev.promotionProducts, ...newItems],
+      };
+    });
+  };
+
+  const handleRemoveProduct = async (identifier) => {
+    if (identifier === null || identifier === undefined) return;
+
+    // Tìm item hiện tại trong state (có thể match bằng promotionProduct.id (db id) hoặc productId)
+    const item = formData.promotionProducts.find(
+      (p) => p.id === identifier || p.productId === identifier
+    );
+    if (!item) return;
+
+    // determine productId to send to backend (backend expects productId)
+    const productIdToSend =
+      item.productId ??
+      (item.product && (item.product.id ?? item.productId)) ??
+      null;
+
+    // Nếu đang edit promotion và có productId hợp lệ -> gọi API DELETE
+    if (promotion && productIdToSend != null) {
+      try {
+        // use promotionProduct id or productId as removing key for UI feedback
+        setRemovingProductId(item.id ?? productIdToSend);
+        await removeProduct({
+          promotionId: promotion.id,
+          productId: productIdToSend,
+          lang: language,
+        });
+        // Remove locally after successful server removal
+        setFormData((prev) => ({
+          ...prev,
+          promotionProducts: prev.promotionProducts.filter(
+            (p) => p.id !== item.id && p.productId !== productIdToSend
+          ),
+        }));
+        toast.success(
+          t("admin.promotion.form.product_remove_success") ||
+            "Product removed from promotion"
+        );
+      } catch (err) {
+        console.error("Error removing product from promotion:", err);
+        const msg =
+          err?.response?.data?.message ||
+          err.message ||
+          t("admin.promotion.form.product_remove_error") ||
+          "Failed to remove product";
+        toast.error(msg);
+      } finally {
+        setRemovingProductId(null);
+      }
+    } else {
+      // Nếu không có productId (ví dụ item chưa đầy đủ) hoặc đang tạo mới -> chỉ xóa local
+      setFormData((prev) => ({
+        ...prev,
+        promotionProducts: prev.promotionProducts.filter(
+          (p) => p.id !== identifier && p.productId !== identifier
+        ),
+      }));
+      // Nếu đang edit nhưng không có productId, thông báo cho user
+      if (promotion && item.id != null && productIdToSend == null) {
+        toast.warn(
+          t("admin.promotion.form.product_remove_local_only") ||
+            "Removed locally (no productId available to sync with server)"
+        );
+      }
+    }
+  };
+
+  // Xử lý thay đổi trường promotionPrice hoặc discountPercentage cho sản phẩm
+  const handleProductFieldChange = (productId, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      promotionProducts: prev.promotionProducts.map((p) => {
+        if (p.productId !== productId) return p;
+        // Đảm bảo chỉ một trong hai trường được điền
+        const updated = { ...p, [field]: value };
+        if (field === "promotionPrice" && value !== "" && value !== null) {
+          updated.discountPercentage = "";
+        }
+        if (field === "discountPercentage" && value !== "" && value !== null) {
+          updated.promotionPrice = "";
+        }
+        return updated;
+      }),
+    }));
+  };
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
+    if (type === "file") {
+      setFormData((prev) => ({ ...prev, [name]: files[0] || null }));
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -98,6 +253,19 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     }
   };
 
+  // helper: round to 2 decimals
+  const round2 = (n) => {
+    if (isNaN(n) || n === null) return null;
+    return Math.round(Number(n) * 100) / 100;
+  };
+
+  // helper: calculate discount percentage given original & promotion price
+  const calculateDiscountPercentage = (original, promo) => {
+    if (!original || original <= 0) return 0;
+    const disc = ((original - promo) / original) * 100;
+    return round2(disc);
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -106,27 +274,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.name = t("admin.promotion.form.promotion_name_required");
     }
 
-    if (!formData.type.trim()) {
+    if (!formData.type || !formData.type.trim()) {
       newErrors.type = t("admin.promotion.form.type_required");
     }
 
-    // Validation cho value dựa trên type
-    if (formData.type === "FREE_SHIPPING") {
-      // FREE_SHIPPING không cần value
-    } else if (formData.type === "BUY_ONE_GET_ONE") {
-      // BUY_ONE_GET_ONE có thể không cần value
-    } else {
-      // PERCENTAGE và FIXED_AMOUNT cần value
-      if (!formData.value || parseFloat(formData.value) <= 0) {
-        newErrors.value = t("admin.promotion.form.value_required");
-      }
-
-      if (formData.type === "PERCENTAGE" && parseFloat(formData.value) > 100) {
-        newErrors.value = t("admin.promotion.form.value_percentage_max");
-      }
-    }
-
-    // Validate dates
     if (!formData.startDate) {
       newErrors.startDate = t("admin.promotion.form.start_date_required");
     }
@@ -154,69 +305,172 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.maxUsages = t("admin.promotion.form.max_usages_error");
     }
 
+    // Validate promotionProducts presence (backend: @NotEmpty)
+    if (
+      !formData.promotionProducts ||
+      formData.promotionProducts.length === 0
+    ) {
+      newErrors.promotionProducts = t(
+        "admin.promotion.form.promotion_products_required" // add i18n key or fallback shown below
+      );
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Helper function để xử lý value dựa trên type
-  const getValueForType = (type, value) => {
-    switch (type) {
-      case "FREE_SHIPPING":
-        return 0; // Backend cần value = 0 cho FREE_SHIPPING
-      case "BUY_ONE_GET_ONE":
-        return parseFloat(value) || 1; // Default = 1 cho BUY_ONE_GET_ONE
-      case "PERCENTAGE":
-      case "FIXED_AMOUNT":
-        return parseFloat(value);
-      default:
-        return parseFloat(value) || 0;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[handleSubmit] start", { promotion: !!promotion, formData });
 
     if (!validateForm()) {
+      console.log("[handleSubmit] validation failed", { errors });
       return;
     }
 
-    // Format data theo PromotionRequest
+    const productErrors = [];
+    const processedProducts = [];
+
+    for (const p of formData.promotionProducts) {
+      console.log(`[handleSubmit] processing product ${p.productId}`, p);
+      const original = Number(p.originalPrice ?? 0);
+      let promotionPrice =
+        p.promotionPrice !== undefined &&
+        p.promotionPrice !== null &&
+        p.promotionPrice !== ""
+          ? Number(p.promotionPrice)
+          : null;
+      let discountPercentage =
+        p.discountPercentage !== undefined &&
+        p.discountPercentage !== null &&
+        p.discountPercentage !== ""
+          ? Number(p.discountPercentage)
+          : null;
+
+      // If neither provided -> invalid (CreatePromotionRequest requires promotionPrice non-null)
+      if (promotionPrice === null && discountPercentage === null) {
+        productErrors.push(
+          `product ${p.productId}: promotionPrice or discountPercentage required`
+        );
+        continue;
+      }
+
+      // If only discount -> compute promotionPrice
+      if (promotionPrice === null && discountPercentage !== null) {
+        if (discountPercentage < 0 || discountPercentage > 100) {
+          productErrors.push(
+            `product ${p.productId}: discountPercentage must be between 0 and 100`
+          );
+          continue;
+        }
+        promotionPrice = round2(original * (1 - discountPercentage / 100));
+      }
+      // If only promotionPrice -> compute discount
+      else if (promotionPrice !== null && discountPercentage === null) {
+        if (original <= 0) {
+          discountPercentage = 0;
+        } else {
+          discountPercentage = calculateDiscountPercentage(
+            original,
+            promotionPrice
+          );
+        }
+      } else if (promotionPrice !== null && discountPercentage !== null) {
+        // both provided -> basic consistency check
+        const expected = calculateDiscountPercentage(original, promotionPrice);
+        if (Math.abs(expected - discountPercentage) > 1) {
+          discountPercentage = expected;
+        }
+      }
+
+      // Validate promotionPrice < original (if original > 0)
+      if (original > 0 && promotionPrice >= original) {
+        productErrors.push(
+          `product ${p.productId}: promotionPrice must be less than original price`
+        );
+        continue;
+      }
+
+      // Validate stock & maxQuantity for new items (if id is null assume new)
+      if (p.id == null) {
+        if (p.stockQuantity == null || p.stockQuantity === "") {
+          productErrors.push(
+            `product ${p.productId}: stockQuantity is required for new promotion product`
+          );
+          continue;
+        }
+        if (p.maxQuantityPerUser == null || p.maxQuantityPerUser === "") {
+          productErrors.push(
+            `product ${p.productId}: maxQuantityPerUser is required for new promotion product`
+          );
+          continue;
+        }
+      }
+
+      // normalize numeric fields
+      const normalized = {
+        id: p.id ?? undefined,
+        productId: p.productId,
+        promotionPrice: round2(promotionPrice),
+        discountPercentage: round2(discountPercentage),
+        stockQuantity:
+          p.stockQuantity != null ? parseInt(p.stockQuantity) : null,
+        maxQuantityPerUser:
+          p.maxQuantityPerUser != null ? parseInt(p.maxQuantityPerUser) : null,
+        active: p.active !== undefined ? p.active : true,
+      };
+      processedProducts.push(normalized);
+    }
+
+    if (productErrors.length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        promotionProducts: productErrors.join("; "),
+      }));
+      return;
+    }
+
+    // Format data theo CreatePromotionRequest (backend expects part 'promotion' as JSON)
     const submitData = {
       name: formData.name.trim(),
       description: formData.description?.trim() || null,
-      type: formData.type,
-      value: getValueForType(formData.type, formData.value),
-      minOrderAmount: formData.minOrderAmount
-        ? parseFloat(formData.minOrderAmount)
-        : 0,
-      maxUsages: formData.maxUsages ? parseInt(formData.maxUsages) : 100000,
-      startDate: formData.startDate, // Format yyyy-MM-dd
-      endDate: formData.endDate, // Format yyyy-MM-dd
+      type: formData.type, // must be one of backend enum strings
+      startDate: formData.startDate, // yyyy-MM-dd
+      endDate: formData.endDate, // yyyy-MM-dd
       active: formData.active,
+      promotionProducts: processedProducts,
+      // bannerFile handled by promotionAPI via FormData; we still attach here and promotionAPI will include it
+      bannerFile: formData.bannerFile || undefined,
     };
+
+    console.log("[handleSubmit] submitData prepared", submitData);
 
     try {
       if (promotion) {
-        // Cập nhật promotion
-        await updatePromotion({
+        const res = await updatePromotion({
           promotionId: promotion.id,
           promotionData: submitData,
           lang: language,
         });
+        // console.log("[handleSubmit] updatePromotion response", res);
         toast.success(t("admin.promotion.form.update_success"));
       } else {
-        // Tạo promotion mới
-        await createPromotion({
+        console.log("[handleSubmit] calling createPromotion", language);
+        const res = await createPromotion({
           promotionData: submitData,
           lang: language,
         });
+        // console.log("[handleSubmit] createPromotion response", res);
         toast.success(t("admin.promotion.form.create_success"));
       }
 
       // Đóng form sau khi thành công
       onClose();
     } catch (error) {
-      console.error("Error submitting promotion:", error);
+      console.error("[handleSubmit] Error submitting promotion:", error);
+      if (error?.response) {
+        console.error("[handleSubmit] error.response:", error.response);
+      }
 
       // Improved error handling
       let errorMessage = t("admin.promotion.form.create_error");
@@ -235,131 +489,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     }
   };
 
-  // Function để render icon dựa trên type
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case "PERCENTAGE":
-        return <IconPercentage size={16} className="text-gray-400" />;
-      case "FIXED_AMOUNT":
-        return <IconCurrencyDollar size={16} className="text-gray-400" />;
-      case "FREE_SHIPPING":
-        return <IconTruck size={16} className="text-gray-400" />;
-      case "BUY_ONE_GET_ONE":
-        return <IconGift size={16} className="text-gray-400" />;
-      default:
-        return <IconPercentage size={16} className="text-gray-400" />;
-    }
-  };
-
-  // Function để render value input dựa trên type
-  const renderValueInput = () => {
-    if (formData.type === "FREE_SHIPPING") {
-      return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("admin.promotion.form.free_shipping_title")}
-          </label>
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-3">
-              <div className="bg-purple-600 p-2 rounded-lg">
-                <IconTruck size={16} className="text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-purple-800">
-                  {t("admin.promotion.form.free_shipping_desc")}
-                </p>
-                <p className="text-xs text-purple-600">
-                  {t("admin.promotion.form.free_shipping_note")}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (formData.type === "BUY_ONE_GET_ONE") {
-      return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("admin.promotion.form.buy_one_get_one_title")}
-          </label>
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-3">
-              <div className="bg-orange-600 p-2 rounded-lg">
-                <IconGift size={16} className="text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-orange-800">
-                  {t("admin.promotion.form.buy_one_get_one_desc")}
-                </p>
-                <p className="text-xs text-orange-600">
-                  {t("admin.promotion.form.buy_one_get_one_note")}
-                </p>
-              </div>
-            </div>
-          </div>
-          <input type="hidden" name="value" value="1" />
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t("admin.promotion.form.value")} *
-        </label>
-        <div className="relative">
-          <input
-            type="number"
-            name="value"
-            value={formData.value}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            min="0"
-            step="0.01"
-            max={formData.type === "PERCENTAGE" ? "100" : undefined}
-            className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
-              errors.value
-                ? "border-red-500 bg-red-50"
-                : "border-gray-300 hover:border-gray-400"
-            }`}
-            placeholder={t("admin.promotion.form.value_placeholder")}
-            required
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            {getTypeIcon(formData.type)}
-          </div>
-        </div>
-        {formData.type === "PERCENTAGE" && (
-          <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-            <IconInfoCircle size={12} />
-            {t("admin.promotion.form.value_percentage_hint")}
-          </p>
-        )}
-        {formData.type === "FIXED_AMOUNT" && (
-          <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-            <IconInfoCircle size={12} />
-            {t("admin.promotion.form.value_fixed_amount_hint")}
-          </p>
-        )}
-        {errors.value && (
-          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-            <IconX size={12} />
-            {errors.value}
-          </p>
-        )}
-      </div>
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -431,24 +564,224 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </p>
                 )}
               </div>
-
-              {/* Mô tả */}
-              <div>
+              {/* Mô tả (không bắt buộc) */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.promotion.form.description")}
+                  {t("admin.promotion.form.description") || "Description"}
                 </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
-                  placeholder={t(
-                    "admin.promotion.form.description_placeholder"
-                  )}
+                  rows={4}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 border-gray-300 hover:border-gray-400"
+                  placeholder={
+                    t("admin.promotion.form.description_placeholder") ||
+                    "Optional description..."
+                  }
                 />
               </div>
+
+              {/* Banner file input + Select products button */}
+              <div className="mb-4 flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.promotion.form.banner_file")}
+                  </label>
+                  <input
+                    type="file"
+                    name="bannerFile"
+                    accept="image/*"
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {t("admin.promotion.form.banner_file_note")}
+                  </p>
+                </div>
+
+                <div className="w-full md:w-44">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.promotion.form.select_products") ||
+                      "Apply to products"}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setProductModalOpen(true)}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {t("admin.promotion.form.select_products_button") ||
+                      "Select products"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Show product-level validation errors */}
+              {errors.promotionProducts && (
+                <div className="mt-2">
+                  <p className="text-red-500 text-sm flex items-start gap-2">
+                    <IconX size={14} />
+                    <span>{errors.promotionProducts}</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Selected products list */}
+              {formData.promotionProducts &&
+                formData.promotionProducts.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-sm font-medium text-gray-700 mb-2">
+                      {t("admin.promotion.selected_products") ||
+                        "Selected products"}
+                    </div>
+                    <div className="space-y-3">
+                      {formData.promotionProducts.map((p) => (
+                        <div
+                          key={p.id ?? p.productId ?? idx}
+                          className="flex items-center gap-3 border border-gray-200 rounded-md shadow-sm p-3 "
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium">{p.name}</div>
+                            <div className="text-xs text-gray-500">
+                              Original:{" "}
+                              {(p.originalPrice ?? 0).toLocaleString()} VND
+                            </div>
+                          </div>
+
+                          <div className="w-36">
+                            <label className="text-xs text-gray-600">
+                              Promotion Price
+                            </label>
+                            <input
+                              type="number"
+                              value={p.promotionPrice ?? ""}
+                              min="0"
+                              step="10000"
+                              onChange={(e) =>
+                                handleProductFieldChange(
+                                  p.productId,
+                                  "promotionPrice",
+                                  e.target.value === ""
+                                    ? ""
+                                    : Number(e.target.value)
+                                )
+                              }
+                              disabled={
+                                isSubmitting ||
+                                (p.discountPercentage !== null &&
+                                  p.discountPercentage !== "")
+                              }
+                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                            />
+                          </div>
+
+                          <div className="w-28">
+                            <label className="text-xs text-gray-600">
+                              Discount %
+                            </label>
+                            <input
+                              type="number"
+                              value={p.discountPercentage ?? ""}
+                              min="0"
+                              max="100"
+                              step="1"
+                              onChange={(e) =>
+                                handleProductFieldChange(
+                                  p.productId,
+                                  "discountPercentage",
+                                  e.target.value === ""
+                                    ? ""
+                                    : Number(e.target.value)
+                                )
+                              }
+                              disabled={
+                                isSubmitting ||
+                                (p.promotionPrice !== null &&
+                                  p.promotionPrice !== "")
+                              }
+                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                            />
+                          </div>
+
+                          <div className="w-24">
+                            <label className="text-xs text-gray-600">
+                              Stock
+                            </label>
+                            <input
+                              type="number"
+                              value={p.stockQuantity}
+                              min="0"
+                              step="1"
+                              onChange={(e) =>
+                                handleProductFieldChange(
+                                  p.productId,
+                                  "stockQuantity",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                            />
+                          </div>
+
+                          <div className="w-28">
+                            <label className="text-xs text-gray-600">
+                              Max/User
+                            </label>
+                            <input
+                              type="number"
+                              value={p.maxQuantityPerUser}
+                              min="1"
+                              step="1"
+                              onChange={(e) =>
+                                handleProductFieldChange(
+                                  p.productId,
+                                  "maxQuantityPerUser",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                            />
+                          </div>
+
+                          <div>
+                            <button
+                              type="button"
+                              // truyền productId nếu có, còn không truyền id (local)
+                              onClick={() =>
+                                handleRemoveProduct(p.productId ?? p.id)
+                              }
+                              disabled={
+                                isSubmitting ||
+                                removingProductId === (p.id ?? p.productId)
+                              }
+                              className={`text-sm px-2 ${
+                                removingProductId === (p.id ?? p.productId)
+                                  ? "text-gray-500 cursor-not-allowed"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {removingProductId === (p.id ?? p.productId) ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <IconLoader2
+                                    size={12}
+                                    className="animate-spin"
+                                  />
+                                  {t("admin.promotion.form.removing") ||
+                                    "Removing..."}
+                                </span>
+                              ) : (
+                                t("admin.promotion.form.remove") || "Remove"
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
 
             {/* Promotion Type & Value Section */}
@@ -471,58 +804,19 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                     required
                   >
-                    <option value="PERCENTAGE">
-                      {t("admin.promotion.form.type_percentage")}
+                    <option value="NEW_CUSTOMER_DISCOUNT">
+                      New Customer Discount
                     </option>
-                    <option value="FIXED_AMOUNT">
-                      {t("admin.promotion.form.type_fixed_amount")}
-                    </option>
-                    <option value="FREE_SHIPPING">
-                      {t("admin.promotion.form.type_free_shipping")}
-                    </option>
-                    <option value="BUY_ONE_GET_ONE">
-                      {t("admin.promotion.form.type_buy_one_get_one")}
-                    </option>
+                    <option value="FLASH_SALE">Flash Sale</option>
+                    <option value="SEASONAL_EVENT">Seasonal Event</option>
+                    <option value="CLEARANCE_SALE">Clearance Sale</option>
+                    <option value="HOLIDAY_PROMOTION">Holiday Promotion</option>
+                    <option value="GENERAL_DISCOUNT">General Discount</option>
                   </select>
                   {errors.type && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <IconX size={12} />
                       {errors.type}
-                    </p>
-                  )}
-                </div>
-
-                {renderValueInput()}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("admin.promotion.form.min_order_amount")}
-                  </label>
-                  <input
-                    type="number"
-                    name="minOrderAmount"
-                    value={formData.minOrderAmount}
-                    onChange={handleChange}
-                    disabled={isSubmitting}
-                    min="0"
-                    step="1000"
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
-                      errors.minOrderAmount
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    placeholder={t(
-                      "admin.promotion.form.min_order_amount_placeholder"
-                    )}
-                  />
-                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                    <IconInfoCircle size={12} />
-                    {t("admin.promotion.form.min_order_amount_hint")}
-                  </p>
-                  {errors.minOrderAmount && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <IconX size={12} />
-                      {errors.minOrderAmount}
                     </p>
                   )}
                 </div>
@@ -536,7 +830,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 {t("admin.promotion.form.time_limits_section")}
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("admin.promotion.form.start_date")} *
@@ -587,7 +881,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   )}
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("admin.promotion.form.max_usages")}
                   </label>
@@ -618,7 +912,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                       {errors.maxUsages}
                     </p>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -684,6 +978,15 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           </form>
         </div>
       </div>
+
+      {/* Product select modal */}
+      <ProductSelectModal
+        open={productModalOpen}
+        onClose={() => setProductModalOpen(false)}
+        onConfirm={handleAddProducts}
+        preSelected={formData.promotionProducts}
+        lang={language}
+      />
     </div>
   );
 };

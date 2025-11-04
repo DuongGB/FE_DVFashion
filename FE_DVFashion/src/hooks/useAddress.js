@@ -6,15 +6,20 @@ export const useAddress = () => {
   const queryClient = useQueryClient();
 
   // Get all addresses
-  const {
-    data: addresses,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["addresses"],
     queryFn: addressAPI.getAllAddress,
-    select: (response) => response.data || [],
+    select: (res) => {
+      // Normalize various possible shapes to an array
+      if (!res) return [];
+      if (Array.isArray(res)) return res;
+      if (Array.isArray(res.data)) return res.data;
+      if (Array.isArray(res?.data?.data)) return res.data.data;
+      return [];
+    },
   });
+
+  const addresses = data || [];
 
   // Get default address
   const defaultAddress = addresses?.find((addr) => addr.isDefault);
@@ -56,6 +61,19 @@ export const useAddress = () => {
     },
   });
 
+  // Expose helpers to fetch provinces/districts/wards via backend
+  const fetchProvinces = async () => {
+    return addressAPI.getProvinces();
+  };
+
+  const fetchDistricts = async (provinceId) => {
+    return addressAPI.getDistrictsByProvince(provinceId);
+  };
+
+  const fetchWards = async (districtId) => {
+    return addressAPI.getWardsByDistrict(districtId);
+  };
+
   return {
     addresses,
     defaultAddress,
@@ -67,5 +85,8 @@ export const useAddress = () => {
     createAddressLoading: createAddressMutation.isPending,
     updateAddressLoading: updateAddressMutation.isPending,
     deleteAddressLoading: deleteAddressMutation.isPending,
+    fetchProvinces,
+    fetchDistricts,
+    fetchWards,
   };
 };

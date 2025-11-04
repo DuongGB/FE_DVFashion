@@ -463,7 +463,12 @@ export default function InventoryPage() {
                   <td className="p-2">{inventory.id}</td>
                   <td className="p-2">
                     <div>
-                      <div className="font-medium">{inventory.productName}</div>
+                      <div
+                        className="font-medium max-w-[180px] truncate"
+                        title={inventory.productName}
+                      >
+                        {inventory.productName}
+                      </div>
                     </div>
                   </td>
                   <td className="p-2">{inventory.productColor}</td>

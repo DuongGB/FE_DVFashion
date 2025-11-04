@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { IconX, IconMapPin, IconMap } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import AddressMap from "./AddressMap";
-
+import { useAddress } from "../../../hooks/useAddress";
 export default function AddressModal({
   isOpen,
   onClose,
@@ -11,6 +11,8 @@ export default function AddressModal({
   isLoading = false,
 }) {
   const { t } = useTranslation();
+  const { fetchProvinces, fetchDistricts, fetchWards } = useAddress();
+
   const [showMap, setShowMap] = useState(false);
   const [isMapSelection, setIsMapSelection] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +36,7 @@ export default function AddressModal({
     isLoading: false,
   });
 
-  // Load provinces when component mounts
+  // Load provinces when component mounts / modal opens
   useEffect(() => {
     if (isOpen) {
       loadProvinces();
@@ -44,7 +46,7 @@ export default function AddressModal({
   useEffect(() => {
     if (editAddress) {
       setFormData(editAddress);
-      // Load wards for the existing city if it exists
+      // Load districts and wards for existing city if available
       if (editAddress.city) {
         loadDistrictsAndWardsForExistingCity(
           editAddress.city,
@@ -68,15 +70,19 @@ export default function AddressModal({
     setIsMapSelection(false);
   }, [editAddress, isOpen]);
 
-  // Load provinces
+  // Load provinces (from backend via useAddress.fetchProvinces)
   const loadProvinces = async () => {
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch("https://provinces.open-api.vn/api/p/");
-      const provinces = await response.json();
+      const provinces = await fetchProvinces();
+      // backend returns { provinceId, provinceName }
+      const mapped = (provinces || []).map((p) => ({
+        code: p.provinceId?.toString(),
+        name: p.provinceName,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        provinces,
+        provinces: mapped,
         districts: [],
         wards: [],
         isLoading: false,
@@ -87,55 +93,64 @@ export default function AddressModal({
     }
   };
 
-  // Load districts and wards for existing city (when editing)
+  // Load districts and wards for an existing city name (used when editing)
   const loadDistrictsAndWardsForExistingCity = async (
     cityName,
     districtName
   ) => {
     if (!cityName) return;
-
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      // Find province by name to get its code
-      const provinceResponse = await fetch(
-        "https://provinces.open-api.vn/api/p/"
-      );
-      const provinces = await provinceResponse.json();
+      // find province by name
+      const provinces = locationData.provinces.length
+        ? locationData.provinces
+        : (await fetchProvinces()).map((p) => ({
+            code: p.provinceId?.toString(),
+            name: p.provinceName,
+          }));
       const province = provinces.find((p) => p.name === cityName);
-
-      if (province) {
-        // Fetch districts for the province
-        const districtResponse = await fetch(
-          `https://provinces.open-api.vn/api/p/${province.code}?depth=2`
-        );
-        const provinceData = await districtResponse.json();
-        const districts = provinceData.districts || [];
-
-        // Find the current district to populate wards
-        const currentDistrict = districts.find((d) => d.name === districtName);
-        const wards = currentDistrict ? currentDistrict.wards : [];
-
-        setLocationData((prev) => ({
-          ...prev,
-          provinces,
-          districts,
-          wards,
-          isLoading: false,
-        }));
-      } else {
+      if (!province) {
         setLocationData((prev) => ({ ...prev, isLoading: false }));
+        return;
       }
+      // fetch districts by provinceId
+      const districtsRaw = await fetchDistricts(parseInt(province.code, 10));
+      const mappedDistricts = (districtsRaw || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
+      // find district object to fetch wards
+      const currentDistrict = mappedDistricts.find(
+        (d) => d.name === districtName
+      );
+      let mappedWards = [];
+      if (currentDistrict) {
+        const wardsRaw = await fetchWards(currentDistrict.id);
+        mappedWards = (wardsRaw || []).map((w) => ({
+          code: w.wardCode,
+          name: w.wardName,
+        }));
+      }
+      setLocationData((prev) => ({
+        ...prev,
+        provinces,
+        districts: mappedDistricts,
+        wards: mappedWards,
+        isLoading: false,
+      }));
     } catch (error) {
-      console.error("Error loading location data for existing city:", error);
+      console.error("Error loading districts/wards for existing city:", error);
       setLocationData((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
-  // Handle province change
+  // Handle province change (provinceCode is provinceId as string)
   const handleProvinceChange = async (provinceCode) => {
     setIsMapSelection(false);
+    const provinceId = provinceCode ? parseInt(provinceCode, 10) : null;
     const province = locationData.provinces.find(
-      (p) => p.code.toString() === provinceCode
+      (p) => p.code === provinceCode
     );
 
     setFormData((prev) => ({
@@ -145,25 +160,27 @@ export default function AddressModal({
       ward: "",
     }));
 
-    // Clear city error if exists
     if (errors.city) {
       setErrors((prev) => ({ ...prev, city: "" }));
     }
 
-    if (!provinceCode) {
+    if (!provinceId) {
       setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
       return;
     }
 
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch(
-        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`
-      );
-      const data = await response.json();
+      const districtsRaw = await fetchDistricts(provinceId);
+      // backend districts: { districtId, provinceId, districtName, code }
+      const mapped = (districtsRaw || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        districts: data.districts || [],
+        districts: mapped,
         wards: [],
         isLoading: false,
       }));
@@ -173,11 +190,11 @@ export default function AddressModal({
     }
   };
 
-  // Handle district change
+  // Handle district change (districtCode is d.code)
   const handleDistrictChange = async (districtCode) => {
     setIsMapSelection(false);
     const district = locationData.districts.find(
-      (d) => d.code.toString() === districtCode
+      (d) => d.code?.toString() === districtCode?.toString()
     );
 
     setFormData((prev) => ({
@@ -190,20 +207,21 @@ export default function AddressModal({
       setErrors((prev) => ({ ...prev, district: "" }));
     }
 
-    if (!districtCode) {
+    if (!district || !district.id) {
       setLocationData((prev) => ({ ...prev, wards: [] }));
       return;
     }
 
     setLocationData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch(
-        `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`
-      );
-      const data = await response.json();
+      const wardsRaw = await fetchWards(district.id);
+      const mapped = (wardsRaw || []).map((w) => ({
+        code: w.wardCode,
+        name: w.wardName,
+      }));
       setLocationData((prev) => ({
         ...prev,
-        wards: data.wards || [],
+        wards: mapped,
         isLoading: false,
       }));
     } catch (error) {
@@ -212,17 +230,16 @@ export default function AddressModal({
     }
   };
 
-  // Handle ward change
+  // Handle ward change (wardCode is wardCode)
   const handleWardChange = (wardCode) => {
     setIsMapSelection(false);
-    const ward = locationData.wards.find((w) => w.code.toString() === wardCode);
-
+    const ward = locationData.wards.find(
+      (w) => w.code?.toString() === wardCode?.toString()
+    );
     setFormData((prev) => ({
       ...prev,
       ward: ward ? ward.name : "",
     }));
-
-    // Clear ward error if exists
     if (errors.ward) {
       setErrors((prev) => ({ ...prev, ward: "" }));
     }
@@ -231,7 +248,7 @@ export default function AddressModal({
   // Get province code by name for select value
   const getProvinceCodeByName = (cityName) => {
     const province = locationData.provinces.find((p) => p.name === cityName);
-    return province ? province.code.toString() : "";
+    return province ? province.code?.toString() : "";
   };
 
   // Get district code by name for select value
@@ -239,41 +256,42 @@ export default function AddressModal({
     const district = locationData.districts.find(
       (d) => d.name === districtName
     );
-    return district ? district.code.toString() : "";
+    return district ? district.code?.toString() : "";
   };
 
   // Get ward code by name for select value
   const getWardCodeByName = (wardName) => {
     const ward = locationData.wards.find((w) => w.name === wardName);
-    return ward ? ward.code.toString() : "";
+    return ward ? ward.code?.toString() : "";
   };
 
+  // ...existing validation, submit, handlers remain unchanged...
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.fullName.trim()) {
+    if (!formData.fullName?.trim()) {
       newErrors.fullName = t("address.errors.fullName_required");
     }
 
-    if (!formData.phone.trim()) {
+    if (!formData.phone?.trim()) {
       newErrors.phone = t("address.errors.phone_required");
     } else if (!/^\d+$/.test(formData.phone.trim())) {
       newErrors.phone = t("address.errors.phone_invalid");
     }
 
-    if (!formData.city.trim()) {
+    if (!formData.city?.trim()) {
       newErrors.city = t("address.errors.city_required");
     }
 
-    if (!formData.district.trim()) {
+    if (!formData.district?.trim()) {
       newErrors.district = t("address.errors.district_required");
     }
 
-    if (!formData.ward.trim()) {
+    if (!formData.ward?.trim()) {
       newErrors.ward = t("address.errors.ward_required");
     }
 
-    if (!formData.street.trim()) {
+    if (!formData.street?.trim()) {
       newErrors.street = t("address.errors.street_required");
     }
 
@@ -326,7 +344,6 @@ export default function AddressModal({
   };
 
   const handleToggleMap = () => {
-    // Nếu đang hiển thị bản đồ và sắp ẩn đi, hãy cho phép chỉnh sửa thủ công trở lại
     if (showMap) {
       setIsMapSelection(false);
       setFormData((prev) => ({ ...prev, street: "" }));

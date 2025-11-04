@@ -22,8 +22,26 @@ export const useCreateOrder = () => {
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: createOrder,
+    mutationFn: async (payload) => {
+      // prevent duplicate create if another request in progress (60s window)
+      const inProgress = localStorage.getItem("creatingOrderInProgress");
+      const now = Date.now();
+      if (inProgress && now - Number(inProgress) < 60_000) {
+        // throw so onError runs and user sees message
+        const err = new Error(
+          t("order.create_in_progress") ||
+            "Order creation already in progress. Please wait."
+        );
+        throw err;
+      }
+      // set lock timestamp
+      localStorage.setItem("creatingOrderInProgress", String(now));
+      return createOrder(payload);
+    },
     onSuccess: (data) => {
+      // remove lock
+      localStorage.removeItem("creatingOrderInProgress");
+
       const orderResponse = data.data;
       toast.success(t("order.create_success"));
 
@@ -40,7 +58,11 @@ export const useCreateOrder = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      error.response?.data?.message || t("order.create_fail");
+      // remove lock on error so user can retry
+      localStorage.removeItem("creatingOrderInProgress");
+      toast.error(
+        error.response?.data?.message || error.message || t("order.create_fail")
+      );
     },
   });
 };

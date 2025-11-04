@@ -33,6 +33,8 @@ import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import SearchProductPage from "./pages/SearchProductPage";
 import StaffPage from "./pages/staff/StaffPage";
+import CategoryProductPage from "./pages/CategoryProductPage";
+import VoucherPage from "./pages/admin/VoucherPage";
 
 function App() {
   return (
@@ -57,11 +59,12 @@ function App() {
               <Route path="reports" element={<AnalystReportPage />} />
               <Route path="forecasts" element={<ForecastPage />} />
               <Route path="orders" element={<OrderPage />} />
+              <Route path="vouchers" element={<VoucherPage />} />
             </Route>
           </Route>
 
           {/* Staff routes - cho phép cả ROLE_STAFF và ROLE_ADMIN */}
-          <Route
+          {/* <Route
             element={
               <ProtectedRoute allowedRoles={["ROLE_STAFF", "ROLE_ADMIN"]} />
             }
@@ -76,7 +79,7 @@ function App() {
               <Route path="products" element={<ProductPage />} />
               <Route path="inventories" element={<InventoryPage />} />
             </Route>
-          </Route>
+          </Route> */}
 
           {/* Main layout routes */}
           <Route element={<MainLayout />}>
@@ -84,6 +87,7 @@ function App() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/search" element={<SearchProductPage />} />
+            <Route path="/products" element={<CategoryProductPage />} />
 
             <Route
               element={

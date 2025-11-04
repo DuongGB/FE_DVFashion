@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useOrderByOrderNumber } from "../../hooks/useOrder";
 import { useTranslation } from "react-i18next";
 import { IconCheck, IconArrowLeft } from "@tabler/icons-react";
-import { RingLoader } from "react-spinners"; // dùng để hiển thị loading spinner khi đang tải dữ liệu đơn hàng
+import { RingLoader } from "react-spinners";
 
 export default function OrderSuccessPage() {
   const { orderNumber } = useParams();
@@ -41,6 +41,23 @@ export default function OrderSuccessPage() {
     );
   }
 
+  // safe format helpers
+  const formatCurrency = (value) => {
+    if (value == null) return "-";
+    const n = Number(value);
+    if (Number.isNaN(n)) return String(value);
+    return n.toLocaleString() + "đ";
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "-";
+    try {
+      return new Date(value).toLocaleString();
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
@@ -70,13 +87,15 @@ export default function OrderSuccessPage() {
               <div>
                 <p className="text-gray-500">{t("order.date")}</p>
                 <p className="font-medium text-gray-900">
-                  {new Date(order.orderDate).toLocaleString()}
+                  {order.orderDate
+                    ? new Date(order.orderDate).toLocaleString()
+                    : "-"}
                 </p>
               </div>
               <div>
                 <p className="text-gray-500">{t("order.total_amount")}</p>
                 <p className="font-medium text-gray-900">
-                  {order.totalAmount.toLocaleString()}đ
+                  {formatCurrency(order.totalAmount)}
                 </p>
               </div>
               <div>
@@ -84,6 +103,28 @@ export default function OrderSuccessPage() {
                 <span className="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
                   {order.status}
                 </span>
+              </div>
+
+              {/* Shipping fee */}
+              <div>
+                <p className="text-gray-500">
+                  {t("order.shipping_fee") || "Phí vận chuyển"}
+                </p>
+                <p className="font-medium text-gray-900">
+                  {formatCurrency(order.shippingFee)}
+                </p>
+              </div>
+
+              {/* Estimated delivery time */}
+              <div>
+                <p className="text-gray-500">
+                  {t("order.estimated_delivery") || "Dự kiến giao"}
+                </p>
+                <p className="font-medium text-gray-900">
+                  {order.estimatedDeliveryTime
+                    ? formatDateTime(order.estimatedDeliveryTime)
+                    : order.deliveryTimeText || "-"}
+                </p>
               </div>
             </div>
           </div>
@@ -97,6 +138,18 @@ export default function OrderSuccessPage() {
               <p className="font-bold">{order.shippingInfo.fullName}</p>
               <p>{order.shippingInfo.phone}</p>
               <p>{order.shippingInfo.fullAddress}</p>
+
+              {/* show estimated delivery again near shipping info (if available) */}
+              {order.estimatedDeliveryTime || order.deliveryTimeText ? (
+                <p className="mt-2 text-sm text-gray-600">
+                  <strong>
+                    {t("order.estimated_delivery") || "Dự kiến giao"}:
+                  </strong>{" "}
+                  {order.estimatedDeliveryTime
+                    ? formatDateTime(order.estimatedDeliveryTime)
+                    : order.deliveryTimeText}
+                </p>
+              ) : null}
             </div>
           </div>
 
