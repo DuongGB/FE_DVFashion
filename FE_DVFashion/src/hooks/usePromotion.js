@@ -53,6 +53,21 @@ export const usePromotion = (lang = "VI") => {
     },
   });
 
+  // Remove product from promotion mutation
+  const removeProductMutation = useMutation({
+    mutationFn: ({ promotionId, productId, lang }) =>
+      promotionAPI.removeProductFromPromotion(promotionId, productId, lang),
+    onSuccess: (_, variables) => {
+      // refresh list and single promotion cache
+      queryClient.invalidateQueries(["promotions"]);
+      queryClient.invalidateQueries(["promotion", variables.promotionId]);
+    },
+    onError: (error) => {
+      console.error("Remove product from promotion error:", error);
+      throw error;
+    },
+  });
+
   // Get promotion by ID mutation
   const usePromotionById = (promotionId, enabled = false) => {
     return useQuery({
@@ -62,6 +77,20 @@ export const usePromotion = (lang = "VI") => {
       select: (data) => data.data,
     });
   };
+
+  // Delete promotion mutation
+  const deletePromotionMutation = useMutation({
+    mutationFn: ({ promotionId, lang = "VI" }) =>
+      promotionAPI.deletePromotion(promotionId, lang),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(["promotions"]);
+      queryClient.invalidateQueries(["promotion", variables.promotionId]);
+    },
+    onError: (error) => {
+      console.error("Delete promotion error:", error);
+      throw error;
+    },
+  });
 
   return {
     // Fetched data
@@ -76,6 +105,14 @@ export const usePromotion = (lang = "VI") => {
     updatePromotion: updatePromotionMutation.mutateAsync,
     isUpdating: updatePromotionMutation.isPending,
     UpdateError: updatePromotionMutation.error,
+
+    removeProduct: removeProductMutation.mutateAsync,
+    isRemoving: removeProductMutation.isPending,
+    RemoveProductError: removeProductMutation.error,
+
+    deletePromotion: deletePromotionMutation.mutateAsync,
+    isDeleting: deletePromotionMutation.isPending,
+    deleteError: deletePromotionMutation.error,
 
     getPromotionById: usePromotionById.mutateAsync,
     isLoadingPromotionById: usePromotionById.isPending,

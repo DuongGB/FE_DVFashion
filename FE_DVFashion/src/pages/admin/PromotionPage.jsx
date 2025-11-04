@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { IconEdit, IconEye, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconEye,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+} from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import PromotionForm from "../../components/ui/promotion/PromotionForm";
@@ -34,7 +40,7 @@ export default function PromotionPage() {
   const pageSize = 10;
 
   // Use promotion hook
-  const { promotions, isLoading, error, updatePromotion, createPromotion } =
+  const { promotions, isLoading, error, deletePromotion } =
     usePromotion(language);
 
   // Force re-render when language changes
@@ -47,6 +53,55 @@ export default function PromotionPage() {
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, [i18n]);
+
+  // Xử lý xóa khuyến mãi
+  const handleDeletePromotion = (promotion) => {
+    if (isStaff) {
+      toast.error(
+        t("admin.promotion.messages.staff_delete_denied") ||
+          "Nhân viên không có quyền xóa khuyến mãi!",
+        { autoClose: 2000, position: "top-center" }
+      );
+      return;
+    }
+
+    const title =
+      t("admin.promotion.actions.confirm_delete") || "Xóa khuyến mãi";
+    const message =
+      t("admin.promotion.actions.confirm_delete_message", {
+        name: promotion.name,
+      }) || `Bạn có chắc muốn xóa khuyến mãi "${promotion.name}"?`;
+    const confirmText = t("admin.promotion.actions.delete") || "Delete";
+    const cancelText = t("admin.promotion.actions.cancel") || "Cancel";
+
+    showConfirmationToast({
+      title,
+      message,
+      confirmText,
+      cancelText,
+      confirmButtonClass:
+        "bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors cursor-pointer",
+      onConfirm: async () => {
+        setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
+        try {
+          await deletePromotion({ promotionId: promotion.id, lang: language });
+          toast.success(
+            t("admin.promotion.actions.delete_success") || "Promotion deleted"
+          );
+        } catch (err) {
+          console.error("Error deleting promotion:", err);
+          const msg =
+            err?.response?.data?.message ||
+            err.message ||
+            t("admin.promotion.actions.delete_error") ||
+            "Delete failed";
+          toast.error(msg);
+        } finally {
+          setLoadingItems((prev) => ({ ...prev, status: null }));
+        }
+      },
+    });
+  };
 
   // Helper function: Chuyển đổi định dạng ngày tháng theo ngôn ngữ
   const formatDateTime = (dateTimeString) => {
@@ -189,109 +244,109 @@ export default function PromotionPage() {
   };
 
   // Handle toggle status with position preservation
-  const handleToggleStatus = async (promotion) => {
-    // Kiểm tra quyền trước khi thực hiện
-    if (isStaff) {
-      toast.error(
-        t("admin.promotion.messages.staff_status_denied") ||
-          "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!",
-        { autoClose: 2000, position: "top-center" }
-      );
-      return;
-    }
+  // const handleToggleStatus = async (promotion) => {
+  //   // Kiểm tra quyền trước khi thực hiện
+  //   if (isStaff) {
+  //     toast.error(
+  //       t("admin.promotion.messages.staff_status_denied") ||
+  //         "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!",
+  //       { autoClose: 2000, position: "top-center" }
+  //     );
+  //     return;
+  //   }
 
-    const newStatus = !promotion.active;
-    const actionText = newStatus
-      ? t("admin.promotion.actions.activate")
-      : t("admin.promotion.actions.deactivate");
+  //   const newStatus = !promotion.active;
+  //   const actionText = newStatus
+  //     ? t("admin.promotion.actions.activate")
+  //     : t("admin.promotion.actions.deactivate");
 
-    // Sử dụng translation key thay vì hardcoded text
-    const confirmText = newStatus
-      ? t("admin.promotion.actions.activate")
-      : t("admin.promotion.actions.deactivate");
+  //   // Sử dụng translation key thay vì hardcoded text
+  //   const confirmText = newStatus
+  //     ? t("admin.promotion.actions.activate")
+  //     : t("admin.promotion.actions.deactivate");
 
-    const cancelText = language === "VI" ? "Hủy" : "Cancel";
+  //   const cancelText = language === "VI" ? "Hủy" : "Cancel";
 
-    const title = newStatus
-      ? t("admin.promotion.actions.confirm_activate")
-      : t("admin.promotion.actions.confirm_deactivate");
+  //   const title = newStatus
+  //     ? t("admin.promotion.actions.confirm_activate")
+  //     : t("admin.promotion.actions.confirm_deactivate");
 
-    const message = t("admin.promotion.actions.confirm_message", {
-      action: actionText,
-      name: promotion.name,
-    });
+  //   const message = t("admin.promotion.actions.confirm_message", {
+  //     action: actionText,
+  //     name: promotion.name,
+  //   });
 
-    showConfirmationToast({
-      title,
-      message,
-      confirmText,
-      cancelText,
-      confirmButtonClass: `${
-        newStatus
-          ? "bg-green-600 hover:bg-green-700"
-          : "bg-red-600 hover:bg-red-700"
-      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
-      onConfirm: async () => {
-        // Set loading state
-        setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
+  //   showConfirmationToast({
+  //     title,
+  //     message,
+  //     confirmText,
+  //     cancelText,
+  //     confirmButtonClass: `${
+  //       newStatus
+  //         ? "bg-green-600 hover:bg-green-700"
+  //         : "bg-red-600 hover:bg-red-700"
+  //     } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
+  //     onConfirm: async () => {
+  //       // Set loading state
+  //       setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
 
-        try {
-          // Sử dụng helper function để clean data
-          const promotionData = cleanPromotionData(promotion, newStatus);
+  //       try {
+  //         // Sử dụng helper function để clean data
+  //         const promotionData = cleanPromotionData(promotion, newStatus);
 
-          await updatePromotion({
-            promotionId: promotion.id,
-            promotionData,
-            lang: language,
-          });
+  //         await updatePromotion({
+  //           promotionId: promotion.id,
+  //           promotionData,
+  //           lang: language,
+  //         });
 
-          const successMessage = newStatus
-            ? t("admin.promotion.actions.success_activate")
-            : t("admin.promotion.actions.success_deactivate");
+  //         const successMessage = newStatus
+  //           ? t("admin.promotion.actions.success_activate")
+  //           : t("admin.promotion.actions.success_deactivate");
 
-          toast.success(successMessage);
-        } catch (error) {
-          console.error("Error updating promotion status:", error);
+  //         toast.success(successMessage);
+  //       } catch (error) {
+  //         console.error("Error updating promotion status:", error);
 
-          // If unauthorized, show message and optionally redirect to login
-          const status = error?.response?.status;
-          const respData = error?.response?.data;
+  //         // If unauthorized, show message and optionally redirect to login
+  //         const status = error?.response?.status;
+  //         const respData = error?.response?.data;
 
-          if (status === 401) {
-            const msg =
-              respData?.error?.message ||
-              respData?.message ||
-              t("admin.promotion.errors.unauthorized") ||
-              "Unauthorized. Please login.";
-            toast.error(msg, { autoClose: 3000, position: "top-center" });
-            // optional: navigate to login page
-            // navigate("/login");
-            return;
-          }
+  //         if (status === 401) {
+  //           const msg =
+  //             respData?.error?.message ||
+  //             respData?.message ||
+  //             t("admin.promotion.errors.unauthorized") ||
+  //             "Unauthorized. Please login.";
+  //           toast.error(msg, { autoClose: 3000, position: "top-center" });
+  //           // optional: navigate to login page
+  //           // navigate("/login");
+  //           return;
+  //         }
 
-          // Build friendly error message
-          let errorMessage = t("admin.promotion.actions.error_activate");
+  //         // Build friendly error message
+  //         let errorMessage = t("admin.promotion.actions.error_activate");
 
-          if (respData?.message) {
-            errorMessage = respData.message;
-          } else if (respData?.error?.message) {
-            errorMessage = respData.error.message;
-          } else if (error.message) {
-            errorMessage = error.message;
-          } else {
-            errorMessage = newStatus
-              ? t("admin.promotion.actions.error_activate")
-              : t("admin.promotion.actions.error_deactivate");
-          }
+  //         if (respData?.message) {
+  //           errorMessage = respData.message;
+  //         } else if (respData?.error?.message) {
+  //           errorMessage = respData.error.message;
+  //         } else if (error.message) {
+  //           errorMessage = error.message;
+  //         } else {
+  //           errorMessage = newStatus
+  //             ? t("admin.promotion.actions.error_activate")
+  //             : t("admin.promotion.actions.error_deactivate");
+  //         }
 
-          toast.error(errorMessage);
-        } finally {
-          // Clear loading state
-          setLoadingItems((prev) => ({ ...prev, status: null }));
-        }
-      },
-    });
-  };
+  //         toast.error(errorMessage);
+  //       } finally {
+  //         // Clear loading state
+  //         setLoadingItems((prev) => ({ ...prev, status: null }));
+  //       }
+  //     },
+  //   });
+  // };
 
   // Handle error state
   if (error) {
@@ -502,9 +557,7 @@ export default function PromotionPage() {
                       </p>
                     </div>
                   </td>
-                  <td className="p-2">
-                    {t(`admin.promotion.type.${promo.type}`) || promo.type}
-                  </td>
+                  <td className="p-2">{promo.type}</td>
                   <td className="p-2">
                     {promo.type === "PERCENTAGE"
                       ? `${promo.value}%`
@@ -542,9 +595,8 @@ export default function PromotionPage() {
                     ) : (
                       // Admin có thể click để thay đổi
                       <button
-                        onClick={() => handleToggleStatus(promo)}
                         disabled={loadingItems.status === promo.id}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${
+                        className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150  disabled:opacity-50 hover:opacity-80 ${
                           promo.active
                             ? "bg-green-100 text-green-800 hover:bg-green-200"
                             : "bg-red-100 text-red-800 hover:bg-red-200"
@@ -600,6 +652,16 @@ export default function PromotionPage() {
                           }
                         >
                           <IconEdit size={24} />
+                        </button>
+                      )}
+                      {/* Delete button - admin only */}
+                      {!isStaff && (
+                        <button
+                          className="text-red-600 hover:text-red-800 cursor-pointer p-1 rounded over:bg-red-50 transition-colors"
+                          onClick={() => handleDeletePromotion(promo)}
+                          title={t("admin.promotion.actions.delete")}
+                        >
+                          <IconTrash size={20} />
                         </button>
                       )}
                     </div>

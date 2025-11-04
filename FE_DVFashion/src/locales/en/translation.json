@@ -809,10 +809,19 @@
         "inactive": "Inactive",
         "expired": "Expired"
       },
+      "no_banner": "No banner",
+      "open_banner": "Open banner",
+      "stats": {
+        "total": "Products",
+        "active": "Active",
+        "inactive": "Inactive",
+        "avg_discount": "Avg discount"
+      },
       "messages": {
         "staff_create_denied": "Staff cannot create promotions!",
         "staff_edit_denied": "Staff cannot edit promotions!",
-        "staff_status_denied": "Staff cannot change promotion status!"
+        "staff_status_denied": "Staff cannot change promotion status!",
+        "staff_delete_denied": "Staff does not have permission to delete promotions!"
       },
       "permissions": {
         "staff_limitations": "Staff Permissions",
@@ -848,7 +857,13 @@
         "error_activate": "Error occurred while activating promotion!",
         "error_deactivate": "Error occurred while deactivating promotion!",
         "tooltip_activate": "Click to activate",
-        "tooltip_deactivate": "Click to deactivate"
+        "tooltip_deactivate": "Click to deactivate",
+        "delete": "Delete",
+        "confirm_delete": "Confirm delete promotion",
+        "confirm_delete_message": "Are you sure you want to delete promotion \"{{name}}\"?",
+        "delete_success": "Promotion deleted successfully!",
+        "delete_error": "Error deleting promotion!",
+        "cancel": "Cancel"
       },
       "columns": {
         "id": "ID",
@@ -866,6 +881,13 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "remove": " Remove",
+        "already_added": "Already added",
+        "already_in_other": "Already included in another promotion",
+        "product_remove_success": "Product removed from promotion successfully!",
+        "product_remove_error": "Failed to remove product from promotion!",
+        "product_remove_local_only": "Removed locally (no productId available to sync with server)",
+        "removing": "Removing...",
         "banner_file": "Banner image",
         "banner_file_note": "Upload a banner image (optional). Recommended size 1200x300px.",
         "select_products": "Select applicable products",

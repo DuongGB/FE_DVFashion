@@ -810,10 +810,19 @@
         "inactive": "Không hoạt động",
         "expired": "Hết hạn"
       },
+      "no_banner": "Không có banner",
+      "open_banner": "Mở banner",
+      "stats": {
+        "total": "Tổng sản phẩm",
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "avg_discount": "Giảm trung bình"
+      },
       "messages": {
         "staff_create_denied": "Nhân viên không có quyền tạo khuyến mãi!",
         "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa khuyến mãi!",
-        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!"
+        "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!",
+        "staff_delete_denied": "Nhân viên không có quyền xóa khuyến mãi!"
       },
       "permissions": {
         "staff_limitations": "Quyền hạn nhân viên",
@@ -849,7 +858,13 @@
         "error_activate": "Có lỗi xảy ra khi kích hoạt lại khuyến mãi!",
         "error_deactivate": "Có lỗi xảy ra khi vô hiệu hóa khuyến mãi!",
         "tooltip_activate": "Click để kích hoạt lại",
-        "tooltip_deactivate": "Click để vô hiệu hóa"
+        "tooltip_deactivate": "Click để vô hiệu hóa",
+        "delete": "Xóa",
+        "confirm_delete": "Xác nhận xóa khuyến mãi",
+        "confirm_delete_message": "Bạn có chắc muốn xóa khuyến mãi \"{{name}}\" không?",
+        "delete_success": "Xóa khuyến mãi thành công!",
+        "delete_error": "Có lỗi khi xóa khuyến mãi!",
+        "cancel": "Hủy"
       },
       "columns": {
         "id": "ID",
@@ -867,6 +882,13 @@
       "showing_results": "Hiển thị {{current}} trên tổng số {{total}} khuyến mãi",
       "no_description": "Không có mô tả",
       "form": {
+        "remove": " Xóa",
+        "already_added": "Đã thêm",
+        "already_in_other": "Đã có trong khuyến mãi khác",
+        "product_remove_success": "Xóa sản phẩm khỏi khuyến mãi thành công!",
+        "product_remove_error": "Có lỗi khi xóa sản phẩm khỏi khuyến mãi!",
+        "product_remove_local_only": "Chỉ xóa cục bộ (không có productId để đồng bộ với server)",
+        "removing": "Đang xóa...",
         "banner_file": "Ảnh banner",
         "banner_file_note": "Tải lên ảnh banner (tùy chọn). Kích thước tối ưu 1200x300px.",
         "select_products": "Chọn sản phẩm áp dụng",
@@ -882,6 +904,12 @@
         "promotion_name_placeholder": "Nhập tên khuyến mãi",
         "promotion_name_required": "Tên khuyến mãi là bắt buộc",
         "description": "Mô tả",
+        "creating": "Đang tạo...",
+        "updating": "Đang cập nhật...",
+        "create_success": "Tạo khuyến mãi mới thành công!",
+        "update_success": "Cập nhật khuyến mãi thành công!",
+        "create_error": "Có lỗi xảy ra khi tạo khuyến mãi!",
+        "update_error": "Có lỗi xảy ra khi cập nhật khuyến mãi!",
         "description_placeholder": "Nhập mô tả khuyến mãi",
         "type_value_section": "Loại và giá trị khuyến mãi",
         "type": "Loại khuyến mãi",
@@ -921,13 +949,7 @@
         "status_active_desc": "Khuyến mãi sẽ có hiệu lực ngay khi được tạo và trong khoảng thời gian đã thiết lập",
         "cancel": "Hủy bỏ",
         "create_button": "Tạo khuyến mãi mới",
-        "update_button": "Cập nhật khuyến mãi",
-        "creating": "Đang tạo...",
-        "updating": "Đang cập nhật...",
-        "create_success": "Tạo khuyến mãi mới thành công!",
-        "update_success": "Cập nhật khuyến mãi thành công!",
-        "create_error": "Có lỗi xảy ra khi tạo khuyến mãi!",
-        "update_error": "Có lỗi xảy ra khi cập nhật khuyến mãi!"
+        "update_button": "Cập nhật khuyến mãi"
       },
       "detail": {
         "title": "Chi tiết khuyến mãi",

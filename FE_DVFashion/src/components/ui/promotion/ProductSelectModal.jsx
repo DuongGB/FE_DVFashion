@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { IconX, IconSearch } from "@tabler/icons-react";
 import { useProduct } from "../../../hooks/useProduct";
 import { useTranslation } from "react-i18next";
+import { usePromotion } from "../../../hooks/usePromotion";
 
 export default function ProductSelectModal({
   open,
@@ -13,14 +14,44 @@ export default function ProductSelectModal({
   const { t, i18n } = useTranslation();
   const language = i18n.language || lang;
   const { products, isLoading } = useProduct(language);
+  // Lấy danh sách khuyến mãi (dù không dùng trong UI, nhưng để đảm bảo cache được cập nhật khi có thay đổi)
+  const { promotions } = usePromotion(language);
   const [search, setSearch] = useState("");
-  const [selectedIds, setSelectedIds] = useState(
-    new Set(preSelected.map((p) => p.productId))
+
+  // existingIds là tập hợp các productId đã có trong khuyến mãi (preSelected)
+  const existingIds = useMemo(
+    () => new Set(preSelected.map((p) => p.productId)),
+    [preSelected]
   );
+
+  // promotedIds là tập hợp các productId đã có trong tất cả khuyến mãi
+  const promotedIds = useMemo(() => {
+    if (!Array.isArray(promotions)) return new Set();
+    const ids = [];
+    promotions.forEach((promo) => {
+      (promo.promotionProducts || []).forEach((pp) => {
+        const id = pp.productId ?? pp.product?.id ?? pp.productId;
+        if (id != null) ids.push(id);
+      });
+    });
+    return new Set(ids);
+  }, [promotions]);
+
+  // disabledIds là tập hợp các productId đã có trong khuyến mãi khác (không tính preSelected)
+  const disabledIds = useMemo(() => {
+    const s = new Set(promotedIds);
+    // Xóa các id đã có trong preSelected để chỉ còn lại các id của khuyến mãi khác
+    existingIds.forEach((id) => s.delete(id));
+    return s;
+  }, [promotedIds, existingIds]);
+
+  // selectedIds holds only newly selected product ids (not the existing ones)
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   useEffect(() => {
     if (open) {
-      setSelectedIds(new Set(preSelected.map((p) => p.productId)));
+      // reset selection when opening (existing items remain disabled via existingIds)
+      setSelectedIds(new Set());
     } else {
       setSearch("");
     }
@@ -40,6 +71,8 @@ export default function ProductSelectModal({
   }, [list, search]);
 
   const toggle = (id) => {
+    // Tránh chọn những sản phẩm đã tồn tại hoặc bị vô hiệu hóa
+    if (existingIds.has(id) || disabledIds.has(id)) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -128,13 +161,14 @@ export default function ProductSelectModal({
             <ul className="space-y-2">
               {filtered.map((p) => {
                 const imageUrl =
-                  // flatten all images from variants and prefer primary
                   p?.variants
                     ?.flatMap((v) => v?.images || [])
                     ?.find((img) => img?.isPrimary)?.imageUrl ||
-                  // fallback to primary image of first variant
                   p?.variants?.[0]?.images?.[0]?.imageUrl ||
                   null;
+                const isExisting = existingIds.has(p.id);
+                const isDisabled = disabledIds.has(p.id);
+                const isChecked = isExisting || selectedIds.has(p.id);
                 return (
                   <li
                     key={p.id}
@@ -143,8 +177,9 @@ export default function ProductSelectModal({
                     <label className="flex items-center gap-3 cursor-pointer w-full min-w-0">
                       <input
                         type="checkbox"
-                        checked={selectedIds.has(p.id)}
+                        checked={isChecked}
                         onChange={() => toggle(p.id)}
+                        disabled={isExisting || isDisabled}
                         className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                       />
 
@@ -163,8 +198,20 @@ export default function ProductSelectModal({
                           <div className="font-medium text-sm text-gray-800 truncate">
                             {p.name}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {p.currentPrice.toLocaleString()} VND
+                          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                            <span>{p.currentPrice.toLocaleString()} VND</span>
+                            {isExisting && (
+                              <span className="text-xs text-white bg-gray-400 px-2 py-0.5 rounded">
+                                {t("admin.promotion.form.already_added") ||
+                                  "Added"}
+                              </span>
+                            )}
+                            {isDisabled && !isExisting && (
+                              <span className="text-xs text-white bg-red-400 px-2 py-0.5 rounded">
+                                {t("admin.promotion.form.already_in_other") ||
+                                  "In other promotion"}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
