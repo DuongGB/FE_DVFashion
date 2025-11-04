@@ -58,6 +58,16 @@ export default function GeneralImportStockModal({ open, onClose }) {
     }
   };
 
+  // Thêm: xử lý khi nhấn Enter trong input để tìm kiếm
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!isFinding) {
+        handleFindInventory();
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setImportError("");
@@ -87,10 +97,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -121,6 +128,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
                 type="text"
                 value={sizeIdInput}
                 onChange={(e) => setSizeIdInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={t("admin.general_import.size_id_placeholder")}
                 disabled={isFinding}
@@ -139,9 +147,11 @@ export default function GeneralImportStockModal({ open, onClose }) {
             )}
           </div>
 
+          {/* Import Form Section */}
           {foundInventory && (
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Info */}
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
                   <h3 className="font-semibold text-lg mb-3 text-gray-700">
                     {t("admin.import_stock.product_info")}
@@ -171,6 +181,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
                     </div>
                   </div>
                 </div>
+                {/* Import Inputs */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -222,7 +233,8 @@ export default function GeneralImportStockModal({ open, onClose }) {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-300 ">
                 <button
                   type="button"
                   onClick={resetSearch}
