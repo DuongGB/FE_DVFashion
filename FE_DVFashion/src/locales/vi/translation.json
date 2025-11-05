@@ -1077,7 +1077,10 @@
         "creating": "Đang tạo...",
         "updating": "Đang cập nhật...",
         "cancel": "Hủy",
-        "min_order_amount": "Đơn hàng tối thiểu"
+        "min_order_amount": "Đơn hàng tối thiểu",
+        "min_order_amount_label": "Đơn hàng tối thiểu (VND)",
+        "max_total_usage_label": "Số lần sử dụng tối đa",
+        "max_usage_per_user_label": "Số lần sử dụng tối đa / người"
       },
       "actions": {
         "confirm_delete": "Xác nhận xóa voucher",

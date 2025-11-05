@@ -1075,7 +1075,10 @@
         "creating": "Creating...",
         "updating": "Updating...",
         "cancel": "Cancel",
-        "min_order_amount": "Min order"
+        "min_order_amount": "Min order",
+        "min_order_amount_label": "Min Order (VND)",
+        "max_total_usage_label": "Max Total Usage",
+        "max_usage_per_user_label": "Max Usage / User"
       },
       "actions": {
         "confirm_delete": "Confirm delete voucher",
