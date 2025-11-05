@@ -115,10 +115,6 @@ export default function CategoryForm({ isOpen, onClose, category }) {
       newErrors.name = t("admin.category.form.category_name_required");
     }
 
-    if (!formData.description.trim()) {
-      newErrors.description = t("admin.category.form.description_required");
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -192,10 +188,7 @@ export default function CategoryForm({ isOpen, onClose, category }) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-3xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -322,7 +315,6 @@ export default function CategoryForm({ isOpen, onClose, category }) {
                       : "border-gray-300 hover:border-gray-400"
                   }`}
                   placeholder={t("admin.category.form.description_placeholder")}
-                  required
                 />
                 {errors.description && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">

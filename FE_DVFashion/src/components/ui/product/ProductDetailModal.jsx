@@ -80,10 +80,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
     allImages.find((img) => img.isPrimary) || allImages[0] || null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
