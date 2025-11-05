@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { usePublicCategories } from "../../hooks/useCategory";
 import { useNavigate } from "react-router-dom";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"; // Import icons
-import { useTranslation } from "react-i18next"; // Import useTranslation
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+import { encodeId } from "../../utils/encodeId";
 
 export default function Category() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export default function Category() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/products?category=${category.id}`);
+    navigate(`/products?category=${encodeId(category.id)}`);
   };
 
   if (isLoading) {
@@ -104,9 +105,6 @@ export default function Category() {
                     <p className="text-sm font-medium">{cat.name}</p>
                   </div>
                 </div>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-orange-500 text-white text-xs font-semibold py-1 flex justify-center gap-2">
-                <span>{t("category.tagline")}</span>
               </div>
             </div>
             <h3 className="mt-3 text-base font-bold text-gray-800 hover:text-orange-600 transition-colors">

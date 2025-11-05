@@ -360,6 +360,7 @@
     "province_placeholder": "Enter province/city",
     "note_placeholder": "Notes (optional)",
     "other_receiver": "Deliver to someone else",
+    "shipping_fee": "Shipping Fee",
     "vat": "Issue VAT invoice",
     "payment_method": "Payment Method",
     "payment_cod": "Cash on Delivery (COD)",
@@ -372,6 +373,7 @@
     "no_address_selected": "No delivery address selected",
     "select_address": "Select Address",
     "cancel_selection": "Cancel Selection",
+    "using_selected_address_note": "Using address from address book",
     "salutation": {
       "default": "Salutation",
       "male": "Mr.",
@@ -387,7 +389,9 @@
     "processing": "PROCESSING...",
     "select_product_to_order": "Please select products to order.",
     "fill_shipping_info": "Please fill in all shipping information.",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "empty_cart": "Your cart is empty",
+    "processing_order": "Processing order, please waiting..."
   },
   "order": {
     "update_note": "Only orders with 'Pending' status or 'Processing' status can be update!",
@@ -418,6 +422,8 @@
     "items_title": "Ordered Items",
     "continue_shopping": "Continue Shopping",
     "back_to_home": "Back to Home",
+    "shipping_fee": "Shipping Fee",
+    "estimated_delivery": "Estimated Delivery",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",
@@ -781,11 +787,18 @@
       }
     },
     "promotion": {
+      "select_all": "Select all",
+      "clear_selection": "Clear selection",
+      "select_products": "Selected products",
+      "selected_products": "Products selected",
+      "search_placeholder": "Search by name, description, ID...",
+      "loading": "Loading...",
+      "no_products": "No products",
+      "cancel": "Cancel",
+      "add_selected": "Add selected",
       "title": "Promotion Management",
       "create_promotion": "Create Promotion",
-      "search_placeholder": "Search by name, description, ID...",
       "no_promotions": "No promotions found.",
-      "loading": "Loading...",
       "total_promotions": "Total Promotions",
       "active_promotions": "Active",
       "inactive_promotions": "Inactive",
@@ -798,10 +811,19 @@
         "inactive": "Inactive",
         "expired": "Expired"
       },
+      "no_banner": "No banner",
+      "open_banner": "Open banner",
+      "stats": {
+        "total": "Products",
+        "active": "Active",
+        "inactive": "Inactive",
+        "avg_discount": "Avg discount"
+      },
       "messages": {
         "staff_create_denied": "Staff cannot create promotions!",
         "staff_edit_denied": "Staff cannot edit promotions!",
-        "staff_status_denied": "Staff cannot change promotion status!"
+        "staff_status_denied": "Staff cannot change promotion status!",
+        "staff_delete_denied": "Staff does not have permission to delete promotions!"
       },
       "permissions": {
         "staff_limitations": "Staff Permissions",
@@ -837,7 +859,13 @@
         "error_activate": "Error occurred while activating promotion!",
         "error_deactivate": "Error occurred while deactivating promotion!",
         "tooltip_activate": "Click to activate",
-        "tooltip_deactivate": "Click to deactivate"
+        "tooltip_deactivate": "Click to deactivate",
+        "delete": "Delete",
+        "confirm_delete": "Confirm delete promotion",
+        "confirm_delete_message": "Are you sure you want to delete promotion \"{{name}}\"?",
+        "delete_success": "Promotion deleted successfully!",
+        "delete_error": "Error deleting promotion!",
+        "cancel": "Cancel"
       },
       "columns": {
         "id": "ID",
@@ -855,6 +883,19 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "remove": " Remove",
+        "already_added": "Already added",
+        "already_in_other": "Already included in another promotion",
+        "product_remove_success": "Product removed from promotion successfully!",
+        "product_remove_error": "Failed to remove product from promotion!",
+        "product_remove_local_only": "Removed locally (no productId available to sync with server)",
+        "removing": "Removing...",
+        "banner_file": "Banner image",
+        "banner_file_note": "Upload a banner image (optional). Recommended size 1200x300px.",
+        "select_products": "Select applicable products",
+        "select_products_button": "Select products",
+        "promotion_products_required": "Please select at least one product to apply the promotion",
+        "promotion_products_invalid": "Invalid product data: {{details}}",
         "edit_title": "Edit Promotion",
         "create_title": "Create New Promotion",
         "edit_description": "Update current promotion information",
@@ -958,6 +999,100 @@
         },
         "close": "Close"
       }
+    },
+    "voucher": {
+      "title": "Voucher Management",
+      "create": "Create Voucher",
+      "edit": "Edit Voucher",
+      "search_placeholder": "Search voucher by id, code or name...",
+      "create_description": "Create new vouchers to offer discounts to customers",
+      "edit_description": "Update existing voucher information",
+      "all_status": "All status",
+      "status": { "active": "Active", "inactive": "Inactive" },
+      "shop_wide_notice": "This voucher applies to all products in the shop.",
+      "table": {
+        "index": "#",
+        "product": "Product",
+        "price": "Price",
+        "status": "Status"
+      },
+      "type": {
+        "shop_wide": "Shop wide",
+        "product_specific": "Product specific"
+      },
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "discount": "Discount",
+        "min_order": "Min Order",
+        "usage": "Usage",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "loading": "Loading...",
+      "no_vouchers": "No vouchers found",
+      "showing": "Showing {{current}} of {{total}} vouchers",
+      "stats": {
+        "total": "Total products",
+        "active": "Active",
+        "inactive": "Inactive",
+        "expired": "Expired"
+      },
+      "messages": {
+        "staff_create_denied": "Staff cannot create vouchers!",
+        "staff_edit_denied": "Staff cannot edit vouchers!",
+        "staff_delete_denied": "Staff cannot delete vouchers!"
+      },
+      "form": {
+        "max_usage_user_invalid": "Max usage per user must be < max usage overall",
+        "no_max_discount": "No max discount",
+        "no_products_added": "No products added",
+        "basic_info": "Basic information",
+        "product_ids": "Product IDs",
+        "name_required": "Voucher name is required (>= 3 chars)",
+        "name_placeholder": "Enter voucher name...",
+        "code_invalid": "Voucher code must be 3-20 chars (A-Z, 0-9, _ or -)",
+        "start_date_required": "Start date is required",
+        "end_date_required": "End date is required",
+        "end_after_start": "End date must be after start date",
+        "time_limits": "Time & options",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "allow_save_before_active": "Allow save before active",
+        "discount_section": "Discount",
+        "discount_type": "Discount Type",
+        "discount_value": "Discount Value",
+        "discount_value_required": "Discount value must be > 0",
+        "discount_value_percent": "Percentage cannot exceed 100",
+        "has_max_discount": "Has max discount",
+        "max_discount_amount": "Max discount amount",
+        "usage_section": "Usage & Products",
+        "min_order_placeholder": "Minimum order amount (VND)",
+        "product_ids_required": "Please provide at least one product id for product-specific voucher",
+        "product_ids_note": "Only active products accepted by server",
+        "product_ids_placeholder": "e.g. 12,34,56",
+        "product_not_found": "Product not found or inactive",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "cancel": "Cancel",
+        "min_order_amount": "Min order"
+      },
+      "actions": {
+        "confirm_delete": "Confirm delete voucher",
+        "confirm_delete_message": "Are you sure you want to delete voucher \"{{name}}\"?",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "delete_success": "Voucher deleted successfully!",
+        "delete_error": "Error deleting voucher!",
+        "create_button": "Create",
+        "update_button": "Update",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "create_success": "Voucher created successfully!",
+        "update_success": "Voucher updated successfully!",
+        "save_error": "Error saving voucher!"
+      },
+      "staff_no_permission": "You don't have permission to perform this action"
     },
     "customer": {
       "title": "Customer Management",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { IconClock } from "@tabler/icons-react";
+import { IconClock, IconPlus, IconMinus } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
@@ -103,10 +103,12 @@ export default function ProductDetailPage() {
     product.image ||
     "https://shpetro.com/images/no_image.png";
 
-  // Tính phần trăm giảm giá
+  // Tính phần trăm giảm giá dựa trên price và currentPrice
   const discountPercent =
-    product.price && product.salePrice
-      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+    product.price && product.currentPrice
+      ? Math.round(
+          ((product.price - product.currentPrice) / product.price) * 100
+        )
       : null;
 
   return (
@@ -146,11 +148,7 @@ export default function ProductDetailPage() {
               {product.price?.toLocaleString()}đ
             </span>
             <span className="text-2xl font-bold text-black">
-              {product.salePrice
-                ? `${product.salePrice.toLocaleString()}đ`
-                : product.price
-                ? `${product.price.toLocaleString()}₫`
-                : ""}
+              {product.currentPrice?.toLocaleString()}đ
             </span>
             {discountPercent && (
               <span className="bg-blue-700 text-white text-sm px-3 py-1 rounded-full font-bold">
@@ -201,7 +199,7 @@ export default function ProductDetailPage() {
             {selectedVariant?.sizes?.map((size) => (
               <button
                 key={size.id || size.sizeName}
-                className={`border rounded px-2 mx-1 ${
+                className={`border rounded px-2 mx-1 cursor-pointer ${
                   selectedSize === size.sizeName
                     ? "bg-black text-white font-bold"
                     : "bg-white"
@@ -222,17 +220,17 @@ export default function ProductDetailPage() {
           {/* Số lượng */}
           <div className="flex items-center gap-2 mt-2">
             <button
-              className="w-8 h-8 rounded-full border flex items-center justify-center text-xl"
+              className="w-8 h-8 rounded-full border flex items-center justify-center text-xl cursor-pointer"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             >
-              -
+              <IconMinus size={16} />
             </button>
             <span className="w-8 text-center">{quantity}</span>
             <button
-              className="w-8 h-8 rounded-full border flex items-center justify-center text-xl"
+              className="w-8 h-8 rounded-full border flex items-center justify-center text-xl cursor-pointer"
               onClick={() => setQuantity((q) => q + 1)}
             >
-              +
+              <IconPlus size={16} />
             </button>
           </div>
           {/* Thêm vào giỏ */}

@@ -30,4 +30,24 @@ export const addressAPI = {
     const response = await api.delete(`/addresses/${id}`);
     return response.data;
   },
+
+  // Get provinces from backend (GHN via backend)
+  getProvinces: async () => {
+    const response = await api.get("/addresses/provinces");
+    return response.data;
+  },
+
+  // Get districts by province id
+  getDistrictsByProvince: async (provinceId) => {
+    const response = await api.get(
+      `/addresses/provinces/${provinceId}/districts`
+    );
+    return response.data;
+  },
+
+  // Get wards by district id
+  getWardsByDistrict: async (districtId) => {
+    const response = await api.get(`/addresses/provinces/${districtId}/wards`);
+    return response.data;
+  },
 };

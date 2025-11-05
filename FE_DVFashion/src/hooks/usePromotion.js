@@ -12,21 +12,13 @@ export const usePromotion = (lang = "VI") => {
   } = useQuery({
     queryKey: ["promotions", "all", lang],
     queryFn: async () => {
-      try {
-        const res = await promotionAPI.fetchPromotions(lang);
-        console.log("Promotions response:", res.data);
-        return res.data.data || res.data || [];
-      } catch (error) {
-        console.error("Error fetching promotions:", error);
-        // if (error.response?.status === 401) {
-        //   throw new Error("Bạn cần đăng nhập để xem danh sách khuyến mãi");
-        // }
-        // throw error;
-        return [];
-      }
+      const res = await promotionAPI.fetchPromotions(lang);
+      // backend returns ApiResponse wrapper -> try to normalize
+      const payload = res.data?.data ?? res.data ?? [];
+      return payload;
     },
     retry: (failureCount, error) => {
-      if (error.response?.status === 401) {
+      if (error?.response?.status === 401) {
         return false;
       }
       return failureCount < 2;
@@ -38,10 +30,12 @@ export const usePromotion = (lang = "VI") => {
     mutationFn: ({ promotionData, lang }) =>
       promotionAPI.createPromotion(promotionData, lang),
     onSuccess: () => {
+      // invalidate all promotions queries
       queryClient.invalidateQueries(["promotions"]);
     },
     onError: (error) => {
       console.error("Create promotion error:", error);
+      throw error;
     },
   });
 
@@ -55,6 +49,22 @@ export const usePromotion = (lang = "VI") => {
     },
     onError: (error) => {
       console.error("Update promotion error:", error);
+      throw error;
+    },
+  });
+
+  // Remove product from promotion mutation
+  const removeProductMutation = useMutation({
+    mutationFn: ({ promotionId, productId, lang }) =>
+      promotionAPI.removeProductFromPromotion(promotionId, productId, lang),
+    onSuccess: (_, variables) => {
+      // refresh list and single promotion cache
+      queryClient.invalidateQueries(["promotions"]);
+      queryClient.invalidateQueries(["promotion", variables.promotionId]);
+    },
+    onError: (error) => {
+      console.error("Remove product from promotion error:", error);
+      throw error;
     },
   });
 
@@ -67,6 +77,20 @@ export const usePromotion = (lang = "VI") => {
       select: (data) => data.data,
     });
   };
+
+  // Delete promotion mutation
+  const deletePromotionMutation = useMutation({
+    mutationFn: ({ promotionId, lang = "VI" }) =>
+      promotionAPI.deletePromotion(promotionId, lang),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(["promotions"]);
+      queryClient.invalidateQueries(["promotion", variables.promotionId]);
+    },
+    onError: (error) => {
+      console.error("Delete promotion error:", error);
+      throw error;
+    },
+  });
 
   return {
     // Fetched data
@@ -81,6 +105,14 @@ export const usePromotion = (lang = "VI") => {
     updatePromotion: updatePromotionMutation.mutateAsync,
     isUpdating: updatePromotionMutation.isPending,
     UpdateError: updatePromotionMutation.error,
+
+    removeProduct: removeProductMutation.mutateAsync,
+    isRemoving: removeProductMutation.isPending,
+    RemoveProductError: removeProductMutation.error,
+
+    deletePromotion: deletePromotionMutation.mutateAsync,
+    isDeleting: deletePromotionMutation.isPending,
+    deleteError: deletePromotionMutation.error,
 
     getPromotionById: usePromotionById.mutateAsync,
     isLoadingPromotionById: usePromotionById.isPending,

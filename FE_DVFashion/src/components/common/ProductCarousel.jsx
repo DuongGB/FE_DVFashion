@@ -31,7 +31,7 @@ export default function ProductCarousel({ products = [] }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-10 py-10 relative">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Sản phẩm nổi bật</h2>
+        <h2 className="text-xl font-bold">Sản phẩm có thể phù hợp với bạn</h2>
         <a href="#" className="text-sm underline">
           Xem thêm
         </a>

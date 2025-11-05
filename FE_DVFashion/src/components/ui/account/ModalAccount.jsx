@@ -9,6 +9,18 @@ export default function ModalAccount({ show, onClose, user }) {
   const { t, i18n } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
+  // Khóa scroll của body khi modal mở/đóng
+  useEffect(() => {
+    if (show) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [show]);
+
   // Force re-render when language changes
   useEffect(() => {
     // This will trigger a re-render when i18n language changes
@@ -51,7 +63,7 @@ export default function ModalAccount({ show, onClose, user }) {
     >
       <div
         className={`
-          bg-white rounded-lg shadow-lg p-6 relative min-w-[400px] max-w-[420px] h-auto overflow-y-auto
+          bg-white rounded-lg shadow-lg p-6 relative min-w-[400px] max-w-[420px] h-full overflow-y-auto
           transition-transform duration-300
           ${isVisible ? "translate-x-0" : "translate-x-full"}
         `}
