@@ -7,8 +7,7 @@ import api from "./api";
  * @param {object} orderData.shippingInfo - The shipping information.
  * @param {string} [orderData.notes] - Optional notes for the order.
  * @param {string} orderData.paymentMethod - Payment method ('CASH_ON_DELIVERY', 'PAYPAL').
- * @param {number} [orderData.promotionId] - Optional promotion ID.
- * @param {number} orderData.shippingFee - The shipping fee.
+ * @param {string} [orderData.voucherCode] - Optional voucher code.
  * @returns {Promise<object>} Dữ liệu phản hồi từ API.
  */
 export const createOrder = async (orderData) => {
