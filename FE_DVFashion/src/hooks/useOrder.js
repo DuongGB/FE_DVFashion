@@ -15,6 +15,7 @@ import {
   getOrdersByCustomerIdPaging,
   updateOrderByUser,
   getAllOrdersPaging,
+  cancelOrderByCustomer,
 } from "../services/orderAPI";
 
 export const useCreateOrder = () => {
@@ -23,7 +24,7 @@ export const useCreateOrder = () => {
 
   return useMutation({
     mutationFn: async (payload) => {
-      // prevent duplicate create if another request in progress (60s window)
+      // Kiểm tra xem có đơn hàng nào đang được tạo không (tránh việc bấm nhiều lần)
       const inProgress = localStorage.getItem("creatingOrderInProgress");
       const now = Date.now();
       if (inProgress && now - Number(inProgress) < 60_000) {
@@ -45,24 +46,46 @@ export const useCreateOrder = () => {
       const orderResponse = data.data;
       toast.success(t("order.create_success"));
 
-      // If PayPal, redirect to approval URL
+      // Nếu là thanh toán PayPal, chuyển hướng người dùng
       if (orderResponse.paypalApprovalUrl) {
-        // Store order number to use after redirect
+        // Lưu orderNumber để xác nhận sau khi thanh toán
         localStorage.setItem("pendingOrderNumber", orderResponse.orderNumber);
         window.location.href = orderResponse.paypalApprovalUrl;
       } else {
-        // For COD or other methods, navigate to order success page
+        // Chuyển hướng đến trang thành công
         queryClient.invalidateQueries({ queryKey: ["cart"] });
         navigate(`/order-success/${orderResponse.orderNumber}`);
       }
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      // remove lock on error so user can retry
+      // Xóa lock khi có lỗi
       localStorage.removeItem("creatingOrderInProgress");
-      toast.error(
-        error.response?.data?.message || error.message || t("order.create_fail")
-      );
+
+      // Xử lý lỗi voucher đã hết lượt sử dụng
+      const errorMessage = error.response?.data?.error?.message;
+      const errorCode = error.response?.data?.error?.code;
+
+      // Kiểm tra lỗi voucher
+      if (
+        errorMessage?.includes("maximum usage limit") ||
+        errorMessage?.includes("reached the maximum") ||
+        errorCode === "BAD_REQUEST"
+      ) {
+        toast.error(
+          t("cart.voucher_max_usage_reached") ||
+            "Bạn đã sử dụng hết lượt áp dụng voucher này!"
+        );
+      } else if (
+        errorMessage?.includes("voucher") ||
+        errorMessage?.includes("Voucher")
+      ) {
+        // Các lỗi voucher khác
+        toast.error(errorMessage);
+      } else {
+        // Lỗi chung
+        toast.error(errorMessage || t("order.create_fail"));
+      }
     },
   });
 };
@@ -98,13 +121,13 @@ export const useCancelPayPal = () => {
     mutationFn: cancelPayPalPayment,
     onSuccess: (data) => {
       toast.warn(data.message || t("order.payment_cancel_warn"));
-      const orderNumber = localStorage.getItem("pendingOrderNumber");
       localStorage.removeItem("pendingOrderNumber");
-      navigate(orderNumber ? `/order-fail/${orderNumber}` : "/cart");
+      // Luôn quay về trang giỏ hàng khi hủy thanh toán
+      navigate("/cart");
     },
     onError: (error) => {
-      error.response?.data?.message || t("order.payment_cancel_error");
       localStorage.removeItem("pendingOrderNumber");
+      // Quay về trang giỏ hàng khi có lỗi
       navigate("/cart");
     },
   });
@@ -199,5 +222,23 @@ export const useAllOrdersPaging = (params, options = {}) => {
     staleTime: 1000 * 30,
     keepPreviousData: true,
     ...options,
+  });
+};
+
+export const useCancelOrder = () => {
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: ({ orderNumber, cancellationReason }) =>
+      cancelOrderByCustomer(orderNumber, { cancellationReason }),
+    onSuccess: (data) => {
+      toast.success(data.message || t("order.cancel_success"));
+      queryClient.invalidateQueries({
+        queryKey: ["order", data.data.orderNumber],
+      });
+      queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || t("order.cancel_error"));
+    },
   });
 };

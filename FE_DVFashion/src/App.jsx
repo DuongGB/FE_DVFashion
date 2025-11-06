@@ -35,6 +35,7 @@ import SearchProductPage from "./pages/SearchProductPage";
 import StaffPage from "./pages/staff/StaffPage";
 import CategoryProductPage from "./pages/CategoryProductPage";
 import VoucherPage from "./pages/admin/VoucherPage";
+import PayPalCancelHandler from "./pages/customer/order/PaypalCancelHandler";
 
 function App() {
   return (
@@ -111,6 +112,10 @@ function App() {
             <Route
               path="/payment/paypal/success"
               element={<PayPalSuccessHandler />}
+            />
+            <Route
+              path="/payment/paypal/cancel"
+              element={<PayPalCancelHandler />}
             />
           </Route>
         </Routes>

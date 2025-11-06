@@ -415,15 +415,17 @@
     "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng.",
     "quantity": "Số lượng",
     "empty_cart": "Giỏ hàng của bạn đang trống.",
-    "processing_order": "Đang xử lý đơn, xin vui lòng đợi..."
+    "processing_order": "Đang xử lý đơn, xin vui lòng đợi...",
+    "voucher_max_usage_reached": "Bạn đã sử dụng hết lượt áp dụng voucher này!",
+    "voucher_not_available": "Voucher không khả dụng",
+    "voucher_expired": "Voucher đã hết hạn",
+    "voucher_not_applicable": "Voucher không áp dụng cho đơn hàng này"
   },
   "order": {
     "update_order": "Cập nhật đơn hàng",
     "update_note": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
     "shipping_not_editable": "Thông tin giao hàng không thể chỉnh sửa cho đơn hàng đã xử lý (Processing/Shipped/Delivered)",
     "cancellation_reason": "Lý do hủy",
-    "cancellation_reason_placeholder": "Nhập lý do hủy đơn hàng...",
-    "cancellation_reason_required": "Vui lòng nhập lý do hủy đơn",
     "no_changes": "Không có thay đổi nào",
     "payment_status_label": "Trạng thái thanh toán",
     "payment_status": {
@@ -464,6 +466,17 @@
     "shipping_fee": "Phí vận chuyển",
     "estimated_delivery": "Dự kiến giao hàng",
     "estimated_delivery_time": "Thời gian giao dự kiến",
+    "cancel_order": "Hủy Đơn Hàng",
+    "cancel_order_confirm_title": "Xác nhận hủy đơn hàng",
+    "cancel_order_confirm_message": "Bạn có chắc chắn muốn hủy đơn hàng #{{orderNumber}} không?",
+    "cancellation_reason_label": "Lý do hủy đơn",
+    "cancellation_reason_placeholder": "Vui lòng cho biết lý do hủy đơn hàng (tối đa 500 ký tự)...",
+    "cancellation_reason_required": "Vui lòng nhập lý do hủy đơn",
+    "cancel_success": "Hủy đơn hàng thành công!",
+    "cancel_error": "Không thể hủy đơn hàng!",
+    "cancel_time_limit": "Chỉ có thể hủy đơn hàng trong vòng 24 giờ sau khi đặt",
+    "cancel_status_error": "Chỉ có thể hủy đơn hàng ở trạng thái Chờ xác nhận hoặc Đã xác nhận",
+    "cancelling": "Đang hủy...",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",
