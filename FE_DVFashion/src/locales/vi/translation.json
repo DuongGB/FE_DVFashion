@@ -63,13 +63,15 @@
     "expiring_soon": "Sắp hết hạn",
     "discount": "GIẢM",
     "code": "Mã: ",
-    "min_order": "Đơn tối thiểu",
-    "max_discount": "Giảm tối đa",
     "usage_left": "Còn lại",
     "valid_until": "Có hiệu lực đến",
     "copy_code": "Sao Chép Mã",
     "copied": "Đã sao chép mã giảm giá!",
     "loading": "Đang tải voucher...",
+    "start_date": "Bắt đầu",
+    "end_date": "Kết thúc",
+    "min_order": "Đơn tối thiểu",
+    "max_discount": "Giảm tối đa",
     "product_specific_note": "Áp dụng cho một số sản phẩm"
   },
   "category": {
@@ -395,6 +397,7 @@
     "select_address": "Chọn địa chỉ",
     "cancel_selection": "Hủy chọn",
     "using_selected_address_note": "Đang sử dụng địa chỉ từ sổ địa chỉ",
+    "voucher_not_active": "Voucher chưa có hiệu lực",
     "salutation": {
       "default": "Danh xưng",
       "male": "Anh",

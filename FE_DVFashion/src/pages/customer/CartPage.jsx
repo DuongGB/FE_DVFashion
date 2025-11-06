@@ -18,10 +18,12 @@ import { useShipping } from "../../hooks/useShipping";
 import { formatVND } from "../../utils/formatVND";
 import { useCustomerVoucher } from "../../hooks/useVoucher";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
+  const { isAuthenticated } = useAuth();
   const [selectedVoucherCode, setSelectedVoucherCode] = useState("");
   const [voucherInput, setVoucherInput] = useState("");
 
@@ -41,8 +43,7 @@ export default function CartPage() {
     isLoading: isCreatingOrder,
   } = useCreateOrder();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { calculate: calculateShippingApi, isCalculating: isCalculatingShip } =
-    useShipping();
+  const { calculate: calculateShippingApi } = useShipping();
 
   // Lấy giỏ hàng từ API
   const {
@@ -789,8 +790,15 @@ export default function CartPage() {
       (v) => v.code.toUpperCase() === voucherInput.trim().toUpperCase()
     );
 
-    if (!voucher) {
-      toast.error(t("cart.invalid_voucher"));
+    const now = new Date();
+    if (
+      !voucher ||
+      (voucher.startDate && now < new Date(voucher.startDate)) ||
+      (voucher.endDate && now > new Date(voucher.endDate)) ||
+      (voucher.maxTotalUsage > 0 &&
+        voucher.currentUsage >= voucher.maxTotalUsage)
+    ) {
+      toast.error(t("cart.voucher_not_active") || "Voucher không có hiệu lực");
       return;
     }
 
@@ -904,6 +912,24 @@ export default function CartPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Lọc voucher hợp lệ để hiển thị
+  const now = new Date();
+  const validVouchers = useMemo(() => {
+    return vouchers.filter((voucher) => {
+      const start = voucher.startDate ? new Date(voucher.startDate) : null;
+      const end = voucher.endDate ? new Date(voucher.endDate) : null;
+      // Ẩn nếu đã hết hạn hoặc hết lượt sử dụng
+      if (
+        (end && now > end) ||
+        (voucher.maxTotalUsage > 0 &&
+          voucher.currentUsage >= voucher.maxTotalUsage)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [vouchers]);
 
   // Loading state
   if (isCartLoading) {
@@ -1124,7 +1150,7 @@ export default function CartPage() {
         </div>
       </div>
       {/* Right: Cart */}
-      <div className="w-[600px] p-10 pl-8 flex flex-col bg-white max-h-screen">
+      <div className="w-[600px] pl-8 mb-8 flex flex-col bg-gray-100 max-h-screen rounded-l-2xl border-l border-gray-200">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">
             {t("cart.title")}
@@ -1291,25 +1317,30 @@ export default function CartPage() {
             </div>
 
             {/* Available Vouchers */}
-            {vouchers.length > 0 && !selectedVoucherCode && (
+            {validVouchers.length > 0 && !selectedVoucherCode && (
               <div>
                 <details className="text-sm">
                   <summary className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium">
-                    {t("cart.view_available_vouchers")} ({vouchers.length})
+                    {t("cart.view_available_vouchers")} ({validVouchers.length})
                   </summary>
                   <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
-                    {vouchers.map((voucher) => {
+                    {validVouchers.map((voucher) => {
                       const canUse = total >= voucher.minOrderAmount;
+                      const start = voucher.startDate
+                        ? new Date(voucher.startDate)
+                        : null;
+                      // Disable nếu chưa tới ngày bắt đầu
+                      const notYetActive = start && now < start;
                       return (
                         <div
                           key={voucher.id}
                           className={`p-2 bg-gray-50 border border-gray-200 rounded transition-colors ${
-                            canUse
+                            canUse && !notYetActive
                               ? "cursor-pointer hover:bg-blue-50 hover:border-blue-300"
                               : "opacity-50 cursor-not-allowed"
                           }`}
                           onClick={() => {
-                            if (canUse) {
+                            if (canUse && !notYetActive) {
                               setVoucherInput(voucher.code);
                             }
                           }}
@@ -1317,20 +1348,64 @@ export default function CartPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <span className="font-semibold text-gray-800 text-xs">
+                                {t("voucher.code")}
                                 {voucher.code}
                               </span>
                               <p className="text-xs text-gray-600 mt-1">
                                 {voucher.name}
                               </p>
+                              {/* Thời gian hiệu lực */}
+                              <p className="text-xs text-gray-500">
+                                {t("voucher.start_date")}:{" "}
+                                {voucher.startDate
+                                  ? new Date(
+                                      voucher.startDate
+                                    ).toLocaleDateString()
+                                  : ""}
+                                {" - "}
+                                {t("voucher.end_date")}:{" "}
+                                {voucher.endDate
+                                  ? new Date(
+                                      voucher.endDate
+                                    ).toLocaleDateString()
+                                  : ""}
+                              </p>
+                              {/* Min order */}
                               {voucher.minOrderAmount > 0 && (
                                 <p className="text-xs text-gray-500">
-                                  {t("cart.min_order")}:{" "}
+                                  {t("voucher.min_order")}:{" "}
                                   {formatCurrency(voucher.minOrderAmount)}
                                 </p>
                               )}
+                              {/* Max discount */}
+                              {voucher.hasMaxDiscount &&
+                                voucher.maxDiscountAmount > 0 && (
+                                  <p className="text-xs text-gray-500">
+                                    {t("voucher.max_discount")}:{" "}
+                                    {formatCurrency(voucher.maxDiscountAmount)}
+                                  </p>
+                                )}
+                              {/* Product specific note */}
+                              {voucher.voucherType === "PRODUCT_SPECIFIC" && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                  {t("voucher.product_specific_note")}
+                                </p>
+                              )}
+                              {/* Không đủ điều kiện min order */}
                               {!canUse && (
                                 <p className="text-xs text-red-500 mt-1">
-                                  {t("cart.voucher_min_order_not_met")}
+                                  {t("cart.voucher_min_order_not_met", {
+                                    amount: formatCurrency(
+                                      voucher.minOrderAmount
+                                    ),
+                                  })}
+                                </p>
+                              )}
+                              {/* Chưa tới ngày áp dụng */}
+                              {notYetActive && (
+                                <p className="text-xs text-yellow-600 mt-1">
+                                  {t("cart.voucher_not_active") ||
+                                    "Voucher chưa có hiệu lực"}
                                 </p>
                               )}
                             </div>

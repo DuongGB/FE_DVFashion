@@ -68,13 +68,15 @@
     "expiring_soon": "Expiring Soon",
     "discount": "OFF",
     "code": "Code: ",
-    "min_order": "Min order",
-    "max_discount": "Max discount",
     "usage_left": "Remaining",
     "valid_until": "Valid until",
     "copy_code": "Copy Code",
     "copied": "Voucher code copied!",
     "loading": "Loading vouchers...",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "min_order": "Min order",
+    "max_discount": "Max discount",
     "product_specific_note": "Applies to selected products"
   },
   "footer": {
@@ -395,6 +397,7 @@
     "no_address_selected": "No delivery address selected",
     "select_address": "Select Address",
     "cancel_selection": "Cancel Selection",
+    "voucher_not_active": "Voucher is not valid yet",
     "using_selected_address_note": "Using address from address book",
     "salutation": {
       "default": "Salutation",
