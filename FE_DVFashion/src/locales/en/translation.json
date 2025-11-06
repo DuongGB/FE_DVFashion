@@ -424,6 +424,7 @@
     "back_to_home": "Back to Home",
     "shipping_fee": "Shipping Fee",
     "estimated_delivery": "Estimated Delivery",
+    "estimated_delivery_time": "Estimated delivery time",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",
@@ -1075,7 +1076,10 @@
         "creating": "Creating...",
         "updating": "Updating...",
         "cancel": "Cancel",
-        "min_order_amount": "Min order"
+        "min_order_amount": "Min order",
+        "min_order_amount_label": "Min Order (VND)",
+        "max_total_usage_label": "Max Total Usage",
+        "max_usage_per_user_label": "Max Usage / User"
       },
       "actions": {
         "confirm_delete": "Confirm delete voucher",
@@ -1603,15 +1607,19 @@
       "import_stock": "Import Stock"
     },
     "general_import": {
-      "title": "General Stock Import by Size ID",
-      "size_id_label": "Find Product by Size ID",
-      "size_id_placeholder": "Enter Size ID...",
-      "find": "Find",
-      "finding": "Finding...",
-      "find_another": "Find Another Product",
-      "error_size_id_required": "Please enter a Size ID to search.",
-      "error_not_found": "No product found with this Size ID.",
-      "error_fetch": "An error occurred while finding the product."
+      "title": "General Stock Import",
+      "product_id_label": "Product ID",
+      "product_id_placeholder": "Enter product ID...",
+      "error_product_id_required": "Please enter product ID",
+      "error_product_not_found": "Product not found",
+      "error_no_sizes": "This product has no sizes available",
+      "product_info": "Product Information",
+      "product_name": "Product Name",
+      "product_id": "Product ID",
+      "select_size": "Select Size to Import",
+      "color": "Color",
+      "stock": "Stock",
+      "find_another": "Find Another Product"
     },
     "inventory_detail": {
       "title": "Inventory Details",

@@ -115,10 +115,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
   const StatusIcon = statusInfo.icon;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div
         className="bg-gray-50 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}

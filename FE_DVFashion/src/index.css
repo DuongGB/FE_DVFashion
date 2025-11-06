@@ -31,3 +31,151 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Liquid Sidebar Theme */
+.sidebar-liquid {
+  position: relative;
+  overflow: hidden;
+  color: #e6ecff;
+  /* Nền tối + layer gradient nhẹ */
+  background: radial-gradient(
+      1200px 600px at -10% -10%,
+      rgba(59, 130, 246, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 900px at 110% 110%,
+      rgba(147, 51, 234, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #121a2b 0%, #0e1530 100%);
+}
+
+/* Blob động tạo cảm giác “liquid” */
+.sidebar-liquid::before,
+.sidebar-liquid::after {
+  content: "";
+  position: absolute;
+  width: 36rem;
+  height: 36rem;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.45;
+  pointer-events: none;
+  animation: float-1 22s ease-in-out infinite;
+}
+
+.sidebar-liquid::before {
+  top: -20%;
+  left: -30%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(59, 130, 246, 0.35),
+    rgba(56, 189, 248, 0.25) 40%,
+    transparent 60%
+  );
+}
+
+.sidebar-liquid::after {
+  bottom: -25%;
+  right: -35%;
+  background: radial-gradient(
+    circle at 70% 70%,
+    rgba(147, 51, 234, 0.35),
+    rgba(99, 102, 241, 0.25) 40%,
+    transparent 60%
+  );
+  animation: float-2 28s ease-in-out infinite;
+}
+
+@keyframes float-1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8%, -6%) scale(1.08);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes float-2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-6%, 8%) scale(0.95);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Item với hiệu ứng “liquid” hover/focus */
+.item-liquid {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 0.5rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+  isolation: isolate; /* giữ hiệu ứng nền trong item */
+}
+
+.item-liquid::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  border-radius: 1rem;
+  background: radial-gradient(
+      60% 60% at 50% 50%,
+      rgba(59, 130, 246, 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 50% at 60% 40%,
+      rgba(147, 51, 234, 0.18),
+      transparent 60%
+    );
+  transform: scale(0);
+  transition: transform 0.35s ease;
+  z-index: -1;
+}
+
+.item-liquid:hover::before {
+  transform: scale(1);
+}
+
+.item-liquid:hover {
+  color: #ffffff;
+}
+
+.item-liquid.is-active {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 58, 138, 0.45),
+    rgba(99, 102, 241, 0.3)
+  );
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.25),
+    0 8px 24px rgba(30, 58, 138, 0.15);
+}
+
+.item-liquid.is-active::before {
+  transform: scale(1);
+}
+
+/* Viền dẫn hướng cho submenu */
+.submenu-liquid {
+  border-left: 1px solid rgba(148, 163, 184, 0.18);
+  margin-left: 0.25rem;
+  padding-left: 0.5rem;
+}
+
+/* Giữ sidebar mượt mà khi cuộn */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

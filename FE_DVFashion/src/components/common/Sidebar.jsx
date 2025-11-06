@@ -56,10 +56,7 @@ export default function Sidebar({ onClose }) {
   // Loading state
   if (isLoading || !user) {
     return (
-      <aside
-        style={{ backgroundColor: "#18202eff" }}
-        className="w-64 text-white flex flex-col py-8 px-6 h-full"
-      >
+      <aside className="sidebar-liquid w-64 text-white flex flex-col py-8 px-6 h-full">
         <div className="flex items-center justify-center h-full">
           <div className="text-center">{t("admin.sidebar.loading")}</div>
         </div>
@@ -139,7 +136,7 @@ export default function Sidebar({ onClose }) {
   const MenuWithSubmenu = ({ title, icon, menuKey, children }) => (
     <li>
       <button
-        className="flex items-center justify-between w-full rounded-lg px-4 py-2 hover:bg-blue-900 text-left"
+        className="item-liquid justify-between w-full px-4 py-2 text-left cursor-pointer flex items-center"
         onClick={() => toggleMenu(menuKey)}
       >
         <div className="flex items-center">
@@ -153,7 +150,7 @@ export default function Sidebar({ onClose }) {
         )}
       </button>
       {expandedMenus[menuKey] && (
-        <ul className="ml-6 mt-2 space-y-1">{children}</ul>
+        <ul className="submenu-liquid ml-6 mt-2 space-y-1">{children}</ul>
       )}
     </li>
   );
@@ -163,8 +160,8 @@ export default function Sidebar({ onClose }) {
     <li>
       <Link
         to={to}
-        className={`flex items-center rounded-lg px-4 py-2 text-sm ${
-          isActive(to) ? "bg-blue-600" : "hover:bg-blue-800"
+        className={`item-liquid px-4 py-2 text-sm ${
+          isActive(to) ? "is-active" : ""
         }`}
       >
         {icon}
@@ -174,10 +171,7 @@ export default function Sidebar({ onClose }) {
   );
 
   return (
-    <aside
-      style={{ backgroundColor: "#18202eff" }}
-      className="w-64 text-white flex flex-col py-8 px-6 h-full"
-    >
+    <aside className="sidebar-liquid w-64 text-white flex flex-col py-8 px-6 h-full">
       {/* Thông tin nhân viên */}
       <EmployeeCard
         name={user?.fullName || t("admin.sidebar.employee_name")}
@@ -196,8 +190,8 @@ export default function Sidebar({ onClose }) {
             <li>
               <Link
                 to="/admin"
-                className={`flex items-center rounded-lg px-4 py-2 font-semibold ${
-                  isActive("/admin") ? "bg-blue-600" : "hover:bg-blue-900"
+                className={`item-liquid px-4 py-2 font-semibold ${
+                  isActive("/admin") ? "is-active" : ""
                 }`}
               >
                 <IconHomeInfinity stroke={2} />
@@ -341,14 +335,16 @@ export default function Sidebar({ onClose }) {
 
             {/* Button logout */}
             <li className="pt-4">
-              <button
-                className="flex items-center hover:bg-red-600 rounded-lg p-2 w-full bg-red-500 font-semibold cursor-pointer justify-center"
-                onClick={handleLogout}
-                disabled={isLogoutLoading}
-                title={t("admin.sidebar.logout")}
-              >
-                <IconLogout stroke={2} />
-              </button>
+              <li className="pt-4">
+                <button
+                  className="flex items-center rounded-lg p-2 w-full bg-red-500 hover:bg-red-600 font-semibold cursor-pointer justify-center transition-colors"
+                  onClick={handleLogout}
+                  disabled={isLogoutLoading}
+                >
+                  <IconLogout className="mr-4" stroke={2} />
+                  {t("admin.sidebar.logout")}
+                </button>
+              </li>
             </li>
           </ul>
         </nav>

@@ -424,6 +424,7 @@
     "back_to_home": "Về trang chủ",
     "shipping_fee": "Phí vận chuyển",
     "estimated_delivery": "Dự kiến giao hàng",
+    "estimated_delivery_time": "Thời gian giao dự kiến",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",
@@ -1077,7 +1078,10 @@
         "creating": "Đang tạo...",
         "updating": "Đang cập nhật...",
         "cancel": "Hủy",
-        "min_order_amount": "Đơn hàng tối thiểu"
+        "min_order_amount": "Đơn hàng tối thiểu",
+        "min_order_amount_label": "Đơn hàng tối thiểu (VND)",
+        "max_total_usage_label": "Số lần sử dụng tối đa",
+        "max_usage_per_user_label": "Số lần sử dụng tối đa / người"
       },
       "actions": {
         "confirm_delete": "Xác nhận xóa voucher",
@@ -1605,15 +1609,19 @@
       "import_stock": "Nhập kho"
     },
     "general_import": {
-      "title": "Nhập kho chung theo Size ID",
-      "size_id_label": "Tìm sản phẩm theo Size ID",
-      "size_id_placeholder": "Nhập Size ID...",
-      "find": "Tìm kiếm",
-      "finding": "Đang tìm...",
-      "find_another": "Tìm sản phẩm khác",
-      "error_size_id_required": "Vui lòng nhập Size ID để tìm kiếm.",
-      "error_not_found": "Không tìm thấy sản phẩm với Size ID này.",
-      "error_fetch": "Có lỗi xảy ra khi tìm kiếm sản phẩm."
+      "title": "Nhập Kho Tổng Quát",
+      "product_id_label": "Mã Sản Phẩm",
+      "product_id_placeholder": "Nhập mã sản phẩm...",
+      "error_product_id_required": "Vui lòng nhập mã sản phẩm",
+      "error_product_not_found": "Không tìm thấy sản phẩm",
+      "error_no_sizes": "Sản phẩm này không có size nào",
+      "product_info": "Thông Tin Sản Phẩm",
+      "product_name": "Tên Sản Phẩm",
+      "product_id": "Mã Sản Phẩm",
+      "select_size": "Chọn Size Để Nhập Kho",
+      "color": "Màu",
+      "stock": "Tồn kho",
+      "find_another": "Tìm Sản Phẩm Khác"
     },
     "inventory_detail": {
       "title": "Chi tiết tồn kho",

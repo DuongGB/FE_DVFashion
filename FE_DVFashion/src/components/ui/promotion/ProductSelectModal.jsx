@@ -114,7 +114,6 @@ export default function ProductSelectModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
@@ -212,7 +211,7 @@ export default function ProductSelectModal({
                 return (
                   <li
                     key={p.id}
-                    className="flex items-center justify-between gap-4 py-3 px-3 hover:bg-gray-50 rounded-md"
+                    className="flex items-center justify-between gap-4 py-3 px-3 hover:bg-gray-100 rounded-md"
                   >
                     <label className="flex items-center gap-3 cursor-pointer w-full min-w-0">
                       <input
@@ -256,11 +255,6 @@ export default function ProductSelectModal({
                         </div>
                       </div>
                     </label>
-
-                    <div className="text-xs text-gray-400 ml-2 w-14 text-right">
-                      ID:{" "}
-                      <span className="font-mono text-gray-500">{p.id}</span>
-                    </div>
                   </li>
                 );
               })}
