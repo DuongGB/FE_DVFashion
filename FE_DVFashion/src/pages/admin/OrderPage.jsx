@@ -20,7 +20,7 @@ const statusColors = {
   DELIVERED: "bg-green-600",
   SHIPPED: "bg-cyan-600",
   REFUNDED: "bg-indigo-600",
-  CANCELLED: "bg-red-500",
+  CANCELED: "bg-red-500",
 };
 
 // Format ISO date to readable string
@@ -47,12 +47,10 @@ function formatCurrency(amount) {
 
 // Statistics Card Component
 const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
-  <div className="bg-white p-6 rounded-lg shadow border flex items-center gap-4">
-    <div className={`p-2 rounded-full bg-gray-100 ${color}`}>{icon}</div>
-    <div>
-      <p className="text-sm font-medium text-gray-600">{title}</p>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-    </div>
+  <div className="bg-white p-4 rounded-lg shadow border flex flex-col items-center justify-center min-w-[110px] min-h-[110px]">
+    <div className={`mb-2 p-2 rounded-full bg-gray-100 ${color}`}>{icon}</div>
+    <p className="text-xs font-medium text-gray-600 text-center">{title}</p>
+    <p className={`text-xl font-bold ${color} text-center`}>{value}</p>
   </div>
 );
 
@@ -97,27 +95,33 @@ export default function OrdersPage() {
   // Statistics calculation (useMemo for performance)
   const stats = useMemo(() => {
     const all = orders.length;
-    let delivered = 0,
+    let pending = 0,
       confirmed = 0,
       processing = 0,
-      pending = 0,
-      cancelled = 0,
+      delivered = 0,
+      shipped = 0,
+      returned = 0,
+      canceled = 0,
       totalAmount = 0;
     orders.forEach((o) => {
-      if (o.status === "DELIVERED") delivered++;
+      if (o.status === "PENDING") pending++;
       if (o.status === "CONFIRMED") confirmed++;
       if (o.status === "PROCESSING") processing++;
-      if (o.status === "PENDING") pending++;
-      if (o.status === "CANCELLED") cancelled++;
+      if (o.status === "DELIVERED") delivered++;
+      if (o.status === "SHIPPED") shipped++;
+      if (o.status === "RETURNED") returned++;
+      if (o.status === "CANCELED") canceled++;
       totalAmount += Number(o.totalAmount || 0);
     });
     return {
       all,
-      delivered,
+      pending,
       confirmed,
       processing,
-      pending,
-      cancelled,
+      delivered,
+      shipped,
+      returned,
+      canceled,
       totalAmount,
     };
   }, [orders]);
@@ -155,34 +159,52 @@ export default function OrdersPage() {
       <h1 className="text-2xl font-bold mb-4">{t("order.your_orders")}</h1>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
         <StatCard
           title={t("order.stats.total_orders") || "Tổng đơn"}
           value={stats.all}
-          icon={<IconPackage size={28} />}
+          icon={<IconPackage size={24} />}
         />
         <StatCard
-          title={t("order.status.delivered")}
-          value={stats.delivered}
-          icon={<IconCheck size={28} />}
-          color="text-green-600"
+          title={t("order.status.pending")}
+          value={stats.pending}
+          icon={<IconClock size={24} />}
+          color="text-gray-500"
         />
         <StatCard
           title={t("order.status.confirmed")}
           value={stats.confirmed}
-          icon={<IconCheck size={28} />}
+          icon={<IconCheck size={24} />}
           color="text-blue-600"
         />
         <StatCard
           title={t("order.status.processing")}
           value={stats.processing}
-          icon={<IconClock size={28} />}
-          color="text-yellow-600"
+          icon={<IconClock size={24} />}
+          color="text-yellow-500"
+        />
+        <StatCard
+          title={t("order.status.delivered")}
+          value={stats.delivered}
+          icon={<IconCheck size={24} />}
+          color="text-green-600"
+        />
+        <StatCard
+          title={t("order.status.shipped")}
+          value={stats.shipped}
+          icon={<IconPackage size={24} />}
+          color="text-cyan-600"
+        />
+        <StatCard
+          title={t("order.status.refunded")}
+          value={stats.refunded}
+          icon={<IconPackage size={24} />}
+          color="text-indigo-600"
         />
         <StatCard
           title={t("order.status.canceled")}
-          value={stats.cancelled}
-          icon={<IconX size={28} />}
+          value={stats.canceled}
+          icon={<IconX size={24} />}
           color="text-red-600"
         />
       </div>
@@ -192,7 +214,7 @@ export default function OrdersPage() {
         <div className="flex gap-4 w-2/3">
           <input
             type="text"
-            placeholder={t("common.search")}
+            placeholder={t("admin.order.search")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -214,7 +236,7 @@ export default function OrdersPage() {
             <option value="CONFIRMED">{t("order.status.confirmed")}</option>
             <option value="PROCESSING">{t("order.status.processing")}</option>
             <option value="PENDING">{t("order.status.pending")}</option>
-            <option value="CANCELLED">{t("order.status.canceled")}</option>
+            <option value="CANCELED">{t("order.status.canceled")}</option>
           </select>
         </div>
       </div>

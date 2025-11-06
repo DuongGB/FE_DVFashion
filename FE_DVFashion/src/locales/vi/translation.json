@@ -655,6 +655,9 @@
       "notifications": "Thông báo",
       "update": "Cập nhật"
     },
+    "order": {
+      "search": "Tìm kiếm theo mã đơn hàng, tên khách hàng..."
+    },
     "brand": {
       "title": "Quản lý thương hiệu",
       "create_brand": "Tạo thương hiệu",

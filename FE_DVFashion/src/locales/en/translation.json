@@ -655,6 +655,9 @@
       "notifications": "Notifications",
       "update": "Update"
     },
+    "order": {
+      "search": "Search by order number, customer name..."
+    },
     "brand": {
       "title": "Brand Management",
       "create_brand": "Create Brand",

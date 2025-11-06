@@ -64,14 +64,13 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       aria-modal="true"
-      role="dialog"
     >
       <div
-        className="bg-gray-50 rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative rounded-t-2xl">
           <button
             onClick={onClose}
             className="absolute top-3 right-3 bg-black/20 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/30 transition-colors cursor-pointer"
@@ -96,7 +95,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
         {/* Body (scrollable) */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <div className="text-sm text-gray-600 mb-1">
                 {t("account.main.full_name")}
               </div>
@@ -111,7 +110,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <div className="text-sm text-gray-600 mb-1">
                 {t("order.payment_method.title")}
               </div>
@@ -134,7 +133,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col justify-between">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg flex flex-col justify-between">
               <div>
                 <div className="text-sm text-gray-600 mb-1">
                   {t("order.status_label")}
@@ -159,8 +158,8 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm overflow-hidden">
-            <div className="p-3 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg overflow-hidden">
+            <div className="p-3">
               <h3 className="font-medium text-gray-800">
                 {t("order.items_title")} ({items.length})
               </h3>
@@ -185,14 +184,14 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
                   {items.map((it, idx) => (
                     <tr
                       key={idx}
-                      className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-gray-50"
+                      className="bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 transition-all"
                     >
                       <td className="py-3 flex items-center gap-3">
                         {it.imageUrl && (
                           <img
                             src={it.imageUrl}
                             alt={it.productName}
-                            className="w-12 h-12 object-cover rounded"
+                            className="w-12 h-12 object-cover rounded shadow"
                           />
                         )}
                         <div>
@@ -220,7 +219,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
               </table>
             </div>
 
-            <div className="p-3 bg-white border border-gray-200 rounded-lg p-6 shadow-sm bg-gray-50">
+            <div className="p-3 bg-white/40 border border-white/30 rounded-lg mt-4">
               <div className="flex justify-end flex-col gap-2 ml-auto">
                 <div className="flex justify-between text-sm text-gray-600">
                   <div>{t("cart.title")}</div>
@@ -234,7 +233,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
                   <div>{t("cart.voucher")}</div>
                   <div>-{formatCurrency(o.discountAmount)}</div>
                 </div>
-                <div className="flex justify-between text-base font-semibold pt-2bg-white border border-gray-200 rounded-lg p-6 shadow-sm  mt-2">
+                <div className="flex justify-between text-base font-semibold pt-2 mt-2">
                   <div>{t("order.total_amount")}</div>
                   <div>{formatCurrency(o.totalAmount)}</div>
                 </div>
@@ -242,21 +241,21 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             </div>
           </div>
 
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-white space-y-1">
             <div>
               {t("common.note")}:{" "}
-              <span className="text-gray-800">
+              <span className="text-gray-900">
                 {o.notes || t("common.none")}
               </span>
             </div>
             <div>
               {t("order.date")}:{" "}
-              <span className="text-gray-800">{formatDate(o.orderDate)}</span>
+              <span className="text-gray-900">{formatDate(o.orderDate)}</span>
             </div>
             {o.estimatedDeliveryTime && (
               <div>
                 {t("order.estimated_delivery_time")}:{" "}
-                <span className="text-gray-800">
+                <span className="text-gray-900">
                   {formatDate(o.estimatedDeliveryTime)}
                 </span>
               </div>
@@ -264,7 +263,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             {o.shippedDate && (
               <div>
                 {t("order.status.shipped")}:{" "}
-                <span className="text-gray-800">
+                <span className="text-gray-900">
                   {formatDate(o.shippedDate)}
                 </span>
               </div>
@@ -272,7 +271,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             {o.deliveredDate && (
               <div>
                 {t("order.status.delivered")}:{" "}
-                <span className="text-gray-800">
+                <span className="text-gray-900">
                   {formatDate(o.deliveredDate)}
                 </span>
               </div>
