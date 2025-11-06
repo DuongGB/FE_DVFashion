@@ -7,6 +7,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
 
   // order may be either mapped modal object or raw API object
   const o = order.__raw ?? order;
+  console.log("OrderDetailModal order:", o);
 
   const formatDate = (iso) => {
     if (!iso) return "-";
@@ -62,7 +63,6 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
       aria-modal="true"
       role="dialog"
     >
@@ -170,7 +170,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
               <table className="w-full text-left text-sm">
                 <thead className="text-gray-600">
                   <tr>
-                    <th className="py-2">{t("product.detail.name")}</th>
+                    <th className="py-2">{t("admin.product.detail.name")}</th>
                     <th className="py-2">
                       {t("product.detail.color") +
                         " & " +
@@ -221,7 +221,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             </div>
 
             <div className="p-3 bg-white border border-gray-200 rounded-lg p-6 shadow-sm bg-gray-50">
-              <div className="flex justify-end flex-col gap-2 max-w-md ml-auto">
+              <div className="flex justify-end flex-col gap-2 ml-auto">
                 <div className="flex justify-between text-sm text-gray-600">
                   <div>{t("cart.title")}</div>
                   <div>{formatCurrency(o.subtotal)}</div>
@@ -253,6 +253,14 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
               {t("order.date")}:{" "}
               <span className="text-gray-800">{formatDate(o.orderDate)}</span>
             </div>
+            {o.estimatedDeliveryTime && (
+              <div>
+                {t("order.estimated_delivery_time")}:{" "}
+                <span className="text-gray-800">
+                  {formatDate(o.estimatedDeliveryTime)}
+                </span>
+              </div>
+            )}
             {o.shippedDate && (
               <div>
                 {t("order.status.shipped")}:{" "}

@@ -136,7 +136,7 @@ export default function ModalAccount({ show, onClose, user }) {
           </Link>
         </div>
         {/* Referral */}
-        <div className="mb-4 bg-blue-600 rounded-lg p-4 text-white">
+        {/* <div className="mb-4 bg-blue-600 rounded-lg p-4 text-white">
           <div className="font-bold mb-2">
             {t("modal_account.referral_title")}
           </div>
@@ -149,7 +149,7 @@ export default function ModalAccount({ show, onClose, user }) {
               {t("modal_account.learn_more")}
             </button>
           </div>
-        </div>
+        </div> */}
         {/* Go to account */}
         <button
           className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 cursor-pointer"

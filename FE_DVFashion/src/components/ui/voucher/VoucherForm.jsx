@@ -534,41 +534,46 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.has_max_discount") ||
-                    "Has Max Discount"}
-                </label>
-                <select
-                  value={values.hasMaxDiscount ? "yes" : "no"}
-                  onChange={(e) =>
-                    setField("hasMaxDiscount", e.target.value === "yes")
-                  }
-                  disabled={isSubmitting}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="no">No</option>
-                  <option value="yes">Yes</option>
-                </select>
-              </div>
+              {/* Only show max discount fields if discountType is PERCENTAGE */}
+              {values.discountType === "PERCENTAGE" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t("admin.voucher.form.has_max_discount") ||
+                        "Has Max Discount"}
+                    </label>
+                    <select
+                      value={values.hasMaxDiscount ? "yes" : "no"}
+                      onChange={(e) =>
+                        setField("hasMaxDiscount", e.target.value === "yes")
+                      }
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.max_discount_amount") ||
-                    "Max Discount Amount"}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={values.maxDiscountAmount}
-                  onChange={(e) =>
-                    setField("maxDiscountAmount", e.target.value)
-                  }
-                  disabled={!values.hasMaxDiscount || isSubmitting}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t("admin.voucher.form.max_discount_amount") ||
+                        "Max Discount Amount"}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={values.maxDiscountAmount}
+                      onChange={(e) =>
+                        setField("maxDiscountAmount", e.target.value)
+                      }
+                      disabled={!values.hasMaxDiscount || isSubmitting}
+                      className="w-full px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -582,7 +587,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Min Order (VND)
+                  {t("admin.voucher.form.min_order_amount_label")}
                 </label>
                 <input
                   type="number"
@@ -597,7 +602,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Max Total Usage
+                  {t("admin.voucher.form.max_total_usage_label")}
                 </label>
                 <input
                   type="number"
@@ -616,7 +621,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Max Usage / User
+                  {t("admin.voucher.form.max_usage_per_user_label")}
                 </label>
                 <input
                   type="number"
@@ -711,15 +716,6 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                   >
                     {t("admin.promotion.clear_selection") || "Clear all"}
                   </button>
-                  {/* <button
-                    type="button"
-                    onClick={() => setProductModalOpen(true)}
-                    disabled={isSubmitting}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all flex items-center gap-2"
-                    title="Select products"
-                  >
-                    {t("admin.promotion.select_products") || "Select products"}
-                  </button> */}
                 </div>
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
                   <IconInfoCircle size={14} />
@@ -746,15 +742,15 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                 <>
                   <IconLoader2 size={16} className="animate-spin" />
                   {voucher
-                    ? t("admin.voucher.actions.updating") || "Updating"
-                    : t("admin.voucher.actions.creating") || "Creating"}
+                    ? t("admin.voucher.actions.updating")
+                    : t("admin.voucher.actions.creating")}
                 </>
               ) : (
                 <>
                   <IconCheck size={16} />
                   {voucher
-                    ? t("admin.voucher.actions.update_button") || "Update"
-                    : t("admin.voucher.actions.create_button") || "Create"}
+                    ? t("admin.voucher.actions.update_button")
+                    : t("admin.voucher.actions.create_button")}
                 </>
               )}
             </button>

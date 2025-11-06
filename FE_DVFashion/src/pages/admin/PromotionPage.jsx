@@ -230,7 +230,6 @@ export default function PromotionPage() {
       description: promotion.description || null,
       type: promotion.type,
       value: promotion.value,
-      minOrderAmount: promotion.minOrderAmount || 0,
       maxUsages: promotion.maxUsages || null,
       startDate: formatDateForAPI(promotion.startDate),
       endDate: formatDateForAPI(promotion.endDate),
@@ -520,8 +519,7 @@ export default function PromotionPage() {
                 {t("admin.promotion.columns.description")}
               </th>
               <th className="p-2">{t("admin.promotion.columns.type")}</th>
-              <th className="p-2">{t("admin.promotion.columns.value")}</th>
-              <th className="p-2">{t("admin.promotion.columns.min_order")}</th>
+
               <th className="p-2">{t("admin.promotion.columns.max_usage")}</th>
               <th className="p-2">{t("admin.promotion.columns.start_date")}</th>
               <th className="p-2">{t("admin.promotion.columns.end_date")}</th>
@@ -558,20 +556,6 @@ export default function PromotionPage() {
                     </div>
                   </td>
                   <td className="p-2">{promo.type}</td>
-                  <td className="p-2">
-                    {promo.type === "PERCENTAGE"
-                      ? `${promo.value}%`
-                      : promo.type === "FIXED_AMOUNT"
-                      ? `${promo.value?.toLocaleString()} VND`
-                      : promo.type === "FREE_SHIPPING"
-                      ? t("admin.promotion.value.free_shipping")
-                      : promo.type === "BUY_ONE_GET_ONE"
-                      ? t("admin.promotion.value.buy_one_get_one")
-                      : promo.value}
-                  </td>
-                  <td className="p-2">
-                    {promo.minOrderAmount?.toLocaleString() || 0} VND
-                  </td>
                   <td className="p-2">
                     {promo.maxUsages || t("admin.promotion.value.unlimited")}
                   </td>
