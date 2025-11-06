@@ -48,14 +48,14 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col"
+        className="bg-gradient-to-br from-white/70 via-white/50 to-purple-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconAdjustmentsHorizontal size={28} className="text-white" />
             <h2 className="text-2xl font-bold">
@@ -64,16 +64,16 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/70 text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
         </div>
 
-        <form className="p-8 flex-1" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <form className="p-3 flex-1" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             {/* Thông tin sản phẩm */}
-            <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
               <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                 <IconEdit size={18} className="text-purple-600" />
                 {t("admin.adjust_stock.product_info")}
@@ -110,7 +110,7 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
               </div>
             </div>
             {/* Thông tin điều chỉnh tồn kho */}
-            <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm space-y-4">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg space-y-4">
               <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                 <IconAdjustmentsHorizontal
                   size={18}
@@ -128,7 +128,7 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
                   min={0}
                   value={newQuantity}
                   onChange={(e) => setNewQuantity(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                   placeholder={t("admin.adjust_stock.new_quantity_placeholder")}
                   required
                   disabled={isAdjusting}
@@ -143,7 +143,7 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
                   type="text"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                   placeholder={t("admin.adjust_stock.reason_placeholder")}
                   required
                   disabled={isAdjusting}
@@ -156,7 +156,7 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                   rows={2}
                   placeholder={t("admin.adjust_stock.notes_placeholder")}
                   disabled={isAdjusting}
@@ -168,18 +168,10 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
           {success && (
             <div className="text-green-600 text-sm mb-2">{success}</div>
           )}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isAdjusting}
-            >
-              {t("admin.adjust_stock.close")}
-            </button>
+          <div className="flex justify-end gap-3 pt-3 border-t border-white/30 mt-3">
             <button
               type="submit"
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               disabled={isAdjusting}
             >
               <IconAdjustmentsHorizontal size={16} />
