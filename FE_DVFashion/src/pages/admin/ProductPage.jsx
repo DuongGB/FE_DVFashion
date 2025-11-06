@@ -469,11 +469,43 @@ export default function ProductPage() {
   };
 
   if (isLoadingProducts || isLoadingCategories) {
+    // Skeleton loading UI
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-          <div className="text-lg">{t("admin.product.loading_data")}</div>
+      <div className="flex flex-col gap-6 p-8">
+        <div className="flex justify-between items-center">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white p-6 rounded-lg shadow border flex flex-col gap-2"
+            >
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border flex gap-4">
+          <div className="h-10 w-full bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <table className="w-full">
+            <tbody>
+              {[...Array(6)].map((_, idx) => (
+                <tr key={idx} className="border-b">
+                  {[...Array(12)].map((__, colIdx) => (
+                    <td key={colIdx} className="p-2">
+                      <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     );
