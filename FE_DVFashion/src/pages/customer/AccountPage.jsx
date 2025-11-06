@@ -129,11 +129,6 @@ export default function AccountPage() {
       text: t("account.sidebar.order_history"),
     },
     {
-      id: "dvf_cash_history",
-      icon: <IconCoin size={24} />,
-      text: t("account.sidebar.dvf_cash_history"),
-    },
-    {
       id: "voucher_wallet",
       icon: <IconTicket size={24} />,
       text: t("account.sidebar.voucher_wallet"),

@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default function VoucherSection() {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
-  const size = 4; // Show 4 vouchers per page
+  const size = 4;
 
   const { availableVouchers, isLoading, isError } = useCustomerVoucher({
     page,

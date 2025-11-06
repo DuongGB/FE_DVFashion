@@ -555,23 +555,26 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t("admin.voucher.form.max_discount_amount") ||
-                        "Max Discount Amount"}
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={values.maxDiscountAmount}
-                      onChange={(e) =>
-                        setField("maxDiscountAmount", e.target.value)
-                      }
-                      disabled={!values.hasMaxDiscount || isSubmitting}
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
+                  {/* Only show max discount input if hasMaxDiscount is true */}
+                  {values.hasMaxDiscount && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t("admin.voucher.form.max_discount_amount") ||
+                          "Max Discount Amount"}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={values.maxDiscountAmount}
+                        onChange={(e) =>
+                          setField("maxDiscountAmount", e.target.value)
+                        }
+                        disabled={!values.hasMaxDiscount || isSubmitting}
+                        className="w-full px-3 py-2 border rounded-lg"
+                      />
+                    </div>
+                  )}
                 </>
               )}
             </div>

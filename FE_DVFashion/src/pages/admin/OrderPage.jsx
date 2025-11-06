@@ -14,10 +14,12 @@ import Pagination from "../../components/common/Pagination";
 import { useAllOrdersPaging } from "../../hooks/useOrder";
 
 const statusColors = {
-  DELIVERED: "bg-green-600",
-  CONFIRMED: "bg-blue-500",
-  PROCESSING: "bg-yellow-500",
   PENDING: "bg-gray-500",
+  CONFIRMED: "bg-blue-600",
+  PROCESSING: "bg-yellow-500",
+  DELIVERED: "bg-green-600",
+  SHIPPED: "bg-cyan-600",
+  REFUNDED: "bg-indigo-600",
   CANCELLED: "bg-red-500",
 };
 
