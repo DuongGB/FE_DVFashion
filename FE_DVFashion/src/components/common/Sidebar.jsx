@@ -335,16 +335,14 @@ export default function Sidebar({ onClose }) {
 
             {/* Button logout */}
             <li className="pt-4">
-              <li className="pt-4">
-                <button
-                  className="flex items-center rounded-lg p-2 w-full bg-red-500 hover:bg-red-600 font-semibold cursor-pointer justify-center transition-colors"
-                  onClick={handleLogout}
-                  disabled={isLogoutLoading}
-                >
-                  <IconLogout className="mr-4" stroke={2} />
-                  {t("admin.sidebar.logout")}
-                </button>
-              </li>
+              <button
+                className="flex items-center rounded-lg p-2 w-full bg-red-500 hover:bg-red-600 font-semibold cursor-pointer justify-center transition-colors"
+                onClick={handleLogout}
+                disabled={isLogoutLoading}
+              >
+                <IconLogout className="mr-4" stroke={2} />
+                {t("admin.sidebar.logout")}
+              </button>
             </li>
           </ul>
         </nav>

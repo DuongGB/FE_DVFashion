@@ -20,7 +20,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return t("admin.product.detail.no_date");
+    if (!dateString) return "...";
     const date = new Date(dateString);
     return date.toLocaleString(language === "VI" ? "vi-VN" : "en-US", {
       year: "numeric",
@@ -80,14 +80,14 @@ export default function ProductDetailModal({ product, open, onClose }) {
     allImages.find((img) => img.isPrimary) || allImages[0] || null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col"
+        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconPackage size={28} className="text-white" />
             <h2 className="text-2xl font-bold">
@@ -96,18 +96,18 @@ export default function ProductDetailModal({ product, open, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/70 text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
         </div>
 
-        <div className="p-6 flex-1 overflow-y-auto">
+        <div className="p-3 flex-1 overflow-y-auto">
           {/* Product Images and Basic Info */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
             {/* Images */}
             <div className="lg:col-span-1">
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconPhoto size={18} className="text-purple-600" />
                   {t("admin.product.detail.images")}
@@ -147,7 +147,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
 
             {/* Basic Information */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconTag size={18} className="text-blue-600" />
                   {t("admin.product.detail.basic_info")}
@@ -214,7 +214,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
               </div>
 
               {/* Price and Status */}
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconCurrencyDollar size={18} className="text-green-600" />
                   {t("admin.product.detail.price_status")}
@@ -265,7 +265,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
 
           {/* Product Variants */}
           {product.variants && product.variants.length > 0 && (
-            <div className="mb-6 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+            <div className="mb-3 backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
               <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                 <IconShoppingBag size={18} className="text-blue-600" />
                 {t("admin.product.detail.variants", {
@@ -349,7 +349,7 @@ export default function ProductDetailModal({ product, open, onClose }) {
           )}
 
           {/* Timestamps */}
-          <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
             <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
               <IconCalendar size={18} className="text-green-600" />
               {t("admin.product.detail.timestamps")}
@@ -372,16 +372,6 @@ export default function ProductDetailModal({ product, open, onClose }) {
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
-            >
-              {t("admin.product.detail.close")}
-            </button>
           </div>
         </div>
       </div>
