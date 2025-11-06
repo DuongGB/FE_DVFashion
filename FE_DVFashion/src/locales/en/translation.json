@@ -62,6 +62,21 @@
     "no_categories": "No categories available to display.",
     "tagline": "↠ Freedom to grow ↞"
   },
+  "voucher": {
+    "section_title": "Special Vouchers For You",
+    "section_subtitle": "Save more with exclusive discount codes",
+    "expiring_soon": "Expiring Soon",
+    "discount": "OFF",
+    "code": "Code: ",
+    "min_order": "Min order",
+    "max_discount": "Max discount",
+    "usage_left": "Remaining",
+    "valid_until": "Valid until",
+    "copy_code": "Copy Code",
+    "copied": "Voucher code copied!",
+    "loading": "Loading vouchers...",
+    "product_specific_note": "Applies to selected products"
+  },
   "footer": {
     "feedback_title": "DVFashion listens to you!",
     "feedback_desc": "We always value and look forward to receiving all feedback from customers to improve service and product experience even better.",

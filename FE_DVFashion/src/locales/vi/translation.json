@@ -57,6 +57,21 @@
       "button": "KHÁM PHÁ"
     }
   },
+  "voucher": {
+    "section_title": "Mã Giảm Giá Đặc Biệt",
+    "section_subtitle": "Tiết kiệm hơn với các mã giảm giá độc quyền",
+    "expiring_soon": "Sắp hết hạn",
+    "discount": "GIẢM",
+    "code": "Mã: ",
+    "min_order": "Đơn tối thiểu",
+    "max_discount": "Giảm tối đa",
+    "usage_left": "Còn lại",
+    "valid_until": "Có hiệu lực đến",
+    "copy_code": "Sao Chép Mã",
+    "copied": "Đã sao chép mã giảm giá!",
+    "loading": "Đang tải voucher...",
+    "product_specific_note": "Áp dụng cho một số sản phẩm"
+  },
   "category": {
     "error_loading": "Không thể tải danh mục. Vui lòng thử lại sau.",
     "no_categories": "Không có danh mục nào để hiển thị."

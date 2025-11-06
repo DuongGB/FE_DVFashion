@@ -8,6 +8,7 @@ import ProductCarousel from "../components/common/ProductCarousel";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
 import { useHybridRecommendations } from "../hooks/useProductRecomendations";
+import VoucherSection from "./customer/voucher/VoucherSection";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -80,6 +81,9 @@ export default function HomePage() {
 
       {/* Main content */}
       <Category />
+
+      {/* Voucher Section */}
+      <VoucherSection />
 
       {/* Advertisement */}
       <div className="w-full max-w-7xl mx-auto px-4 py-10">
