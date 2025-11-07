@@ -72,12 +72,12 @@ export default function ReviewProductCard({
   });
 
   return (
-    <div className="bg-gray-50 p-6 rounded-lg mb-6">
+    <div className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-lg p-6 mb-6">
       <div className="flex items-start mb-6">
         <img
           src={item.imageUrl}
           alt={item.productName}
-          className="w-16 h-16 object-cover rounded-md mr-4"
+          className="w-16 h-16 object-cover rounded-md mr-4 border border-white/30 shadow"
         />
         <div className="flex-grow">
           <p className="font-semibold">{item.productName}</p>
@@ -108,7 +108,7 @@ export default function ReviewProductCard({
       <div className="mb-6">
         <p className="font-medium mb-2">{t("review.comment")}</p>
         <textarea
-          className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+          className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           rows="4"
           placeholder={t("review.comment_placeholder")}
           value={comment}
@@ -120,7 +120,7 @@ export default function ReviewProductCard({
       <div className="mb-6">
         <div
           {...getRootProps()}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100"
+          className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center cursor-pointer backdrop-blur-sm bg-white/60 hover:bg-white/80 transition-colors"
         >
           <input {...getInputProps()} />
           <IconPhoto className="mx-auto h-12 w-12 text-gray-400" />
@@ -134,15 +134,15 @@ export default function ReviewProductCard({
         {previews.length > 0 && (
           <div className="mt-4 grid grid-cols-5 gap-3">
             {previews.map((preview, index) => (
-              <div key={index} className="relative">
+              <div key={index} className="relative group">
                 <img
                   src={preview}
                   alt={`Preview ${index}`}
-                  className="w-full h-24 object-cover rounded-lg"
+                  className="w-full h-24 object-cover rounded-lg border border-white/30 shadow"
                 />
                 <button
                   onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100 cursor-pointer"
                 >
                   <IconX size={14} />
                 </button>
@@ -151,73 +151,6 @@ export default function ReviewProductCard({
           </div>
         )}
       </div>
-
-      {/* Fit */}
-      {/* <div className="mb-6">
-        <p className="font-medium mb-3">{t("review.fit_title")}</p>
-        <div className="flex gap-3">
-          <FitOption
-            label={t("review.fit_tight")}
-            value="tight"
-            emoji="😥"
-            checked={fit === "tight"}
-            onChange={() => handleFieldChange("fit", "tight")}
-          />
-          <FitOption
-            label={t("review.fit_true_to_size")}
-            value="true_to_size"
-            emoji="😊"
-            checked={fit === "true_to_size"}
-            onChange={() => handleFieldChange("fit", "true_to_size")}
-          />
-          <FitOption
-            label={t("review.fit_loose")}
-            value="loose"
-            emoji="😲"
-            checked={fit === "loose"}
-            onChange={() => handleFieldChange("fit", "loose")}
-          />
-        </div>
-      </div> */}
-
-      {/* Body Info */}
-      {/* <div>
-        <p className="font-medium mb-3">{t("review.body_info_title")}</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-600 mb-1 block">
-              {t("review.height_cm")}
-            </label>
-            <input
-              type="number"
-              placeholder="165"
-              value={height}
-              onChange={(e) => handleFieldChange("height", e.target.value)}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-600 mb-1 block">
-              {t("review.weight_kg")}
-            </label>
-            <input
-              type="number"
-              placeholder="65"
-              value={weight}
-              onChange={(e) => handleFieldChange("weight", e.target.value)}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-          </div>
-        </div>
-        <div className="flex gap-3 mt-4">
-          <button className="bg-blue-600 text-white rounded-lg px-6 py-2 font-bold text-sm hover:bg-blue-700">
-            {t("review.save_info")}
-          </button>
-          <button className="border border-gray-400 rounded-lg px-6 py-2 font-bold text-sm hover:bg-gray-100">
-            {t("review.cancel_edit")}
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 }

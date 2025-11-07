@@ -48,14 +48,14 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-purple-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
+        <div className="flex justify-between items-center p-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconAdjustmentsHorizontal size={28} className="text-white" />
             <h2 className="text-2xl font-bold">
@@ -64,13 +64,13 @@ export default function AdjustStockModal({ open, onClose, inventory }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
         </div>
 
-        <form className="p-3 flex-1" onSubmit={handleSubmit}>
+        <form className="p-4 flex-1" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             {/* Thông tin sản phẩm */}
             <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">

@@ -160,11 +160,12 @@ export default function GeneralImportStockModal({ open, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 min-h-screen">
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconPackage size={28} />
@@ -174,7 +175,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 cursor-pointer"
           >
             <IconX size={20} />
           </button>
@@ -246,7 +247,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
                       className={`p-3 border-2 rounded-lg text-left transition-all cursor-pointer ${
                         selectedSizeId === size.sizeId
                           ? "border-blue-600 bg-blue-50"
-                          : "border-white/30 hover:border-blue-400 hover:bg-white/60"
+                          : "border-white/30 hover:border-blue-400 hover:bg-white/30"
                       }`}
                     >
                       <div className="font-semibold text-gray-800">
@@ -362,7 +363,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow"
+                  className="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-lg"
                   disabled={isImporting}
                 >
                   <IconPlus size={16} />

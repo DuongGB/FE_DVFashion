@@ -7,7 +7,6 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
 
   // order may be either mapped modal object or raw API object
   const o = order.__raw ?? order;
-  console.log("OrderDetailModal order:", o);
 
   const formatDate = (iso) => {
     if (!iso) return "-";
@@ -62,25 +61,25 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       aria-modal="true"
     >
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative rounded-t-2xl">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 bg-black/20 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/30 transition-colors cursor-pointer"
+            className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
             aria-label={t("common.close")}
           >
             <IconX size={16} />
           </button>
 
           <div className="flex items-start gap-3">
-            <div className="bg-white/20 p-2 rounded-md">
+            <div className="bg-white/20 p-2 rounded-md backdrop-blur-sm">
               <IconInfoCircle size={20} />
             </div>
             <div>
@@ -184,7 +183,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
                   {items.map((it, idx) => (
                     <tr
                       key={idx}
-                      className="bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 transition-all"
+                      className="bg-white/40 border border-white/30 rounded-lg hover:bg-white/30 transition-all"
                     >
                       <td className="py-3 flex items-center gap-3">
                         {it.imageUrl && (
@@ -241,7 +240,7 @@ export default function OrderDetailModal({ order, onClose, open = true }) {
             </div>
           </div>
 
-          <div className="text-sm text-white space-y-1">
+          <div className="text-sm text-black space-y-1">
             <div>
               {t("common.note")}:{" "}
               <span className="text-gray-900">

@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next";
 import Pagination from "../../components/common/Pagination";
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
 import ProductForm from "../../components/ui/product/ProductForm";
-// import { useBrand } from "../../hooks/useBrand";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
 import { useAuth } from "../../hooks/useAuth";
@@ -28,16 +27,13 @@ export default function ProductPage() {
 
   const { products: getAllProducts, isLoading: isLoadingProducts } =
     useProduct(language);
-  // const { brands: getAllBrands, isLoading: isLoadingBrands } =
-  //   useBrand(language);
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
     useCategory(language);
 
   const [products, setProducts] = useState([]);
-  // const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -47,11 +43,10 @@ export default function ProductPage() {
   const [loadingStatusId, setLoadingStatusId] = useState(null);
   const [originalOrder, setOriginalOrder] = useState([]);
 
-  const { updateProduct, isUpdating } = useProduct(language);
+  const { updateProduct } = useProduct(language);
 
-  // Toggle status handler (giống CategoryPage)
+  // Toggle status handler
   const handleToggleStatus = (product) => {
-    // Kiểm tra quyền trước khi thực hiện
     if (isStaff) {
       toast.error(
         t("admin.product.messages.staff_status_denied") ||
@@ -61,7 +56,6 @@ export default function ProductPage() {
       return;
     }
 
-    // Xác định trạng thái mới
     let newStatus;
     switch (product.status) {
       case "ACTIVE":
@@ -97,9 +91,9 @@ export default function ProductPage() {
       cancelText,
       confirmButtonClass: `${
         newStatus === "ACTIVE"
-          ? "bg-green-600 hover:bg-green-700 rounded cursor-pointer px-3 py-1"
-          : "bg-red-600 hover:bg-red-700 rounded cursor-pointer px-3 py-1"
-      } text-white`,
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-red-600 hover:bg-red-700"
+      } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
       onConfirm: async () => {
         setLoadingStatusId(product.id);
         try {
@@ -111,18 +105,11 @@ export default function ProductPage() {
             },
             lang: language,
           });
-          // Cập nhật trạng thái trong state products, giữ nguyên thứ tự
           setProducts((prev) =>
             prev.map((p) =>
               p.id === product.id ? { ...p, status: newStatus } : p
             )
           );
-          // toast.success(
-          //   `${t("admin.product.title")} ${actionText.toLowerCase()} ${t(
-          //     "admin.brand.actions.success"
-          //   )}!`,
-          //   { autoClose: 2000, position: "top-center" }
-          // );
         } catch (error) {
           toast.error(
             t("admin.product.actions.error") ||
@@ -142,7 +129,6 @@ export default function ProductPage() {
     colors: [],
     sizes: [],
     materials: [],
-    // brandIds: [],
     categoryIds: [],
   });
 
@@ -159,9 +145,7 @@ export default function ProductPage() {
 
   useEffect(() => {
     setProducts(getAllProducts || []);
-    // setBrands(getAllBrands || []);
     setCategories(getAllCategories || []);
-    // Lưu thứ tự ban đầu khi load lần đầu
     if (getAllProducts && originalOrder.length === 0) {
       setOriginalOrder(getAllProducts.map((p) => p.id));
     }
@@ -179,7 +163,7 @@ export default function ProductPage() {
     }).format(price);
   };
 
-  // Lấy danh sách màu sắc từ variants
+  // Get available colors
   const getAvailableColors = () => {
     const colors = new Set();
     products.forEach((product) => {
@@ -190,7 +174,7 @@ export default function ProductPage() {
     return Array.from(colors).sort();
   };
 
-  // Lấy danh sách kích cỡ từ variants -> sizes
+  // Get available sizes
   const getAvailableSizes = () => {
     const sizes = new Set();
     products.forEach((product) => {
@@ -203,7 +187,7 @@ export default function ProductPage() {
     return Array.from(sizes).sort();
   };
 
-  // Lấy danh sách chất liệu
+  // Get available materials
   const getAvailableMaterials = () => {
     const materials = new Set();
     products.forEach((product) => {
@@ -212,7 +196,7 @@ export default function ProductPage() {
     return Array.from(materials).sort();
   };
 
-  // Xử lý thay đổi filter
+  // Handle filter change
   const handleFilterChange = (filterType, value, isMultiple = false) => {
     setFilters((prev) => {
       if (isMultiple) {
@@ -228,7 +212,7 @@ export default function ProductPage() {
     setCurrentPage(1);
   };
 
-  // Xóa một filter cụ thể
+  // Remove filter
   const removeFilter = (filterType, value = null) => {
     setFilters((prev) => {
       if (value !== null) {
@@ -248,51 +232,47 @@ export default function ProductPage() {
     });
   };
 
-  // Xóa tất cả filters
+  // Clear all filters
   const clearAllFilters = () => {
     setFilters({
       priceRange: { min: "", max: "" },
       colors: [],
       sizes: [],
       materials: [],
-      // brandIds: [],
       categoryIds: [],
     });
-    setStatusFilter("all");
+    setStatusFilter("");
     setSearch("");
   };
 
-  // Kiểm tra sản phẩm có màu sắc không
+  // Check product has color
   const productHasColor = (product, color) => {
     return product.variants?.some((variant) => variant.color === color);
   };
 
-  // Kiểm tra sản phẩm có kích cỡ không
+  // Check product has size
   const productHasSize = (product, size) => {
     return product.variants?.some((variant) =>
       variant.sizes?.some((s) => s.sizeName === size)
     );
   };
 
-  // Kiểm tra sản phẩm có chất liệu không
+  // Check product has material
   const productHasMaterial = (product, material) => {
     return product.material === material;
   };
 
-  // Lọc sản phẩm với tất cả filters
+  // Filter products
   const filteredProducts = products
     .filter((product) => {
-      // Tìm kiếm theo tên
       const matchesSearch = product.name
         .toLowerCase()
         .includes(search.toLowerCase());
 
-      // Lọc theo trạng thái
       const matchesStatus =
-        statusFilter === "all" ||
+        !statusFilter ||
         product.status.toLowerCase() === statusFilter.toLowerCase();
 
-      // Lọc theo khoảng giá
       const matchesPriceRange = (() => {
         const { min, max } = filters.priceRange;
         const price = product.salePrice || product.price;
@@ -301,24 +281,20 @@ export default function ProductPage() {
         return true;
       })();
 
-      // Lọc theo màu sắc
       const matchesColors =
         filters.colors.length === 0 ||
         filters.colors.some((color) => productHasColor(product, color));
 
-      // Lọc theo kích cỡ
       const matchesSizes =
         filters.sizes.length === 0 ||
         filters.sizes.some((size) => productHasSize(product, size));
 
-      // Lọc theo chất liệu
       const matchesMaterials =
         filters.materials.length === 0 ||
         filters.materials.some((material) =>
           productHasMaterial(product, material)
         );
 
-      // Lọc theo danh mục
       const matchesCategories =
         filters.categoryIds.length === 0 ||
         filters.categoryIds.some((categoryId) => {
@@ -333,12 +309,10 @@ export default function ProductPage() {
         matchesColors &&
         matchesSizes &&
         matchesMaterials &&
-        // matchesBrands &&
         matchesCategories
       );
     })
     .sort((a, b) => {
-      // Sắp xếp theo thứ tự ban đầu
       return originalOrder.indexOf(a.id) - originalOrder.indexOf(b.id);
     });
 
@@ -348,20 +322,19 @@ export default function ProductPage() {
     currentPage * pageSize
   );
 
-  // Đếm số filter đang active
+  // Count active filters
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.priceRange.min || filters.priceRange.max) count++;
     if (filters.colors.length > 0) count += filters.colors.length;
     if (filters.sizes.length > 0) count += filters.sizes.length;
     if (filters.materials.length > 0) count += filters.materials.length;
-    // if (filters.brandIds.length > 0) count += filters.brandIds.length;
     if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
-    if (statusFilter !== "all") count++;
+    if (statusFilter) count++;
     return count;
   };
 
-  // Xử lý tạo sản phẩm mới
+  // Handle create product
   const handleCreateProduct = () => {
     if (isStaff) {
       toast.error(
@@ -375,7 +348,7 @@ export default function ProductPage() {
     setShowForm(true);
   };
 
-  // Xử lý chỉnh sửa sản phẩm
+  // Handle edit product
   const handleEditProduct = (product) => {
     if (isStaff) {
       toast.error(
@@ -389,19 +362,19 @@ export default function ProductPage() {
     setShowForm(true);
   };
 
-  // Xử lý xem chi tiết sản phẩm
+  // Handle view product
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
     setShowDetailModal(true);
   };
 
-  // Đóng form
+  // Close form
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingProduct(null);
   };
 
-  // Lấy màu trạng thái
+  // Get status color
   const getStatusColor = (status) => {
     switch (status) {
       case "ACTIVE":
@@ -417,13 +390,13 @@ export default function ProductPage() {
     }
   };
 
-  // Lấy text trạng thái
+  // Get status text
   const getStatusText = (status) => {
     const statusKey = status.toLowerCase().replace(/_/g, "_");
     return t(`admin.product.status.${statusKey}`, status);
   };
 
-  // Tính tổng số lượng tồn kho từ tất cả variants và sizes
+  // Get total stock
   const getTotalStock = (product) => {
     if (!product.variants) return 0;
     return product.variants.reduce((total, variant) => {
@@ -437,7 +410,7 @@ export default function ProductPage() {
     }, 0);
   };
 
-  // Lấy ảnh chính của sản phẩm
+  // Get primary image
   const getPrimaryImage = (product) => {
     if (!product.variants || product.variants.length === 0) return null;
     for (const variant of product.variants) {
@@ -457,13 +430,11 @@ export default function ProductPage() {
     inactive: products.filter((p) => p.status === "INACTIVE").length,
     outOfStock: products.filter((p) => p.status === "OUT_OF_STOCK").length,
     onSale: products.filter((p) => p.onSale).length,
-    totalValue: products.reduce((sum, p) => sum + (p.salePrice || p.price), 0),
   };
 
   if (isLoadingProducts || isLoadingCategories) {
-    // Skeleton loading UI
     return (
-      <div className="flex flex-col gap-6 p-8">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
           <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
@@ -479,58 +450,29 @@ export default function ProductPage() {
             </div>
           ))}
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border flex gap-4">
-          <div className="h-10 w-full bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
-        </div>
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="w-full">
-            <tbody>
-              {[...Array(6)].map((_, idx) => (
-                <tr key={idx} className="border-b">
-                  {[...Array(12)].map((__, colIdx) => (
-                    <td key={colIdx} className="p-2">
-                      <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-      {/* Liquid glass background blobs */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
-            {t("admin.product.title")}
-          </h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {t("admin.product.title")}
+        </h1>
+        <div className="flex items-center gap-4">
           {!isStaff && (
             <button
               onClick={handleCreateProduct}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 flex items-center gap-2 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
             >
-              <IconPlus size={16} />
+              <IconPlus size={20} />
               {t("admin.product.create_product")}
             </button>
           )}
           {isStaff && (
-            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-xl border border-yellow-200 shadow">
+            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
                 {t("admin.product.staff_view_only") ||
                   "Chế độ xem - Không thể chỉnh sửa"}
@@ -538,10 +480,12 @@ export default function ProductPage() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg p-6 flex items-center justify-between">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
                 {t("admin.product.total_products")}
@@ -549,7 +493,9 @@ export default function ProductPage() {
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
-          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg p-6 flex items-center justify-between">
+        </div>
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
                 {t("admin.product.active_products")}
@@ -559,7 +505,9 @@ export default function ProductPage() {
               </p>
             </div>
           </div>
-          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg p-6 flex items-center justify-between">
+        </div>
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
                 {t("admin.product.inactive_products")}
@@ -569,7 +517,9 @@ export default function ProductPage() {
               </p>
             </div>
           </div>
-          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg p-6 flex items-center justify-between">
+        </div>
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
                 {t("admin.product.on_sale_products")}
@@ -580,11 +530,13 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Basic Filters */}
-        <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg mb-4 flex flex-col md:flex-row md:items-center gap-4 p-4">
-          <div className="flex gap-4 items-center flex-1">
-            <div className="relative flex-1">
+      {/* Filters */}
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-2">
+            <div className="relative">
               <IconSearch
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                 size={16}
@@ -594,15 +546,17 @@ export default function ProductPage() {
                 placeholder={t("admin.product.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-white/30 rounded-lg bg-white/60 backdrop-blur-sm shadow focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300"
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+          </div>
+          <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-white/30 rounded-lg bg-white/60 backdrop-blur-sm shadow focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">{t("admin.product.all_status")}</option>
+              <option value="">{t("admin.product.all_status")}</option>
               <option value="active">{t("admin.product.status.active")}</option>
               <option value="inactive">
                 {t("admin.product.status.inactive")}
@@ -614,14 +568,15 @@ export default function ProductPage() {
                 {t("admin.product.status.discontinued")}
               </option>
             </select>
+          </div>
+          <div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all duration-300 cursor-pointer shadow
-                ${
-                  showAdvancedFilters
-                    ? "bg-blue-50 border-blue-300 text-blue-700"
-                    : "border-white/30 bg-white/60 hover:bg-blue-50 hover:border-blue-300"
-                }`}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm ${
+                showAdvancedFilters
+                  ? "bg-blue-50 border-blue-300 text-blue-700"
+                  : "border-white/30 hover:bg-white/70"
+              }`}
             >
               <IconFilter size={16} />
               {t("admin.product.filters.filter")}
@@ -636,7 +591,7 @@ export default function ProductPage() {
 
         {/* Advanced Filters */}
         {showAdvancedFilters && (
-          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-xl shadow-lg p-4 mb-4 space-y-4">
+          <div className="mt-4 pt-4 border-t space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold text-gray-700">
                 {t("admin.product.filters.advanced_filters")}
@@ -648,226 +603,212 @@ export default function ProductPage() {
                 {t("admin.product.filters.clear_all")}
               </button>
             </div>
-            {/* ...existing advanced filters code... */}
+            {/* Filter sections would go here */}
           </div>
-        )}
-
-        {/* Active Filters Display */}
-        {getActiveFiltersCount() > 0 && (
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm text-gray-600">
-                {t("admin.product.filters.filtering")}
-              </span>
-              {/* ...existing filter chips code... */}
-            </div>
-          </div>
-        )}
-
-        {/* Results Summary */}
-        <div className="mb-4 text-sm text-gray-600">
-          {t("admin.product.showing_results", {
-            current: paginatedProducts.length,
-            total: filteredProducts.length,
-          })}
-        </div>
-
-        {/* Products Table */}
-        <div className="backdrop-blur-xl bg-white/40 border border-white/30 shadow-lg rounded-xl overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">
-              <tr>
-                <th className="p-2">{t("admin.product.columns.id")}</th>
-                <th className="p-2">{t("admin.product.columns.image")}</th>
-                <th className="p-2">{t("admin.product.columns.name")}</th>
-                <th className="p-2">{t("admin.product.columns.category")}</th>
-                <th className="p-2">{t("admin.product.columns.material")}</th>
-                <th className="p-2">
-                  {t("admin.product.columns.original_price")}
-                </th>
-                <th className="p-2">{t("admin.product.columns.sale_price")}</th>
-                <th className="p-2">{t("admin.product.columns.status")}</th>
-                <th className="p-2">{t("admin.product.columns.variants")}</th>
-                <th className="p-2">{t("admin.product.columns.stock")}</th>
-                <th className="p-2">{t("admin.product.columns.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProducts.length > 0 ? (
-                paginatedProducts.map((product) => {
-                  const primaryImage = getPrimaryImage(product);
-                  const totalStock = getTotalStock(product);
-
-                  return (
-                    <tr
-                      key={product.id}
-                      className="border-b hover:bg-white/60 transition-all"
-                    >
-                      <td className="p-2">{product.id}</td>
-                      <td className="p-2">
-                        {primaryImage ? (
-                          <img
-                            src={primaryImage.imageUrl}
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded shadow"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">
-                              {t("admin.product.values.no_image")}
-                            </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-2">
-                        <div>
-                          <div className="font-medium">{product.name}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-xs">
-                            {product.description}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-2">{product.categoryName}</td>
-                      <td className="p-2">
-                        <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
-                          {product.material}
-                        </span>
-                      </td>
-                      <td className="p-2 w-28 font-medium">
-                        {formatPrice(product.price)}
-                      </td>
-                      <td className="p-2 w-28">
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {formatPrice(product.salePrice)}
-                          </span>
-                          {product.onSale && (
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
-                              {t("admin.product.values.sale")}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-2 w-32">
-                        {isStaff ? (
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              product.status
-                            )}`}
-                          >
-                            {getStatusText(product.status)}
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => handleToggleStatus(product)}
-                            disabled={loadingStatusId === product.id}
-                            className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
-                              product.status
-                            )}`}
-                            title={
-                              product.status === "ACTIVE"
-                                ? t("admin.product.status.inactive")
-                                : t("admin.product.status.active")
-                            }
-                          >
-                            {loadingStatusId === product.id ? (
-                              <span className="flex items-center gap-1">
-                                <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></span>
-                              </span>
-                            ) : (
-                              getStatusText(product.status)
-                            )}
-                          </button>
-                        )}
-                      </td>
-                      <td className="p-2 text-center">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-medium">
-                          {product.variants ? product.variants.length : 0}
-                        </span>
-                      </td>
-                      <td className="p-2 text-center">
-                        <span
-                          className={`px-2 py-1 rounded text-medium font-medium ${
-                            totalStock > 0
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {totalStock}
-                        </span>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex gap-2">
-                          <button
-                            className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
-                            onClick={() => handleViewProduct(product)}
-                            title={t("admin.product.actions.view_details")}
-                          >
-                            <IconEye size={24} />
-                          </button>
-                          {!isStaff ? (
-                            <button
-                              className="text-yellow-600 hover:text-yellow-800 p-1 cursor-pointer"
-                              onClick={() => handleEditProduct(product)}
-                              title={t("admin.product.actions.edit")}
-                            >
-                              <IconEdit size={24} />
-                            </button>
-                          ) : (
-                            <button
-                              className="text-gray-400 p-1 cursor-not-allowed opacity-50"
-                              onClick={() => handleEditProduct(product)}
-                              title={
-                                t("admin.product.staff_no_permission") ||
-                                "Không có quyền chỉnh sửa"
-                              }
-                            >
-                              <IconEdit size={24} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={12} className="text-center py-6 text-gray-500">
-                    {t("admin.product.no_products")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-
-        {/* Product Detail Modal */}
-        <ProductDetailModal
-          product={selectedProduct}
-          open={showDetailModal}
-          onClose={() => {
-            setShowDetailModal(false);
-            setSelectedProduct(null);
-          }}
-        />
-
-        {/* Product Form Modal */}
-        {!isStaff && (
-          <ProductForm
-            isOpen={showForm}
-            onClose={handleCloseForm}
-            product={editingProduct}
-            categories={categories}
-          />
         )}
       </div>
+
+      {/* Results Summary */}
+      <div className="text-sm text-gray-600">
+        {t("admin.product.showing_results", {
+          current: paginatedProducts.length,
+          total: filteredProducts.length,
+        })}
+      </div>
+
+      {/* Products Table */}
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-400">
+              <th className="p-3">{t("admin.product.columns.id")}</th>
+              <th className="p-3">{t("admin.product.columns.image")}</th>
+              <th className="p-3">{t("admin.product.columns.name")}</th>
+              <th className="p-3">{t("admin.product.columns.category")}</th>
+              <th className="p-3">{t("admin.product.columns.material")}</th>
+              <th className="p-3">
+                {t("admin.product.columns.original_price")}
+              </th>
+              <th className="p-3">{t("admin.product.columns.sale_price")}</th>
+              <th className="p-3">{t("admin.product.columns.status")}</th>
+              <th className="p-3">{t("admin.product.columns.variants")}</th>
+              <th className="p-3">{t("admin.product.columns.stock")}</th>
+              <th className="p-3">{t("admin.product.columns.actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedProducts.length > 0 ? (
+              paginatedProducts.map((product) => {
+                const primaryImage = getPrimaryImage(product);
+                const totalStock = getTotalStock(product);
+
+                return (
+                  <tr
+                    key={product.id}
+                    className="border-b hover:bg-white/80 transition-colors"
+                  >
+                    <td className="p-3">{product.id}</td>
+                    <td className="p-3">
+                      {primaryImage ? (
+                        <img
+                          src={primaryImage.imageUrl}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                          No Image
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <div>
+                        <p className="font-semibold">{product.name}</p>
+                        <p className="text-sm text-gray-500 truncate max-w-xs">
+                          {product.description}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="p-3">{product.categoryName}</td>
+                    <td className="p-3">
+                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
+                        {product.material}
+                      </span>
+                    </td>
+                    <td className="p-3 font-medium">
+                      {formatPrice(product.price)}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {formatPrice(product.salePrice)}
+                        </span>
+                        {product.onSale && (
+                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
+                            {t("admin.product.values.sale")}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {isStaff ? (
+                        <span
+                          className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(
+                            product.status
+                          )}`}
+                        >
+                          {getStatusText(product.status)}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleStatus(product)}
+                          disabled={loadingStatusId === product.id}
+                          className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                            product.status
+                          )}`}
+                          title={
+                            product.status === "ACTIVE"
+                              ? t("admin.product.status.inactive")
+                              : t("admin.product.status.active")
+                          }
+                        >
+                          {loadingStatusId === product.id ? (
+                            <div className="flex items-center gap-1">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                            </div>
+                          ) : (
+                            getStatusText(product.status)
+                          )}
+                        </button>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                        {product.variants ? product.variants.length : 0}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <span
+                        className={`px-2 py-1 rounded text-sm font-medium ${
+                          totalStock > 0
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {totalStock}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex gap-2">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                          onClick={() => handleViewProduct(product)}
+                          title={t("admin.product.actions.view_details")}
+                        >
+                          <IconEye size={24} />
+                        </button>
+                        {!isStaff ? (
+                          <button
+                            className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                            onClick={() => handleEditProduct(product)}
+                            title={t("admin.product.actions.edit")}
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        ) : (
+                          <button
+                            className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                            onClick={() => handleEditProduct(product)}
+                            title={
+                              t("admin.product.staff_no_permission") ||
+                              "Không có quyền chỉnh sửa"
+                            }
+                          >
+                            <IconEdit size={24} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={11} className="text-center text-gray-500 p-4">
+                  {t("admin.product.no_products")}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        open={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedProduct(null);
+        }}
+      />
+
+      {/* Product Form Modal */}
+      {!isStaff && (
+        <ProductForm
+          isOpen={showForm}
+          onClose={handleCloseForm}
+          product={editingProduct}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }

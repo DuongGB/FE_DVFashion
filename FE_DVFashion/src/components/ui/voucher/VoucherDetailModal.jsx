@@ -32,7 +32,6 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
 
   const products = Array.isArray(voucher.products) ? voucher.products : [];
 
-  // Chuẩn hoá giá trị an toàn hơn
   const hasMaxDiscount = [true, "true", 1, "1"].includes(
     voucher.hasMaxDiscount
   );
@@ -56,7 +55,6 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
       ?.imageUrl;
   };
 
-  // Dữ liệu hàng sản phẩm
   function ProductRow({ pp, idx }) {
     const productId = pp.productId ?? pp.id ?? null;
     const { data: prod, isLoading } = useProductById(productId, language);
@@ -65,7 +63,10 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
     const price = resolved?.currentPrice;
 
     return (
-      <tr key={pp.productId ?? resolved?.id ?? idx}>
+      <tr
+        key={pp.productId ?? resolved?.id ?? idx}
+        className="border-b border-white/30"
+      >
         <td className="p-2 text-sm text-gray-600">{idx + 1}</td>
         <td className="p-2">
           <div className="flex items-center gap-3 min-w-0">
@@ -73,10 +74,10 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
               <img
                 src={getProductImage(prod, pp)}
                 alt={resolved?.name}
-                className="w-12 h-12 object-cover rounded-md"
+                className="w-12 h-12 object-cover rounded-md border border-white/30 shadow"
               />
             ) : (
-              <div className="w-12 h-12 bg-gray-100 rounded-md" />
+              <div className="w-12 h-12 bg-white/60 rounded-md border border-white/30" />
             )}
             <div className="min-w-0">
               <div
@@ -115,25 +116,26 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 relative">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 relative rounded-t-2xl">
           <button
             onClick={onClose}
             aria-label="close"
-            className="absolute top-4 right-4 bg-black/20 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/30 transition cursor-pointer"
+            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/50 transition cursor-pointer"
           >
             <IconX size={18} />
           </button>
 
           <div className="flex items-start gap-4">
-            <div className="bg-white/20 p-2 rounded-lg">
+            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
               <IconGift size={20} className="text-white" />
             </div>
             <div>
@@ -149,7 +151,7 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white/80">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Left */}
             <div className="md:col-span-2 space-y-3">
@@ -198,14 +200,14 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
 
             {/* Right */}
             <div className="flex flex-col items-center gap-3">
-              <div className="w-full bg-gray-50 rounded-md p-3 text-sm text-gray-700 border">
+              <div className="w-full backdrop-blur-xl bg-white/60 rounded-md p-3 text-sm text-gray-700 border border-white/30 shadow">
                 <div className="flex justify-between">
                   <div>{t("admin.voucher.stats.total") || "Products"}</div>
                   <div className="font-medium">{stats.total}</div>
                 </div>
               </div>
 
-              <div className="w-full text-sm text-gray-600 rounded-md p-2 border bg-gray-50">
+              <div className="w-full text-sm text-gray-600 rounded-md p-2 border bg-white/60">
                 <div className="flex items-center gap-2">
                   <IconInfoCircle size={16} />
                   <span>
@@ -259,7 +261,7 @@ export default function VoucherDetailModal({ open, onClose, voucher = null }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-gray-100 text-xs text-gray-600">
+                    <tr className="bg-white/60 text-xs text-gray-600 border-b border-white/30">
                       <th className="p-2">
                         {t("admin.voucher.table.index") || "#"}
                       </th>

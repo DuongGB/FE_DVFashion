@@ -167,14 +167,14 @@ export default function GeneralExportStockModal({ open, onClose }) {
       setExportError(t("admin.export_stock.error_export"));
     }
   };
-  console.log(availableSizes);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 min-h-screen">
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-orange-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconPackageExport size={28} />
@@ -256,7 +256,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                       className={`p-3 border-2 rounded-lg text-left transition-all cursor-pointer ${
                         selectedSizeId === size.sizeId
                           ? "border-orange-600 bg-orange-50"
-                          : "border-white/30 hover:border-orange-400 hover:bg-white/60"
+                          : "border-white/30 hover:border-orange-400 hover:bg-white/30"
                       }`}
                     >
                       <div className="font-semibold text-gray-800">
@@ -278,7 +278,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
           {/* Export Form Section */}
           {foundInventory && (
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Info */}
                 <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                   <h3 className="font-semibold text-lg mb-3 text-gray-700">
@@ -378,7 +378,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-lg hover:from-orange-700 hover:to-yellow-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow"
+                  className="px-6 py-2 bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-lg hover:from-orange-700 hover:to-yellow-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-lg"
                   disabled={isExporting}
                 >
                   <IconMinus size={16} />

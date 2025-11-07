@@ -420,12 +420,12 @@ export default function OrderEditModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
     >
       <form
-        className="relative bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300 animate-scaleIn"
+        className="relative backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
@@ -439,19 +439,19 @@ export default function OrderEditModal({
           </div>
         )}
 
+        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative rounded-t-2xl">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3 right-3 bg-black/20 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={t("common.close")}
             disabled={isLoading}
           >
             <IconX size={16} />
           </button>
-
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-md">
+            <div className="bg-white/20 p-2 rounded-md backdrop-blur-sm">
               <IconEdit size={18} />
             </div>
             <div>
@@ -467,7 +467,7 @@ export default function OrderEditModal({
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {!shippingEditable && (
-            <div className="backdrop-blur-sm bg-amber-50/60 border border-amber-200/40 rounded-lg p-3 flex items-start gap-2">
+            <div className="backdrop-blur-xl bg-amber-50/60 border border-amber-200/40 rounded-lg p-3 flex items-start gap-2">
               <IconAlertCircle
                 size={20}
                 className="text-amber-600 mt-0.5 flex-shrink-0"
@@ -486,14 +486,14 @@ export default function OrderEditModal({
               </div>
               <div className="space-y-2">
                 <input
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg px-3 py-2 shadow-inner disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-3 py-2 shadow-inner disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   placeholder={t("address.fullName")}
                   value={formData.fullName}
                   onChange={(e) => handleChange("fullName", e.target.value)}
                   disabled={!shippingEditable || isLoading}
                 />
                 <input
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   placeholder={t("address.phone")}
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
@@ -502,7 +502,7 @@ export default function OrderEditModal({
 
                 {/* Province Select */}
                 <select
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg px-3 py-2 shadow-inner disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-3 py-2 shadow-inner disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   value={formData.province}
                   onChange={(e) => handleProvinceChange(e.target.value)}
                   disabled={
@@ -520,7 +520,7 @@ export default function OrderEditModal({
                 <div className="grid grid-cols-2 gap-2">
                   {/* District Select */}
                   <select
-                    className="backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                     value={formData.district}
                     onChange={(e) => handleDistrictChange(e.target.value)}
                     disabled={
@@ -540,7 +540,7 @@ export default function OrderEditModal({
 
                   {/* Ward Select */}
                   <select
-                    className="backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                     value={formData.ward}
                     onChange={(e) => handleWardChange(e.target.value)}
                     disabled={
@@ -561,7 +561,7 @@ export default function OrderEditModal({
 
                 {/* Street Input */}
                 <textarea
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 h-20 resize-none transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500 h-20 resize-none transition-all duration-300"
                   placeholder={t("address.street")}
                   maxLength={500}
                   value={formData.street}
@@ -601,7 +601,7 @@ export default function OrderEditModal({
                   {t("order.status_label")}
                 </label>
                 <select
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 mb-3 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 mb-3 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   value={formData.orderStatus}
                   onChange={(e) => handleChange("orderStatus", e.target.value)}
                   disabled={isLoading}
@@ -620,7 +620,7 @@ export default function OrderEditModal({
                     </label>
                     <textarea
                       maxLength={200}
-                      className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 h-20 resize-none disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                      className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 h-20 resize-none disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                       placeholder={
                         t("order.cancellation_reason_placeholder") ||
                         "Nhập lý do hủy đơn hàng..."
@@ -639,7 +639,7 @@ export default function OrderEditModal({
                   {t("order.payment_status_label")}
                 </label>
                 <select
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 mb-3 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 mb-3 disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   value={formData.paymentStatus}
                   onChange={(e) =>
                     handleChange("paymentStatus", e.target.value)
@@ -658,7 +658,7 @@ export default function OrderEditModal({
                 </label>
                 <textarea
                   maxLength={500}
-                  className="w-full backdrop-blur-sm bg-white/80 border border-gray-200/50 rounded-lg shadow-inner px-3 py-2 h-28 resize-none disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
+                  className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow-inner px-3 py-2 h-28 resize-none disabled:bg-gray-100 disabled:text-gray-500 transition-all duration-300"
                   placeholder={t("common.note") + " (500)"}
                   value={formData.notes}
                   onChange={(e) => handleChange("notes", e.target.value)}
@@ -669,7 +669,7 @@ export default function OrderEditModal({
           </div>
         </div>
 
-        <div className="p-3 bg-white/70 border-t border-white/30 flex justify-end gap-2 rounded-b-2xl">
+        <div className="p-3 bg-white/30 border-t border-white/30 flex justify-end gap-2 rounded-b-2xl">
           <button
             type="submit"
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full shadow-lg cursor-pointer hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2 font-semibold"

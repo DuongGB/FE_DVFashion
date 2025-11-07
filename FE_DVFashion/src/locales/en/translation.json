@@ -1622,7 +1622,8 @@
           "new_customer": "New Customer",
           "product_update": "Product Update",
           "new_review": "New Review",
-          "payment_completed": "Payment Completed"
+          "payment_completed": "Payment Completed",
+          "no_activities": "No recent activities"
         },
         "time": {
           "minutes_ago": "{{count}} minutes ago",
@@ -1646,11 +1647,13 @@
           "slim_jeans": "Slim Fit Jeans",
           "office_shirt": "Office Shirt",
           "white_sneakers": "White Sneakers",
-          "unisex_hoodie": "Unisex Hoodie"
+          "unisex_hoodie": "Unisex Hoodie",
+          "no_products": "No products to display"
         }
       }
     },
     "inventory": {
+      "min_stock": "Minimum Stock",
       "title": "Inventory Management",
       "import_stock": "Import Stock",
       "export": "Export Stock",

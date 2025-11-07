@@ -97,9 +97,9 @@ export default function InventoryDetailModal({
     .reduce((sum, t) => sum + Math.abs(t.quantity), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -113,7 +113,7 @@ export default function InventoryDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
@@ -246,7 +246,7 @@ export default function InventoryDetailModal({
                   {inventoryTransactions.length > 0 ? (
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-100">
+                        <tr className="bg-white/60">
                           <th className="p-2">
                             {t("admin.inventory_detail.transaction_type")}
                           </th>
@@ -269,7 +269,10 @@ export default function InventoryDetailModal({
                       </thead>
                       <tbody>
                         {inventoryTransactions.map((transaction) => (
-                          <tr key={transaction.id} className="border-b">
+                          <tr
+                            key={transaction.id}
+                            className="border-b border-white/30"
+                          >
                             <td className="p-2">
                               <span
                                 className={`px-2 py-1 rounded text-xs text-white font-medium ${
@@ -296,7 +299,7 @@ export default function InventoryDetailModal({
                                 {transaction.quantity}
                               </span>
                             </td>
-                            <td className="p-2 font-mono text-xs bg-gray-100 rounded">
+                            <td className="p-2 font-mono text-xs bg-white/60 rounded">
                               {transaction.reference}
                             </td>
                             <td className="p-2">

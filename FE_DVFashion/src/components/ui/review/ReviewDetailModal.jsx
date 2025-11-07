@@ -115,13 +115,13 @@ export default function ReviewDetailModal({ review, open, onClose }) {
   const StatusIcon = statusInfo.icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
-        className="bg-gray-50 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-2xl">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
@@ -129,7 +129,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
             <IconX size={20} />
           </button>
           <div className="flex items-start gap-4">
-            <div className="bg-white/20 p-3 rounded-lg">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
               <IconStar size={24} />
             </div>
             <div>
@@ -149,7 +149,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Summary Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-center">
+            <div className="lg:col-span-1 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg text-center">
               <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 {t("admin.review.detail.rating_summary")}
               </h3>
@@ -167,7 +167,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="lg:col-span-2 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconUser size={20} className="text-blue-600" />
                 {t("admin.review.detail.customer_info")}
@@ -182,7 +182,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
           </div>
 
           {/* Product & Order Info */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
               <IconPackage size={20} className="text-purple-600" />
               {t("admin.review.detail.product_order_info")}
@@ -208,24 +208,24 @@ export default function ReviewDetailModal({ review, open, onClose }) {
           </div>
 
           {/* Review Content */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
               <IconNotes size={20} className="text-green-600" />
               {t("admin.review.detail.review_content")}
             </h3>
-            <p className="text-gray-700 text-base leading-relaxed italic bg-gray-50 p-4 rounded-md border">
+            <p className="text-gray-700 text-base leading-relaxed italic bg-white/80 p-4 rounded-md border border-white/30">
               "{review.comment || t("admin.review.detail.no_comment")}"
             </p>
           </div>
 
           {/* Admin Comment */}
           {review.adminComment && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconMessage size={20} className="text-orange-600" />
                 {t("admin.review.detail.admin_feedback")}
               </h3>
-              <p className="text-gray-700 text-base leading-relaxed bg-yellow-50 p-4 rounded-md border border-yellow-200">
+              <p className="text-gray-700 text-base leading-relaxed bg-yellow-50/60 p-4 rounded-md border border-yellow-200/40">
                 {review.adminComment}
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
 
           {/* Images */}
           {review.imageUrls && review.imageUrls.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="font-semibold text-lg mb-3 text-gray-700">
                 {t("admin.review.detail.attached_images", {
                   count: review.imageUrls.length,
@@ -245,7 +245,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
                     key={index}
                     src={url}
                     alt={`Review ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-md border cursor-pointer hover:scale-105 transition-transform"
+                    className="w-full h-24 object-cover rounded-md border border-white/30 cursor-pointer hover:scale-105 transition-transform"
                     onClick={() => window.open(url, "_blank")}
                   />
                 ))}
@@ -254,7 +254,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
           )}
 
           {/* Timestamps */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-6 shadow-lg">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
               <IconCalendar size={20} className="text-cyan-600" />
               {t("admin.review.detail.timestamps")}
@@ -277,7 +277,7 @@ export default function ReviewDetailModal({ review, open, onClose }) {
 }
 
 const InfoRow = ({ label, value, isLink = null }) => (
-  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+  <div className="p-3 bg-white/80 rounded-lg border border-white/30">
     <div className="text-sm text-gray-600 mb-1">{label}</div>
     {isLink ? (
       <a

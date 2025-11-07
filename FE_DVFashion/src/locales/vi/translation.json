@@ -1623,7 +1623,8 @@
           "new_customer": "Khách hàng mới",
           "product_update": "Sản phẩm cập nhật",
           "new_review": "Đánh giá mới",
-          "payment_completed": "Thanh toán hoàn thành"
+          "payment_completed": "Thanh toán hoàn thành",
+          "no_activities": "Chưa có hoạt động nào"
         },
         "time": {
           "minutes_ago": "{{count}} phút trước",
@@ -1647,11 +1648,13 @@
           "slim_jeans": "Quần jeans slim fit",
           "office_shirt": "Áo sơ mi công sở",
           "white_sneakers": "Giày sneaker trắng",
-          "unisex_hoodie": "Áo hoodie unisex"
+          "unisex_hoodie": "Áo hoodie unisex",
+          "no_products": "Chưa có sản phẩm bán"
         }
       }
     },
     "inventory": {
+      "min_stock": "Tồn kho tối thiểu",
       "title": "Quản lý kho hàng",
       "import_stock": "Nhập kho",
       "export": "Xuất kho",

@@ -292,3 +292,14 @@
 .Toastify__close-button:hover {
   opacity: 1;
 }
+
+/* Ẩn scrollbar cho Chrome, Safari và Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ẩn scrollbar cho IE, Edge và Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE và Edge */
+  scrollbar-width: none; /* Firefox */
+}

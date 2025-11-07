@@ -149,7 +149,6 @@ export default function ReviewPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">
-        {" "}
         {t("admin.review.title")}
       </h1>
 
@@ -178,7 +177,7 @@ export default function ReviewPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <input
@@ -186,13 +185,13 @@ export default function ReviewPage() {
               placeholder={t("admin.review.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-4 py-2 rounded-lg"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg"
           >
             <option value="">{t("admin.review.all_status")}</option>
             {Object.entries(statusConfig).map(([key, { label }]) => (
@@ -204,7 +203,7 @@ export default function ReviewPage() {
           <select
             value={ratingFilter}
             onChange={(e) => setRatingFilter(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg"
           >
             <option value="">{t("admin.review.all_ratings")}</option>
             {[5, 4, 3, 2, 1].map((star) => (
@@ -217,9 +216,9 @@ export default function ReviewPage() {
       </div>
 
       {/* Reviews Table */}
-      <div className="bg-white shadow rounded-lg overflow-x-auto">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-400">
             <tr>
               <th className="p-3">{t("admin.review.columns.customer")}</th>
               <th className="p-3">{t("admin.review.columns.product")}</th>
@@ -239,7 +238,10 @@ export default function ReviewPage() {
               </tr>
             ) : reviews.length > 0 ? (
               reviews.map((review) => (
-                <tr key={review.id} className="border-b hover:bg-gray-50">
+                <tr
+                  key={review.id}
+                  className="border-b hover:bg-white/80 transition-colors"
+                >
                   <td className="p-3">
                     <p className="font-semibold">{review.user.fullName}</p>
                     <p className="text-sm text-gray-500">{review.user.email}</p>
@@ -279,8 +281,6 @@ export default function ReviewPage() {
                       >
                         <IconEye size={20} />
                       </button>
-
-                      {/* Chỉ admin mới thấy các nút moderate */}
                       {isAdmin && (
                         <>
                           {(review.status === "PENDING" ||
@@ -404,7 +404,7 @@ export default function ReviewPage() {
 }
 
 const StatCard = ({ title, value, icon }) => (
-  <div className="bg-white p-6 rounded-lg shadow border">
+  <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -444,17 +444,17 @@ const ModerationCommentModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-md"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-800">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+          <h2 className="text-xl font-bold">
             {t("admin.review.moderate.comment_title", {
-              action: actionText.toLowerCase(),
+              action: actionText?.toLowerCase(),
             })}
           </h2>
         </div>
@@ -471,23 +471,23 @@ const ModerationCommentModal = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               placeholder={t("admin.review.moderate.reason_placeholder")}
             />
           </div>
-          <div className="flex justify-end gap-4 p-6 bg-gray-50 rounded-b-lg">
+          <div className="flex justify-end gap-4 p-6 border-t border-white/30 bg-white/60 rounded-b-2xl">
             <button
               type="button"
               onClick={onClose}
               disabled={isModerating}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 text-gray-700 backdrop-blur-sm bg-white/70 border border-white/30 rounded-lg hover:bg-white/90 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               {t("common.cancel")}
             </button>
             <button
               type="submit"
               disabled={isModerating}
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:bg-blue-400 cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               {isModerating ? t("common.processing") : t("common.submit")}
             </button>

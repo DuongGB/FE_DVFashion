@@ -252,7 +252,6 @@ export default function CategoryPage() {
           {t("admin.category.title")}
         </h1>
         <div className="flex items-center gap-4">
-          {/* Chỉ hiển thị nút tạo danh mục cho admin */}
           {!isStaff && (
             <button
               onClick={handleCreate}
@@ -262,7 +261,6 @@ export default function CategoryPage() {
               {t("admin.category.create_category")}
             </button>
           )}
-          {/* Hiển thị thông báo cho staff */}
           {isStaff && (
             <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
@@ -276,7 +274,7 @@ export default function CategoryPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -286,8 +284,7 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -299,8 +296,7 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -315,9 +311,8 @@ export default function CategoryPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
               <IconSearch
@@ -329,17 +324,15 @@ export default function CategoryPage() {
                 placeholder={t("admin.category.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-
-          {/* Status Filter */}
           <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{t("admin.category.all_status")}</option>
               <option value="active">
@@ -362,7 +355,7 @@ export default function CategoryPage() {
       </div>
 
       {/* Categories Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
@@ -388,10 +381,9 @@ export default function CategoryPage() {
               paginatedCategories.map((category, index) => (
                 <tr
                   key={`category-${category.id}-${index}`}
-                  className="border-b hover:bg-gray-300 transition-colors"
+                  className="border-b hover:bg-white/80 transition-colors"
                 >
                   <td className="p-3">{category.id}</td>
-
                   <td className="p-3">
                     {category.imageUrl || category.image ? (
                       <img
@@ -414,13 +406,11 @@ export default function CategoryPage() {
                       No Image
                     </div>
                   </td>
-
                   <td className="p-3">
                     <div>
                       <p className="font-semibold">{category.name}</p>
                     </div>
                   </td>
-
                   <td className="p-3">
                     <div className="max-w-xs">
                       <p
@@ -431,11 +421,8 @@ export default function CategoryPage() {
                       </p>
                     </div>
                   </td>
-
-                  {/* Status cell - chỉ admin mới có thể click để thay đổi */}
                   <td className="p-3">
                     {isStaff ? (
-                      // Staff chỉ xem, không thể thay đổi
                       <span
                         className={`px-3 py-1 rounded text-sm font-medium ${
                           category.active
@@ -448,7 +435,6 @@ export default function CategoryPage() {
                           : t("admin.category.status.inactive")}
                       </span>
                     ) : (
-                      // Admin có thể click để thay đổi
                       <button
                         onClick={() => handleToggleStatus(category)}
                         disabled={loadingItems.status === category.id}
@@ -477,10 +463,8 @@ export default function CategoryPage() {
                       </button>
                     )}
                   </td>
-
                   <td className="p-3">
                     <div className="flex gap-2">
-                      {/* Nút xem chi tiết - tất cả đều có thể xem */}
                       <button
                         onClick={() => handleViewDetail(category)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
@@ -488,8 +472,6 @@ export default function CategoryPage() {
                       >
                         <IconEye size={24} />
                       </button>
-
-                      {/* Nút chỉnh sửa - chỉ admin mới có */}
                       {!isStaff ? (
                         <button
                           onClick={() => handleEdit(category)}
@@ -499,7 +481,6 @@ export default function CategoryPage() {
                           <IconEdit size={24} />
                         </button>
                       ) : (
-                        // Hiển thị icon disabled cho staff
                         <button
                           className="text-gray-400 p-1 cursor-not-allowed opacity-50"
                           onClick={() => handleEdit(category)}

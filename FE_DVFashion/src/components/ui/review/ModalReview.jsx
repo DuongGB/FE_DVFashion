@@ -242,12 +242,13 @@ export default function ModalReview({
   const selectedItems = order.items.filter((item) =>
     selectedProductIds.includes(item.productVariantId)
   );
+
   return (
-    <div className="fixed inset-0 bg-black/50 bg-opacity-70 z-50 flex justify-center items-start p-4 sm:p-6 md:p-10">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col relative overflow-hidden">
         <button
           onClick={handleClose}
-          className="absolute -top-3 -right-3 bg-black rounded-full p-1.5 text-white hover:bg-gray-700 z-10 cursor-pointer"
+          className="absolute -top-3 -right-3 bg-black/30 backdrop-blur-sm text-white rounded-full p-2 hover:bg-black/50 z-10 cursor-pointer"
         >
           <IconX size={24} />
         </button>
@@ -265,13 +266,6 @@ export default function ModalReview({
                 order.items.map((item, index) => {
                   const canReview =
                     reviewabilityResults[index]?.data?.data === true;
-                  console.log(
-                    "item",
-                    item.productVariantId,
-                    "canReview",
-                    canReview,
-                    reviewabilityResults[index]
-                  );
                   return (
                     <SelectableProduct
                       key={item.productVariantId}
@@ -315,11 +309,11 @@ export default function ModalReview({
         </div>
 
         {/* Footer */}
-        <div className="p-4  border-t bg-white sticky bottom-0 rounded-b-2xl">
+        <div className="p-4 border-t bg-white/80 backdrop-blur-xl sticky bottom-0 rounded-b-2xl border-white/30">
           <button
             onClick={handleSubmit}
             disabled={selectedProductIds.length === 0 || isSubmitting}
-            className="w-full bg-black text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-lg"
           >
             {isSubmitting
               ? t("review.submit")

@@ -573,9 +573,9 @@ const ProductForm = ({
     isProcessingVariants;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
-        className="bg-gradient-to-br from-white/70 via-white/50 to-blue-100/40 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -592,7 +592,7 @@ const ProductForm = ({
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IconX size={20} />
           </button>
@@ -631,7 +631,7 @@ const ProductForm = ({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  errors.name ? "border-red-500" : "border-gray-300"
+                  errors.name ? "border-red-500" : "border-white/30"
                 } bg-white/80 backdrop-blur-sm`}
                 placeholder={t("admin.product.form.name_placeholder")}
               />
@@ -652,7 +652,7 @@ const ProductForm = ({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  errors.material ? "border-red-500" : "border-gray-300"
+                  errors.material ? "border-red-500" : "border-white/30"
                 } bg-white/80 backdrop-blur-sm`}
                 placeholder={t("admin.product.form.material_placeholder")}
               />
@@ -674,7 +674,7 @@ const ProductForm = ({
               onChange={handleChange}
               disabled={isSubmitting}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+              className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
               placeholder={t("admin.product.form.description_placeholder")}
             />
           </div>
@@ -696,7 +696,7 @@ const ProductForm = ({
                 min="0"
                 step="1000"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  errors.price ? "border-red-500" : "border-gray-300"
+                  errors.price ? "border-red-500" : "border-white/30"
                 } bg-white/80 backdrop-blur-sm`}
                 placeholder="0"
               />
@@ -719,7 +719,7 @@ const ProductForm = ({
                 disabled={isSubmitting}
                 min="0"
                 step="1000"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+                className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                 placeholder="0"
               />
             </div>
@@ -735,7 +735,7 @@ const ProductForm = ({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  errors.categoryId ? "border-red-500" : "border-gray-300"
+                  errors.categoryId ? "border-red-500" : "border-white/30"
                 } bg-white/80 backdrop-blur-sm`}
               >
                 <option value="">
@@ -759,7 +759,7 @@ const ProductForm = ({
               type="button"
               onClick={() => setShowVariants(!showVariants)}
               disabled={isSubmitting}
-              className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+              className="flex items-center justify-between w-full px-4 py-2 border border-white/30 rounded-lg hover:bg-white/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
             >
               <div className="flex items-center gap-2">
                 <IconPackage size={16} />
@@ -794,7 +794,7 @@ const ProductForm = ({
                 {formData.variants.map((variant, idx) => (
                   <div
                     key={idx}
-                    className="border border-gray-200 rounded-lg p-4 bg-white/80 backdrop-blur-sm"
+                    className="border border-white/30 rounded-lg p-4 bg-white/80 backdrop-blur-sm"
                   >
                     {/* Variant Header */}
                     <div className="flex justify-between items-center mb-3">
@@ -836,7 +836,7 @@ const ProductForm = ({
                           className={`w-full px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                             errors[`variant_${idx}_color`]
                               ? "border-red-500"
-                              : "border-gray-300"
+                              : "border-white/30"
                           } bg-white/80 backdrop-blur-sm`}
                         />
                         {errors[`variant_${idx}_color`] && (
@@ -860,7 +860,7 @@ const ProductForm = ({
                         disabled={isSubmitting}
                         min="0"
                         step="1000"
-                        className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+                        className="px-3 py-2 border border-white/30 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                       />
 
                       <select
@@ -869,7 +869,7 @@ const ProductForm = ({
                           handleVariantChange(idx, "status", e.target.value)
                         }
                         disabled={isSubmitting}
-                        className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+                        className="px-3 py-2 border border-white/30 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
                       >
                         <option value="ACTIVE">
                           {t("admin.product.form.active")}
@@ -919,7 +919,7 @@ const ProductForm = ({
                                 className={`w-full px-2 py-1 border rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                                   errors[`variant_${idx}_size_${sidx}_sizeName`]
                                     ? "border-red-500"
-                                    : "border-gray-300"
+                                    : "border-white/30"
                                 } bg-white/80 backdrop-blur-sm`}
                               />
                               {errors[
@@ -989,7 +989,7 @@ const ProductForm = ({
                           {variant.images.map((img, imgIdx) => (
                             <div
                               key={imgIdx}
-                              className="relative group w-20 h-20 border rounded-lg bg-white/80 backdrop-blur-sm"
+                              className="relative group w-20 h-20 border border-white/30 rounded-lg bg-white/80 backdrop-blur-sm"
                             >
                               <img
                                 src={img.preview || img.existingImageUrl}
@@ -1062,7 +1062,7 @@ const ProductForm = ({
 
           {/* Status & Sale Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+            <div className="bg-white/80 backdrop-blur-xl p-4 rounded-lg border border-white/30">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -1079,7 +1079,7 @@ const ProductForm = ({
               </label>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+            <div className="bg-white/80 backdrop-blur-xl p-4 rounded-lg border border-white/30">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("admin.product.form.status")}
               </label>
@@ -1088,7 +1088,7 @@ const ProductForm = ({
                 value={formData.status}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
+                className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 backdrop-blur-sm"
               >
                 <option value="ACTIVE">{t("admin.product.form.active")}</option>
                 <option value="INACTIVE">
