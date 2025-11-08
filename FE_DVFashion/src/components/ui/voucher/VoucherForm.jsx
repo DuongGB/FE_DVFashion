@@ -313,467 +313,477 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
 
   const isSubmitting = formSubmitting || isCreating || isUpdating;
 
-  // Inner modal content (parent supplies overlay)
   return (
-    <div
-      className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
-        <button
-          onClick={() => onClose && onClose()}
-          disabled={isSubmitting}
-          className="absolute top-4 right-4 bg-black/20 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/30 transition-colors cursor-pointer"
-        >
-          <IconX size={18} />
-        </button>
-
-        <div className="flex items-start gap-4">
-          <div className="bg-white/20 p-3 rounded-lg">
-            <IconGift size={24} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-1">
-              {voucher
-                ? t("admin.voucher.edit") || "Edit Voucher"
-                : t("admin.voucher.create") || "Create Voucher"}
-            </h2>
-            <p className="text-blue-100 opacity-90">
-              {voucher
-                ? t("admin.voucher.edit_description") || ""
-                : t("admin.voucher.create_description") || ""}
-            </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-2xl">
+          <button
+            onClick={() => onClose && onClose()}
+            disabled={isSubmitting}
+            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
+          >
+            <IconX size={18} />
+          </button>
+          <div className="flex items-start gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+              <IconGift size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-1">
+                {voucher
+                  ? t("admin.voucher.edit") || "Edit Voucher"
+                  : t("admin.voucher.create") || "Create Voucher"}
+              </h2>
+              <p className="text-blue-100 opacity-90">
+                {voucher
+                  ? t("admin.voucher.edit_description") || ""
+                  : t("admin.voucher.create_description") || ""}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic info */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconTag size={18} className="text-blue-600" />
-              {t("admin.voucher.form.basic_info") || "Basic information"}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.columns.name")}
-                </label>
-                <input
-                  value={values.name}
-                  onChange={(e) => setField("name", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                    errors.name ? "border-red-500 bg-red-50" : "border-gray-300"
-                  }`}
-                  placeholder={t("admin.voucher.form.name_placeholder") || ""}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Code
-                </label>
-                <input
-                  value={values.code}
-                  onChange={(e) =>
-                    setField("code", e.target.value.toUpperCase())
-                  }
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg font-mono focus:outline-none ${
-                    errors.code ? "border-red-500 bg-red-50" : "border-gray-300"
-                  }`}
-                  placeholder="SALE_..."
-                />
-                {errors.code && (
-                  <p className="text-red-500 text-sm mt-1">{errors.code}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.columns.type") || "Type"}
-                </label>
-                <select
-                  value={values.voucherType}
-                  onChange={(e) => setField("voucherType", e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="SHOP_WIDE">{"Shop-wide"}</option>
-                  <option value="PRODUCT_SPECIFIC">{"Product-specific"}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Time & options */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconCalendar size={18} className="text-purple-600" />
-              {t("admin.voucher.form.time_limits") || "Time & options"}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.start_date") || "Start Date"}
-                </label>
-                <input
-                  type="date"
-                  value={values.startDate}
-                  onChange={(e) => setField("startDate", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                    errors.startDate
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {errors.startDate && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.startDate}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.end_date") || "End Date"}
-                </label>
-                <input
-                  type="date"
-                  value={values.endDate}
-                  onChange={(e) => setField("endDate", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                    errors.endDate
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {errors.endDate && (
-                  <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="allowSave"
-                  checked={values.allowSaveBeforeActive}
-                  onChange={(e) =>
-                    setField("allowSaveBeforeActive", e.target.checked)
-                  }
-                  disabled={isSubmitting}
-                  className="w-5 h-5 rounded border-gray-300"
-                />
-                <label htmlFor="allowSave" className="text-sm text-gray-700">
-                  {t("admin.voucher.form.allow_save_before_active") ||
-                    "Allow save before active"}
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Discount */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconPercentage size={18} className="text-green-600" />
-              {t("admin.voucher.form.discount_section") || "Discount"}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.discount_type") || "Discount Type"}
-                </label>
-                <select
-                  value={values.discountType}
-                  onChange={(e) => setField("discountType", e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="PERCENTAGE">
-                    {t("admin.promotion.type.PERCENTAGE") || "Percentage"}
-                  </option>
-                  <option value="FIXED_AMOUNT">
-                    {t("admin.promotion.type.FIXED_AMOUNT") || "Fixed amount"}
-                  </option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.discount_value") || "Discount Value"}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={values.discountValue}
-                  onChange={(e) => setField("discountValue", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                    errors.discountValue
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {errors.discountValue && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.discountValue}
-                  </p>
-                )}
-              </div>
-
-              {/* Only show max discount fields if discountType is PERCENTAGE */}
-              {values.discountType === "PERCENTAGE" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t("admin.voucher.form.has_max_discount") ||
-                        "Has Max Discount"}
-                    </label>
-                    <select
-                      value={values.hasMaxDiscount ? "yes" : "no"}
-                      onChange={(e) =>
-                        setField("hasMaxDiscount", e.target.value === "yes")
-                      }
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value="no">No</option>
-                      <option value="yes">Yes</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t("admin.voucher.form.max_discount_amount") ||
-                        "Max Discount Amount"}
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={values.maxDiscountAmount}
-                      onChange={(e) =>
-                        setField("maxDiscountAmount", e.target.value)
-                      }
-                      disabled={!values.hasMaxDiscount || isSubmitting}
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Usage & products */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconCheck size={18} className="text-green-600" />
-              {t("admin.voucher.form.usage_section") || "Usage & Products"}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.min_order_amount_label")}
-                </label>
-                <input
-                  type="number"
-                  step="10000"
-                  min="0"
-                  value={values.minOrderAmount}
-                  onChange={(e) => setField("minOrderAmount", e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.max_total_usage_label")}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={values.maxTotalUsage}
-                  onChange={(e) => setField("maxTotalUsage", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg ${
-                    errors.maxUsagePerUser
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.max_usage_per_user_label")}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={values.maxUsagePerUser}
-                  onChange={(e) => setField("maxUsagePerUser", e.target.value)}
-                  disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg ${
-                    errors.maxUsagePerUser
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {errors.maxUsagePerUser && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.maxUsagePerUser}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {values.voucherType === "PRODUCT_SPECIFIC" && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("admin.voucher.form.product_ids")}
-                </label>
-
-                {/* Hiển thị danh sách IDs dưới dạng tag, có thể xóa */}
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {(selectedProducts || []).length > 0 ? (
-                    (selectedProducts || []).map((p) => (
-                      <span
-                        key={p.productId}
-                        className="flex items-center gap-2 bg-gray-100 text-sm px-2 py-1 rounded"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-xs text-gray-500">
-                            <span className="font-mono">{p.productId}</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeProductId(p.productId)}
-                          disabled={isSubmitting}
-                          className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
-                          title="Remove"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))
-                  ) : (
-                    <div className="text-sm text-gray-500">
-                      {t("admin.voucher.form.no_products_added")}
-                    </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic info */}
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconTag size={18} className="text-blue-600" />
+                {t("admin.voucher.form.basic_info") || "Basic information"}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.columns.name")}
+                  </label>
+                  <input
+                    value={values.name}
+                    onChange={(e) => setField("name", e.target.value)}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none ${
+                      errors.name
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
+                    }`}
+                    placeholder={t("admin.voucher.form.name_placeholder") || ""}
+                  />
+                  {errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
                   )}
                 </div>
-
-                <div className="flex gap-2">
+                {/* Code */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Code
+                  </label>
                   <input
-                    value={values.productIdsText}
-                    onChange={(e) => setField("productIdsText", e.target.value)}
-                    onKeyDown={onProductInputKeyDown}
-                    placeholder={t(
-                      "admin.voucher.form.product_ids_placeholder"
-                    )}
+                    value={values.code}
+                    onChange={(e) =>
+                      setField("code", e.target.value.toUpperCase())
+                    }
                     disabled={isSubmitting}
-                    className={`flex-1 px-3 py-2 border rounded-lg ${
-                      errors.productIdsText
+                    className={`w-full px-3 py-2 font-mono backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none ${
+                      errors.code
                         ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
+                        : "hover:border-gray-400"
+                    }`}
+                    placeholder="SALE_..."
+                  />
+                  {errors.code && (
+                    <p className="text-red-500 text-sm mt-1">{errors.code}</p>
+                  )}
+                </div>
+                {/* Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.columns.type") || "Type"}
+                  </label>
+                  <select
+                    value={values.voucherType}
+                    onChange={(e) => setField("voucherType", e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                  >
+                    <option value="SHOP_WIDE">{"Shop-wide"}</option>
+                    <option value="PRODUCT_SPECIFIC">
+                      {"Product-specific"}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Time & options */}
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconCalendar size={18} className="text-purple-600" />
+                {t("admin.voucher.form.time_limits") || "Time & options"}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Start Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.start_date") || "Start Date"}
+                  </label>
+                  <input
+                    type="date"
+                    value={values.startDate}
+                    onChange={(e) => setField("startDate", e.target.value)}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none ${
+                      errors.startDate
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
                     }`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setProductModalOpen(true)}
-                    disabled={isSubmitting}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all flex items-center gap-2"
-                    title="Select products"
-                  >
-                    {t("admin.promotion.select_products") || "Select products"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearAllSelectedProducts}
-                    disabled={
-                      isSubmitting || (selectedProducts || []).length === 0
-                    }
-                    className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all flex items-center gap-2 cursor-pointer"
-                    title="Clear all selected products"
-                  >
-                    {t("admin.promotion.clear_selection") || "Clear all"}
-                  </button>
+                  {errors.startDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.startDate}
+                    </p>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                  <IconInfoCircle size={14} />
-                  {t("admin.voucher.form.product_ids_note") ||
-                    "Only active products accepted by server."}
-                </p>
-                {errors.productIdsText && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.productIdsText}
-                  </p>
+                {/* End Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.end_date") || "End Date"}
+                  </label>
+                  <input
+                    type="date"
+                    value={values.endDate}
+                    onChange={(e) => setField("endDate", e.target.value)}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none ${
+                      errors.endDate
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
+                    }`}
+                  />
+                  {errors.endDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.endDate}
+                    </p>
+                  )}
+                </div>
+                {/* Allow Save Before Active */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="allowSave"
+                    checked={values.allowSaveBeforeActive}
+                    onChange={(e) =>
+                      setField("allowSaveBeforeActive", e.target.checked)
+                    }
+                    disabled={isSubmitting}
+                    className="w-5 h-5 rounded border-white/30 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="allowSave" className="text-sm text-gray-700">
+                    {t("admin.voucher.form.allow_save_before_active") ||
+                      "Allow save before active"}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Discount */}
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconPercentage size={18} className="text-green-600" />
+                {t("admin.voucher.form.discount_section") || "Discount"}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Discount Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.discount_type") || "Discount Type"}
+                  </label>
+                  <select
+                    value={values.discountType}
+                    onChange={(e) => setField("discountType", e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                  >
+                    <option value="PERCENTAGE">
+                      {t("admin.promotion.type.PERCENTAGE") || "Percentage"}
+                    </option>
+                    <option value="FIXED_AMOUNT">
+                      {t("admin.promotion.type.FIXED_AMOUNT") || "Fixed amount"}
+                    </option>
+                  </select>
+                </div>
+                {/* Discount Value */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.discount_value") || "Discount Value"}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={values.discountValue}
+                    onChange={(e) => setField("discountValue", e.target.value)}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none ${
+                      errors.discountValue
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
+                    }`}
+                  />
+                  {errors.discountValue && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.discountValue}
+                    </p>
+                  )}
+                </div>
+                {/* Max Discount (if percentage) */}
+                {values.discountType === "PERCENTAGE" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t("admin.voucher.form.has_max_discount") ||
+                          "Has Max Discount"}
+                      </label>
+                      <select
+                        value={values.hasMaxDiscount ? "yes" : "no"}
+                        onChange={(e) =>
+                          setField("hasMaxDiscount", e.target.value === "yes")
+                        }
+                        disabled={isSubmitting}
+                        className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                      >
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </select>
+                    </div>
+                    {values.hasMaxDiscount && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t("admin.voucher.form.max_discount_amount") ||
+                            "Max Discount Amount"}
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={values.maxDiscountAmount}
+                          onChange={(e) =>
+                            setField("maxDiscountAmount", e.target.value)
+                          }
+                          disabled={!values.hasMaxDiscount || isSubmitting}
+                          className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Footer actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <IconLoader2 size={16} className="animate-spin" />
-                  {voucher
-                    ? t("admin.voucher.actions.updating")
-                    : t("admin.voucher.actions.creating")}
-                </>
-              ) : (
-                <>
-                  <IconCheck size={16} />
-                  {voucher
-                    ? t("admin.voucher.actions.update_button")
-                    : t("admin.voucher.actions.create_button")}
-                </>
+            {/* Usage & products */}
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                <IconCheck size={18} className="text-green-600" />
+                {t("admin.voucher.form.usage_section") || "Usage & Products"}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Min Order Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.min_order_amount_label")}
+                  </label>
+                  <input
+                    type="number"
+                    step="10000"
+                    min="0"
+                    value={values.minOrderAmount}
+                    onChange={(e) => setField("minOrderAmount", e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                  />
+                </div>
+                {/* Max Total Usage */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.max_total_usage_label")}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={values.maxTotalUsage}
+                    onChange={(e) => setField("maxTotalUsage", e.target.value)}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg ${
+                      errors.maxUsagePerUser
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
+                    }`}
+                  />
+                </div>
+                {/* Max Usage Per User */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.max_usage_per_user_label")}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={values.maxUsagePerUser}
+                    onChange={(e) =>
+                      setField("maxUsagePerUser", e.target.value)
+                    }
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg ${
+                      errors.maxUsagePerUser
+                        ? "border-red-500 bg-red-50"
+                        : "hover:border-gray-400"
+                    }`}
+                  />
+                  {errors.maxUsagePerUser && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.maxUsagePerUser}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* Product-specific voucher: select products */}
+              {values.voucherType === "PRODUCT_SPECIFIC" && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("admin.voucher.form.product_ids")}
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(selectedProducts || []).length > 0 ? (
+                      (selectedProducts || []).map((p) => (
+                        <span
+                          key={p.productId}
+                          className="flex items-center gap-2 bg-white/80 border border-white/30 text-sm px-2 py-1 rounded"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs text-gray-500">
+                              <span className="font-mono">{p.productId}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeProductId(p.productId)}
+                            disabled={isSubmitting}
+                            className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500">
+                        {t("admin.voucher.form.no_products_added")}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={values.productIdsText}
+                      onChange={(e) =>
+                        setField("productIdsText", e.target.value)
+                      }
+                      onKeyDown={onProductInputKeyDown}
+                      placeholder={t(
+                        "admin.voucher.form.product_ids_placeholder"
+                      )}
+                      disabled={isSubmitting}
+                      className={`flex-1 px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg ${
+                        errors.productIdsText
+                          ? "border-red-500 bg-red-50"
+                          : "hover:border-gray-400"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProductModalOpen(true)}
+                      disabled={isSubmitting}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
+                      title="Select products"
+                    >
+                      {t("admin.promotion.select_products") ||
+                        "Select products"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllSelectedProducts}
+                      disabled={
+                        isSubmitting || (selectedProducts || []).length === 0
+                      }
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all flex items-center gap-2 cursor-pointer"
+                      title="Clear all selected products"
+                    >
+                      {t("admin.promotion.clear_selection") || "Clear all"}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                    <IconInfoCircle size={14} />
+                    {t("admin.voucher.form.product_ids_note") ||
+                      "Only active products accepted by server."}
+                  </p>
+                  {errors.productIdsText && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.productIdsText}
+                    </p>
+                  )}
+                </div>
               )}
-            </button>
-          </div>
-        </form>
+            </div>
+            {/* Footer actions */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-white/30">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 cursor-pointer shadow-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <IconLoader2 size={16} className="animate-spin" />
+                    {voucher
+                      ? t("admin.voucher.actions.updating")
+                      : t("admin.voucher.actions.creating")}
+                  </>
+                ) : (
+                  <>
+                    <IconCheck size={16} />
+                    {voucher
+                      ? t("admin.voucher.actions.update_button")
+                      : t("admin.voucher.actions.create_button")}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+        {/* Product selection modal */}
+        <ProductSelectModal
+          open={productModalOpen}
+          onClose={() => setProductModalOpen(false)}
+          preSelected={selectedProducts.map((p) => ({
+            productId: p.productId,
+          }))}
+          lang={language}
+          onConfirm={(items) => {
+            const merged = [...(selectedProducts || [])];
+            items.forEach((it) => {
+              if (!merged.find((m) => m.productId === it.productId))
+                merged.push(it);
+            });
+            setSelectedProducts(merged);
+            setProductModalOpen(false);
+          }}
+        />
       </div>
-      {/* Product selection modal */}
-      <ProductSelectModal
-        open={productModalOpen}
-        onClose={() => setProductModalOpen(false)}
-        preSelected={selectedProducts.map((p) => ({ productId: p.productId }))}
-        lang={language}
-        onConfirm={(items) => {
-          // items are [{ productId, name, originalPrice }]
-          const merged = [...(selectedProducts || [])];
-          items.forEach((it) => {
-            if (!merged.find((m) => m.productId === it.productId))
-              merged.push(it);
-          });
-          setSelectedProducts(merged);
-          setProductModalOpen(false);
-        }}
-      />
     </div>
   );
 }

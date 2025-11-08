@@ -492,17 +492,17 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header với gradient background */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-2xl">
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="absolute top-4 right-4 bg-black backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-black/50 transition-all duration-200 cursor-pointer disabled:opacity-50"
           >
             <IconX size={20} />
           </button>
@@ -530,12 +530,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information Section */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconTag size={20} className="text-blue-600" />
                 {t("admin.promotion.form.basic_info")}
               </h3>
-
+              {/* ...Tên khuyến mãi, mô tả, banner, chọn sản phẩm... */}
+              {/* ...giữ nguyên logic, chỉ đổi className các input, textarea, button... */}
               {/* Tên khuyến mãi */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -547,10 +548,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                  className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                     errors.name
                       ? "border-red-500 bg-red-50"
-                      : "border-gray-300 hover:border-gray-400"
+                      : "hover:border-gray-400"
                   }`}
                   placeholder={t(
                     "admin.promotion.form.promotion_name_placeholder"
@@ -564,7 +565,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </p>
                 )}
               </div>
-              {/* Mô tả (không bắt buộc) */}
+              {/* Mô tả */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t("admin.promotion.form.description") || "Description"}
@@ -575,14 +576,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   onChange={handleChange}
                   disabled={isSubmitting}
                   rows={4}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 border-gray-300 hover:border-gray-400"
+                  className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                   placeholder={
                     t("admin.promotion.form.description_placeholder") ||
                     "Optional description..."
                   }
                 />
               </div>
-
               {/* Banner file input + Select products button */}
               <div className="mb-4 flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
@@ -595,13 +595,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     accept="image/*"
                     onChange={handleChange}
                     disabled={isSubmitting}
-                    className="w-full"
+                    className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {t("admin.promotion.form.banner_file_note")}
                   </p>
                 </div>
-
                 <div className="w-full md:w-44">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("admin.promotion.form.select_products") ||
@@ -611,14 +610,13 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     type="button"
                     onClick={() => setProductModalOpen(true)}
                     disabled={isSubmitting}
-                    className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                   >
                     {t("admin.promotion.form.select_products_button") ||
                       "Select products"}
                   </button>
                 </div>
               </div>
-
               {/* Show product-level validation errors */}
               {errors.promotionProducts && (
                 <div className="mt-2">
@@ -628,7 +626,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </p>
                 </div>
               )}
-
               {/* Selected products list */}
               {formData.promotionProducts &&
                 formData.promotionProducts.length > 0 && (
@@ -638,10 +635,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         "Selected products"}
                     </div>
                     <div className="space-y-3">
-                      {formData.promotionProducts.map((p) => (
+                      {formData.promotionProducts.map((p, idx) => (
                         <div
                           key={p.id ?? p.productId ?? idx}
-                          className="flex items-center gap-3 border border-gray-200 rounded-md shadow-sm p-3 "
+                          className="flex items-center gap-3 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg shadow p-3"
                         >
                           <div className="flex-1">
                             <div className="font-medium">{p.name}</div>
@@ -650,7 +647,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                               {(p.originalPrice ?? 0).toLocaleString()} VND
                             </div>
                           </div>
-
+                          {/* ...inputs giữ nguyên logic, chỉ đổi className... */}
                           <div className="w-36">
                             <label className="text-xs text-gray-600">
                               Promotion Price
@@ -674,10 +671,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                 (p.discountPercentage !== null &&
                                   p.discountPercentage !== "")
                               }
-                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                             />
                           </div>
-
                           <div className="w-28">
                             <label className="text-xs text-gray-600">
                               Discount %
@@ -702,10 +698,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                 (p.promotionPrice !== null &&
                                   p.promotionPrice !== "")
                               }
-                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                             />
                           </div>
-
                           <div className="w-24">
                             <label className="text-xs text-gray-600">
                               Stock
@@ -722,10 +717,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                   e.target.value
                                 )
                               }
-                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                             />
                           </div>
-
                           <div className="w-28">
                             <label className="text-xs text-gray-600">
                               Max/User
@@ -742,14 +736,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                   e.target.value
                                 )
                               }
-                              className="w-full px-2 py-1 border border-gray-200 rounded-md shadow-sm"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                             />
                           </div>
-
                           <div>
                             <button
                               type="button"
-                              // truyền productId nếu có, còn không truyền id (local)
                               onClick={() =>
                                 handleRemoveProduct(p.productId ?? p.id)
                               }
@@ -785,12 +777,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             </div>
 
             {/* Promotion Type & Value Section */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconPercentage size={20} className="text-green-600" />
                 {t("admin.promotion.form.type_value_section")}
               </h3>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -801,7 +792,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     value={formData.type}
                     onChange={handleChange}
                     disabled={isSubmitting}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
+                    className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                     required
                   >
                     <option value="NEW_CUSTOMER_DISCOUNT">
@@ -824,12 +815,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             </div>
 
             {/* Time & Limits Section */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconCalendar size={20} className="text-purple-600" />
                 {t("admin.promotion.form.time_limits_section")}
               </h3>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -841,10 +831,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     value={formData.startDate}
                     onChange={handleChange}
                     disabled={isSubmitting}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                       errors.startDate
                         ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
+                        : "hover:border-gray-400"
                     }`}
                     required
                   />
@@ -855,7 +845,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("admin.promotion.form.end_date")} *
@@ -866,10 +855,10 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     value={formData.endDate}
                     onChange={handleChange}
                     disabled={isSubmitting}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                    className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                       errors.endDate
                         ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
+                        : "hover:border-gray-400"
                     }`}
                     required
                   />
@@ -880,39 +869,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     </p>
                   )}
                 </div>
-
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("admin.promotion.form.max_usages")}
-                  </label>
-                  <input
-                    type="number"
-                    name="maxUsages"
-                    value={formData.maxUsages}
-                    onChange={handleChange}
-                    disabled={isSubmitting}
-                    min="1"
-                    step="1"
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
-                      errors.maxUsages
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    placeholder={t(
-                      "admin.promotion.form.max_usages_placeholder"
-                    )}
-                  />
-                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                    <IconInfoCircle size={12} />
-                    {t("admin.promotion.form.max_usages_hint")}
-                  </p>
-                  {errors.maxUsages && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <IconX size={12} />
-                      {errors.maxUsages}
-                    </p>
-                  )}
-                </div> */}
               </div>
             </div>
 
@@ -922,7 +878,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 <IconCheck size={20} className="text-green-600" />
                 {t("admin.promotion.form.status_section")}
               </h3>
-
               <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -944,12 +899,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <div className="flex justify-end gap-3 pt-6 border-t border-white/30">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 text-gray-600 backdrop-blur-sm bg-white/70 border border-white/30 rounded-lg hover:bg-white/90 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("admin.promotion.form.cancel")}
               </button>

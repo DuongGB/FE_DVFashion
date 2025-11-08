@@ -82,4 +82,36 @@ export const useVoucher = (opts = { page: 0, size: 12 }) => {
   };
 };
 
+export const useCustomerVoucher = (opts = { page: 0, size: 12 }) => {
+  const { page = 0, size = 12 } = opts;
+
+  // Paged vouchers for customer
+  const {
+    data: availableVouchers,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["vouchers", "customer", page, size],
+    queryFn: () => voucherAPI.getAvailableVouchersForCustomer(page, size),
+    keepPreviousData: true,
+  });
+
+  // All vouchers for customer (non-paged)
+  const { data: allAvailableVouchers, isLoading: isLoadingAll } = useQuery({
+    queryKey: ["vouchers", "customer", "all"],
+    queryFn: () => voucherAPI.getAvailableVouchersForCustomerAll(),
+    enabled: false,
+  });
+
+  return {
+    availableVouchers,
+    isLoading,
+    isError,
+    allAvailableVouchers,
+    isLoadingAll,
+    refetch,
+  };
+};
+
 export default useVoucher;

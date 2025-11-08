@@ -71,21 +71,21 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
       aria-modal="true"
     >
       <div
-        className="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header: keep visual style consistent with PromotionForm */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 relative">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 relative rounded-t-2xl">
           <button
             onClick={onClose}
             aria-label="close"
-            className="absolute top-4 right-4 bg-black/20 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/30 transition cursor-pointer"
+            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/50 transition cursor-pointer"
           >
             <IconX size={18} />
           </button>
 
           <div className="flex items-start gap-4">
-            <div className="bg-white/20 p-2 rounded-lg">
+            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
               <svg
                 className="w-6 h-6 text-white"
                 viewBox="0 0 24 24"
@@ -109,7 +109,7 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white/80">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-3">
               <p className="text-sm text-gray-600">
@@ -172,16 +172,16 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                   <img
                     src={bannerUrl}
                     alt={promotion.name}
-                    className="w-full h-36 object-cover rounded-md border shadow-sm"
+                    className="w-full h-36 object-cover rounded-md border border-white/30 shadow"
                   />
                 </a>
               ) : (
-                <div className="w-full h-36 bg-gray-50 rounded-md border flex items-center justify-center text-gray-400">
+                <div className="w-full h-36 bg-white/60 rounded-md border border-white/30 flex items-center justify-center text-gray-400">
                   {t("admin.promotion.no_banner") || "No banner"}
                 </div>
               )}
 
-              <div className="w-full bg-gray-50 rounded-md p-3 text-sm text-gray-700 border">
+              <div className="w-full backdrop-blur-xl bg-white/60 rounded-md p-3 text-sm text-gray-700 border border-white/30 shadow">
                 <div className="flex justify-between">
                   <div>{t("admin.promotion.stats.total") || "Products"}</div>
                   <div className="font-medium">{stats.total}</div>
@@ -221,7 +221,7 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-gray-100 text-xs text-gray-600">
+                    <tr className="bg-white/60 text-xs text-gray-600 border-b border-white/30">
                       <th className="p-2">#</th>
                       <th className="p-2">
                         {t("admin.promotion.columns.name")}
@@ -241,7 +241,10 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                       const original = Number(pp.originalPrice);
                       const promoPrice = pp.promotionPrice;
                       return (
-                        <tr key={pp.productId ?? prod?.id ?? idx}>
+                        <tr
+                          key={pp.productId ?? prod?.id ?? idx}
+                          className="border-b border-white/30"
+                        >
                           <td className="p-2 text-sm text-gray-600">
                             {idx + 1}
                           </td>

@@ -3,12 +3,13 @@ import {
   IconCheck,
   IconClock,
   IconEye,
+  IconEyeOff,
   IconMessage,
   IconRestore,
   IconStarFilled,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import Pagination from "../../components/common/Pagination";
@@ -60,27 +61,108 @@ export default function ReviewPage() {
   });
   const pageSize = 10;
 
-  const params = {
-    page: currentPage,
-    size: pageSize,
-    keyword: debouncedSearch,
-    status: statusFilter || null,
-    rating: ratingFilter || null,
+  // Fetch all reviews without filters (server will handle basic filtering)
+  const { data, isLoading, isError, error, refetch } = useAdminReviews({
+    page: 0,
+    size: 1000, // Get all reviews
     sort: "createdAt,desc",
-  };
+  });
 
-  const { data, isLoading, isError, error } = useAdminReviews(params);
   const { mutate: moderateReview, isLoading: isModerating } =
     useModerateReview();
   const { user } = useAuth();
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
-  const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
-  const reviews = data?.data?.reviews || [];
+  // Extract data from API response
+  const allReviews = data?.data?.reviews || [];
   const stats = data?.data?.statistics || {};
-  const totalPages = data?.data?.totalPages || 0;
-  const totalElements = data?.data?.totalElements || 0;
 
+  // Client-side filtering
+  const filteredReviews = useMemo(() => {
+    let filtered = [...allReviews];
+
+    // Filter by search (keyword) with null/undefined checks
+    if (debouncedSearch) {
+      const keyword = debouncedSearch.toLowerCase();
+      filtered = filtered.filter((review) => {
+        const fullName = review.user?.fullName?.toLowerCase() || "";
+        const email = review.user?.email?.toLowerCase() || "";
+        const productName = review.productName?.toLowerCase() || "";
+        const variantName = review.variantName?.toLowerCase() || "";
+        const comment = review.comment?.toLowerCase() || "";
+        const orderNumber = review.orderNumber?.toLowerCase() || "";
+
+        return (
+          fullName.includes(keyword) ||
+          email.includes(keyword) ||
+          productName.includes(keyword) ||
+          variantName.includes(keyword) ||
+          comment.includes(keyword) ||
+          orderNumber.includes(keyword)
+        );
+      });
+    }
+
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter((review) => review.status === statusFilter);
+    }
+
+    // Filter by rating
+    if (ratingFilter) {
+      filtered = filtered.filter(
+        (review) => review.rating === parseInt(ratingFilter)
+      );
+    }
+
+    return filtered;
+  }, [allReviews, debouncedSearch, statusFilter, ratingFilter]);
+
+  // Calculate pagination from filtered results
+  const totalElements = filteredReviews.length;
+  const totalPages = Math.ceil(totalElements / pageSize);
+
+  // Get paginated reviews
+  const paginatedReviews = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredReviews.slice(startIndex, endIndex);
+  }, [filteredReviews, currentPage, pageSize]);
+
+  // Calculate filtered statistics
+  const filteredStats = useMemo(() => {
+    if (!statusFilter && !ratingFilter && !debouncedSearch) {
+      return stats; // Use original stats if no filters
+    }
+
+    // Calculate stats from filtered reviews
+    const statusCounts = filteredReviews.reduce((acc, review) => {
+      acc[review.status] = (acc[review.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const totalRating = filteredReviews.reduce(
+      (sum, review) => sum + review.rating,
+      0
+    );
+    const averageRating =
+      filteredReviews.length > 0 ? totalRating / filteredReviews.length : 0;
+
+    return {
+      totalReviews: filteredReviews.length,
+      statusCounts: {
+        PENDING: statusCounts.PENDING || 0,
+        AUTO_APPROVED: statusCounts.AUTO_APPROVED || 0,
+        APPROVED: statusCounts.APPROVED || 0,
+        NEED_REVIEW: statusCounts.NEED_REVIEW || 0,
+        REJECTED: statusCounts.REJECTED || 0,
+        HIDDEN: statusCounts.HIDDEN || 0,
+      },
+      averageRating,
+    };
+  }, [filteredReviews, stats, statusFilter, ratingFilter, debouncedSearch]);
+
+  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0);
   }, [debouncedSearch, statusFilter, ratingFilter]);
@@ -97,7 +179,13 @@ export default function ReviewPage() {
         { reviewId: review.id, request },
         {
           onSuccess: () => {
-            setModerationState({ isOpen: false, review: null });
+            setModerationState({
+              isOpen: false,
+              review: null,
+              newStatus: "",
+              actionText: "",
+            });
+            refetch();
           },
         }
       );
@@ -121,20 +209,34 @@ export default function ReviewPage() {
   };
 
   const handleModerationSubmit = (adminComment) => {
-    const { review, newStatus, actionText } = moderationState;
+    const { review, newStatus } = moderationState;
     const request = { newStatus, adminComment };
     moderateReview(
       { reviewId: review.id, request },
       {
         onSuccess: () => {
-          setModerationState({ isOpen: false, review: null });
+          setModerationState({
+            isOpen: false,
+            review: null,
+            newStatus: "",
+            actionText: "",
+          });
+          refetch();
         },
       }
     );
   };
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("vi-VN");
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   if (isError) {
     return (
@@ -149,36 +251,63 @@ export default function ReviewPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">
-        {" "}
         {t("admin.review.title")}
       </h1>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
         <StatCard
           title={t("admin.review.stats.total")}
-          value={stats.totalReviews || 0}
-          icon={<IconMessage className="h-8 w-8 text-blue-600" />}
+          value={filteredStats.totalReviews || 0}
+          icon={<IconMessage size={24} />}
+          color="text-blue-600"
         />
         <StatCard
           title={t("admin.review.stats.pending")}
-          value={stats.statusCounts?.PENDING || 0}
-          icon={<IconClock className="h-8 w-8 text-yellow-600" />}
+          value={filteredStats.statusCounts?.PENDING || 0}
+          icon={<IconClock size={24} />}
+          color="text-yellow-600"
+        />
+        <StatCard
+          title={t("admin.review.status.AUTO_APPROVED")}
+          value={filteredStats.statusCounts?.AUTO_APPROVED || 0}
+          icon={<IconCheck size={24} />}
+          color="text-cyan-600"
         />
         <StatCard
           title={t("admin.review.stats.approved")}
-          value={stats.statusCounts?.APPROVED || 0}
-          icon={<IconCheck className="h-8 w-8 text-green-600" />}
+          value={filteredStats.statusCounts?.APPROVED || 0}
+          icon={<IconCheck size={24} />}
+          color="text-green-600"
+        />
+        <StatCard
+          title={t("admin.review.status.NEED_REVIEW")}
+          value={filteredStats.statusCounts?.NEED_REVIEW || 0}
+          icon={<IconMessage size={24} />}
+          color="text-orange-600"
+        />
+        <StatCard
+          title={t("admin.review.status.REJECTED")}
+          value={filteredStats.statusCounts?.REJECTED || 0}
+          icon={<IconX size={24} />}
+          color="text-red-600"
+        />
+        <StatCard
+          title={t("admin.review.status.HIDDEN")}
+          value={filteredStats.statusCounts?.HIDDEN || 0}
+          icon={<IconEyeOff size={24} />}
+          color="text-gray-600"
         />
         <StatCard
           title={t("admin.review.stats.average_rating")}
-          value={stats.averageRating?.toFixed(1) || 0}
-          icon={<IconStarFilled className="h-8 w-8 text-purple-600" />}
+          value={filteredStats.averageRating?.toFixed(1) || "0.0"}
+          icon={<IconStarFilled size={24} />}
+          color="text-yellow-400"
         />
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <input
@@ -186,13 +315,13 @@ export default function ReviewPage() {
               placeholder={t("admin.review.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="">{t("admin.review.all_status")}</option>
             {Object.entries(statusConfig).map(([key, { label }]) => (
@@ -204,22 +333,30 @@ export default function ReviewPage() {
           <select
             value={ratingFilter}
             onChange={(e) => setRatingFilter(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="">{t("admin.review.all_ratings")}</option>
             {[5, 4, 3, 2, 1].map((star) => (
               <option key={star} value={star}>
-                {t("admin.review.rating_option", { star })}
+                {star} {t("admin.review.rating_star", { count: star })}
               </option>
             ))}
           </select>
         </div>
       </div>
 
+      {/* Results Info */}
+      <div className="text-sm text-gray-600">
+        {t("admin.review.showing_results", {
+          current: paginatedReviews.length,
+          total: totalElements,
+        })}
+      </div>
+
       {/* Reviews Table */}
-      <div className="bg-white shadow rounded-lg overflow-x-auto">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-400">
             <tr>
               <th className="p-3">{t("admin.review.columns.customer")}</th>
               <th className="p-3">{t("admin.review.columns.product")}</th>
@@ -234,29 +371,58 @@ export default function ReviewPage() {
             {isLoading ? (
               <tr>
                 <td colSpan="7" className="text-center p-6">
-                  {t("admin.review.loading")}
+                  <div className="flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2">{t("admin.review.loading")}</span>
+                  </div>
                 </td>
               </tr>
-            ) : reviews.length > 0 ? (
-              reviews.map((review) => (
-                <tr key={review.id} className="border-b hover:bg-gray-50">
+            ) : paginatedReviews.length > 0 ? (
+              paginatedReviews.map((review) => (
+                <tr
+                  key={review.id}
+                  className="border-b hover:bg-white/80 transition-colors"
+                >
                   <td className="p-3">
-                    <p className="font-semibold">{review.user.fullName}</p>
-                    <p className="text-sm text-gray-500">{review.user.email}</p>
-                  </td>
-                  <td className="p-3">
-                    <p className="font-semibold">{review.productName}</p>
-                    <p className="text-sm text-gray-500">
-                      {review.variantName}
+                    <p className="font-semibold">
+                      {review.user?.fullName || "N/A"}
                     </p>
                   </td>
                   <td className="p-3">
-                    <div className="flex items-center gap-1 font-semibold">
-                      {review.rating}
-                      <IconStarFilled size={16} className="text-yellow-400" />
+                    <p className="font-semibold">
+                      {review.productName || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {review.variantName || "N/A"}
+                    </p>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold">{review.rating}</span>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <IconStarFilled
+                            key={i}
+                            size={14}
+                            className={
+                              i < review.rating
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            }
+                          />
+                        ))}
+                      </div>
                     </div>
                   </td>
-                  <td className="p-3 max-w-xs truncate">{review.comment}</td>
+                  <td className="p-3">
+                    <p className="max-w-xs truncate">
+                      {review.comment || (
+                        <span className="text-gray-400 italic">
+                          {t("admin.review.no_comment")}
+                        </span>
+                      )}
+                    </p>
+                  </td>
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -266,21 +432,29 @@ export default function ReviewPage() {
                       {statusConfig[review.status]?.label}
                     </span>
                   </td>
-                  <td className="p-3">{formatDate(review.createdAt)}</td>
                   <td className="p-3">
-                    <div className="flex gap-2">
+                    <div className="text-sm">
+                      <div>{formatDate(review.createdAt)}</div>
+                      {review.verifiedPurchase && (
+                        <span className="inline-flex items-center text-xs text-green-600 mt-1">
+                          <IconCheck size={12} className="mr-1" />
+                          {t("admin.review.verified_purchase")}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex gap-2 items-center">
                       <button
                         onClick={() => {
                           setSelectedReview(review);
                           setShowDetailModal(true);
                         }}
-                        className="hover:text-blue-600 cursor-pointer"
+                        className="hover:text-blue-600 transition-colors cursor-pointer"
                         title={t("admin.review.actions.view_detail")}
                       >
                         <IconEye size={20} />
                       </button>
-
-                      {/* Chỉ admin mới thấy các nút moderate */}
                       {isAdmin && (
                         <>
                           {(review.status === "PENDING" ||
@@ -295,7 +469,7 @@ export default function ReviewPage() {
                                   )
                                 }
                                 title={t("admin.review.actions.approve")}
-                                className="hover:text-green-600 cursor-pointer"
+                                className="hover:text-green-600 transition-colors cursor-pointer"
                               >
                                 <IconCheck size={20} />
                               </button>
@@ -308,29 +482,10 @@ export default function ReviewPage() {
                                   )
                                 }
                                 title={t("admin.review.actions.reject")}
-                                className="hover:text-orange-600 cursor-pointer"
+                                className="hover:text-red-600 transition-colors cursor-pointer"
                               >
                                 <IconX size={20} />
                               </button>
-                            </>
-                          )}
-                          {review.status === "AUTO_APPROVED" && (
-                            <button
-                              onClick={() =>
-                                handleModerate(
-                                  review,
-                                  "NEED_REVIEW",
-                                  t("admin.review.actions.need_review")
-                                )
-                              }
-                              title={t("admin.review.actions.need_review")}
-                              className="hover:text-orange-600 cursor-pointer"
-                            >
-                              <IconMessage size={20} />
-                            </button>
-                          )}
-                          {review.status !== "REJECTED" &&
-                            review.status !== "HIDDEN" && (
                               <button
                                 onClick={() =>
                                   handleModerate(
@@ -340,11 +495,70 @@ export default function ReviewPage() {
                                   )
                                 }
                                 title={t("admin.review.actions.hide")}
-                                className="hover:text-red-600 cursor-pointer"
+                                className="hover:text-gray-600 transition-colors cursor-pointer"
                               >
                                 <IconBan size={20} />
                               </button>
-                            )}
+                            </>
+                          )}
+                          {review.status === "AUTO_APPROVED" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "APPROVED",
+                                    t("admin.review.actions.approve")
+                                  )
+                                }
+                                title={t("admin.review.actions.approve")}
+                                className="hover:text-green-600 transition-colors cursor-pointer"
+                              >
+                                <IconCheck size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "NEED_REVIEW",
+                                    t("admin.review.actions.need_review")
+                                  )
+                                }
+                                title={t("admin.review.actions.need_review")}
+                                className="hover:text-orange-600 transition-colors cursor-pointer"
+                              >
+                                <IconMessage size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "HIDDEN",
+                                    t("admin.review.actions.hide")
+                                  )
+                                }
+                                title={t("admin.review.actions.hide")}
+                                className="hover:text-gray-600 transition-colors cursor-pointer"
+                              >
+                                <IconBan size={20} />
+                              </button>
+                            </>
+                          )}
+                          {review.status === "APPROVED" && (
+                            <button
+                              onClick={() =>
+                                handleModerate(
+                                  review,
+                                  "HIDDEN",
+                                  t("admin.review.actions.hide")
+                                )
+                              }
+                              title={t("admin.review.actions.hide")}
+                              className="hover:text-red-600 transition-colors cursor-pointer"
+                            >
+                              <IconBan size={20} />
+                            </button>
+                          )}
                           {review.status === "HIDDEN" && (
                             <button
                               onClick={() =>
@@ -355,10 +569,15 @@ export default function ReviewPage() {
                                 )
                               }
                               title={t("admin.review.actions.restore")}
-                              className="hover:text-green-600 cursor-pointer"
+                              className="hover:text-green-600 transition-colors cursor-pointer"
                             >
                               <IconRestore size={20} />
                             </button>
+                          )}
+                          {review.status === "REJECTED" && (
+                            <span className="text-xs text-gray-500 italic">
+                              {t("admin.review.final_state")}
+                            </span>
                           )}
                         </>
                       )}
@@ -377,12 +596,16 @@ export default function ReviewPage() {
         </table>
       </div>
 
-      <Pagination
-        currentPage={currentPage + 1}
-        totalPages={totalPages}
-        onPageChange={(page) => setCurrentPage(page - 1)}
-      />
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage + 1}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page - 1)}
+        />
+      )}
 
+      {/* Review Detail Modal */}
       <ReviewDetailModal
         review={selectedReview}
         open={showDetailModal}
@@ -392,26 +615,32 @@ export default function ReviewPage() {
         }}
       />
 
+      {/* Moderation Comment Modal */}
       <ModerationCommentModal
         open={moderationState.isOpen}
         actionText={moderationState.actionText}
         isModerating={isModerating}
-        onClose={() => setModerationState({ isOpen: false, review: null })}
+        onClose={() =>
+          setModerationState({
+            isOpen: false,
+            review: null,
+            newStatus: "",
+            actionText: "",
+          })
+        }
         onSubmit={handleModerationSubmit}
       />
     </div>
   );
 }
 
-const StatCard = ({ title, value, icon }) => (
-  <div className="bg-white p-6 rounded-lg shadow border">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-      </div>
+const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
+  <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center min-w-[110px] min-h-[110px]">
+    <div className={`mb-2 p-2 rounded-full bg-gray-100 shadow ${color}`}>
       {icon}
     </div>
+    <p className="text-xs font-medium text-gray-700 text-center">{title}</p>
+    <p className={`text-xl font-bold ${color} text-center`}>{value}</p>
   </div>
 );
 
@@ -439,22 +668,23 @@ const ModerationCommentModal = ({
       toast.error(t("admin.review.moderate.comment_required"));
       return;
     }
-    onSubmit(comment);
+    onSubmit(comment.trim());
+    setComment("");
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-md"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-800">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+          <h2 className="text-xl font-bold">
             {t("admin.review.moderate.comment_title", {
-              action: actionText.toLowerCase(),
+              action: actionText?.toLowerCase(),
             })}
           </h2>
         </div>
@@ -471,23 +701,27 @@ const ModerationCommentModal = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               placeholder={t("admin.review.moderate.reason_placeholder")}
+              maxLength={500}
             />
+            <div className="text-right text-xs text-gray-500 mt-1">
+              {comment.length}/500
+            </div>
           </div>
-          <div className="flex justify-end gap-4 p-6 bg-gray-50 rounded-b-lg">
+          <div className="flex justify-end gap-4 p-6 border-t border-white/30 bg-white/60 rounded-b-2xl">
             <button
               type="button"
               onClick={onClose}
               disabled={isModerating}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 text-gray-700 backdrop-blur-sm bg-white/70 border border-white/30 rounded-lg hover:bg-white/90 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               {t("common.cancel")}
             </button>
             <button
               type="submit"
-              disabled={isModerating}
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:bg-blue-400 cursor-pointer"
+              disabled={isModerating || !comment.trim()}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               {isModerating ? t("common.processing") : t("common.submit")}
             </button>

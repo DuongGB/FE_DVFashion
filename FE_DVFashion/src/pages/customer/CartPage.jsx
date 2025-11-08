@@ -8,7 +8,6 @@ import {
 } from "@tabler/icons-react";
 import CartBottom from "../../components/common/CartBottom";
 import { Link } from "react-router-dom";
-import { usePromotion } from "../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../../hooks/useCart";
 import { useAddress } from "../../hooks/useAddress";
@@ -17,11 +16,20 @@ import { useCreateOrder } from "../../hooks/useOrder";
 import { toast } from "react-toastify";
 import { useShipping } from "../../hooks/useShipping";
 import { formatVND } from "../../utils/formatVND";
+import { useCustomerVoucher } from "../../hooks/useVoucher";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
-  const { promotions = [], isLoading: isPromoLoading } = usePromotion(language);
+  const { isAuthenticated } = useAuth();
+  const [selectedVoucherCode, setSelectedVoucherCode] = useState("");
+  const [voucherInput, setVoucherInput] = useState("");
+
+  const { availableVouchers } = useCustomerVoucher({ page: 0, size: 100 });
+  const vouchers = availableVouchers?.values || [];
+
   const {
     defaultAddress,
     addresses,
@@ -35,8 +43,7 @@ export default function CartPage() {
     isLoading: isCreatingOrder,
   } = useCreateOrder();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { calculate: calculateShippingApi, isCalculating: isCalculatingShip } =
-    useShipping();
+  const { calculate: calculateShippingApi } = useShipping();
 
   // Lấy giỏ hàng từ API
   const {
@@ -48,20 +55,10 @@ export default function CartPage() {
     isUpdating,
   } = useCart();
 
-  // Lọc ra các khuyến mãi còn hạn
-  const activePromotions = useMemo(() => {
-    if (!promotions) return [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Đặt về đầu ngày để so sánh
-    return promotions.filter((promo) => new Date(promo.endDate) >= today);
-  }, [promotions]);
-
   // Chuyển đổi dữ liệu từ API sang định dạng dùng trong UI
   const cartItems = cart?.items || [];
 
   const [selected, setSelected] = useState([]);
-  const [selectedPromotionId, setSelectedPromotionId] = useState(null);
-  const [input, setInput] = useState("");
   const [shipping, setShipping] = useState({
     name: "",
     phone: "",
@@ -81,7 +78,7 @@ export default function CartPage() {
   const [manualDeselect, setManualDeselect] = useState(false);
   const [deliveryText, setDeliveryText] = useState("");
 
-  // Lọc giỏ hàng theo mục đã chọn (moved up to avoid TDZ)
+  // Lọc giỏ hàng theo mục đã chọn
   const filteredCart = useMemo(
     () =>
       cartItems && selected
@@ -563,10 +560,8 @@ export default function CartPage() {
 
   // Đồng bộ selected khi giỏ hàng thay đổi
   useEffect(() => {
-    // Khi cartItems thay đổi, cập nhật lại thứ tự nếu có thêm/xóa
     setItemOrder((prev) => {
       const newIds = cartItems.map((i) => i.cartItemId);
-      // Giữ thứ tự cũ, thêm mới ở cuối
       return [
         ...prev.filter((id) => newIds.includes(id)),
         ...newIds.filter((id) => !prev.includes(id)),
@@ -750,39 +745,76 @@ export default function CartPage() {
     setSelected([]);
   };
 
-  // Hàm format LocaldeDate
-  const formatDate = (dateString) => {
-    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-    return new Date(dateString).toLocaleDateString("vi-VN", options);
-  };
-
   // Tính tổng tiền của filteredCart (sản phẩm đã chọn)
   const total = filteredCart.reduce(
     (acc, item) => acc + item.unitPrice * item.quantity,
     0
   );
 
-  // Lấy promotion đang chọn
-  const selectedPromotion = promotions.find(
-    (promo) => promo.id === selectedPromotionId
-  );
+  // Tính discount từ voucher
+  const voucherDiscount = useMemo(() => {
+    if (!selectedVoucherCode) return 0;
 
-  // Tính số tiền giảm giá
-  const promotionDiscount = useMemo(() => {
-    if (!selectedPromotion || total < selectedPromotion.minOrderAmount)
-      return 0;
-    if (selectedPromotion.type === "PERCENTAGE") {
-      return Math.round((total * selectedPromotion.value) / 100);
+    const voucher = vouchers.find((v) => v.code === selectedVoucherCode);
+    if (!voucher) return 0;
+
+    if (voucher.discountType === "PERCENTAGE") {
+      const discount = (total * voucher.discountValue) / 100;
+      if (voucher.hasMaxDiscount && voucher.maxDiscountAmount > 0) {
+        return Math.min(discount, voucher.maxDiscountAmount);
+      }
+      return discount;
     }
-    if (selectedPromotion.type === "AMOUNT") {
-      return selectedPromotion.value;
+
+    if (voucher.discountType === "FIXED_AMOUNT") {
+      return voucher.discountValue;
     }
+
     return 0;
-  }, [selectedPromotion, total]);
+  }, [selectedVoucherCode, vouchers, total]);
 
-  // Tổng tiền sau khi áp dụng promotion
-  const totalAfterPromotion =
-    total - promotionDiscount > 0 ? total - promotionDiscount : 0;
+  // Tổng cộng sau khi áp dụng voucher
+  const finalTotal = useMemo(() => {
+    const afterVoucher = total - voucherDiscount;
+    return Math.max(afterVoucher, 0);
+  }, [total, voucherDiscount]);
+
+  // Hàm apply voucher
+  const handleApplyVoucher = () => {
+    if (!voucherInput.trim()) {
+      toast.warn(t("cart.enter_voucher_code"));
+      return;
+    }
+
+    const voucher = vouchers.find(
+      (v) => v.code.toUpperCase() === voucherInput.trim().toUpperCase()
+    );
+
+    const now = new Date();
+    if (
+      !voucher ||
+      (voucher.startDate && now < new Date(voucher.startDate)) ||
+      (voucher.endDate && now > new Date(voucher.endDate)) ||
+      (voucher.maxTotalUsage > 0 &&
+        voucher.currentUsage >= voucher.maxTotalUsage)
+    ) {
+      toast.error(t("cart.voucher_not_active") || "Voucher không có hiệu lực");
+      return;
+    }
+
+    // Kiểm tra điều kiện voucher
+    if (voucher.minOrderAmount > total) {
+      toast.error(
+        t("cart.voucher_min_order_not_met", {
+          amount: formatCurrency(voucher.minOrderAmount),
+        })
+      );
+      return;
+    }
+
+    setSelectedVoucherCode(voucher.code);
+    toast.success(t("cart.voucher_applied"));
+  };
 
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleCreateOrder = async () => {
@@ -800,13 +832,11 @@ export default function CartPage() {
     let shippingInfoPayload = null;
 
     if (selectedAddress) {
-      // try map toDistrictId / toWardCode
       const { toDistrictId, toWardCode } = await mapAddressToCodes(
         selectedAddress
       );
 
       if (!toDistrictId || !toWardCode) {
-        // mapping failed -> ask user to open address modal or fill manual form
         toast.warn(
           t("cart.fill_shipping_info") ||
             "Không thể lấy mã quận/phường từ địa chỉ đã chọn. Vui lòng chọn lại hoặc điền thủ công."
@@ -826,7 +856,6 @@ export default function CartPage() {
         toWardCode: toWardCode?.toString(),
       };
     } else {
-      // manual form
       if (
         !shipping.name ||
         !shipping.phone ||
@@ -838,7 +867,6 @@ export default function CartPage() {
         toast.warn(t("cart.fill_shipping_info"));
         return;
       }
-      // map codes from locationData
       const dObj = locationData.districts.find(
         (d) => d.code?.toString() === shipping.district?.toString()
       );
@@ -868,17 +896,14 @@ export default function CartPage() {
       shippingInfo: shippingInfoPayload,
       notes: shipping.note,
       paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
-      promotionId: selectedPromotionId,
-      shippingFee: shipping.shippingFee || 0,
+      voucherCode: selectedVoucherCode || undefined,
     };
 
     try {
       setIsSubmitting(true);
-      // prefer async mutate to avoid duplicate submissions
       if (createOrderAsync) {
         await createOrderAsync(orderData);
       } else {
-        // fallback to mutate if async not provided
         createOrder(orderData);
       }
     } catch (err) {
@@ -887,6 +912,24 @@ export default function CartPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Lọc voucher hợp lệ để hiển thị
+  const now = new Date();
+  const validVouchers = useMemo(() => {
+    return vouchers.filter((voucher) => {
+      const start = voucher.startDate ? new Date(voucher.startDate) : null;
+      const end = voucher.endDate ? new Date(voucher.endDate) : null;
+      // Ẩn nếu đã hết hạn hoặc hết lượt sử dụng
+      if (
+        (end && now > end) ||
+        (voucher.maxTotalUsage > 0 &&
+          voucher.currentUsage >= voucher.maxTotalUsage)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [vouchers]);
 
   // Loading state
   if (isCartLoading) {
@@ -1106,15 +1149,14 @@ export default function CartPage() {
           </label>
         </div>
       </div>
-      {/* Right: Cart - existing code remains the same */}
-      <div className="w-[600px] p-10 pl-8 flex flex-col bg-white max-h-screen">
+      {/* Right: Cart */}
+      <div className="w-[600px] pl-8 mb-8 flex flex-col bg-gray-100 max-h-screen rounded-l-2xl border-l border-gray-200">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">
             {t("cart.title")}
           </h2>
         </div>
 
-        {/* Rest of the cart code remains the same... */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <input
@@ -1184,7 +1226,7 @@ export default function CartPage() {
                     </select>
                   </div>
                   <button
-                    className="text-gray-400 text-xs mt-2 hover:text-red-500 flex items-center gap-1 cursor-pointer "
+                    className="text-gray-400 text-xs mt-2 hover:text-red-500 flex items-center gap-1 cursor-pointer"
                     onClick={() => handleRemove(item.cartItemId)}
                   >
                     <IconTrash size={14} />
@@ -1214,79 +1256,179 @@ export default function CartPage() {
                   <div className="font-bold text-base text-right text-blue-700">
                     {item.unitPrice.toLocaleString()}đ
                   </div>
-                  <div className="line-through text-gray-400 text-xs text-right">
-                    {item.oldPrice?.toLocaleString()}đ
-                  </div>
+                  {item.oldPrice && (
+                    <div className="line-through text-gray-400 text-xs text-right">
+                      {item.oldPrice?.toLocaleString()}đ
+                    </div>
+                  )}
                 </div>
               </div>
             ))
           )}
 
-          {/* Promotions section - existing code remains the same */}
-          <div className="mb-4">
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {activePromotions?.map((promo) => {
-                const canUse = total >= promo.minOrderAmount;
-                return (
-                  <div
-                    key={promo.id}
-                    className={`min-w-[300px] bg-gray-50 border rounded-xl px-4 py-3 mr-3 flex flex-col relative cursor-pointer ${
-                      selectedPromotionId === promo.id
-                        ? "border-blue-600"
-                        : "border-gray-200"
-                    } ${!canUse ? "opacity-50 pointer-events-none" : ""}`}
-                    onClick={() => canUse && setSelectedPromotionId(promo.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-800 font-semibold">
-                        {promo.name}
-                      </span>
-                    </div>
-                    <span className="text-blue-600 text-xs ">
-                      <span className="font-semibold">{promo.description}</span>
+          {/* Voucher Section */}
+          <div className="mt-6 mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              {t("cart.voucher_code")}
+            </h3>
+
+            {/* Selected Voucher Display */}
+            {selectedVoucherCode && (
+              <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-semibold text-green-800">
+                      {t("cart.voucher_applied")}: {selectedVoucherCode}
                     </span>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t("cart.promotion_expiry", {
-                        date: formatDate(promo.endDate),
-                      })}
-                    </div>
-                    {!canUse && (
-                      <div className="left-4 bottom-2 text-xs text-red-500">
-                        {t("cart.promotion_not_qualified")}
-                      </div>
-                    )}
-                    <input
-                      type="radio"
-                      name="promotion"
-                      checked={selectedPromotionId === promo.id}
-                      onChange={() =>
-                        canUse && setSelectedPromotionId(promo.id)
-                      }
-                      className="absolute right-3 top-3 accent-blue-600"
-                      disabled={!canUse}
-                    />
+                    <p className="text-xs text-green-600 mt-1">
+                      {t("cart.discount")}: {formatCurrency(voucherDiscount)}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
-            <div className="flex mt-4 gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedVoucherCode("");
+                      setVoucherInput("");
+                      toast.info(t("cart.voucher_removed"));
+                    }}
+                    className="text-red-500 text-xs font-semibold hover:underline"
+                  >
+                    {t("cart.remove")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Voucher Input */}
+            <div className="flex gap-2 mb-3">
               <input
-                className="flex-1 border border-gray-300 rounded-full px-4 py-2 bg-white"
-                placeholder={t("cart.discount_code_placeholder")}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:border-blue-500 text-sm"
+                placeholder={t("cart.enter_voucher_code")}
+                value={voucherInput}
+                onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                disabled={!!selectedVoucherCode}
               />
-              <button className="bg-black text-white px-6 py-2 rounded-full font-bold">
+              <button
+                onClick={handleApplyVoucher}
+                disabled={!!selectedVoucherCode}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
                 {t("cart.apply")}
               </button>
             </div>
+
+            {/* Available Vouchers */}
+            {validVouchers.length > 0 && !selectedVoucherCode && (
+              <div>
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium">
+                    {t("cart.view_available_vouchers")} ({validVouchers.length})
+                  </summary>
+                  <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                    {validVouchers.map((voucher) => {
+                      const canUse = total >= voucher.minOrderAmount;
+                      const start = voucher.startDate
+                        ? new Date(voucher.startDate)
+                        : null;
+                      // Disable nếu chưa tới ngày bắt đầu
+                      const notYetActive = start && now < start;
+                      return (
+                        <div
+                          key={voucher.id}
+                          className={`p-2 bg-gray-50 border border-gray-200 rounded transition-colors ${
+                            canUse && !notYetActive
+                              ? "cursor-pointer hover:bg-blue-50 hover:border-blue-300"
+                              : "opacity-50 cursor-not-allowed"
+                          }`}
+                          onClick={() => {
+                            if (canUse && !notYetActive) {
+                              setVoucherInput(voucher.code);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <span className="font-semibold text-gray-800 text-xs">
+                                {t("voucher.code")}
+                                {voucher.code}
+                              </span>
+                              <p className="text-xs text-gray-600 mt-1">
+                                {voucher.name}
+                              </p>
+                              {/* Thời gian hiệu lực */}
+                              <p className="text-xs text-gray-500">
+                                {t("voucher.start_date")}:{" "}
+                                {voucher.startDate
+                                  ? new Date(
+                                      voucher.startDate
+                                    ).toLocaleDateString()
+                                  : ""}
+                                {" - "}
+                                {t("voucher.end_date")}:{" "}
+                                {voucher.endDate
+                                  ? new Date(
+                                      voucher.endDate
+                                    ).toLocaleDateString()
+                                  : ""}
+                              </p>
+                              {/* Min order */}
+                              {voucher.minOrderAmount > 0 && (
+                                <p className="text-xs text-gray-500">
+                                  {t("voucher.min_order")}:{" "}
+                                  {formatCurrency(voucher.minOrderAmount)}
+                                </p>
+                              )}
+                              {/* Max discount */}
+                              {voucher.hasMaxDiscount &&
+                                voucher.maxDiscountAmount > 0 && (
+                                  <p className="text-xs text-gray-500">
+                                    {t("voucher.max_discount")}:{" "}
+                                    {formatCurrency(voucher.maxDiscountAmount)}
+                                  </p>
+                                )}
+                              {/* Product specific note */}
+                              {voucher.voucherType === "PRODUCT_SPECIFIC" && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                  {t("voucher.product_specific_note")}
+                                </p>
+                              )}
+                              {/* Không đủ điều kiện min order */}
+                              {!canUse && (
+                                <p className="text-xs text-red-500 mt-1">
+                                  {t("cart.voucher_min_order_not_met", {
+                                    amount: formatCurrency(
+                                      voucher.minOrderAmount
+                                    ),
+                                  })}
+                                </p>
+                              )}
+                              {/* Chưa tới ngày áp dụng */}
+                              {notYetActive && (
+                                <p className="text-xs text-yellow-600 mt-1">
+                                  {t("cart.voucher_not_active") ||
+                                    "Voucher chưa có hiệu lực"}
+                                </p>
+                              )}
+                            </div>
+                            <span className="text-xs font-bold text-orange-600">
+                              {voucher.discountType === "PERCENTAGE"
+                                ? `${voucher.discountValue}%`
+                                : formatCurrency(voucher.discountValue)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
         </div>
 
         <CartBottom
           cart={filteredCart}
-          total={totalAfterPromotion}
-          discount={promotionDiscount}
+          total={finalTotal + shipping.shippingFee}
+          discount={voucherDiscount}
           onOrder={handleCreateOrder}
           isLoading={isCreatingOrder || isSubmitting}
           paymentMethod={payment}

@@ -1,10 +1,48 @@
 import api from "./api";
-import { useQuery } from "@tanstack/react-query";
 
 export const productAPI = {
-  // Fetch all products
-  getAllProducts: (lang = "VI") => {
-    return api.get(`/products/all?lang=${lang}`);
+  // Fetch all products with pagination and filters
+  getAllProducts: (params = {}) => {
+    const {
+      page = 0,
+      size = 10,
+      sort = null,
+      search = null,
+      categoryId = null,
+      promotionId = null,
+      status = null,
+      onSale = null,
+      minPrice = null,
+      maxPrice = null,
+      startDate = null,
+      endDate = null,
+      lang = "VI",
+    } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page);
+    queryParams.append("size", size);
+    queryParams.append("language", lang);
+
+    if (sort) {
+      if (Array.isArray(sort)) {
+        sort.forEach((s) => queryParams.append("sort", s));
+      } else {
+        queryParams.append("sort", sort);
+      }
+    }
+
+    if (search) queryParams.append("search", search);
+    if (categoryId) queryParams.append("categoryId", categoryId);
+    if (promotionId) queryParams.append("promotionId", promotionId);
+    if (status) queryParams.append("status", status);
+    if (onSale !== null) queryParams.append("onSale", onSale);
+    if (minPrice) queryParams.append("minPrice", minPrice);
+    if (maxPrice) queryParams.append("maxPrice", maxPrice);
+    if (startDate) queryParams.append("startDate", startDate);
+    if (endDate) queryParams.append("endDate", endDate);
+
+    return api.get(`/products/all?${queryParams.toString()}`);
   },
 
   // Create a new product
@@ -15,7 +53,7 @@ export const productAPI = {
       new Blob([JSON.stringify(product)], { type: "application/json" })
     );
     if (variantImages && variantImages.length > 0) {
-      variantImages.forEach((image, index) => {
+      variantImages.forEach((image) => {
         formData.append(`variantImages`, image);
       });
     }

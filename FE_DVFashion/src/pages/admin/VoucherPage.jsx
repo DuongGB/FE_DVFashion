@@ -181,7 +181,7 @@ export default function VoucherPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -191,8 +191,7 @@ export default function VoucherPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -204,8 +203,7 @@ export default function VoucherPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -217,8 +215,7 @@ export default function VoucherPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -233,7 +230,7 @@ export default function VoucherPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <div className="relative">
@@ -252,11 +249,10 @@ export default function VoucherPage() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-
           <div>
             <select
               value={statusFilter}
@@ -264,7 +260,7 @@ export default function VoucherPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg"
             >
               <option value="all">
                 {t("admin.voucher.all_status") || "All status"}
@@ -280,7 +276,7 @@ export default function VoucherPage() {
         </div>
       </div>
 
-      {/* Results Summary (matches PromotionPage) */}
+      {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
         {t("admin.voucher.showing", {
           current: pagedVisible.length,
@@ -289,7 +285,7 @@ export default function VoucherPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
@@ -330,7 +326,10 @@ export default function VoucherPage() {
               </tr>
             ) : pagedVisible.length > 0 ? (
               pagedVisible.map((v) => (
-                <tr key={v.id} className="border-b hover:bg-gray-50">
+                <tr
+                  key={v.id}
+                  className="border-b hover:bg-white/80 transition-colors"
+                >
                   <td className="p-2">{v.id}</td>
                   <td className="p-2 font-mono">{v.code}</td>
                   <td className="p-2 font-semibold">{v.name}</td>
@@ -374,7 +373,6 @@ export default function VoucherPage() {
                       >
                         <IconEye size={18} />
                       </button>
-
                       <button
                         onClick={() => handleEdit(v)}
                         title={t("admin.voucher.actions.edit") || "Edit"}
@@ -382,7 +380,6 @@ export default function VoucherPage() {
                       >
                         <IconEdit size={18} />
                       </button>
-
                       <button
                         onClick={() => handleDelete(v)}
                         title={t("admin.voucher.actions.delete") || "Delete"}

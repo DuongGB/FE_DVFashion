@@ -386,7 +386,6 @@ export default function PromotionPage() {
           {t("admin.promotion.title")}
         </h1>
         <div className="flex items-center gap-4">
-          {/* Chỉ hiển thị nút tạo khuyến mãi cho admin */}
           {!isStaff && (
             <button
               className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 transition-colors"
@@ -396,7 +395,6 @@ export default function PromotionPage() {
               {t("admin.promotion.create_promotion")}
             </button>
           )}
-          {/* Hiển thị thông báo cho staff */}
           {isStaff && (
             <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
@@ -410,7 +408,7 @@ export default function PromotionPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -420,8 +418,7 @@ export default function PromotionPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -433,8 +430,7 @@ export default function PromotionPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -446,8 +442,7 @@ export default function PromotionPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -462,9 +457,8 @@ export default function PromotionPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
               <IconSearch
@@ -476,17 +470,15 @@ export default function PromotionPage() {
                 placeholder={t("admin.promotion.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-
-          {/* Status Filter */}
           <div>
             <select
               value={statusFilter}
               onChange={handleStatusFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">{t("admin.promotion.all_status")}</option>
               <option value="active">
@@ -509,7 +501,7 @@ export default function PromotionPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
@@ -519,7 +511,6 @@ export default function PromotionPage() {
                 {t("admin.promotion.columns.description")}
               </th>
               <th className="p-2">{t("admin.promotion.columns.type")}</th>
-
               <th className="p-2">{t("admin.promotion.columns.max_usage")}</th>
               <th className="p-2">{t("admin.promotion.columns.start_date")}</th>
               <th className="p-2">{t("admin.promotion.columns.end_date")}</th>
@@ -541,7 +532,7 @@ export default function PromotionPage() {
               paginatedPromotions.map((promo, index) => (
                 <tr
                   key={`promotion-${promo.id}-${index}`}
-                  className="border-b hover:bg-gray-300 transition-colors"
+                  className="border-b hover:bg-white/80 transition-colors"
                 >
                   <td className="p-2">{promo.id}</td>
                   <td className="p-2 font-semibold">{promo.name}</td>
@@ -561,10 +552,8 @@ export default function PromotionPage() {
                   </td>
                   <td className="p-2">{formatDateTime(promo.startDate)}</td>
                   <td className="p-2">{formatDateTime(promo.endDate)}</td>
-                  {/* Status cell - chỉ admin mới có thể click để thay đổi */}
                   <td className="p-2">
                     {isStaff ? (
-                      // Staff chỉ xem, không thể thay đổi
                       <span
                         className={`px-3 py-1 rounded text-sm font-medium ${
                           promo.active
@@ -577,7 +566,6 @@ export default function PromotionPage() {
                           : t("admin.promotion.status.inactive")}
                       </span>
                     ) : (
-                      // Admin có thể click để thay đổi
                       <button
                         disabled={loadingItems.status === promo.id}
                         className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150  disabled:opacity-50 hover:opacity-80 ${
@@ -607,7 +595,6 @@ export default function PromotionPage() {
                   </td>
                   <td className="p-3">
                     <div className="flex gap-1">
-                      {/* Nút xem chi tiết - tất cả đều có thể xem */}
                       <button
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         onClick={() => handleViewPromotion(promo)}
@@ -615,8 +602,6 @@ export default function PromotionPage() {
                       >
                         <IconEye size={18} />
                       </button>
-
-                      {/* Nút chỉnh sửa - chỉ admin mới có */}
                       {!isStaff ? (
                         <button
                           className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
@@ -626,7 +611,6 @@ export default function PromotionPage() {
                           <IconEdit size={18} />
                         </button>
                       ) : (
-                        // Hiển thị icon disabled cho staff
                         <button
                           className="text-gray-400 p-1 cursor-not-allowed opacity-50"
                           onClick={() => handleEditPromotion(promo)}
@@ -638,7 +622,6 @@ export default function PromotionPage() {
                           <IconEdit size={18} />
                         </button>
                       )}
-                      {/* Delete button - admin only */}
                       {!isStaff && (
                         <button
                           className="text-red-600 hover:text-red-800 cursor-pointer p-1 rounded over:bg-red-50 transition-colors"

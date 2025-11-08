@@ -1,251 +1,167 @@
-import {
-  IconAlertTriangle,
-  IconBan,
-  IconCheck,
-  IconClock,
-  IconNotes,
-  IconPackage,
-  IconStar,
-  IconStarFilled,
-  IconThumbUp,
-  IconUser,
-  IconX,
-  IconMessage,
-  IconCalendar,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconX, IconStarFilled, IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import ReviewReplySection from "./ReviewReplySection";
+import { useAuth } from "../../../hooks/useAuth";
 
 export default function ReviewDetailModal({ review, open, onClose }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
   if (!open || !review) return null;
 
   const formatDate = (dateString) => {
-    if (!dateString) return t("common.not_available");
-    return new Date(dateString).toLocaleString(
-      i18n.language === "vi" ? "vi-VN" : "en-US",
-      {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
-
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) =>
-      i < rating ? (
-        <IconStarFilled key={i} size={20} className="text-yellow-400" />
-      ) : (
-        <IconStar key={i} size={20} className="text-gray-300" />
-      )
-    );
-  };
-
-  const getStatusInfo = (status) => {
-    const statuses = {
-      PENDING: {
-        color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        icon: IconClock,
-      },
-      APPROVED: {
-        color: "bg-green-100 text-green-800 border-green-200",
-        icon: IconCheck,
-      },
-      AUTO_APPROVED: {
-        color: "bg-cyan-100 text-cyan-800 border-cyan-200",
-        icon: IconCheck,
-      },
-      REJECTED: {
-        color: "bg-red-100 text-red-800 border-red-200",
-        icon: IconBan,
-      },
-      HIDDEN: {
-        color: "bg-gray-100 text-gray-800 border-gray-200",
-        icon: IconBan,
-      },
-      NEED_REVIEW: {
-        color: "bg-orange-100 text-orange-800 border-orange-200",
-        icon: IconAlertTriangle,
-      },
-    };
-    const info = statuses[status] || {
-      color: "bg-gray-100 text-gray-800 border-gray-200",
-      icon: IconAlertTriangle,
-    };
-    return {
-      ...info,
-      label: t(`admin.review.status.${status}`),
-      description: t(`admin.review.detail.status_desc.${status}`),
-    };
-  };
-
-  const getRatingLevel = (rating) => {
-    if (rating >= 5)
-      return {
-        level: t("admin.review.detail.rating_level.excellent"),
-        color: "text-green-600",
-      };
-    if (rating >= 4)
-      return {
-        level: t("admin.review.detail.rating_level.good"),
-        color: "text-blue-600",
-      };
-    if (rating >= 3)
-      return {
-        level: t("admin.review.detail.rating_level.average"),
-        color: "text-yellow-600",
-      };
-    if (rating >= 2)
-      return {
-        level: t("admin.review.detail.rating_level.poor"),
-        color: "text-orange-600",
-      };
-    return {
-      level: t("admin.review.detail.rating_level.very_poor"),
-      color: "text-red-600",
-    };
-  };
-
-  const statusInfo = getStatusInfo(review.status);
-  const ratingInfo = getRatingLevel(review.rating);
-  const StatusIcon = statusInfo.icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
       <div
-        className="bg-gray-50 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="backdrop-blur-xl bg-white/90 border border-white/30 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
+        {/* Header - Sticky */}
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl flex justify-between items-center z-10 flex-shrink-0">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <IconStarFilled size={24} className="text-yellow-300" />
+            {t("admin.review.detail.title")}
+          </h2>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
+            className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
-          <div className="flex items-start gap-4">
-            <div className="bg-white/20 p-3 rounded-lg">
-              <IconStar size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">
-                {t("admin.review.detail.title")} #{review.id}
-              </h2>
-              <p className="text-blue-100 opacity-90">
-                {t("admin.review.detail.description", {
-                  name: review.user.fullName,
-                })}
-              </p>
-            </div>
-          </div>
         </div>
 
-        {/* Content */}
+        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Summary Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-center">
-              <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-                {t("admin.review.detail.rating_summary")}
-              </h3>
-              <div className="flex justify-center gap-1 mb-3">
-                {renderStars(review.rating)}
-              </div>
-              <h3 className={`font-bold text-lg ${ratingInfo.color} mb-3`}>
-                {ratingInfo.level}
-              </h3>
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${statusInfo.color}`}
-              >
-                <StatusIcon size={14} />
-                {statusInfo.label}
-              </div>
-            </div>
-
-            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-                <IconUser size={20} className="text-blue-600" />
-                {t("admin.review.detail.customer_info")}
-              </h3>
-              <div className="space-y-3">
-                <InfoRow
-                  label={t("admin.review.detail.customer_name")}
-                  value={review.user?.fullName}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Product & Order Info */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconPackage size={20} className="text-purple-600" />
-              {t("admin.review.detail.product_order_info")}
+          {/* Review Info */}
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-4 shadow-lg">
+            <h3 className="font-semibold text-lg mb-3 text-gray-800">
+              {t("admin.review.detail.review_info")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoRow
-                label={t("admin.review.detail.product_name")}
-                value={review.productName}
-              />
-              <InfoRow
-                label={t("admin.review.detail.variant")}
-                value={review.variantName}
-              />
-              <InfoRow
-                label={t("admin.review.detail.order_code")}
-                value={`#${review.orderNumber}`}
-              />
-              <InfoRow
-                label={t("admin.review.detail.order_status")}
-                value={t(`order.status.${review.status?.toLowerCase()}`)}
-              />
+              {/* Customer */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <IconUser size={18} className="text-blue-600" />
+                  <span className="font-semibold text-gray-700">
+                    {t("admin.review.columns.customer")}
+                  </span>
+                </div>
+                <p className="text-gray-800 font-medium">
+                  {review.user.fullName}
+                </p>
+                <p className="text-sm text-gray-500">{review.user.email}</p>
+              </div>
+
+              {/* Product */}
+              <div>
+                <span className="font-semibold text-gray-700 block mb-2">
+                  {t("admin.review.columns.product")}
+                </span>
+                <p className="text-gray-800 font-medium">
+                  {review.productName}
+                </p>
+                <p className="text-sm text-gray-500">{review.variantName}</p>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <span className="font-semibold text-gray-700 block mb-2">
+                  {t("admin.review.columns.rating")}
+                </span>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <IconStarFilled
+                      key={i}
+                      size={20}
+                      className={
+                        i < review.rating ? "text-yellow-400" : "text-gray-300"
+                      }
+                    />
+                  ))}
+                  <span className="ml-2 font-semibold text-gray-800">
+                    {review.rating}/5
+                  </span>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <span className="font-semibold text-gray-700 block mb-2">
+                  {t("admin.review.columns.status")}
+                </span>
+                <span
+                  className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    {
+                      PENDING: "bg-yellow-100 text-yellow-800",
+                      AUTO_APPROVED: "bg-cyan-100 text-cyan-800",
+                      APPROVED: "bg-green-100 text-green-800",
+                      NEED_REVIEW: "bg-orange-100 text-orange-800",
+                      REJECTED: "bg-red-100 text-red-800",
+                      HIDDEN: "bg-gray-100 text-gray-800",
+                    }[review.status]
+                  }`}
+                >
+                  {t(`admin.review.status.${review.status}`)}
+                </span>
+              </div>
+
+              {/* Created At */}
+              <div>
+                <span className="font-semibold text-gray-700 block mb-2">
+                  {t("admin.review.columns.created_at")}
+                </span>
+                <p className="text-gray-800">{formatDate(review.createdAt)}</p>
+              </div>
+
+              {/* Verified Purchase */}
+              {review.verifiedPurchase && (
+                <div>
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    ✓ {t("admin.review.detail.verified_purchase")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Review Content */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconNotes size={20} className="text-green-600" />
-              {t("admin.review.detail.review_content")}
-            </h3>
-            <p className="text-gray-700 text-base leading-relaxed italic bg-gray-50 p-4 rounded-md border">
-              "{review.comment || t("admin.review.detail.no_comment")}"
-            </p>
-          </div>
-
-          {/* Admin Comment */}
-          {review.adminComment && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-                <IconMessage size={20} className="text-orange-600" />
-                {t("admin.review.detail.admin_feedback")}
+          {/* Comment */}
+          {review.comment && (
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-4 shadow-lg">
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">
+                {t("admin.review.columns.comment")}
               </h3>
-              <p className="text-gray-700 text-base leading-relaxed bg-yellow-50 p-4 rounded-md border border-yellow-200">
-                {review.adminComment}
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {review.comment}
               </p>
             </div>
           )}
 
           {/* Images */}
           {review.imageUrls && review.imageUrls.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700">
-                {t("admin.review.detail.attached_images", {
-                  count: review.imageUrls.length,
-                })}
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-4 shadow-lg">
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">
+                {t("admin.review.detail.images")}
               </h3>
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {review.imageUrls.map((url, index) => (
                   <img
                     key={index}
                     src={url}
                     alt={`Review ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-md border cursor-pointer hover:scale-105 transition-transform"
+                    className="w-full h-32 object-cover rounded-lg border border-white/30 shadow hover:scale-105 transition-transform cursor-pointer"
                     onClick={() => window.open(url, "_blank")}
                   />
                 ))}
@@ -253,45 +169,20 @@ export default function ReviewDetailModal({ review, open, onClose }) {
             </div>
           )}
 
-          {/* Timestamps */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
-              <IconCalendar size={20} className="text-cyan-600" />
-              {t("admin.review.detail.timestamps")}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoRow
-                label={t("admin.review.detail.created_at")}
-                value={formatDate(review.createdAt)}
-              />
-              <InfoRow
-                label={t("admin.review.detail.updated_at")}
-                value={formatDate(review.updatedAt)}
-              />
+          {/* Admin Comment */}
+          {review.adminComment && (
+            <div className="backdrop-blur-xl bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg">
+              <h3 className="font-semibold text-lg mb-2 text-red-800">
+                {t("admin.review.detail.admin_comment")}
+              </h3>
+              <p className="text-red-700">{review.adminComment}</p>
             </div>
-          </div>
+          )}
+
+          {/* Review Replies Section */}
+          <ReviewReplySection reviewId={review.id} isAdmin={isAdmin} />
         </div>
       </div>
     </div>
   );
 }
-
-const InfoRow = ({ label, value, isLink = null }) => (
-  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-    <div className="text-sm text-gray-600 mb-1">{label}</div>
-    {isLink ? (
-      <a
-        href={isLink}
-        className="text-base font-semibold text-blue-600 hover:underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {value || "-"}
-      </a>
-    ) : (
-      <div className="text-base font-semibold text-gray-800">
-        {value || "-"}
-      </div>
-    )}
-  </div>
-);

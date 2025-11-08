@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useCreateReview, useUpdateReview } from "../../../hooks/useReview";
 import { canReviewProduct } from "../../../services/reviewAPI";
 import ReviewProductCard from "./ReviewProductCard";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SelectableProduct = ({ item, isSelected, onSelect, canReview }) => (
   <div
@@ -69,6 +70,8 @@ export default function ModalReview({
   const [submissionCount, setSubmissionCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasInitialized = useRef(false);
+  const hasNotified = useRef(false);
+  const queryClient = useQueryClient();
 
   // Sử dụng useQueries để kiểm tra trạng thái review cho tất cả sản phẩm
   const reviewabilityResults = useQueries({
@@ -100,36 +103,11 @@ export default function ModalReview({
     }, 300);
   }, [onClose]);
 
-  // Nếu là sửa review
-  const [editData, setEditData] = useState({
-    rating: review?.rating || 0,
-    comment: review?.comment || "",
-    imageFiles: [],
-  });
-
   const { mutate: createReviewMutation } = useCreateReview({
     onSuccess: () => {
       setSubmissionCount((prev) => prev + 1);
     },
   });
-
-  const handleEditSubmit = () => {
-    updateReviewMutation(
-      {
-        reviewId: review.id,
-        review: {
-          rating: editData.rating,
-          comment: editData.comment,
-        },
-        imageFiles: editData.imageFiles,
-      },
-      {
-        onSuccess: () => {
-          if (onSuccess) onSuccess();
-        },
-      }
-    );
-  };
 
   // Khởi tạo state khi modal được mở hoặc dữ liệu reviewability đã sẵn sàng
   useEffect(() => {
@@ -152,10 +130,12 @@ export default function ModalReview({
       setSubmissionCount(0);
       setIsSubmitting(false);
       hasInitialized.current = true;
+      hasNotified.current = false;
     }
     // Reset flag khi modal đóng
     if (!show) {
       hasInitialized.current = false;
+      hasNotified.current = false;
     }
   }, [order, show, isCheckingReviewability]);
 
@@ -164,11 +144,25 @@ export default function ModalReview({
     if (
       submissionCount > 0 &&
       selectedProductIds.length > 0 &&
-      submissionCount === selectedProductIds.length
+      submissionCount === selectedProductIds.length &&
+      !hasNotified.current
     ) {
+      hasNotified.current = true;
+      // Refetch myOrders một lần sau cùng (nếu backend có thay đổi gì khác)
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey[0] === "myOrders" || q.queryKey[0] === "myOrdersPaging",
+      });
+      if (onSuccess) onSuccess();
       handleClose();
     }
-  }, [submissionCount, selectedProductIds.length, handleClose]);
+  }, [
+    submissionCount,
+    selectedProductIds.length,
+    handleClose,
+    onSuccess,
+    queryClient,
+  ]);
 
   // Ngăn cuộn trang khi modal đang mở
   useEffect(() => {
@@ -242,36 +236,39 @@ export default function ModalReview({
   const selectedItems = order.items.filter((item) =>
     selectedProductIds.includes(item.productVariantId)
   );
+
   return (
-    <div className="fixed inset-0 bg-black/50 bg-opacity-70 z-50 flex justify-center items-start p-4 sm:p-6 md:p-10">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div
+        className="relative w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden
+        rounded-3xl shadow-2xl border border-white/30
+        bg-gradient-to-br from-white/70 via-white/40 to-blue-200/50
+        backdrop-blur-2xl
+        transition-all duration-300
+        animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={handleClose}
-          className="absolute -top-3 -right-3 bg-black rounded-full p-1.5 text-white hover:bg-gray-700 z-10 cursor-pointer"
+          className="absolute top-4 right-4 text-gray-600 hover:text-blue-700 cursor-pointer bg-white/60 backdrop-blur-sm rounded-full p-2 shadow z-10 transition"
+          aria-label="Close"
         >
           <IconX size={24} />
         </button>
 
-        <div className="flex-grow overflow-y-auto p-6 sm:p-8">
+        <div className="flex-grow overflow-y-auto p-6 sm:p-10">
           {/* Product Selection */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-4">
+          <div className="mb-10">
+            <h3 className="text-2xl font-bold mb-5 text-blue-900 drop-shadow">
               {t("review.select_products_title")}
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 mb-3">
               {isCheckingReviewability ? (
                 <p>{t("loading")}...</p>
               ) : (
                 order.items.map((item, index) => {
                   const canReview =
                     reviewabilityResults[index]?.data?.data === true;
-                  console.log(
-                    "item",
-                    item.productVariantId,
-                    "canReview",
-                    canReview,
-                    reviewabilityResults[index]
-                  );
                   return (
                     <SelectableProduct
                       key={item.productVariantId}
@@ -286,7 +283,7 @@ export default function ModalReview({
                 })
               )}
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700 mt-2">
               {t("review.selected_products_count", {
                 count: selectedProductIds.length,
                 total: order.items.length,
@@ -297,29 +294,39 @@ export default function ModalReview({
           {/* Review Forms */}
           {selectedItems.length > 0 && (
             <div>
-              <h3 className="text-xl font-bold mb-4 border-t pt-6">
+              <h3 className="text-2xl font-bold mb-5 border-t pt-8 text-blue-900 drop-shadow">
                 {t("review.review_section_title")}
               </h3>
-              {selectedItems.map((item) => (
-                <ReviewProductCard
-                  key={item.productVariantId}
-                  item={item}
-                  reviewData={reviews[item.productVariantId]}
-                  onReviewChange={(reviewData) =>
-                    handleReviewChange(item.productVariantId, reviewData)
-                  }
-                />
-              ))}
+              <div className="space-y-8">
+                {selectedItems.map((item) => (
+                  <div
+                    key={item.productVariantId}
+                    className="bg-white/60 backdrop-blur rounded-2xl border border-white/30 shadow p-5"
+                  >
+                    <ReviewProductCard
+                      item={item}
+                      reviewData={reviews[item.productVariantId]}
+                      onReviewChange={(reviewData) =>
+                        handleReviewChange(item.productVariantId, reviewData)
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-4  border-t bg-white sticky bottom-0 rounded-b-2xl">
+        <div className="p-0 border-0 bg-transparent sticky bottom-0 right-0 flex justify-end pointer-events-none">
           <button
             onClick={handleSubmit}
             disabled={selectedProductIds.length === 0 || isSubmitting}
-            className="w-full bg-black text-white rounded-lg px-6 py-4 font-bold text-base hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+            className="pointer-events-auto m-6 mb-4 mr-6 fixed bottom-0 right-0
+      bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full px-5 py-2
+      font-bold text-sm shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+      transition-all duration-200 cursor-pointer z-50"
+            style={{ minWidth: 120 }}
           >
             {isSubmitting
               ? t("review.submit")

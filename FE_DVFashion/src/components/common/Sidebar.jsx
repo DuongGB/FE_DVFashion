@@ -292,17 +292,17 @@ export default function Sidebar({ onClose }) {
               menuKey="reports"
             >
               <SubMenuItem
-                to="/admin/reports"
+                to="/admin/statistics"
                 icon={<IconDeviceAnalytics size={16} />}
               >
                 {t("admin.sidebar.reports_management")}
               </SubMenuItem>
-              <SubMenuItem
+              {/* <SubMenuItem
                 to="/admin/forecasts"
                 icon={<IconDeviceAnalytics size={16} />}
               >
                 {t("admin.sidebar.revenue_forecast")}
-              </SubMenuItem>
+              </SubMenuItem> */}
             </MenuWithSubmenu>
 
             {/* Trang hiển thị */}
@@ -335,16 +335,14 @@ export default function Sidebar({ onClose }) {
 
             {/* Button logout */}
             <li className="pt-4">
-              <li className="pt-4">
-                <button
-                  className="flex items-center rounded-lg p-2 w-full bg-red-500 hover:bg-red-600 font-semibold cursor-pointer justify-center transition-colors"
-                  onClick={handleLogout}
-                  disabled={isLogoutLoading}
-                >
-                  <IconLogout className="mr-4" stroke={2} />
-                  {t("admin.sidebar.logout")}
-                </button>
-              </li>
+              <button
+                className="flex items-center rounded-lg p-2 w-full bg-red-500 hover:bg-red-600 font-semibold cursor-pointer justify-center transition-colors"
+                onClick={handleLogout}
+                disabled={isLogoutLoading}
+              >
+                <IconLogout className="mr-4" stroke={2} />
+                {t("admin.sidebar.logout")}
+              </button>
             </li>
           </ul>
         </nav>
