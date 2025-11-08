@@ -142,22 +142,24 @@ export default function CategoryForm({ isOpen, onClose, category }) {
         categoryData.append("imageFile", imageFile);
       }
 
+      let result;
       if (category) {
-        await update({
+        result = await update({
           categoryId: category.id,
           categoryData,
           lang: language,
         });
         toast.success(t("admin.category.form.update_success"));
       } else {
-        await create({
+        result = await create({
           categoryData,
           lang: language,
         });
         toast.success(t("admin.category.form.create_success"));
       }
 
-      onClose();
+      // Đóng modal và truyền dữ liệu mới về parent
+      onClose(result);
     } catch (error) {
       console.error("Error submitting category:", error);
       const errorMessage =
@@ -325,11 +327,13 @@ export default function CategoryForm({ isOpen, onClose, category }) {
             <div className="border-2 border-dashed border-white/50 rounded-lg p-6 relative hover:border-gray-400 transition-all duration-200 backdrop-blur-sm bg-white/50">
               {imagePreview ? (
                 <div className="relative group">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg shadow-md"
-                  />
+                  <div className="w-full flex items-center justify-center">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-auto max-h-[60vh] object-contain rounded-lg shadow-md bg-gray-50"
+                    />
+                  </div>
                   <div className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
                     <button
                       type="button"

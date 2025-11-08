@@ -53,7 +53,7 @@ export default function SearchPopup({ show, onClose }) {
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-black/50">
       <div ref={popupRef} className="flex flex-col items-center w-full">
         {/* Thanh search */}
-        <div className="w-full flex justify-center mt-8 bg-white h-20 items-center">
+        <div className="w-full flex justify-center bg-white h-20 items-center">
           <div className="relative w-[500px]">
             <input
               type="text"
@@ -94,7 +94,7 @@ export default function SearchPopup({ show, onClose }) {
         </div>
 
         {/* Kết quả tìm kiếm hoặc gợi ý */}
-        <div className="bg-white rounded-2xl shadow-xl mt-8 p-8 w-full max-w-[1100px] min-h-[420px] relative flex flex-col items-center">
+        <div className="bg-white rounded-2xl shadow-xl mt-2 p-8 w-full max-w-[1100px] min-h-[420px] relative flex flex-col items-center">
           {search.trim() ? (
             <>
               <div className="font-bold text-lg mb-6 w-full text-left">

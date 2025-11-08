@@ -28,10 +28,18 @@ export default function CategoryPage() {
     delete: null,
   });
   const [originalOrder, setOriginalOrder] = useState([]);
+  const [localCategories, setLocalCategories] = useState([]);
   const pageSize = 10;
 
   // Use the category hook with dynamic language
   const { categories, isLoading, error, update } = useCategory(language);
+
+  // Đồng bộ localCategories khi categories thay đổi
+  useEffect(() => {
+    if (categories) {
+      setLocalCategories(categories);
+    }
+  }, [categories]);
 
   // Force re-render when language changes
   useEffect(() => {
@@ -67,25 +75,36 @@ export default function CategoryPage() {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Sort categories by original order to maintain position
+  // Sắp xếp danh mục theo thứ tự ban đầu
   const sortedCategories = useMemo(() => {
-    if (!categories) return [];
+    if (!localCategories) return [];
 
-    return [...categories].sort((a, b) => a.id - b.id);
-  }, [categories]);
+    return [...localCategories].sort((a, b) => a.id - b.id);
+  }, [localCategories]);
 
-  // Filter categories with stable sorting
+  // Loc danh mục dựa trên tìm kiếm và trạng thái
   const filteredCategories = useMemo(() => {
+    if (!sortedCategories || sortedCategories.length === 0) return [];
+
     return sortedCategories.filter((category) => {
+      // Đảm bảo category tồn tại
+      if (!category) return false;
+
+      // Kiểm tra an toàn cho các thuộc tính
+      const name = (category.name || "").toLowerCase();
+      const description = (category.description || "").toLowerCase();
+      const id = (category.id || "").toString();
+      const searchLower = search.toLowerCase();
+
       const matchesSearch =
-        category.name.toLowerCase().includes(search.toLowerCase()) ||
-        category.description.toLowerCase().includes(search.toLowerCase()) ||
-        category.id.toString().includes(search);
+        name.includes(searchLower) ||
+        description.includes(searchLower) ||
+        id.includes(search);
 
       const matchesStatus =
         !statusFilter ||
-        (statusFilter === "active" && category.active) ||
-        (statusFilter === "inactive" && !category.active);
+        (statusFilter === "active" && category.active === true) ||
+        (statusFilter === "inactive" && category.active === false);
 
       return matchesSearch && matchesStatus;
     });
@@ -129,7 +148,37 @@ export default function CategoryPage() {
     setShowEditModal(true);
   };
 
-  // Handle toggle status with position preservation
+  const handleCloseEditModal = (updatedCategory) => {
+    if (updatedCategory) {
+      // Cập nhật local state ngay lập tức
+      setLocalCategories((prev) => {
+        const existingIndex = prev.findIndex(
+          (cat) => cat.id === updatedCategory.id
+        );
+
+        if (existingIndex >= 0) {
+          // Update existing category
+          const newCategories = [...prev];
+          newCategories[existingIndex] = {
+            ...newCategories[existingIndex],
+            ...updatedCategory,
+            // Đảm bảo imageUrl được cập nhật
+            imageUrl: updatedCategory.imageUrl || updatedCategory.image,
+            image: updatedCategory.image || updatedCategory.imageUrl,
+          };
+          return newCategories;
+        } else {
+          // Add new category
+          return [...prev, updatedCategory];
+        }
+      });
+    }
+
+    setShowEditModal(false);
+    setSelectedCategory(null);
+  };
+
+  // Hàm xử lý thay đổi trạng thái danh mục
   const handleToggleStatus = async (category) => {
     // Kiểm tra quyền trước khi thực hiện
     if (isStaff) {
@@ -189,11 +238,27 @@ export default function CategoryPage() {
             })
           );
 
-          await update({
+          const result = await update({
             categoryId: category.id,
             categoryData,
             lang: language,
           });
+
+          // Cập nhật local state ngay lập tức
+          if (result) {
+            setLocalCategories((prev) =>
+              prev.map((cat) =>
+                cat.id === category.id
+                  ? {
+                      ...cat,
+                      ...result,
+                      imageUrl: result.imageUrl || result.image,
+                      image: result.image || result.imageUrl,
+                    }
+                  : cat
+              )
+            );
+          }
 
           const successMessage = `${actionText} ${t(
             "admin.category.title"
@@ -383,12 +448,12 @@ export default function CategoryPage() {
                   key={`category-${category.id}-${index}`}
                   className="border-b hover:bg-white/80 transition-colors"
                 >
-                  <td className="p-3">{category.id}</td>
+                  <td className="p-3">{category.id || "-"}</td>
                   <td className="p-3">
                     {category.imageUrl || category.image ? (
                       <img
                         src={category.imageUrl || category.image}
-                        alt={category.name}
+                        alt={category.name || "Category"}
                         className="w-10 h-10 rounded object-cover"
                         onError={(e) => {
                           e.target.style.display = "none";
@@ -408,16 +473,16 @@ export default function CategoryPage() {
                   </td>
                   <td className="p-3">
                     <div>
-                      <p className="font-semibold">{category.name}</p>
+                      <p className="font-semibold">{category.name || "N/A"}</p>
                     </div>
                   </td>
                   <td className="p-3">
                     <div className="max-w-xs">
                       <p
                         className="text-sm truncate"
-                        title={category.description}
+                        title={category.description || ""}
                       >
-                        {category.description}
+                        {category.description || "N/A"}
                       </p>
                     </div>
                   </td>
@@ -527,10 +592,7 @@ export default function CategoryPage() {
       {/* Category Form Modal */}
       <CategoryForm
         isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedCategory(null);
-        }}
+        onClose={handleCloseEditModal}
         category={selectedCategory}
       />
     </div>

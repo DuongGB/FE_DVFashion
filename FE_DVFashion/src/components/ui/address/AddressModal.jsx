@@ -354,10 +354,7 @@ export default function AddressModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="relative w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden
         rounded-3xl shadow-2xl border border-white/30
@@ -585,13 +582,6 @@ export default function AddressModal({
             </div>
 
             <div className="flex gap-3 pt-4 border-t border-white/30">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 border border-white/30 text-gray-700 rounded-lg hover:bg-white/60 hover:backdrop-blur-sm cursor-pointer transition"
-              >
-                {t("common.cancel")}
-              </button>
               <button
                 type="submit"
                 onClick={handleSubmit}

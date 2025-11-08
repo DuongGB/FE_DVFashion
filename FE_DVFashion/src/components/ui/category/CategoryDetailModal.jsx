@@ -77,7 +77,7 @@ export default function CategoryDetailModal({ category, open, onClose }) {
                     <img
                       src={category.imageUrl || category.image}
                       alt={category.name}
-                      className="w-full h-64 object-cover rounded-lg shadow-md"
+                      className="w-full h-full object-cover rounded-lg shadow-md"
                       onError={(e) => {
                         e.target.style.display = "none";
                         e.target.nextSibling.style.display = "flex";
