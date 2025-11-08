@@ -53,7 +53,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Nếu lỗi 401 và chưa retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      (error.response?.status === 401 && !originalRequest._retry) ||
+      error.response?.status === 400
+    ) {
       // Nếu đã logout thì không gọi refresh-token nữa
       if (!isUserAuthenticated()) {
         // Có thể clear cache hoặc chuyển hướng về login nếu muốn

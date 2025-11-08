@@ -19,13 +19,14 @@ export const statisticAPI = {
    * Lấy doanh thu theo ngày trong một khoảng thời gian
    */
   getDailyRevenue: async ({ startDate, endDate }) => {
-    if (!startDate || !endDate) {
-      throw new Error("Start date and end date are required");
-    }
+    const today = new Date().toISOString().split("T")[0];
 
-    const response = await api.get("/statistics/revenue/daily", {
-      params: { startDate, endDate },
-    });
+    const params = {
+      startDate: startDate ?? today,
+      endDate: endDate ?? today,
+    };
+
+    const response = await api.get("/statistics/revenue/daily", { params });
     console.log("Daily revenue API response:", response.data);
     return response.data;
   },
