@@ -18,18 +18,28 @@ export default function HomePage() {
 
   // Lấy danh sách sản phẩm từ API
   const currentLanguage = i18n.language || "VI";
-  const { products = [], isLoading: isLoadingProducts } =
-    useProduct(currentLanguage);
+  const { products = [], isLoading: isLoadingProducts } = useProduct({
+    lang: currentLanguage,
+    size: 12,
+    status: "ACTIVE",
+  });
 
-  // Lấy sản phẩm gợi ý dựa trên behavior (không cần productId ở trang chủ)
-  const { data: recommendedProducts, isLoading: isLoadingRecommendations } =
-    useHybridRecommendations({ productId: null, limit: 12 });
+  // Lấy sản phẩm gợi ý dựa trên behavior
+  // productId = null để lấy recommendations chung cho trang chủ
+  const {
+    data: recommendedProducts = [],
+    isLoading: isLoadingRecommendations,
+    error: recommendationError,
+  } = useHybridRecommendations({
+    productId: null,
+    limit: 12,
+  });
 
   useEffect(() => {
     // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
     if (isAuthenticated && user?.preferredLanguage) {
       i18n.changeLanguage(user.preferredLanguage);
-      localStorage.setItem("i18nextLng", user.preferredLanguage); // Lưu vào localStorage
+      localStorage.setItem("i18nextLng", user.preferredLanguage);
     } else {
       const savedLanguage = localStorage.getItem("i18nextLng") || "VI";
       if (i18n.language !== savedLanguage) {
@@ -40,11 +50,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Chỉ redirect nếu đang ở trang chủ "/"
-    if (
-      isAuthenticated &&
-      user?.roles &&
-      location.pathname === "/" // chỉ redirect ở trang chủ
-    ) {
+    if (isAuthenticated && user?.roles && location.pathname === "/") {
       const defaultRoute = getDefaultRouteByRoles(user?.roles);
       // Chỉ redirect nếu defaultRoute khác "/" và KHÔNG phải là "/customer"
       if (
@@ -73,6 +79,22 @@ export default function HomePage() {
       button: t("ads.women_active.button"),
     },
   ];
+
+  // Xác định sản phẩm để hiển thị
+  const displayProducts = (() => {
+    // Nếu đang tải recommendations, hiển thị loading
+    if (isLoadingRecommendations || isLoadingProducts) {
+      return null;
+    }
+
+    // Ưu tiên sản phẩm gợi ý nếu có
+    if (recommendedProducts && recommendedProducts.length > 0) {
+      return recommendedProducts;
+    }
+
+    // Fallback về danh sách sản phẩm thông thường
+    return products;
+  })();
 
   return (
     <div className="font-sans">
@@ -113,15 +135,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Product Carousel */}
       {isLoadingRecommendations || isLoadingProducts ? (
-        <div className="text-center py-10">Đang tải sản phẩm...</div>
+        <div className="w-full max-w-7xl mx-auto px-10 py-10">
+          <div className="text-center py-10 text-gray-500">
+            {t("common.loading")} {t("product.loading")}...
+          </div>
+        </div>
+      ) : displayProducts && displayProducts.length > 0 ? (
+        <ProductCarousel products={displayProducts} />
       ) : (
-        <ProductCarousel
-          products={
-            recommendedProducts?.length > 0 ? recommendedProducts : products
-          }
-        />
+        <div className="w-full max-w-7xl mx-auto px-10 py-10">
+          <div className="text-center py-10 text-gray-500">
+            {t("product.no_products_available")}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -6,11 +6,15 @@ import { ChevronLeft, ChevronRight } from "react-feather";
 
 export default function ProductRecommendations({ productId }) {
   const { t } = useTranslation();
-  const { data: response, isLoading } = useHybridRecommendations({
+  const {
+    data: recommendations = [],
+    isLoading,
+    error,
+  } = useHybridRecommendations({
     productId,
     limit: 10,
   });
-  const recommendations = response?.data || [];
+
   const scrollContainerRef = useRef(null);
 
   const scroll = (direction) => {
@@ -26,14 +30,24 @@ export default function ProductRecommendations({ productId }) {
 
   if (isLoading) {
     return (
-      <div className="text-center py-8">
-        {t("product.detail.loading_recommendations")}
+      <div className="w-full mx-auto py-12">
+        <h2 className="text-2xl font-bold text-center mb-6 uppercase">
+          {t("product.detail.recommendations")}
+        </h2>
+        <div className="text-center py-8 text-gray-500">
+          {t("product.detail.loading_recommendations")}
+        </div>
       </div>
     );
   }
 
+  if (error) {
+    console.error("Error loading recommendations:", error);
+    return null; // Không hiển thị gì nếu có lỗi
+  }
+
   if (!recommendations || recommendations.length === 0) {
-    return null; // Don't render anything if there are no recommendations
+    return null; // Không hiển thị gì nếu không có gợi ý
   }
 
   return (

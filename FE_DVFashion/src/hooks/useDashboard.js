@@ -7,39 +7,48 @@ import { useUser } from "./useUser";
 
 export const useDashboardStats = () => {
   const { user } = useAuth();
-  const { products } = useProduct();
-  const { users } = useUser();
-  const { data: ordersData } = useAllOrdersPaging({ page: 0, size: 10000 });
-  const { data: reviewsData } = useAdminReviews({ page: 0, size: 10000 });
+
+  // Lấy tổng số sản phẩm từ totalElements
+  const { totalElements: totalProducts, isLoading: productsLoading } =
+    useProduct({
+      page: 0,
+      size: 10,
+      lang: "VI",
+    });
+
+  const { users, isLoading: usersLoading } = useUser();
+  const { data: ordersData, isLoading: ordersLoading } = useAllOrdersPaging({
+    page: 0,
+    size: 10000,
+  });
+  const { data: reviewsData, isLoading: reviewsLoading } = useAdminReviews({
+    page: 0,
+    size: 10000,
+  });
 
   return useQuery({
     queryKey: ["dashboard", "stats"],
     queryFn: async () => {
-      const orders = ordersData?.data?.values || [];
+      const orders = ordersData?.values || [];
       const reviews = reviewsData?.data?.reviews || [];
       const allUsers = users || [];
 
+      // Tổng khách hàng: chỉ có đúng 1 role là ROLE_CUSTOMER
       const totalCustomers = allUsers.filter((u) => {
-        return u.role === "CUSTOMER" && u.role !== "ADMIN";
+        const roles = u.roles || [];
+        return roles.length === 1 && roles.includes("ROLE_CUSTOMER");
       }).length;
 
-      // 2. Tổng sản phẩm
-      const totalProducts = products?.length || 0;
+      // Tổng đơn hàng từ totalElements
+      const totalOrders = ordersData?.totalElements || 0;
 
-      // 3. Tổng đơn hàng
-      const totalOrders = orders.length;
+      // Đơn hàng chờ xử lý: status === "PENDING"
+      const pendingOrders = orders.filter((o) => o.status === "PENDING").length;
 
-      // 4. Tổng doanh thu (chỉ tính đơn hàng đã thanh toán thành công)
       const totalRevenue = orders
         .filter((o) => o.payment?.paymentStatus === "COMPLETED")
         .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-      // 5. Đơn hàng chờ xử lý (PENDING hoặc CONFIRMED)
-      const pendingOrders = orders.filter(
-        (o) => o.status === "PENDING" || o.status === "CONFIRMED"
-      ).length;
-
-      // 6. Doanh thu tháng này (optional - để tính % thay đổi)
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthlyRevenue = orders
@@ -50,7 +59,6 @@ export const useDashboardStats = () => {
         )
         .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-      // 7. Khách hàng hoạt động (đặt hàng trong 30 ngày qua)
       const activeCustomers = new Set(
         orders
           .filter(
@@ -61,7 +69,6 @@ export const useDashboardStats = () => {
           .map((o) => o.customerId)
       ).size;
 
-      // 8. Đánh giá trung bình
       const approvedReviews = reviews.filter(
         (r) =>
           r.moderationStatus === "APPROVED" ||
@@ -73,17 +80,12 @@ export const useDashboardStats = () => {
             approvedReviews.length
           : 0;
 
-      console.log("⭐ Average Rating:", averageRating);
-
       const result = {
-        // Số liệu chính
         totalUsers: totalCustomers,
-        totalProducts,
+        totalProducts: totalProducts || 0,
         totalOrders,
         totalRevenue,
         pendingOrders,
-
-        // Số liệu phụ
         monthlyRevenue,
         activeCustomers,
         averageRating,
@@ -92,8 +94,13 @@ export const useDashboardStats = () => {
 
       return result;
     },
-    enabled: !!user && !!products && !!users && !!ordersData && !!reviewsData,
-    staleTime: 1000 * 60 * 5, // Cache 5 phút
+    enabled:
+      !!user &&
+      !productsLoading &&
+      !usersLoading &&
+      !!ordersData &&
+      !!reviewsData,
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -103,12 +110,11 @@ export const useRevenueChartData = () => {
   return useQuery({
     queryKey: ["dashboard", "revenue-chart"],
     queryFn: async () => {
-      const orders = ordersData?.data?.values || [];
+      const orders = ordersData?.values || [];
       const completedOrders = orders.filter(
         (o) => o.payment?.paymentStatus === "COMPLETED"
       );
 
-      // Lấy dữ liệu 6 tháng gần nhất
       const now = new Date();
       const monthsData = [];
 
@@ -152,7 +158,6 @@ export const useTopProducts = () => {
         (o) => o.payment?.paymentStatus === "COMPLETED"
       );
 
-      // Tập hợp doanh số sản phẩm
       const productSales = {};
 
       completedOrders.forEach((order) => {
@@ -173,7 +178,6 @@ export const useTopProducts = () => {
         });
       });
 
-      // Sắp xếp theo doanh thu và lấy top 5
       const topProducts = Object.values(productSales)
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 5);
@@ -205,7 +209,6 @@ export const useRecentActivities = () => {
 
       const activities = [];
 
-      // Thêm đơn hàng gần đây
       orders.slice(0, 5).forEach((order) => {
         let action = "Đơn hàng mới";
         switch (order.status) {
@@ -240,7 +243,6 @@ export const useRecentActivities = () => {
         });
       });
 
-      // Thêm đánh giá gần đây (nếu có)
       reviews.slice(0, 3).forEach((review) => {
         activities.push({
           type: "review",
@@ -251,7 +253,6 @@ export const useRecentActivities = () => {
         });
       });
 
-      // Sắp xếp theo thời gian và lấy top 8
       const sortedActivities = activities
         .sort((a, b) => new Date(b.time) - new Date(a.time))
         .slice(0, 8)
@@ -263,7 +264,7 @@ export const useRecentActivities = () => {
       return sortedActivities;
     },
     enabled: !!ordersData && !!reviewsData,
-    staleTime: 1000 * 60, // Cache 1 phút
+    staleTime: 1000 * 60,
   });
 };
 

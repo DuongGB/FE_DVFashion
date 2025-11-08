@@ -25,12 +25,9 @@ export default function ProductPage() {
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
   const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
-  const { products: getAllProducts, isLoading: isLoadingProducts } =
-    useProduct(language);
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
     useCategory(language);
 
-  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -38,12 +35,71 @@ export default function ProductPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // Backend uses 0-indexed pages
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loadingStatusId, setLoadingStatusId] = useState(null);
-  const [originalOrder, setOriginalOrder] = useState([]);
 
-  const { updateProduct } = useProduct(language);
+  // Advanced filters
+  const [filters, setFilters] = useState({
+    priceRange: { min: "", max: "" },
+    colors: [],
+    sizes: [],
+    materials: [],
+    categoryIds: [],
+    onSale: null,
+  });
+
+  const pageSize = 10;
+
+  // Build API params from filters
+  const buildApiParams = () => {
+    const params = {
+      page: currentPage,
+      size: pageSize,
+      lang: language,
+    };
+
+    if (search) params.search = search;
+    if (statusFilter) params.status = statusFilter.toUpperCase();
+    if (filters.categoryIds.length > 0) {
+      params.categoryId = filters.categoryIds[0]; // Backend only supports single categoryId
+    }
+    if (filters.onSale !== null) params.onSale = filters.onSale;
+    if (filters.priceRange.min) params.minPrice = filters.priceRange.min;
+    if (filters.priceRange.max) params.maxPrice = filters.priceRange.max;
+
+    return params;
+  };
+
+  // Fetch products with current filters
+  const apiParams = buildApiParams();
+  const {
+    products,
+    totalElements,
+    totalPages,
+    isLoading: isLoadingProducts,
+    filterInfo,
+  } = useProduct(apiParams);
+
+  const { updateProduct } = useProduct({ lang: language });
+
+  useEffect(() => {
+    setCategories(getAllCategories || []);
+  }, [getAllCategories]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [search, statusFilter, filters]);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {};
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Toggle status handler
   const handleToggleStatus = (product) => {
@@ -105,11 +161,6 @@ export default function ProductPage() {
             },
             lang: language,
           });
-          setProducts((prev) =>
-            prev.map((p) =>
-              p.id === product.id ? { ...p, status: newStatus } : p
-            )
-          );
         } catch (error) {
           toast.error(
             t("admin.product.actions.error") ||
@@ -123,77 +174,12 @@ export default function ProductPage() {
     });
   };
 
-  // Advanced filters
-  const [filters, setFilters] = useState({
-    priceRange: { min: "", max: "" },
-    colors: [],
-    sizes: [],
-    materials: [],
-    categoryIds: [],
-  });
-
-  const pageSize = 10;
-
-  // Force re-render when language changes
-  useEffect(() => {
-    const handleLanguageChange = () => {};
-    i18n.on("languageChanged", handleLanguageChange);
-    return () => {
-      i18n.off("languageChanged", handleLanguageChange);
-    };
-  }, [i18n]);
-
-  useEffect(() => {
-    setProducts(getAllProducts || []);
-    setCategories(getAllCategories || []);
-    if (getAllProducts && originalOrder.length === 0) {
-      setOriginalOrder(getAllProducts.map((p) => p.id));
-    }
-  }, [getAllProducts, getAllCategories]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, statusFilter, filters]);
-
   // Format currency
   const formatPrice = (price) => {
     return new Intl.NumberFormat(language === "VI" ? "vi-VN" : "en-US", {
       style: "currency",
       currency: "VND",
     }).format(price);
-  };
-
-  // Get available colors
-  const getAvailableColors = () => {
-    const colors = new Set();
-    products.forEach((product) => {
-      product.variants?.forEach((variant) => {
-        if (variant.color) colors.add(variant.color);
-      });
-    });
-    return Array.from(colors).sort();
-  };
-
-  // Get available sizes
-  const getAvailableSizes = () => {
-    const sizes = new Set();
-    products.forEach((product) => {
-      product.variants?.forEach((variant) => {
-        variant.sizes?.forEach((size) => {
-          if (size.sizeName) sizes.add(size.sizeName);
-        });
-      });
-    });
-    return Array.from(sizes).sort();
-  };
-
-  // Get available materials
-  const getAvailableMaterials = () => {
-    const materials = new Set();
-    products.forEach((product) => {
-      if (product.material) materials.add(product.material);
-    });
-    return Array.from(materials).sort();
   };
 
   // Handle filter change
@@ -209,27 +195,6 @@ export default function ProductPage() {
         return { ...prev, [filterType]: value };
       }
     });
-    setCurrentPage(1);
-  };
-
-  // Remove filter
-  const removeFilter = (filterType, value = null) => {
-    setFilters((prev) => {
-      if (value !== null) {
-        return {
-          ...prev,
-          [filterType]: prev[filterType].filter((v) => v !== value),
-        };
-      } else {
-        if (filterType === "priceRange") {
-          return { ...prev, [filterType]: { min: "", max: "" } };
-        } else if (Array.isArray(prev[filterType])) {
-          return { ...prev, [filterType]: [] };
-        } else {
-          return { ...prev, [filterType]: "all" };
-        }
-      }
-    });
   };
 
   // Clear all filters
@@ -240,97 +205,20 @@ export default function ProductPage() {
       sizes: [],
       materials: [],
       categoryIds: [],
+      onSale: null,
     });
     setStatusFilter("");
     setSearch("");
   };
 
-  // Check product has color
-  const productHasColor = (product, color) => {
-    return product.variants?.some((variant) => variant.color === color);
-  };
-
-  // Check product has size
-  const productHasSize = (product, size) => {
-    return product.variants?.some((variant) =>
-      variant.sizes?.some((s) => s.sizeName === size)
-    );
-  };
-
-  // Check product has material
-  const productHasMaterial = (product, material) => {
-    return product.material === material;
-  };
-
-  // Filter products
-  const filteredProducts = products
-    .filter((product) => {
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-      const matchesStatus =
-        !statusFilter ||
-        product.status.toLowerCase() === statusFilter.toLowerCase();
-
-      const matchesPriceRange = (() => {
-        const { min, max } = filters.priceRange;
-        const price = product.salePrice || product.price;
-        if (min && price < parseFloat(min)) return false;
-        if (max && price > parseFloat(max)) return false;
-        return true;
-      })();
-
-      const matchesColors =
-        filters.colors.length === 0 ||
-        filters.colors.some((color) => productHasColor(product, color));
-
-      const matchesSizes =
-        filters.sizes.length === 0 ||
-        filters.sizes.some((size) => productHasSize(product, size));
-
-      const matchesMaterials =
-        filters.materials.length === 0 ||
-        filters.materials.some((material) =>
-          productHasMaterial(product, material)
-        );
-
-      const matchesCategories =
-        filters.categoryIds.length === 0 ||
-        filters.categoryIds.some((categoryId) => {
-          const category = categories.find((c) => c.id === categoryId);
-          return category && product.categoryName === category.name;
-        });
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesPriceRange &&
-        matchesColors &&
-        matchesSizes &&
-        matchesMaterials &&
-        matchesCategories
-      );
-    })
-    .sort((a, b) => {
-      return originalOrder.indexOf(a.id) - originalOrder.indexOf(b.id);
-    });
-
-  const totalPages = Math.ceil(filteredProducts.length / pageSize);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
   // Count active filters
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.priceRange.min || filters.priceRange.max) count++;
-    if (filters.colors.length > 0) count += filters.colors.length;
-    if (filters.sizes.length > 0) count += filters.sizes.length;
-    if (filters.materials.length > 0) count += filters.materials.length;
     if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
+    if (filters.onSale !== null) count++;
     if (statusFilter) count++;
+    if (search) count++;
     return count;
   };
 
@@ -423,9 +311,9 @@ export default function ProductPage() {
     return null;
   };
 
-  // Statistics calculation
+  // Statistics calculation (from current filtered results)
   const stats = {
-    total: products.length,
+    total: totalElements,
     active: products.filter((p) => p.status === "ACTIVE").length,
     inactive: products.filter((p) => p.status === "INACTIVE").length,
     outOfStock: products.filter((p) => p.status === "OUT_OF_STOCK").length,
@@ -603,7 +491,96 @@ export default function ProductPage() {
                 {t("admin.product.filters.clear_all")}
               </button>
             </div>
-            {/* Filter sections would go here */}
+
+            {/* Price Range Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("admin.product.filters.min_price")}
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={filters.priceRange.min}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      priceRange: { ...prev.priceRange, min: e.target.value },
+                    }))
+                  }
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("admin.product.filters.max_price")}
+                </label>
+                <input
+                  type="number"
+                  placeholder="999999999"
+                  value={filters.priceRange.max}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      priceRange: { ...prev.priceRange, max: e.target.value },
+                    }))
+                  }
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("admin.product.filters.category")}
+              </label>
+              <select
+                value={filters.categoryIds[0] || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    categoryIds: e.target.value ? [Number(e.target.value)] : [],
+                  }))
+                }
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">
+                  {t("admin.product.filters.all_categories")}
+                </option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* On Sale Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("admin.product.filters.sale_status")}
+              </label>
+              <select
+                value={filters.onSale === null ? "" : filters.onSale.toString()}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    onSale:
+                      e.target.value === "" ? null : e.target.value === "true",
+                  }))
+                }
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{t("admin.product.filters.all")}</option>
+                <option value="true">
+                  {t("admin.product.filters.on_sale")}
+                </option>
+                <option value="false">
+                  {t("admin.product.filters.not_on_sale")}
+                </option>
+              </select>
+            </div>
           </div>
         )}
       </div>
@@ -611,8 +588,8 @@ export default function ProductPage() {
       {/* Results Summary */}
       <div className="text-sm text-gray-600">
         {t("admin.product.showing_results", {
-          current: paginatedProducts.length,
-          total: filteredProducts.length,
+          current: products.length,
+          total: totalElements,
         })}
       </div>
 
@@ -637,8 +614,8 @@ export default function ProductPage() {
             </tr>
           </thead>
           <tbody>
-            {paginatedProducts.length > 0 ? (
-              paginatedProducts.map((product) => {
+            {products.length > 0 ? (
+              products.map((product) => {
                 const primaryImage = getPrimaryImage(product);
                 const totalStock = getTotalStock(product);
 
@@ -785,9 +762,9 @@ export default function ProductPage() {
 
       {/* Pagination */}
       <Pagination
-        currentPage={currentPage}
+        currentPage={currentPage + 1} // Display as 1-indexed
         totalPages={totalPages}
-        onPageChange={(page) => setCurrentPage(page)}
+        onPageChange={(page) => setCurrentPage(page - 1)} // Convert back to 0-indexed
       />
 
       {/* Product Detail Modal */}

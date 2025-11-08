@@ -331,6 +331,7 @@
     }
   },
   "product": {
+    "loading": "sản phẩm",
     "card": {
       "quick_add": "Thêm nhanh vào giỏ hàng",
       "choose_valid_color": "Vui lòng chọn màu sắc hợp lệ.",
@@ -1576,7 +1577,7 @@
       "human_resources": "Nhân sự",
       "employees": "Nhân viên",
       "reports_analytics": "Báo cáo & phân tích",
-      "reports_management": "Quản lý báo cáo",
+      "reports_management": "Thống kê báo cáo",
       "revenue_forecast": "Dự báo doanh thu",
       "display_pages": "Trang hiển thị",
       "customer_page": "Trang khách hàng",
@@ -1618,13 +1619,13 @@
       "recent_activity": {
         "title": "Hoạt động gần đây",
         "view_all": "Xem tất cả hoạt động →",
+        "no_activities": "Chưa có hoạt động nào",
         "activities": {
           "new_order": "Đơn hàng mới",
           "new_customer": "Khách hàng mới",
           "product_update": "Sản phẩm cập nhật",
           "new_review": "Đánh giá mới",
-          "payment_completed": "Thanh toán hoàn thành",
-          "no_activities": "Chưa có hoạt động nào"
+          "payment_completed": "Thanh toán hoàn thành"
         },
         "time": {
           "minutes_ago": "{{count}} phút trước",
@@ -1643,13 +1644,13 @@
         "title": "Sản phẩm bán chạy",
         "view_all": "Xem tất cả →",
         "sold": "{{count}} đã bán",
+        "no_products": "Chưa có sản phẩm bán",
         "sample_products": {
           "basic_tshirt": "Áo thun nam basic",
           "slim_jeans": "Quần jeans slim fit",
           "office_shirt": "Áo sơ mi công sở",
           "white_sneakers": "Giày sneaker trắng",
-          "unisex_hoodie": "Áo hoodie unisex",
-          "no_products": "Chưa có sản phẩm bán"
+          "unisex_hoodie": "Áo hoodie unisex"
         }
       }
     },
@@ -1887,6 +1888,78 @@
           "poor": "Kém",
           "very_poor": "Rất kém"
         }
+      }
+    },
+    "statistics": {
+      "title": "Thống kê doanh thu",
+      "subtitle": "Phân tích và dự đoán xu hướng kinh doanh",
+      "tabs": {
+        "daily": "Theo ngày",
+        "monthly": "Theo tháng",
+        "yearly": "Theo năm"
+      },
+      "date_range": {
+        "from": "Từ",
+        "to": "Đến"
+      },
+      "year_selector": {
+        "label": "Năm"
+      },
+      "export": {
+        "button": "Xuất CSV",
+        "success": "Xuất file thành công!",
+        "error": "Lỗi khi xuất file CSV"
+      },
+      "cards": {
+        "revenue": {
+          "title": "Doanh thu",
+          "daily": "khoảng ngày",
+          "monthly": "tháng này",
+          "yearly": "năm nay",
+          "growth": "so với tháng trước"
+        },
+        "forecast": {
+          "title": "Dự đoán 3 tháng tới",
+          "note": "Dựa trên hồi quy tuyến tính"
+        },
+        "total_items": {
+          "title": "Tổng mục"
+        },
+        "status": {
+          "title": "Trạng thái",
+          "loading": "Đang tải…",
+          "ready": "Sẵn sàng"
+        }
+      },
+      "chart": {
+        "title": {
+          "daily": "Biểu đồ doanh thu theo ngày",
+          "monthly": "Biểu đồ doanh thu theo tháng",
+          "yearly": "Biểu đồ doanh thu theo năm"
+        },
+        "types": {
+          "combo": "Kết hợp",
+          "line": "Đường",
+          "area": "Vùng",
+          "bar": "Cột"
+        },
+        "legend": {
+          "actual": "Thực tế",
+          "predicted": "Dự đoán"
+        },
+        "loading": "Đang tải dữ liệu...",
+        "no_data": "Chưa có dữ liệu"
+      },
+      "pie_chart": {
+        "title": "Phân bổ doanh thu theo tháng",
+        "top_months": "Top 5 tháng cao nhất"
+      },
+      "notes": {
+        "title": "Ghi chú quan trọng",
+        "csv_export": "Xuất CSV sẽ lấy dữ liệu theo chế độ xem hiện tại.",
+        "forecast_note": "Dự đoán doanh thu sử dụng mô hình hồi quy tuyến tính, chỉ mang tính tham khảo.",
+        "realtime": "Dữ liệu được cập nhật real-time từ hệ thống.",
+        "multiple_views": "Biểu đồ hỗ trợ nhiều dạng hiển thị để phân tích đa chiều."
       }
     }
   },

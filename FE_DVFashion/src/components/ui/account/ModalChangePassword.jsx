@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { IconLock, IconEye, IconEyeOff } from "@tabler/icons-react";
+import { IconLock, IconEye, IconEyeOff, IconX } from "@tabler/icons-react";
 import { useUser } from "../../../hooks/useUser";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -166,23 +166,20 @@ export default function ModalChangePassword({ show, onClose }) {
   if (!show) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={handleClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
-        className="bg-white rounded-2xl shadow-lg p-8 min-w-[480px] max-w-[500px] relative"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl min-w-[340px] max-w-[400px] w-full p-6 relative transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xl hover:bg-gray-800 transition-colors cursor-pointer"
+          className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-7 h-7 flex items-center justify-center text-lg hover:bg-black/50 transition-colors cursor-pointer"
           onClick={handleClose}
           disabled={isChangingPassword}
         >
-          &times;
+          <IconX size={18} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-8 text-center">
+        <h2 className="text-xl font-bold mb-6 text-center bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
           {t("modal_change_password.title")}
         </h2>
 
@@ -191,31 +188,32 @@ export default function ModalChangePassword({ show, onClose }) {
           <div className="mb-2 relative">
             <input
               type={showOld ? "text" : "password"}
-              className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.oldPassword ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.oldPassword
+                  ? "border-red-500 bg-red-50/50"
+                  : "border-white/30"
               }`}
               placeholder={t("modal_change_password.current_password")}
               value={form.oldPassword}
               onChange={(e) => handleInputChange("oldPassword", e.target.value)}
               disabled={isChangingPassword}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconLock size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconLock size={18} />
             </span>
             <button
               type="button"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               onClick={() => setShowOld((v) => !v)}
               tabIndex={-1}
               disabled={isChangingPassword}
             >
-              {showOld ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+              {showOld ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </button>
           </div>
-          {/* Error message container with fixed height */}
-          <div className="h-6 mb-4">
+          <div className="h-5 mb-3">
             {errors.oldPassword && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.oldPassword}
               </p>
             )}
@@ -225,31 +223,32 @@ export default function ModalChangePassword({ show, onClose }) {
           <div className="mb-2 relative">
             <input
               type={showNew ? "text" : "password"}
-              className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.newPassword ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.newPassword
+                  ? "border-red-500 bg-red-50/50"
+                  : "border-white/30"
               }`}
               placeholder={t("modal_change_password.new_password")}
               value={form.newPassword}
               onChange={(e) => handleInputChange("newPassword", e.target.value)}
               disabled={isChangingPassword}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconLock size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconLock size={18} />
             </span>
             <button
               type="button"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               onClick={() => setShowNew((v) => !v)}
               tabIndex={-1}
               disabled={isChangingPassword}
             >
-              {showNew ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+              {showNew ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </button>
           </div>
-          {/* Error message container with fixed height */}
-          <div className="h-6 mb-2">
+          <div className="h-5 mb-2">
             {errors.newPassword && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.newPassword}
               </p>
             )}
@@ -257,7 +256,7 @@ export default function ModalChangePassword({ show, onClose }) {
 
           {/* Password strength indicator */}
           {form.newPassword && (
-            <div className="mb-4 ml-4">
+            <div className="mb-3 ml-3">
               <div className="text-xs text-gray-600 space-y-1">
                 <p
                   className={
@@ -294,8 +293,10 @@ export default function ModalChangePassword({ show, onClose }) {
           <div className="mb-2 relative">
             <input
               type={showConfirm ? "text" : "password"}
-              className={`w-full rounded-full border px-12 py-4 bg-gray-100 text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.confirmPassword
+                  ? "border-red-500 bg-red-50/50"
+                  : "border-white/30"
               }`}
               placeholder={t("modal_change_password.confirm_password")}
               value={form.confirmPassword}
@@ -304,46 +305,45 @@ export default function ModalChangePassword({ show, onClose }) {
               }
               disabled={isChangingPassword}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconLock size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconLock size={18} />
             </span>
             <button
               type="button"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               onClick={() => setShowConfirm((v) => !v)}
               tabIndex={-1}
               disabled={isChangingPassword}
             >
-              {showConfirm ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+              {showConfirm ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </button>
           </div>
-          {/* Error message container with fixed height */}
-          <div className="h-6 mb-6">
+          <div className="h-5 mb-5">
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.confirmPassword}
               </p>
             )}
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={handleClose}
               disabled={isChangingPassword}
-              className="flex-1 bg-gray-200 text-gray-700 rounded-full py-4 text-lg font-bold hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer "
+              className="flex-1 bg-white/80 backdrop-blur-sm border border-white/30 text-gray-700 rounded-lg py-3 text-base font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer"
             >
               {t("modal_change_password.cancel")}
             </button>
             <button
               type="submit"
               disabled={isChangingPassword}
-              className="flex-1 bg-black text-white rounded-full py-4 text-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg py-3 text-base font-semibold hover:from-blue-700 hover:to-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
             >
               {isChangingPassword ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   {t("modal_change_password.updating")}
                 </>
               ) : (

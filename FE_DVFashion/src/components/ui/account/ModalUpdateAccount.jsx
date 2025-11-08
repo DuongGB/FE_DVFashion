@@ -4,6 +4,7 @@ import {
   IconCalendar,
   IconPhone,
   IconMail,
+  IconX,
 } from "@tabler/icons-react";
 import { useUser } from "../../../hooks/useUser";
 import { useTranslation } from "react-i18next";
@@ -228,22 +229,22 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-lg p-8 min-w-[600px] max-w-[650px] relative max-h-[90vh] overflow-y-auto"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl min-w-[340px] max-w-[420px] w-full p-6 relative transition-all duration-300 animate-scaleIn overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xl hover:bg-gray-800 transition-colors cursor-pointer"
+          className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-7 h-7 flex items-center justify-center text-lg hover:bg-black/50 transition-colors cursor-pointer"
           onClick={onClose}
           disabled={isUpdatingUser}
         >
-          &times;
+          <IconX size={18} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-8 text-center">
+        <h2 className="text-xl font-bold mb-6 text-center bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
           {t("modal_update_account.title")}
         </h2>
 
@@ -252,22 +253,23 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
           <div className="mb-2 relative">
             <input
               type="text"
-              className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.fullName ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.fullName
+                  ? "border-red-500 bg-red-50/50"
+                  : "border-white/30"
               }`}
               placeholder={t("modal_update_account.full_name")}
               value={formData.fullName}
               onChange={(e) => handleInputChange("fullName", e.target.value)}
               disabled={isUpdatingUser}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconUser size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconUser size={18} />
             </span>
           </div>
-          {/* Error message container with fixed height */}
-          <div className=" mb-4">
+          <div className="h-5 mb-3">
             {errors.fullName && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.fullName}
               </p>
             )}
@@ -277,22 +279,21 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
           <div className="mb-2 relative">
             <input
               type="email"
-              className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.email ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.email ? "border-red-500 bg-red-50/50" : "border-white/30"
               }`}
               placeholder={t("modal_update_account.email")}
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               disabled={isUpdatingUser}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconMail size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconMail size={18} />
             </span>
           </div>
-          {/* Error message container with fixed height */}
-          <div className=" mb-4">
+          <div className="h-5 mb-3">
             {errors.email && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.email}
               </p>
             )}
@@ -300,11 +301,13 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
 
           {/* Ngày sinh */}
           <div className="mb-2">
-            <div className="flex gap-4">
+            <div className="flex gap-2">
               <div className="relative flex-1">
                 <select
-                  className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.dob ? "border-red-500" : "border-gray-300"
+                  className={`w-full rounded-lg border px-8 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.dob
+                      ? "border-red-500 bg-red-50/50"
+                      : "border-white/30"
                   }`}
                   value={formData.dob.day}
                   onChange={(e) => handleDobChange("day", e.target.value)}
@@ -317,15 +320,16 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                     </option>
                   ))}
                 </select>
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <IconCalendar size={22} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <IconCalendar size={18} />
                 </span>
               </div>
-
               <div className="relative flex-1">
                 <select
-                  className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.dob ? "border-red-500" : "border-gray-300"
+                  className={`w-full rounded-lg border px-8 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.dob
+                      ? "border-red-500 bg-red-50/50"
+                      : "border-white/30"
                   }`}
                   value={formData.dob.month}
                   onChange={(e) => handleDobChange("month", e.target.value)}
@@ -343,15 +347,16 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                     );
                   })}
                 </select>
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <IconCalendar size={22} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <IconCalendar size={18} />
                 </span>
               </div>
-
               <div className="relative flex-1">
                 <select
-                  className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.dob ? "border-red-500" : "border-gray-300"
+                  className={`w-full rounded-lg border px-8 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.dob
+                      ? "border-red-500 bg-red-50/50"
+                      : "border-white/30"
                   }`}
                   value={formData.dob.year}
                   onChange={(e) => handleDobChange("year", e.target.value)}
@@ -366,27 +371,26 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
                     )
                   )}
                 </select>
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <IconCalendar size={22} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <IconCalendar size={18} />
                 </span>
               </div>
             </div>
           </div>
-          {/* Error message container with fixed height */}
-          <div className=" mb-4">
+          <div className="h-5 mb-3">
             {errors.dob && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.dob}
               </p>
             )}
           </div>
 
           {/* Giới tính */}
-          <div className="mb-6">
-            <p className="text-gray-700 font-medium mb-3">
+          <div className="mb-4">
+            <p className="text-gray-700 font-medium mb-2">
               {t("modal_update_account.gender")}
             </p>
-            <div className="flex gap-8 items-center">
+            <div className="flex gap-6 items-center">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -430,45 +434,44 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
           <div className="mb-2 relative">
             <input
               type="tel"
-              className={`w-full rounded-full border px-6 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.phone ? "border-red-500" : "border-gray-300"
+              className={`w-full rounded-lg border px-10 py-3 bg-white/80 backdrop-blur-sm text-base font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.phone ? "border-red-500 bg-red-50/50" : "border-white/30"
               }`}
               placeholder={t("modal_update_account.phone")}
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               disabled={isUpdatingUser}
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <IconPhone size={22} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconPhone size={18} />
             </span>
           </div>
-          {/* Error message container with fixed height */}
-          <div className=" mb-6">
+          <div className="h-5 mb-6">
             {errors.phone && (
-              <p className="text-red-500 text-sm ml-4 leading-tight">
+              <p className="text-red-500 text-xs ml-3 leading-tight">
                 {errors.phone}
               </p>
             )}
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-4 mt-8">
+          <div className="flex gap-3 mt-6">
             <button
               type="button"
               onClick={onClose}
               disabled={isUpdatingUser}
-              className="flex-1 bg-gray-200 text-gray-700 rounded-full py-4 text-lg font-bold hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer "
+              className="flex-1 bg-white/80 backdrop-blur-sm border border-white/30 text-gray-700 rounded-lg py-3 text-base font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer"
             >
               {t("modal_update_account.cancel")}
             </button>
             <button
               type="submit"
               disabled={isUpdatingUser}
-              className="flex-1 bg-black text-white rounded-full py-4 text-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg py-3 text-base font-semibold hover:from-blue-700 hover:to-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
             >
               {isUpdatingUser ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   {t("modal_update_account.updating")}
                 </>
               ) : (

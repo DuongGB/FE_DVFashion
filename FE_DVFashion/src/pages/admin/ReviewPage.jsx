@@ -172,7 +172,7 @@ export default function ReviewPage() {
         <StatCard
           title={t("admin.review.stats.average_rating")}
           value={stats.averageRating?.toFixed(1) || 0}
-          icon={<IconStarFilled className="h-8 w-8 text-purple-600" />}
+          icon={<IconStarFilled className="h-8 w-8 text-yellow-400" />}
         />
       </div>
 

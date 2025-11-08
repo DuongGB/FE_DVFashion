@@ -1,29 +1,65 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productAPI } from "../services/productAPI";
 
-export const useProduct = (lang = "VI") => {
+export const useProduct = (params = {}) => {
   const queryClient = useQueryClient();
 
   const {
-    data: products,
+    page = 0,
+    size = 10,
+    sort = null,
+    search = null,
+    categoryId = null,
+    promotionId = null,
+    status = null,
+    onSale = null,
+    minPrice = null,
+    maxPrice = null,
+    startDate = null,
+    endDate = null,
+    lang = "VI",
+  } = params;
+
+  const {
+    data: productResponse,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["products", "all", lang],
+    queryKey: ["products", "all", params],
     queryFn: async () => {
       try {
-        const res = await productAPI.getAllProducts(lang);
+        const res = await productAPI.getAllProducts(params);
         console.log("Products response:", res.data);
-        // ApiResponse wrapper: res.data.data contains the payload list
-        const list = res.data?.data ?? res.data ?? [];
-        // Ensure currentPrice exists and normalized for frontend
-        return (Array.isArray(list) ? list : []).map((p) => ({
-          ...p,
-          currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
-        }));
+
+        // Backend trả về ApiResponse<PageResponse<ProductResponse>>
+        const pageData = res.data?.data ?? res.data ?? {};
+
+        // PageResponse structure: { values: [...], pageIndex, pageSize, totalElements, totalPages, filterInfo }
+        const products = (pageData.values ?? pageData.content ?? []).map(
+          (p) => ({
+            ...p,
+            currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
+          })
+        );
+
+        return {
+          products,
+          totalElements: pageData.totalElements ?? 0,
+          totalPages: pageData.totalPages ?? 0,
+          pageIndex: pageData.pageIndex ?? 0,
+          pageSize: pageData.pageSize ?? size,
+          filterInfo: pageData.filterInfo ?? null,
+        };
       } catch (error) {
         console.error("Error fetching products:", error);
-        return [];
+        return {
+          products: [],
+          totalElements: 0,
+          totalPages: 0,
+          pageIndex: 0,
+          pageSize: size,
+          filterInfo: null,
+        };
       }
     },
     retry: (failureCount, error) => {
@@ -66,7 +102,12 @@ export const useProduct = (lang = "VI") => {
 
   return {
     // Fetched data
-    products,
+    products: productResponse?.products ?? [],
+    totalElements: productResponse?.totalElements ?? 0,
+    totalPages: productResponse?.totalPages ?? 0,
+    pageIndex: productResponse?.pageIndex ?? 0,
+    pageSize: productResponse?.pageSize ?? size,
+    filterInfo: productResponse?.filterInfo ?? null,
 
     isLoading,
     error,
@@ -119,7 +160,7 @@ export const useProductsByCategoryPaging = (
 
       const data = res.data?.data ?? res.data ?? {};
 
-      // support both backend shapes: { content: [...], totalElements } OR { values: [...], totalElements } OR direct array
+      // support both backend shapes
       let content = [];
       if (Array.isArray(data.content)) content = data.content;
       else if (Array.isArray(data.values)) content = data.values;

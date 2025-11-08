@@ -292,17 +292,17 @@ export default function Sidebar({ onClose }) {
               menuKey="reports"
             >
               <SubMenuItem
-                to="/admin/reports"
+                to="/admin/statistics"
                 icon={<IconDeviceAnalytics size={16} />}
               >
                 {t("admin.sidebar.reports_management")}
               </SubMenuItem>
-              <SubMenuItem
+              {/* <SubMenuItem
                 to="/admin/forecasts"
                 icon={<IconDeviceAnalytics size={16} />}
               >
                 {t("admin.sidebar.revenue_forecast")}
-              </SubMenuItem>
+              </SubMenuItem> */}
             </MenuWithSubmenu>
 
             {/* Trang hiển thị */}

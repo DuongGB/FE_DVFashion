@@ -10,8 +10,11 @@ import {
   IconTrendingUp,
   IconUserCheck,
   IconUsers,
+  IconBulb,
+  IconClick,
+  IconShoppingBag,
 } from "@tabler/icons-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Chart } from "react-google-charts";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -21,10 +24,16 @@ import {
   useTopProducts,
   useRecentActivities,
 } from "../../hooks/useDashboard";
+import {
+  useTopRecommendedProducts,
+  useRecommendationAnalytics,
+} from "../../hooks/useProductRecomendations";
+import { useAllOrdersPaging } from "../../hooks/useOrder";
 
 const AdminPage = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const [recommendationDays, setRecommendationDays] = useState(30);
 
   // Fetch real data from API
   const { data: dashboardData, isLoading: statsLoading } = useDashboardStats();
@@ -33,6 +42,25 @@ const AdminPage = () => {
   const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
   const { data: recentActivities, isLoading: activitiesLoading } =
     useRecentActivities();
+
+  // Fetch recommendation data
+  const { data: topRecommendedProducts, isLoading: topRecommendedLoading } =
+    useTopRecommendedProducts({ limit: 5, days: recommendationDays });
+  const { data: recommendationAnalytics, isLoading: analyticsLoading } =
+    useRecommendationAnalytics({ days: recommendationDays });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  const params = {
+    page: currentPage - 1,
+    size: pageSize,
+    sort: "orderDate,desc",
+  };
+
+  const { data, isLoading, isError } = useAllOrdersPaging(params);
+
+  const orders = data?.values || [];
 
   const loading = statsLoading || revenueLoading;
 
@@ -65,6 +93,39 @@ const AdminPage = () => {
     }).format(amount);
   };
 
+  const stats = useMemo(() => {
+    const all = orders.length;
+    let pending = 0,
+      confirmed = 0,
+      processing = 0,
+      delivered = 0,
+      shipped = 0,
+      returned = 0,
+      canceled = 0,
+      totalAmount = 0;
+    orders.forEach((o) => {
+      if (o.status === "PENDING") pending++;
+      if (o.status === "CONFIRMED") confirmed++;
+      if (o.status === "PROCESSING") processing++;
+      if (o.status === "DELIVERED") delivered++;
+      if (o.status === "SHIPPED") shipped++;
+      if (o.status === "RETURNED") returned++;
+      if (o.status === "CANCELED") canceled++;
+      totalAmount += Number(o.totalAmount || 0);
+    });
+    return {
+      all,
+      pending,
+      confirmed,
+      processing,
+      delivered,
+      shipped,
+      returned,
+      canceled,
+      totalAmount,
+    };
+  }, [orders]);
+
   const StatCard = ({
     icon: Icon,
     title,
@@ -80,12 +141,14 @@ const AdminPage = () => {
       purple: "bg-purple-500",
       red: "bg-red-500",
       indigo: "bg-indigo-500",
+      orange: "bg-orange-500",
+      teal: "bg-teal-500",
     };
 
     const formatValue = (val) => {
       if (format === "currency") return formatCurrency(val);
       if (format === "rating") return val.toFixed(1);
-      if (format === "percentage") return `${val}%`;
+      if (format === "percentage") return `${val.toFixed(2)}%`;
       return val.toLocaleString();
     };
 
@@ -415,7 +478,7 @@ const AdminPage = () => {
           {topProducts && topProducts.length > 0 ? (
             topProducts.map((product, index) => (
               <div
-                key={product.productId}
+                key={product.productVariantId}
                 className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
               >
                 <div className="flex items-center space-x-3">
@@ -450,6 +513,179 @@ const AdminPage = () => {
     );
   };
 
+  // New Component: Recommendation Analytics
+  const RecommendationAnalytics = () => {
+    if (analyticsLoading) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Thống Kê Gợi Ý Sản Phẩm
+            </h3>
+          </div>
+          <div className="space-y-4 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!recommendationAnalytics) {
+      return null;
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <IconBulb size={20} className="text-orange-500" />
+            Thống Kê Gợi Ý Sản Phẩm
+          </h3>
+          <select
+            value={recommendationDays}
+            onChange={(e) => setRecommendationDays(Number(e.target.value))}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={7}>7 ngày</option>
+            <option value={30}>30 ngày</option>
+            <option value={90}>90 ngày</option>
+            <option value={0}>Tất cả</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <IconEye size={18} className="text-blue-600" />
+              <p className="text-sm text-gray-600">Tổng gợi ý</p>
+            </div>
+            <p className="text-2xl font-bold text-blue-600">
+              {recommendationAnalytics.totalRecommendations?.toLocaleString()}
+            </p>
+          </div>
+
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <IconClick size={18} className="text-green-600" />
+              <p className="text-sm text-gray-600">Tỷ lệ nhấp</p>
+            </div>
+            <p className="text-2xl font-bold text-green-600">
+              {recommendationAnalytics.clickThroughRate?.toFixed(2)}%
+            </p>
+          </div>
+
+          <div className="bg-orange-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <IconShoppingBag size={18} className="text-orange-600" />
+              <p className="text-sm text-gray-600">Tỷ lệ thêm giỏ</p>
+            </div>
+            <p className="text-2xl font-bold text-orange-600">
+              {recommendationAnalytics.cartConversionRate?.toFixed(2)}%
+            </p>
+          </div>
+
+          <div className="bg-purple-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <IconShoppingCart size={18} className="text-purple-600" />
+              <p className="text-sm text-gray-600">Tỷ lệ mua hàng</p>
+            </div>
+            <p className="text-2xl font-bold text-purple-600">
+              {recommendationAnalytics.purchaseConversionRate?.toFixed(2)}%
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Tổng nhấp: {recommendationAnalytics.totalClicks}</span>
+            <span>Thêm giỏ: {recommendationAnalytics.totalAddToCarts}</span>
+            <span>Mua hàng: {recommendationAnalytics.totalPurchases}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // New Component: Top Recommended Products
+  const TopRecommendedProducts = () => {
+    if (topRecommendedLoading) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Sản Phẩm Được Gợi Ý Nhiều Nhất
+          </h3>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 animate-pulse"
+              >
+                <div className="flex items-center space-x-3 flex-1">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+                <div className="h-5 bg-gray-200 rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <IconStar size={20} className="text-yellow-500" />
+            Sản Phẩm Được Gợi Ý Nhiều Nhất
+          </h3>
+        </div>
+        <div className="space-y-4">
+          {topRecommendedProducts && topRecommendedProducts.length > 0 ? (
+            topRecommendedProducts.map((product, index) => (
+              <div
+                key={product.productId}
+                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-semibold text-orange-600">
+                      #{index + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {product.productName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {product.categoryName}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-orange-600">
+                    {product.recommendationCount} lần
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatCurrency(product.averagePrice)}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 py-8">
+              Chưa có dữ liệu gợi ý sản phẩm
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -472,7 +708,7 @@ const AdminPage = () => {
           <StatCard
             icon={IconShoppingCart}
             title={t("admin.dashboard.stats.total_orders")}
-            value={dashboardData?.totalOrders || 0}
+            value={stats?.all}
             change={18}
             color="yellow"
           />
@@ -514,6 +750,12 @@ const AdminPage = () => {
             change={8}
             color="green"
           />
+        </div>
+
+        {/* Recommendation Statistics - NEW SECTION */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecommendationAnalytics />
+          <TopRecommendedProducts />
         </div>
 
         {/* Charts and Actions */}

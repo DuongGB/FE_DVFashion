@@ -332,6 +332,7 @@
     }
   },
   "product": {
+    "loading": "products",
     "card": {
       "quick_add": "Quick add to cart",
       "choose_valid_color": "Please select a valid color.",
@@ -1574,7 +1575,7 @@
       "promotions": "Promotions",
       "human_resources": "Human Resources",
       "employees": "Employees",
-      "reports_analytics": "Reports & Analytics",
+      "reports_analytics": "Statistics Reports",
       "reports_management": "Reports Management",
       "revenue_forecast": "Revenue Forecast",
       "display_pages": "Display Pages",
@@ -1617,13 +1618,13 @@
       "recent_activity": {
         "title": "Recent Activity",
         "view_all": "View all activities →",
+        "no_activities": "No recent activities",
         "activities": {
           "new_order": "New Order",
           "new_customer": "New Customer",
           "product_update": "Product Update",
           "new_review": "New Review",
-          "payment_completed": "Payment Completed",
-          "no_activities": "No recent activities"
+          "payment_completed": "Payment Completed"
         },
         "time": {
           "minutes_ago": "{{count}} minutes ago",
@@ -1642,13 +1643,13 @@
         "title": "Best Selling Products",
         "view_all": "View all →",
         "sold": "{{count}} sold",
+        "no_products": "No products to display",
         "sample_products": {
           "basic_tshirt": "Men's Basic T-shirt",
           "slim_jeans": "Slim Fit Jeans",
           "office_shirt": "Office Shirt",
           "white_sneakers": "White Sneakers",
-          "unisex_hoodie": "Unisex Hoodie",
-          "no_products": "No products to display"
+          "unisex_hoodie": "Unisex Hoodie"
         }
       }
     },
@@ -1886,6 +1887,78 @@
           "poor": "Poor",
           "very_poor": "Very Poor"
         }
+      }
+    },
+    "statistics": {
+      "title": "Revenue Statistics",
+      "subtitle": "Analyze and forecast business trends",
+      "tabs": {
+        "daily": "Daily",
+        "monthly": "Monthly",
+        "yearly": "Yearly"
+      },
+      "date_range": {
+        "from": "From",
+        "to": "To"
+      },
+      "year_selector": {
+        "label": "Year"
+      },
+      "export": {
+        "button": "Export CSV",
+        "success": "File exported successfully!",
+        "error": "Error exporting CSV file"
+      },
+      "cards": {
+        "revenue": {
+          "title": "Revenue",
+          "daily": "date range",
+          "monthly": "this month",
+          "yearly": "this year",
+          "growth": "vs last month"
+        },
+        "forecast": {
+          "title": "Next 3 months forecast",
+          "note": "Based on linear regression"
+        },
+        "total_items": {
+          "title": "Total Items"
+        },
+        "status": {
+          "title": "Status",
+          "loading": "Loading…",
+          "ready": "Ready"
+        }
+      },
+      "chart": {
+        "title": {
+          "daily": "Daily Revenue Chart",
+          "monthly": "Monthly Revenue Chart",
+          "yearly": "Yearly Revenue Chart"
+        },
+        "types": {
+          "combo": "Combo",
+          "line": "Line",
+          "area": "Area",
+          "bar": "Bar"
+        },
+        "legend": {
+          "actual": "Actual",
+          "predicted": "Predicted"
+        },
+        "loading": "Loading data...",
+        "no_data": "No data available"
+      },
+      "pie_chart": {
+        "title": "Monthly Revenue Distribution",
+        "top_months": "Top 5 Highest Months"
+      },
+      "notes": {
+        "title": "Important Notes",
+        "csv_export": "CSV export will use data from the current view mode.",
+        "forecast_note": "Revenue forecast uses linear regression model, for reference only.",
+        "realtime": "Data is updated in real-time from the system.",
+        "multiple_views": "Charts support multiple display types for multi-dimensional analysis."
       }
     }
   },
