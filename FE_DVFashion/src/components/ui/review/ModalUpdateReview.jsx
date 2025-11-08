@@ -64,11 +64,19 @@ export default function ModalUpdateReview({
   if (!show || !review) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden
+        rounded-3xl shadow-2xl border border-white/30
+        bg-gradient-to-br from-white/70 via-white/40 to-blue-200/50
+        backdrop-blur-2xl
+        transition-all duration-300
+        animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 bg-black/30 backdrop-blur-sm text-white rounded-full p-2 hover:bg-black/50 z-10 cursor-pointer"
+          className="absolute top-4 right-4 text-gray-600 hover:text-blue-700 cursor-pointer bg-white/60 backdrop-blur-sm rounded-full p-2 shadow z-10 transition"
         >
           <IconX size={24} />
         </button>

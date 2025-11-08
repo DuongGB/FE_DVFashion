@@ -602,6 +602,13 @@
     "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
   "review": {
+    "show_replies": "Show replies",
+    "hide_replies": "Hide replies",
+    "shop": "Shop",
+    "you": "You",
+    "add_reply": "Add a reply",
+    "reply_placeholder": "Write your reply...",
+    "total_reviews": "{{count}} Reviews",
     "title": "Product Review",
     "rating": "Your Rating",
     "comment": "Your thoughts on the product",

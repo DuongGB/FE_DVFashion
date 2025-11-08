@@ -594,6 +594,13 @@
     }
   },
   "review": {
+    "show_replies": "Hiển thị phản hồi",
+    "hide_replies": "Ẩn phản hồi",
+    "shop": "Cửa hàng",
+    "you": "Bạn",
+    "add_reply": "Thêm phản hồi",
+    "reply_placeholder": "Nhập phản hồi của bạn...",
+    "total_reviews": "Tổng số đánh giá",
     "title": "Đánh giá sản phẩm",
     "rating": "Đánh giá của bạn",
     "comment": "Cảm nhận về sản phẩm",

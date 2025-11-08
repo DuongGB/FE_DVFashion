@@ -135,21 +135,7 @@ export default function ModalAccount({ show, onClose, user }) {
             <span className="text-xl">→</span>
           </Link>
         </div>
-        {/* Referral */}
-        {/* <div className="mb-4 bg-blue-600 rounded-lg p-4 text-white">
-          <div className="font-bold mb-2">
-            {t("modal_account.referral_title")}
-          </div>
-          <div className="text-sm mb-2">{t("modal_account.referral_desc")}</div>
-          <div className="flex gap-2">
-            <button className="bg-white text-blue-600 rounded-full px-4 py-1 font-bold">
-              {t("modal_account.share")}
-            </button>
-            <button className="bg-blue-800 text-white rounded-full px-4 py-1 font-bold">
-              {t("modal_account.learn_more")}
-            </button>
-          </div>
-        </div> */}
+
         {/* Go to account */}
         <button
           className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 cursor-pointer"

@@ -359,10 +359,16 @@ export default function AddressModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto flex flex-col relative"
+        className="relative w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden
+        rounded-3xl shadow-2xl border border-white/30
+        bg-gradient-to-br from-white/70 via-white/40 to-blue-200/50
+        backdrop-blur-2xl
+        transition-all duration-300
+        animate-scaleIn
+        mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-xl">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-3xl">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <IconMapPin size={20} />
             {editAddress ? t("address.edit_title") : t("address.add_title")}
@@ -389,11 +395,11 @@ export default function AddressModal({
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
           <form className="space-y-6">
             {/* Map Section */}
             {showMap && (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="border border-white/30 rounded-xl p-0 bg-transparent shadow-none">
                 <AddressMap
                   onAddressSelect={handleMapAddressSelect}
                   initialAddress={{
@@ -417,8 +423,8 @@ export default function AddressModal({
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => handleChange("fullName", e.target.value)}
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.fullName ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm ${
+                    errors.fullName ? "border-red-500" : "border-white/30"
                   }`}
                   placeholder={t("address.fullName_placeholder")}
                 />
@@ -435,8 +441,8 @@ export default function AddressModal({
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.phone ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm ${
+                    errors.phone ? "border-red-500" : "border-white/30"
                   }`}
                   placeholder={t("address.phone_placeholder")}
                 />
@@ -457,8 +463,8 @@ export default function AddressModal({
                   value={getProvinceCodeByName(formData.city)}
                   onChange={(e) => handleProvinceChange(e.target.value)}
                   disabled={isMapSelection || locationData.isLoading}
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
-                    errors.city ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm ${
+                    errors.city ? "border-red-500" : "border-white/30"
                   }`}
                 >
                   <option value="">{t("cart.select_province")}</option>
@@ -484,8 +490,8 @@ export default function AddressModal({
                   disabled={
                     isMapSelection || !formData.city || locationData.isLoading
                   }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
-                    errors.district ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm ${
+                    errors.district ? "border-red-500" : "border-white/30"
                   }`}
                 >
                   <option value="">{t("cart.select_district")}</option>
@@ -513,8 +519,8 @@ export default function AddressModal({
                     !formData.district ||
                     locationData.isLoading
                   }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
-                    errors.ward ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm ${
+                    errors.ward ? "border-red-500" : "border-white/30"
                   }`}
                 >
                   <option value="">{t("cart.select_ward")}</option>
@@ -539,7 +545,7 @@ export default function AddressModal({
                   value={formData.country}
                   onChange={(e) => handleChange("country", e.target.value)}
                   disabled={isMapSelection}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-white/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 backdrop-blur-sm"
                   placeholder={t("address.country_placeholder")}
                 />
               </div>
@@ -554,8 +560,8 @@ export default function AddressModal({
                 onChange={(e) => handleChange("street", e.target.value)}
                 rows={3}
                 disabled={isMapSelection}
-                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
-                  errors.street ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white/80 backdrop-blur-sm ${
+                  errors.street ? "border-red-500" : "border-white/30"
                 }`}
                 placeholder={t("address.street_placeholder")}
               />
@@ -578,11 +584,11 @@ export default function AddressModal({
               </label>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-4 border-t border-white/30">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 cursor-pointer"
+                className="flex-1 px-4 py-2 border border-white/30 text-gray-700 rounded-lg hover:bg-white/60 hover:backdrop-blur-sm cursor-pointer transition"
               >
                 {t("common.cancel")}
               </button>
@@ -590,7 +596,7 @@ export default function AddressModal({
                 type="submit"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-lg transition-all duration-200"
               >
                 {isLoading ? t("common.saving") : t("common.save")}
               </button>
