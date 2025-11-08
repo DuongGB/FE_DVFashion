@@ -80,7 +80,7 @@ export default function Category() {
         {paginatedCategories.map((cat) => (
           <div key={cat.id} className="text-center">
             <div
-              className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-orange-400 to-red-600 p-4 cursor-pointer hover:from-orange-500 hover:to-red-700 transition-all duration-300 transform hover:scale-105"
+              className="relative rounded-2xl overflow-hidden bg-gray-100 p-4 cursor-pointer hover:from-orange-500 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
               onClick={() => handleCategoryClick(cat)}
             >
               <div className="w-full h-60 flex items-center justify-center">

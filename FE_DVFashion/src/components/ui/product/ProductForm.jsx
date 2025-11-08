@@ -88,9 +88,9 @@ const ProductForm = ({
               images: v.images
                 ? v.images.map((img) => ({
                     id: img.id || null,
-                    isPrimary: img.isPrimary || false,
+                    isPrimary: img?.isPrimary || false,
                     imageFile: null,
-                    preview: img.imageUrl || "",
+                    preview: img?.imageUrl || "",
                     existingImageUrl: img.imageUrl || "",
                   }))
                 : [],
@@ -235,11 +235,11 @@ const ProductForm = ({
       const variants = [...prev.variants];
       const removedImage = variants[variantIdx].images[imgIdx];
 
-      if (removedImage.preview && removedImage.imageFile) {
+      if (removedImage?.preview && removedImage.imageFile) {
         URL.revokeObjectURL(removedImage.preview);
       }
 
-      const wasPrimary = removedImage.isPrimary;
+      const wasPrimary = removedImage?.isPrimary;
       variants[variantIdx].images.splice(imgIdx, 1);
 
       if (wasPrimary && variants[variantIdx].images.length > 0) {
@@ -262,7 +262,7 @@ const ProductForm = ({
           ...img,
           isPrimary: i === imgIdx,
           isModified:
-            img.id && img.isPrimary !== (i === imgIdx) ? true : img.isModified,
+            img.id && img?.isPrimary !== (i === imgIdx) ? true : img.isModified,
         })
       );
       return { ...prev, variants };
@@ -340,7 +340,7 @@ const ProductForm = ({
           );
       });
 
-      const hasPrimaryImage = variant.images.some((img) => img.isPrimary);
+      const hasPrimaryImage = variant.images.some((img) => img?.isPrimary);
       if (variant.images.length > 0 && !hasPrimaryImage) {
         variant.images[0].isPrimary = true;
         if (variant.images[0].id) {
@@ -376,7 +376,7 @@ const ProductForm = ({
               sizeName: s.sizeName,
             })),
             images: variant.images.map((img) => ({
-              isPrimary: Boolean(img.isPrimary),
+              isPrimary: Boolean(img?.isPrimary),
             })),
           };
 
@@ -468,14 +468,14 @@ const ProductForm = ({
       if (image.isNew && image.imageFile) {
         await productVariantImageAPI.addImageToVariant(
           variant.id,
-          { isPrimary: Boolean(image.isPrimary) },
+          { isPrimary: Boolean(image?.isPrimary) },
           image.imageFile
         );
       } else if (image.isModified && image.id) {
         await productVariantImageAPI.updateVariantImage(
           variant.id,
           image.id,
-          { isPrimary: Boolean(image.isPrimary) },
+          { isPrimary: Boolean(image?.isPrimary) },
           null
         );
       }
@@ -519,7 +519,7 @@ const ProductForm = ({
               sizeName: s.sizeName,
             })),
             images: v.images.map((img) => ({
-              isPrimary: Boolean(img.isPrimary),
+              isPrimary: Boolean(img?.isPrimary),
             })),
           })),
         };
@@ -986,17 +986,16 @@ const ProductForm = ({
 
                       {variant.images.length > 0 && (
                         <div className="flex flex-wrap gap-3 mt-2">
-                          {variant.images.map((img, imgIdx) => (
+                          {variant.images.filter(Boolean).map((img, imgIdx) => (
                             <div
                               key={imgIdx}
                               className="relative group w-20 h-20 border border-white/30 rounded-lg bg-white/80 backdrop-blur-sm"
                             >
                               <img
-                                src={img.preview || img.existingImageUrl}
+                                src={img?.preview || img?.existingImageUrl}
                                 alt=""
                                 className="w-full h-full object-cover rounded-lg"
                               />
-
                               {/* Remove Button */}
                               <button
                                 type="button"
@@ -1006,7 +1005,6 @@ const ProductForm = ({
                               >
                                 <IconX size={12} />
                               </button>
-
                               {/* Primary Button */}
                               <button
                                 type="button"
@@ -1015,16 +1013,15 @@ const ProductForm = ({
                                 }
                                 disabled={isSubmitting}
                                 className={`absolute bottom-1 left-1 px-1 py-0.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed ${
-                                  img.isPrimary
+                                  img?.isPrimary
                                     ? "bg-green-500 text-white"
                                     : "bg-gray-200 text-gray-700"
                                 }`}
                               >
-                                {img.isPrimary
+                                {img?.isPrimary
                                   ? t("admin.product.form.primary")
                                   : t("admin.product.form.set_primary")}
                               </button>
-
                               {/* Status Indicators */}
                               <div className="absolute top-1 left-1 flex flex-col text-xs">
                                 {img.id && (

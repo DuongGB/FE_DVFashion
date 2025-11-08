@@ -249,7 +249,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 
   return (
     <div className="sticky top-0 z-50 border-b border-white/40 shadow-lg backdrop-blur-xl bg-white/40">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between py-3 max-w-[95%]">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 min-w-[160px]">
           <div className="flex items-center gap-2">
