@@ -618,6 +618,16 @@
       "update_success": "Review updated successfully!",
       "create_failed": "You have not filled in the review information!",
       "update_failed": "An error occurred while updating!"
+    },
+    "review_reply": {
+      "create_success": "Reply posted successfully",
+      "create_failed": "Failed to post reply",
+      "update_success": "Reply updated successfully",
+      "update_failed": "Failed to update reply",
+      "delete_success": "Reply deleted successfully",
+      "delete_failed": "Failed to delete reply",
+      "moderate_success": "Reply moderated successfully",
+      "moderate_failed": "Failed to moderate reply"
     }
   },
   "common": {
@@ -644,7 +654,34 @@
     "error": "An error occurred",
     "processing": "Processing...",
     "note": "Note",
-    "none": "None"
+    "none": "None",
+    "reply": "Reply",
+    "sending": "Sending"
+  },
+  "review_reply": {
+    "title": "Discussion",
+    "write_reply": "Write a reply",
+    "edit_reply": "Edit reply",
+    "placeholder": "Share your thoughts...",
+    "edit_placeholder": "Update your reply...",
+    "submit": "Submit",
+    "no_replies": "No replies yet. Be the first to comment!",
+    "edited": "edited",
+    "edited_at": "Edited at",
+    "approve": "Approve",
+    "reject": "Reject",
+    "hide": "Hide",
+    "delete_confirm_title": "Delete Reply",
+    "delete_confirm_message": "Are you sure you want to delete this reply? This action cannot be undone.",
+    "restore": "Restore",
+    "mark_pending": "Mark as Pending",
+    "need_review": "Need Review",
+    "status": {
+      "APPROVED": "Approved",
+      "PENDING": "Pending",
+      "REJECTED": "Rejected",
+      "HIDDEN": "Hidden"
+    }
   },
 
   "admin": {
@@ -1813,6 +1850,7 @@
       "loading": "Loading data...",
       "no_reviews": "No reviews found.",
       "error_loading": "Error loading data: {{message}}",
+      "final_state": "Final State",
       "columns": {
         "customer": "Customer",
         "product": "Product",

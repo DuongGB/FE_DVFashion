@@ -28,7 +28,6 @@ import {
   useTopRecommendedProducts,
   useRecommendationAnalytics,
 } from "../../hooks/useProductRecomendations";
-import { useAllOrdersPaging } from "../../hooks/useOrder";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -48,19 +47,6 @@ const AdminPage = () => {
     useTopRecommendedProducts({ limit: 5, days: recommendationDays });
   const { data: recommendationAnalytics, isLoading: analyticsLoading } =
     useRecommendationAnalytics({ days: recommendationDays });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
-
-  const params = {
-    page: currentPage - 1,
-    size: pageSize,
-    sort: "orderDate,desc",
-  };
-
-  const { data, isLoading, isError } = useAllOrdersPaging(params);
-
-  const orders = data?.values || [];
 
   const loading = statsLoading || revenueLoading;
 
@@ -92,39 +78,6 @@ const AdminPage = () => {
       currency: "VND",
     }).format(amount);
   };
-
-  const stats = useMemo(() => {
-    const all = orders.length;
-    let pending = 0,
-      confirmed = 0,
-      processing = 0,
-      delivered = 0,
-      shipped = 0,
-      returned = 0,
-      canceled = 0,
-      totalAmount = 0;
-    orders.forEach((o) => {
-      if (o.status === "PENDING") pending++;
-      if (o.status === "CONFIRMED") confirmed++;
-      if (o.status === "PROCESSING") processing++;
-      if (o.status === "DELIVERED") delivered++;
-      if (o.status === "SHIPPED") shipped++;
-      if (o.status === "RETURNED") returned++;
-      if (o.status === "CANCELED") canceled++;
-      totalAmount += Number(o.totalAmount || 0);
-    });
-    return {
-      all,
-      pending,
-      confirmed,
-      processing,
-      delivered,
-      shipped,
-      returned,
-      canceled,
-      totalAmount,
-    };
-  }, [orders]);
 
   const StatCard = ({
     icon: Icon,
@@ -708,7 +661,7 @@ const AdminPage = () => {
           <StatCard
             icon={IconShoppingCart}
             title={t("admin.dashboard.stats.total_orders")}
-            value={stats?.all}
+            value={dashboardData?.totalOrders || 0}
             change={18}
             color="yellow"
           />

@@ -6,13 +6,18 @@ import {
   createReview,
   updateReview,
   getMyReviews,
-  // canReviewProduct,
-  // canEditReview,
+  createReviewReply,
+  updateReviewReply,
+  deleteReviewReply,
+  getReviewRepliesForCustomer,
+  getAllReviewRepliesForAdmin,
+  moderateReviewReply,
 } from "../services/reviewAPI";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
-// For Admin
+// ==================== REVIEW HOOKS ====================
+
 export const useAdminReviews = (params) => {
   return useQuery({
     queryKey: ["adminReviews", params],
@@ -27,7 +32,7 @@ export const useModerateReview = () => {
   return useMutation({
     mutationFn: ({ reviewId, request }) => moderateReview(reviewId, request),
     onSuccess: () => {
-      toast.success("Cập nhật trạng thái đánh giá thành công!");
+      toast.success(t("toast.review.moderate_success"));
       queryClient.invalidateQueries({ queryKey: ["adminReviews"] });
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
     },
@@ -39,7 +44,6 @@ export const useModerateReview = () => {
   });
 };
 
-// For Customer/Public
 export const useProductReviews = (productId, params) => {
   return useQuery({
     queryKey: ["productReviews", productId, params],
@@ -57,6 +61,7 @@ export const useCreateReview = (options) => {
       toast.success(t("toast.review.create_success"));
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
       queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["myReviews"] });
       if (options?.onSuccess) {
         options.onSuccess(data, variables, context);
       }
@@ -85,6 +90,7 @@ export const useUpdateReview = () => {
     onSuccess: () => {
       toast.success(t("toast.review.update_success"));
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
+      queryClient.invalidateQueries({ queryKey: ["myReviews"] });
     },
     onError: (error) => {
       toast.error(
@@ -102,18 +108,101 @@ export const useGetMyReviews = (params = {}, options) => {
   });
 };
 
-// export const useCanReviewProduct = (params, options) => {
-//   return useQuery({
-//     queryKey: ["canReview", params],
-//     queryFn: () => canReviewProduct(params),
-//     ...options,
-//   });
-// };
+// ==================== REVIEW REPLY HOOKS ====================
 
-// export const useCanEditReview = (reviewId, options) => {
-//   return useQuery({
-//     queryKey: ["canEditReview", reviewId],
-//     queryFn: () => canEditReview(reviewId),
-//     ...options,
-//   });
-// };
+export const useCreateReviewReply = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: createReviewReply,
+    onSuccess: (data) => {
+      toast.success(t("toast.review_reply.create_success"));
+      queryClient.invalidateQueries({
+        queryKey: ["reviewReplies", data.data.reviewId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["productReviews"] });
+      queryClient.invalidateQueries({ queryKey: ["adminReviews"] });
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || t("toast.review_reply.create_failed")
+      );
+    },
+  });
+};
+
+export const useUpdateReviewReply = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: updateReviewReply,
+    onSuccess: (data) => {
+      toast.success(t("toast.review_reply.update_success"));
+      queryClient.invalidateQueries({
+        queryKey: ["reviewReplies", data.data.reviewId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["productReviews"] });
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || t("toast.review_reply.update_failed")
+      );
+    },
+  });
+};
+
+export const useDeleteReviewReply = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: deleteReviewReply,
+    onSuccess: () => {
+      toast.success(t("toast.review_reply.delete_success"));
+      queryClient.invalidateQueries({ queryKey: ["reviewReplies"] });
+      queryClient.invalidateQueries({ queryKey: ["productReviews"] });
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || t("toast.review_reply.delete_failed")
+      );
+    },
+  });
+};
+
+export const useReviewRepliesForCustomer = (reviewId, options) => {
+  return useQuery({
+    queryKey: ["reviewReplies", reviewId, "customer"],
+    queryFn: () => getReviewRepliesForCustomer(reviewId),
+    enabled: !!reviewId,
+    ...options,
+  });
+};
+
+export const useReviewRepliesForAdmin = (reviewId, options) => {
+  return useQuery({
+    queryKey: ["reviewReplies", reviewId, "admin"],
+    queryFn: () => getAllReviewRepliesForAdmin(reviewId),
+    enabled: !!reviewId,
+    ...options,
+  });
+};
+
+export const useModerateReviewReply = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: moderateReviewReply,
+    onSuccess: (data) => {
+      toast.success(t("toast.review_reply.moderate_success"));
+      queryClient.invalidateQueries({
+        queryKey: ["reviewReplies", data.data.reviewId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["adminReviews"] });
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || t("toast.review_reply.moderate_failed")
+      );
+    },
+  });
+};

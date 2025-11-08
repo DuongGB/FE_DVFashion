@@ -610,6 +610,16 @@
       "update_success": "Cập nhật đánh giá thành công!",
       "create_failed": "Bạn chưa điền thông tin đánh giá!",
       "update_failed": "Có lỗi xảy ra khi cập nhật!"
+    },
+    "review_reply": {
+      "create_success": "Đã đăng phản hồi thành công",
+      "create_failed": "Không thể đăng phản hồi",
+      "update_success": "Đã cập nhật phản hồi thành công",
+      "update_failed": "Không thể cập nhật phản hồi",
+      "delete_success": "Đã xóa phản hồi thành công",
+      "delete_failed": "Không thể xóa phản hồi",
+      "moderate_success": "Đã kiểm duyệt phản hồi thành công",
+      "moderate_failed": "Không thể kiểm duyệt phản hồi"
     }
   },
   "confirm": {
@@ -644,7 +654,35 @@
     "error": "Đã có lỗi xảy ra",
     "processing": "Đang xử lý...",
     "note": "Ghi chú",
-    "none": "Không có"
+    "none": "Không có",
+    "reply": "Trả lời",
+    "sending": "Đang gửi"
+  },
+  "review_reply": {
+    "title": "Thảo luận",
+    "write_reply": "Viết phản hồi",
+    "edit_reply": "Chỉnh sửa phản hồi",
+    "placeholder": "Chia sẻ suy nghĩ của bạn...",
+    "edit_placeholder": "Cập nhật phản hồi của bạn...",
+    "submit": "Gửi",
+    "no_replies": "Chưa có phản hồi nào. Hãy là người đầu tiên bình luận!",
+    "edited": "đã chỉnh sửa",
+    "edited_at": "Chỉnh sửa lúc",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "hide": "Ẩn",
+    "delete_confirm_title": "Xóa phản hồi",
+    "delete_confirm_message": "Bạn có chắc chắn muốn xóa phản hồi này? Hành động này không thể hoàn tác.",
+    "restore": "Khôi phục",
+    "mark_pending": "Đánh dấu chờ duyệt",
+    "need_review": "Cần xem xét",
+    "hint_enter": "Nhấn Enter để gửi, Shift+Enter để xuống dòng",
+    "status": {
+      "APPROVED": "Đã duyệt",
+      "PENDING": "Chờ duyệt",
+      "REJECTED": "Đã từ chối",
+      "HIDDEN": "Đã ẩn"
+    }
   },
 
   "admin": {
@@ -1814,6 +1852,7 @@
       "loading": "Đang tải dữ liệu...",
       "no_reviews": "Không tìm thấy đánh giá nào.",
       "error_loading": "Lỗi khi tải dữ liệu: {{message}}",
+      "final_state": "Trạng thái cuối",
       "columns": {
         "customer": "Khách hàng",
         "product": "Sản phẩm",

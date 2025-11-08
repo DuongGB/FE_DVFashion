@@ -24,8 +24,7 @@ export default function HomePage() {
     status: "ACTIVE",
   });
 
-  // Lấy sản phẩm gợi ý dựa trên behavior
-  // productId = null để lấy recommendations chung cho trang chủ
+  // Chỉ lấy sản phẩm gợi ý khi đã đăng nhập
   const {
     data: recommendedProducts = [],
     isLoading: isLoadingRecommendations,
@@ -33,6 +32,7 @@ export default function HomePage() {
   } = useHybridRecommendations({
     productId: null,
     limit: 12,
+    enabled: isAuthenticated,
   });
 
   useEffect(() => {
@@ -80,21 +80,31 @@ export default function HomePage() {
     },
   ];
 
-  // Xác định sản phẩm để hiển thị
+  // Xác định sản phẩm để hiển thị dựa trên trạng thái đăng nhập
   const displayProducts = (() => {
-    // Nếu đang tải recommendations, hiển thị loading
-    if (isLoadingRecommendations || isLoadingProducts) {
+    // Nếu chưa đăng nhập, luôn hiển thị sản phẩm từ getAll
+    if (!isAuthenticated) {
+      return isLoadingProducts ? null : products;
+    }
+
+    // Nếu đã đăng nhập, ưu tiên sản phẩm gợi ý
+    if (isLoadingRecommendations) {
       return null;
     }
 
-    // Ưu tiên sản phẩm gợi ý nếu có
+    // Hiển thị sản phẩm gợi ý nếu có, không thì fallback về products
     if (recommendedProducts && recommendedProducts.length > 0) {
       return recommendedProducts;
     }
 
-    // Fallback về danh sách sản phẩm thông thường
-    return products;
+    // Fallback về danh sách sản phẩm thông thường nếu không có gợi ý
+    return isLoadingProducts ? null : products;
   })();
+
+  // Xác định trạng thái loading
+  const isLoading = !isAuthenticated
+    ? isLoadingProducts
+    : isLoadingRecommendations || isLoadingProducts;
 
   return (
     <div className="font-sans">
@@ -136,14 +146,21 @@ export default function HomePage() {
       </div>
 
       {/* Product Carousel */}
-      {isLoadingRecommendations || isLoadingProducts ? (
+      {isLoading ? (
         <div className="w-full max-w-7xl mx-auto px-10 py-10">
           <div className="text-center py-10 text-gray-500">
             {t("common.loading")} {t("product.loading")}...
           </div>
         </div>
       ) : displayProducts && displayProducts.length > 0 ? (
-        <ProductCarousel products={displayProducts} />
+        <ProductCarousel
+          products={displayProducts}
+          title={
+            isAuthenticated
+              ? t("product.recommended_for_you")
+              : t("product.featured_products")
+          }
+        />
       ) : (
         <div className="w-full max-w-7xl mx-auto px-10 py-10">
           <div className="text-center py-10 text-gray-500">
