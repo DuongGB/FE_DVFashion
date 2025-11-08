@@ -8,28 +8,47 @@ import { getPaymentMethodLabel } from "../../../utils/getPaymentMethodLabel";
 import { queryClient } from "../../../lib/queryClient";
 import { getMyOrdersPaging } from "../../../services/orderAPI";
 
+// Hàm trả về class màu cho status
+const getStatusColorClass = (status) => {
+  switch (status) {
+    case "DELIVERED":
+      return "bg-green-100 text-green-700 border-green-300";
+    case "PENDING":
+      return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    case "CANCELED":
+      return "bg-red-100 text-red-700 border-red-300";
+    case "SHIPPING":
+      return "bg-blue-100 text-blue-700 border-blue-300";
+    case "CONFIRMED":
+      return "bg-purple-100 text-purple-700 border-purple-300";
+    default:
+      return "bg-gray-100 text-gray-700 border-gray-300";
+  }
+};
+
 const OrderCard = ({ order, onReviewClick }) => {
   const { t } = useTranslation();
   const orderDate = new Date(order.orderDate).toLocaleDateString("vi-VN");
   const paymentMethod = order?.payment?.paymentMethod;
 
   return (
-    <div className="mb-6 border border-gray-200 rounded-lg bg-white shadow-sm">
+    <div className="mb-8 border border-white/30 rounded-2xl bg-white/30 backdrop-blur-md shadow-xl transition hover:shadow-2xl">
       {/* Header */}
-      <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-t-lg">
+      <div className="flex justify-between items-center bg-gray-700 text-white p-4 rounded-t-2xl backdrop-blur-sm">
         <div>
-          {/* <p className="font-bold text-lg tracking-wider">
-            {order.orderNumber}
-          </p> */}
           <p className="text-sm opacity-90">{orderDate}</p>
         </div>
-        <span className="bg-white text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
+        <span
+          className={`px-3 py-1.5 rounded-full font-bold text-xs border backdrop-blur-sm ${getStatusColorClass(
+            order.status
+          )}`}
+        >
           {getOrderStatusLabel(order.status, t)}
         </span>
       </div>
 
       {/* Body */}
-      <div className="p-4 divide-y divide-gray-200">
+      <div className="p-4 divide-y divide-white/30">
         {order.items.map((item, index) => (
           <div
             key={index}
@@ -38,13 +57,13 @@ const OrderCard = ({ order, onReviewClick }) => {
             <img
               src={item.imageUrl}
               alt={item.productName}
-              className="w-20 h-20 object-cover rounded-md mr-4"
+              className="w-20 h-20 object-cover rounded-xl mr-4 border border-white/40 shadow"
+              style={{ background: "rgba(255,255,255,0.3)" }}
             />
             <div className="flex-grow">
               <p className="font-semibold text-base">{item.productName}</p>
-              <p className="text-sm text-gray-500">
-                {item.color} / {item.sizeName}{" "}
-                {/* Sửa từ item.size thành item.sizeName */}
+              <p className="text-sm text-gray-700/80">
+                {item.color} / {item.sizeName}
               </p>
               {item.unitPrice === 0 && (
                 <p className="text-sm font-bold text-blue-600">
@@ -67,40 +86,43 @@ const OrderCard = ({ order, onReviewClick }) => {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 bg-gray-50 p-4 flex justify-between items-center rounded-b-lg">
+      <div className="border-t border-white/30 bg-white/40 backdrop-blur-sm p-4 flex justify-between items-center rounded-b-2xl">
         <div>
-          <p className="text-gray-600">{t("order.total_amount")}:</p>
-          <p className="font-bold text-xl text-red-600">
+          <p className="text-gray-700/80">{t("order.total_amount")}:</p>
+          <p className="font-bold text-xl text-red-600 drop-shadow">
             {order.totalAmount.toLocaleString()}đ
           </p>
           {paymentMethod && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-700/80 mt-1">
               {t("order.payment_method.title")}:{" "}
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-900/80">
                 {getPaymentMethodLabel(paymentMethod, t)}
               </span>
             </p>
           )}
         </div>
         <div className="flex gap-3">
-          <button className="border border-gray-400 rounded-full px-6 py-2 font-bold text-sm hover:bg-gray-100 cursor-pointer">
-            {t("order.return_exchange")}
-          </button>
-          {order.status === "DELIVERED" && (
-            <button
-              onClick={() => onReviewClick(order)}
-              className="bg-black text-white rounded-full px-6 py-2 font-bold text-sm hover:opacity-80 cursor-pointer"
-            >
-              {t("order.review")}
-            </button>
-          )}
+          {/* Nút đánh giá */}
+          {order.status === "DELIVERED" &&
+            (order.hasReview ? (
+              <div className="flex items-center gap-2 text-green-600 font-semibold mt-4 select-none opacity-70 cursor-not-allowed">
+                {t("order.reviewed")}
+              </div>
+            ) : (
+              <button
+                className="border border-white/40 bg-white/30 backdrop-blur px-6 py-2 font-bold mt-4 w-fit cursor-pointer hover:bg-white/60 hover:text-blue-700 transition rounded-full shadow"
+                onClick={() => onReviewClick(order)}
+              >
+                {t("order.review")}
+              </button>
+            ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default function OrderHistory({ onReviewClick }) {
+export default function OrderHistory({ onReviewClick, refreshKey = 0 }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
 
@@ -112,6 +134,7 @@ export default function OrderHistory({ onReviewClick }) {
     {
       page,
       size: 2,
+      refreshKey,
     },
     { keepPreviousData: true }
   );
@@ -124,11 +147,12 @@ export default function OrderHistory({ onReviewClick }) {
   useEffect(() => {
     if (page < totalPages - 1) {
       queryClient.prefetchQuery({
-        queryKey: ["myOrders", { page: page + 1, size: 2 }],
-        queryFn: () => getMyOrdersPaging({ page: page + 1, size: 2 }),
+        queryKey: ["myOrders", { page: page + 1, size: 2, refreshKey }],
+        queryFn: () =>
+          getMyOrdersPaging({ page: page + 1, size: 2, refreshKey }),
       });
     }
-  }, [page, totalPages]);
+  }, [page, totalPages, refreshKey]);
 
   const handlePageChange = (newPage) => setPage(newPage - 1);
 
@@ -141,19 +165,19 @@ export default function OrderHistory({ onReviewClick }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-6 rounded-3xl shadow-2xl backdrop-blur-lg">
       {/* Header */}
       <div className="flex-shrink-0">
-        <h2 className="text-3xl font-bold mb-2">
+        <h2 className="text-3xl font-bold mb-2 drop-shadow">
           {t("account.sidebar.order_history")}
         </h2>
         <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-700/80">
             {t("order.your_orders")}: {totalElements} {t("order.orders_count")}
           </p>
           <Link
             to="/policy/return"
-            className="text-blue-600 font-semibold flex items-center gap-1"
+            className="text-blue-700 font-semibold flex items-center gap-1 hover:underline"
           >
             {t("order.return_policy_60_days")} →
           </Link>
@@ -179,7 +203,7 @@ export default function OrderHistory({ onReviewClick }) {
           </>
         ) : (
           !isFetching && (
-            <div className="text-center py-10 border rounded-lg">
+            <div className="text-center py-10 border rounded-lg bg-white/30 backdrop-blur">
               <p>{t("order.no_orders_found")}</p>
             </div>
           )

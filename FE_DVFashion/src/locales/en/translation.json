@@ -19,19 +19,37 @@
   },
   "search": {
     "result_title": "Search results",
-    "view_all": "VIEW ALL",
+    "result_for": "Results for",
+    "products_found": "products",
+    "search_button": "Search",
+    "filters": "Filters",
+    "apply_filters": "Apply",
+    "clear_filters": "Clear filters",
+    "all_categories": "All categories",
+    "category": "Category",
+    "price_range": "Price range",
+    "min_price": "Min",
+    "max_price": "Max",
+    "price": {
+      "under_200k": "Under 200k",
+      "200k_500k": "200k - 500k",
+      "500k_1m": "500k - 1M",
+      "over_1m": "Over 1M"
+    },
+    "promotion": "Promotion",
+    "on_sale_only": "Only discounted products",
+    "on_sale": "On sale",
+    "sort_by": "Sort by",
+    "sort": {
+      "default": "Default",
+      "price_asc": "Price: Low to High",
+      "price_desc": "Price: High to Low",
+      "name_asc": "Name A-Z",
+      "name_desc": "Name Z-A",
+      "newest": "Newest"
+    },
     "no_result": "No matching products found",
-    "suggest_title": "Today's trending keywords",
-    "no_recent": "No recently viewed products",
-    "close": "Close",
-    "keywords": {
-      "tshirt": "T-shirt",
-      "shorts": "Shorts",
-      "polo": "Polo Shirt",
-      "sun_protection_jacket": "Sun Protection Jacket",
-      "sun_protection_gloves": "Sun Protection Gloves",
-      "trousers": "Trousers"
-    }
+    "enter_keyword": "Enter a keyword to search for products"
   },
   "about_dvfashion": "ABOUT DVFASHION",
   "dvfclub": "DVFclub",
@@ -1851,6 +1869,12 @@
       "no_reviews": "No reviews found.",
       "error_loading": "Error loading data: {{message}}",
       "final_state": "Final State",
+      "rating_star": "star(s)",
+      "active_filters": "Active filters",
+      "search": "Search",
+      "clear_all_filters": "Clear all filters",
+      "showing_results": "Showing {{current}} of {{total}} reviews",
+      "verified_purchase": "Verified",
       "columns": {
         "customer": "Customer",
         "product": "Product",

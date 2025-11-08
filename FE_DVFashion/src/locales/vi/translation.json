@@ -19,19 +19,37 @@
   },
   "search": {
     "result_title": "Kết quả tìm kiếm",
-    "view_all": "XEM TẤT CẢ",
+    "result_for": "Kết quả cho",
+    "products_found": "sản phẩm",
+    "search_button": "Tìm kiếm",
+    "filters": "Bộ lọc",
+    "apply_filters": "Áp dụng",
+    "clear_filters": "Xóa bộ lọc",
+    "all_categories": "Tất cả danh mục",
+    "category": "Danh mục",
+    "price_range": "Khoảng giá",
+    "min_price": "Từ",
+    "max_price": "Đến",
+    "price": {
+      "under_200k": "Dưới 200k",
+      "200k_500k": "200k - 500k",
+      "500k_1m": "500k - 1tr",
+      "over_1m": "Trên 1tr"
+    },
+    "promotion": "Khuyến mãi",
+    "on_sale_only": "Chỉ sản phẩm giảm giá",
+    "on_sale": "Đang giảm giá",
+    "sort_by": "Sắp xếp",
+    "sort": {
+      "default": "Mặc định",
+      "price_asc": "Giá tăng dần",
+      "price_desc": "Giá giảm dần",
+      "name_asc": "Tên A-Z",
+      "name_desc": "Tên Z-A",
+      "newest": "Mới nhất"
+    },
     "no_result": "Không tìm thấy sản phẩm phù hợp",
-    "suggest_title": "Từ khóa nổi bật ngày hôm nay",
-    "no_recent": "Không có sản phẩm đã xem gần đây",
-    "close": "Đóng",
-    "keywords": {
-      "tshirt": "Áo thun",
-      "shorts": "Quần Shorts",
-      "polo": "Áo Polo",
-      "sun_protection_jacket": "Áo khoác chống nắng",
-      "sun_protection_gloves": "Găng tay chống nắng",
-      "trousers": "Quần dài"
-    }
+    "enter_keyword": "Nhập từ khóa để tìm kiếm sản phẩm"
   },
   "about_dvfashion": "VỀ DVFASHION",
   "dvfclub": "DVFclub",
@@ -1853,6 +1871,12 @@
       "no_reviews": "Không tìm thấy đánh giá nào.",
       "error_loading": "Lỗi khi tải dữ liệu: {{message}}",
       "final_state": "Trạng thái cuối",
+      "rating_star": "sao",
+      "active_filters": "Bộ lọc đang áp dụng",
+      "search": "Tìm kiếm",
+      "clear_all_filters": "Xóa tất cả bộ lọc",
+      "showing_results": "Hiển thị {{current}} trong tổng số {{total}} đánh giá",
+      "verified_purchase": "Đã xác thực",
       "columns": {
         "customer": "Khách hàng",
         "product": "Sản phẩm",

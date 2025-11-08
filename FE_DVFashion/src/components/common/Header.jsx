@@ -356,11 +356,6 @@ function MegaMenu({
             <h4 className="font-bold mb-2 text-lg flex items-center">
               {cat.name}
             </h4>
-            <ul className="space-y-1">
-              <li>
-                <span className="text-sm text-gray-500">{cat.description}</span>
-              </li>
-            </ul>
           </div>
         ))}
       </div>

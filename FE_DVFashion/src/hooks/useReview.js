@@ -59,12 +59,44 @@ export const useCreateReview = (options) => {
     mutationFn: createReview,
     onSuccess: (data, variables, context) => {
       toast.success(t("toast.review.create_success"));
+      try {
+        const orderId = variables?.review?.orderId;
+        if (orderId) {
+          // cập nhật tất cả query myOrders / myOrdersPaging
+          const queries = queryClient.getQueriesData({
+            predicate: (q) =>
+              q.queryKey[0] === "myOrders" ||
+              q.queryKey[0] === "myOrdersPaging",
+          });
+          queries.forEach(([key, old]) => {
+            if (!old) return;
+            const cloned = JSON.parse(JSON.stringify(old));
+            const values =
+              cloned?.data?.values ?? cloned?.data ?? cloned?.values;
+            if (Array.isArray(values)) {
+              values.forEach((o) => {
+                if (o?.id === orderId || o?.orderId === orderId) {
+                  o.hasReview = true;
+                }
+              });
+            }
+            queryClient.setQueryData(key, cloned);
+          });
+
+          // Invalidate các canReview của order đó (tất cả variants)
+          queryClient.invalidateQueries({
+            predicate: (q) =>
+              q.queryKey[0] === "canReview" &&
+              q.queryKey[1]?.orderId === orderId,
+          });
+        }
+      } catch (e) {}
+
+      // Giữ lại invalidate khác
       queryClient.invalidateQueries({ queryKey: ["productReviews"] });
-      queryClient.invalidateQueries({ queryKey: ["myOrders"] });
       queryClient.invalidateQueries({ queryKey: ["myReviews"] });
-      if (options?.onSuccess) {
-        options.onSuccess(data, variables, context);
-      }
+
+      if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error, variables, context) => {
       toast.error(

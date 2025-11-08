@@ -228,10 +228,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
   if (!show) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
         className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl min-w-[340px] max-w-[420px] w-full p-6 relative transition-all duration-300 animate-scaleIn overflow-y-auto"
         onClick={(e) => e.stopPropagation()}

@@ -5,7 +5,7 @@ import Pagination from "../../common/Pagination";
 import { useState } from "react";
 import ModalUpdateReview from "../review/ModalUpdateReview";
 
-export default function MyReviews() {
+export default function MyReviews({ refreshKey = 0 }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [selectedReview, setSelectedReview] = useState(null);
@@ -16,7 +16,7 @@ export default function MyReviews() {
     data: pagedData = [],
     isLoading,
     refetch,
-  } = useGetMyReviews({ page, size: 4 });
+  } = useGetMyReviews({ page, size: 4, refreshKey });
 
   const reviews = Array.isArray(pagedData) ? pagedData : pagedData.values || [];
   const totalPages = pagedData.totalPages || 1;

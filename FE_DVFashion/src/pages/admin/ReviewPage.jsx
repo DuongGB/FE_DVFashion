@@ -3,12 +3,13 @@ import {
   IconCheck,
   IconClock,
   IconEye,
+  IconEyeOff,
   IconMessage,
   IconRestore,
   IconStarFilled,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import Pagination from "../../components/common/Pagination";
@@ -60,26 +61,108 @@ export default function ReviewPage() {
   });
   const pageSize = 10;
 
-  const params = {
-    page: currentPage,
-    size: pageSize,
-    keyword: debouncedSearch,
-    status: statusFilter || null,
-    rating: ratingFilter || null,
+  // Fetch all reviews without filters (server will handle basic filtering)
+  const { data, isLoading, isError, error, refetch } = useAdminReviews({
+    page: 0,
+    size: 1000, // Get all reviews
     sort: "createdAt,desc",
-  };
+  });
 
-  const { data, isLoading, isError, error, refetch } = useAdminReviews(params);
   const { mutate: moderateReview, isLoading: isModerating } =
     useModerateReview();
   const { user } = useAuth();
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
-  const reviews = data?.data?.reviews || [];
+  // Extract data from API response
+  const allReviews = data?.data?.reviews || [];
   const stats = data?.data?.statistics || {};
-  const totalPages = data?.data?.totalPages || 0;
-  const totalElements = data?.data?.totalElements || 0;
 
+  // Client-side filtering
+  const filteredReviews = useMemo(() => {
+    let filtered = [...allReviews];
+
+    // Filter by search (keyword) with null/undefined checks
+    if (debouncedSearch) {
+      const keyword = debouncedSearch.toLowerCase();
+      filtered = filtered.filter((review) => {
+        const fullName = review.user?.fullName?.toLowerCase() || "";
+        const email = review.user?.email?.toLowerCase() || "";
+        const productName = review.productName?.toLowerCase() || "";
+        const variantName = review.variantName?.toLowerCase() || "";
+        const comment = review.comment?.toLowerCase() || "";
+        const orderNumber = review.orderNumber?.toLowerCase() || "";
+
+        return (
+          fullName.includes(keyword) ||
+          email.includes(keyword) ||
+          productName.includes(keyword) ||
+          variantName.includes(keyword) ||
+          comment.includes(keyword) ||
+          orderNumber.includes(keyword)
+        );
+      });
+    }
+
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter((review) => review.status === statusFilter);
+    }
+
+    // Filter by rating
+    if (ratingFilter) {
+      filtered = filtered.filter(
+        (review) => review.rating === parseInt(ratingFilter)
+      );
+    }
+
+    return filtered;
+  }, [allReviews, debouncedSearch, statusFilter, ratingFilter]);
+
+  // Calculate pagination from filtered results
+  const totalElements = filteredReviews.length;
+  const totalPages = Math.ceil(totalElements / pageSize);
+
+  // Get paginated reviews
+  const paginatedReviews = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredReviews.slice(startIndex, endIndex);
+  }, [filteredReviews, currentPage, pageSize]);
+
+  // Calculate filtered statistics
+  const filteredStats = useMemo(() => {
+    if (!statusFilter && !ratingFilter && !debouncedSearch) {
+      return stats; // Use original stats if no filters
+    }
+
+    // Calculate stats from filtered reviews
+    const statusCounts = filteredReviews.reduce((acc, review) => {
+      acc[review.status] = (acc[review.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const totalRating = filteredReviews.reduce(
+      (sum, review) => sum + review.rating,
+      0
+    );
+    const averageRating =
+      filteredReviews.length > 0 ? totalRating / filteredReviews.length : 0;
+
+    return {
+      totalReviews: filteredReviews.length,
+      statusCounts: {
+        PENDING: statusCounts.PENDING || 0,
+        AUTO_APPROVED: statusCounts.AUTO_APPROVED || 0,
+        APPROVED: statusCounts.APPROVED || 0,
+        NEED_REVIEW: statusCounts.NEED_REVIEW || 0,
+        REJECTED: statusCounts.REJECTED || 0,
+        HIDDEN: statusCounts.HIDDEN || 0,
+      },
+      averageRating,
+    };
+  }, [filteredReviews, stats, statusFilter, ratingFilter, debouncedSearch]);
+
+  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0);
   }, [debouncedSearch, statusFilter, ratingFilter]);
@@ -102,7 +185,6 @@ export default function ReviewPage() {
               newStatus: "",
               actionText: "",
             });
-            // Refetch để cập nhật danh sách
             refetch();
           },
         }
@@ -145,8 +227,16 @@ export default function ReviewPage() {
     );
   };
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("vi-VN");
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   if (isError) {
     return (
@@ -165,26 +255,54 @@ export default function ReviewPage() {
       </h1>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
         <StatCard
           title={t("admin.review.stats.total")}
-          value={stats.totalReviews || 0}
-          icon={<IconMessage className="h-8 w-8 text-blue-600" />}
+          value={filteredStats.totalReviews || 0}
+          icon={<IconMessage size={24} />}
+          color="text-blue-600"
         />
         <StatCard
           title={t("admin.review.stats.pending")}
-          value={stats.statusCounts?.PENDING || 0}
-          icon={<IconClock className="h-8 w-8 text-yellow-600" />}
+          value={filteredStats.statusCounts?.PENDING || 0}
+          icon={<IconClock size={24} />}
+          color="text-yellow-600"
+        />
+        <StatCard
+          title={t("admin.review.status.AUTO_APPROVED")}
+          value={filteredStats.statusCounts?.AUTO_APPROVED || 0}
+          icon={<IconCheck size={24} />}
+          color="text-cyan-600"
         />
         <StatCard
           title={t("admin.review.stats.approved")}
-          value={stats.statusCounts?.APPROVED || 0}
-          icon={<IconCheck className="h-8 w-8 text-green-600" />}
+          value={filteredStats.statusCounts?.APPROVED || 0}
+          icon={<IconCheck size={24} />}
+          color="text-green-600"
+        />
+        <StatCard
+          title={t("admin.review.status.NEED_REVIEW")}
+          value={filteredStats.statusCounts?.NEED_REVIEW || 0}
+          icon={<IconMessage size={24} />}
+          color="text-orange-600"
+        />
+        <StatCard
+          title={t("admin.review.status.REJECTED")}
+          value={filteredStats.statusCounts?.REJECTED || 0}
+          icon={<IconX size={24} />}
+          color="text-red-600"
+        />
+        <StatCard
+          title={t("admin.review.status.HIDDEN")}
+          value={filteredStats.statusCounts?.HIDDEN || 0}
+          icon={<IconEyeOff size={24} />}
+          color="text-gray-600"
         />
         <StatCard
           title={t("admin.review.stats.average_rating")}
-          value={stats.averageRating?.toFixed(1) || "0.0"}
-          icon={<IconStarFilled className="h-8 w-8 text-yellow-400" />}
+          value={filteredStats.averageRating?.toFixed(1) || "0.0"}
+          icon={<IconStarFilled size={24} />}
+          color="text-yellow-400"
         />
       </div>
 
@@ -220,11 +338,19 @@ export default function ReviewPage() {
             <option value="">{t("admin.review.all_ratings")}</option>
             {[5, 4, 3, 2, 1].map((star) => (
               <option key={star} value={star}>
-                {t("admin.review.rating_option", { star })}
+                {star} {t("admin.review.rating_star", { count: star })}
               </option>
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Results Info */}
+      <div className="text-sm text-gray-600">
+        {t("admin.review.showing_results", {
+          current: paginatedReviews.length,
+          total: totalElements,
+        })}
       </div>
 
       {/* Reviews Table */}
@@ -251,26 +377,41 @@ export default function ReviewPage() {
                   </div>
                 </td>
               </tr>
-            ) : reviews.length > 0 ? (
-              reviews.map((review) => (
+            ) : paginatedReviews.length > 0 ? (
+              paginatedReviews.map((review) => (
                 <tr
                   key={review.id}
                   className="border-b hover:bg-white/80 transition-colors"
                 >
                   <td className="p-3">
-                    <p className="font-semibold">{review.user.fullName}</p>
-                    <p className="text-sm text-gray-500">{review.user.email}</p>
-                  </td>
-                  <td className="p-3">
-                    <p className="font-semibold">{review.productName}</p>
-                    <p className="text-sm text-gray-500">
-                      {review.variantName}
+                    <p className="font-semibold">
+                      {review.user?.fullName || "N/A"}
                     </p>
                   </td>
                   <td className="p-3">
-                    <div className="flex items-center gap-1 font-semibold">
-                      {review.rating}
-                      <IconStarFilled size={16} className="text-yellow-400" />
+                    <p className="font-semibold">
+                      {review.productName || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {review.variantName || "N/A"}
+                    </p>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold">{review.rating}</span>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <IconStarFilled
+                            key={i}
+                            size={14}
+                            className={
+                              i < review.rating
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            }
+                          />
+                        ))}
+                      </div>
                     </div>
                   </td>
                   <td className="p-3">
@@ -291,9 +432,19 @@ export default function ReviewPage() {
                       {statusConfig[review.status]?.label}
                     </span>
                   </td>
-                  <td className="p-3">{formatDate(review.createdAt)}</td>
                   <td className="p-3">
-                    <div className="flex gap-2">
+                    <div className="text-sm">
+                      <div>{formatDate(review.createdAt)}</div>
+                      {review.verifiedPurchase && (
+                        <span className="inline-flex items-center text-xs text-green-600 mt-1">
+                          <IconCheck size={12} className="mr-1" />
+                          {t("admin.review.verified_purchase")}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex gap-2 items-center">
                       <button
                         onClick={() => {
                           setSelectedReview(review);
@@ -331,29 +482,10 @@ export default function ReviewPage() {
                                   )
                                 }
                                 title={t("admin.review.actions.reject")}
-                                className="hover:text-orange-600 transition-colors cursor-pointer"
+                                className="hover:text-red-600 transition-colors cursor-pointer"
                               >
                                 <IconX size={20} />
                               </button>
-                            </>
-                          )}
-                          {review.status === "AUTO_APPROVED" && (
-                            <button
-                              onClick={() =>
-                                handleModerate(
-                                  review,
-                                  "NEED_REVIEW",
-                                  t("admin.review.actions.need_review")
-                                )
-                              }
-                              title={t("admin.review.actions.need_review")}
-                              className="hover:text-orange-600 transition-colors cursor-pointer"
-                            >
-                              <IconMessage size={20} />
-                            </button>
-                          )}
-                          {review.status !== "REJECTED" &&
-                            review.status !== "HIDDEN" && (
                               <button
                                 onClick={() =>
                                   handleModerate(
@@ -363,11 +495,70 @@ export default function ReviewPage() {
                                   )
                                 }
                                 title={t("admin.review.actions.hide")}
-                                className="hover:text-red-600 transition-colors cursor-pointer"
+                                className="hover:text-gray-600 transition-colors cursor-pointer"
                               >
                                 <IconBan size={20} />
                               </button>
-                            )}
+                            </>
+                          )}
+                          {review.status === "AUTO_APPROVED" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "APPROVED",
+                                    t("admin.review.actions.approve")
+                                  )
+                                }
+                                title={t("admin.review.actions.approve")}
+                                className="hover:text-green-600 transition-colors cursor-pointer"
+                              >
+                                <IconCheck size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "NEED_REVIEW",
+                                    t("admin.review.actions.need_review")
+                                  )
+                                }
+                                title={t("admin.review.actions.need_review")}
+                                className="hover:text-orange-600 transition-colors cursor-pointer"
+                              >
+                                <IconMessage size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleModerate(
+                                    review,
+                                    "HIDDEN",
+                                    t("admin.review.actions.hide")
+                                  )
+                                }
+                                title={t("admin.review.actions.hide")}
+                                className="hover:text-gray-600 transition-colors cursor-pointer"
+                              >
+                                <IconBan size={20} />
+                              </button>
+                            </>
+                          )}
+                          {review.status === "APPROVED" && (
+                            <button
+                              onClick={() =>
+                                handleModerate(
+                                  review,
+                                  "HIDDEN",
+                                  t("admin.review.actions.hide")
+                                )
+                              }
+                              title={t("admin.review.actions.hide")}
+                              className="hover:text-red-600 transition-colors cursor-pointer"
+                            >
+                              <IconBan size={20} />
+                            </button>
+                          )}
                           {review.status === "HIDDEN" && (
                             <button
                               onClick={() =>
@@ -382,6 +573,11 @@ export default function ReviewPage() {
                             >
                               <IconRestore size={20} />
                             </button>
+                          )}
+                          {review.status === "REJECTED" && (
+                            <span className="text-xs text-gray-500 italic">
+                              {t("admin.review.final_state")}
+                            </span>
                           )}
                         </>
                       )}
@@ -438,15 +634,13 @@ export default function ReviewPage() {
   );
 }
 
-const StatCard = ({ title, value, icon }) => (
-  <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-      </div>
+const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
+  <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center min-w-[110px] min-h-[110px]">
+    <div className={`mb-2 p-2 rounded-full bg-gray-100 shadow ${color}`}>
       {icon}
     </div>
+    <p className="text-xs font-medium text-gray-700 text-center">{title}</p>
+    <p className={`text-xl font-bold ${color} text-center`}>{value}</p>
   </div>
 );
 

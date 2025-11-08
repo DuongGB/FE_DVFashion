@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { IconClock, IconPlus, IconMinus } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useProduct } from "../hooks/useProduct";
+import { useProductById } from "../hooks/useProduct";
 import { ShoppingCart } from "react-feather";
 import getColorHex from "../utils/getColorHex";
 import { decodeId } from "../utils/encodeId";
@@ -16,8 +16,10 @@ export default function ProductDetailPage() {
   const lang = i18n.language || "VI";
   const { id: encodeId } = useParams();
   const id = decodeId(encodeId);
-  const { products = [] } = useProduct(lang);
   const { isAuthenticated } = useAuth();
+
+  // Sử dụng useProductById để lấy chi tiết sản phẩm
+  const { data: product, isLoading, error } = useProductById(id, lang);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -25,9 +27,6 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const { addToCart, isAdding } = useCart();
-
-  // Lấy sản phẩm theo id
-  const product = products.find((p) => String(p.id) === String(id));
 
   // Khi đổi variant thì reset về ảnh đầu tiên
   useEffect(() => {
@@ -57,6 +56,25 @@ export default function ProductDetailPage() {
     }
   }, [product, isInitialized]);
 
+  // Hiển thị loading
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px] text-lg">
+        {t("common.loading")}...
+      </div>
+    );
+  }
+
+  // Hiển thị lỗi
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-[400px] text-lg text-red-500">
+        {t("product.detail.error_loading")}
+      </div>
+    );
+  }
+
+  // Không tìm thấy sản phẩm
   if (!product) {
     return (
       <div className="flex justify-center items-center h-[400px] text-lg">
@@ -149,21 +167,6 @@ export default function ProductDetailPage() {
             </span>
             <span className="text-2xl font-bold text-black">
               {product.currentPrice?.toLocaleString()}đ
-            </span>
-            {discountPercent && (
-              <span className="bg-blue-700 text-white text-sm px-3 py-1 rounded-full font-bold">
-                -{discountPercent}%
-              </span>
-            )}
-          </div>
-          {/* DVFcash */}
-          <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded flex items-center gap-2 text-sm">
-            <span>{t("product.detail.cashback")}</span>
-            <span className="font-bold">
-              {Math.round(
-                (product.salePrice || product.price) * 0.07
-              ).toLocaleString()}{" "}
-              DVFcash
             </span>
           </div>
           {/* Màu sắc */}

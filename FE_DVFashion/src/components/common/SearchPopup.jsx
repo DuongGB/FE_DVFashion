@@ -9,15 +9,21 @@ export default function SearchPopup({ show, onClose }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "VI";
-  const { products = [] } = useProduct(lang);
 
   const [search, setSearch] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const popupRef = useRef(null);
+
+  // Fetch products with search query
+  const { products = [], isLoading } = useProduct({
+    lang,
+    search: search.trim() || null,
+    status: "ACTIVE",
+    page: 0,
+    size: 4, // Only show 4 products in popup
+  });
 
   // Đóng popup khi click ngoài
   useEffect(() => {
-    // console.log("SearchPopup render, show =", show);
     if (!show) return;
     function handleClickOutside(event) {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -28,23 +34,6 @@ export default function SearchPopup({ show, onClose }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [show, onClose]);
 
-  // Lọc sản phẩm theo search
-  useEffect(() => {
-    if (!search.trim()) {
-      setFilteredProducts([]);
-      return;
-    }
-    const keyword = search.trim().toLowerCase();
-    setFilteredProducts(
-      products.filter(
-        (p) =>
-          (p.name?.toLowerCase().includes(keyword) && p.status === "ACTIVE") ||
-          (p.brandName?.toLowerCase().includes(keyword) &&
-            p.status === "ACTIVE")
-      )
-    );
-  }, [search, products]);
-
   const keywords = [
     t("search.keywords.tshirt", "Áo thun"),
     t("search.keywords.shorts", "Quần Shorts"),
@@ -54,7 +43,12 @@ export default function SearchPopup({ show, onClose }) {
     t("search.keywords.trousers", "Quần dài"),
   ];
 
+  const handleKeywordClick = (keyword) => {
+    setSearch(keyword);
+  };
+
   if (!show) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-black/50">
       <div ref={popupRef} className="flex flex-col items-center w-full">
@@ -69,8 +63,8 @@ export default function SearchPopup({ show, onClose }) {
               className="w-full border border-gray-300 rounded-full px-12 py-3 text-lg shadow focus:outline-none"
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  navigate(`/search?q=${encodeURIComponent(search)}`);
+                if (e.key === "Enter" && search.trim()) {
+                  navigate(`/search?q=${encodeURIComponent(search.trim())}`);
                   onClose();
                 }
               }}
@@ -98,6 +92,7 @@ export default function SearchPopup({ show, onClose }) {
             </button>
           </div>
         </div>
+
         {/* Kết quả tìm kiếm hoặc gợi ý */}
         <div className="bg-white rounded-2xl shadow-xl mt-8 p-8 w-full max-w-[1100px] min-h-[420px] relative flex flex-col items-center">
           {search.trim() ? (
@@ -105,10 +100,14 @@ export default function SearchPopup({ show, onClose }) {
               <div className="font-bold text-lg mb-6 w-full text-left">
                 {t("search.result_title", "Kết quả tìm kiếm")}
               </div>
-              {filteredProducts.length > 0 ? (
+              {isLoading ? (
+                <div className="text-gray-500 mt-8">
+                  {t("common.loading", "Đang tải")}...
+                </div>
+              ) : products.length > 0 ? (
                 <>
                   <div className="grid grid-cols-4 gap-6 w-full">
-                    {filteredProducts.slice(0, 4).map((p) => {
+                    {products.map((p) => {
                       const mainVariant = p.variants?.[0];
                       const mainImage =
                         mainVariant?.images?.find((img) => img.isPrimary)
@@ -117,12 +116,15 @@ export default function SearchPopup({ show, onClose }) {
                         p.primaryImage?.imageUrl ||
                         p.image ||
                         "/placeholder.png";
+
+                      // Tính discount từ price và currentPrice
                       const discountPercent =
-                        p.price && p.salePrice
+                        p.price && p.currentPrice
                           ? Math.round(
-                              ((p.price - p.salePrice) / p.price) * 100
+                              ((p.price - p.currentPrice) / p.price) * 100
                             )
                           : null;
+
                       return (
                         <Link
                           to={`/product/${encodeId(p.id)}`}
@@ -141,21 +143,23 @@ export default function SearchPopup({ show, onClose }) {
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="font-bold text-lg text-black">
-                                {p.salePrice
-                                  ? `${p.salePrice.toLocaleString()}đ`
+                                {p.currentPrice
+                                  ? `${p.currentPrice.toLocaleString()}đ`
                                   : p.price
                                   ? `${p.price.toLocaleString()}đ`
                                   : ""}
                               </span>
-                              {p.salePrice && (
-                                <span className="line-through text-gray-400 text-sm">
-                                  {p.price?.toLocaleString()}đ
-                                </span>
-                              )}
-                              {p.salePrice && p.price && (
-                                <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                  -{discountPercent}%
-                                </span>
+                              {p.currentPrice && p.currentPrice < p.price && (
+                                <>
+                                  <span className="line-through text-gray-400 text-sm">
+                                    {p.price?.toLocaleString()}đ
+                                  </span>
+                                  {discountPercent && (
+                                    <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                      -{discountPercent}%
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -163,15 +167,19 @@ export default function SearchPopup({ show, onClose }) {
                       );
                     })}
                   </div>
-                  <button
-                    className="mt-8 px-8 py-2 bg-black text-white rounded-full font-bold hover:bg-gray-900"
-                    onClick={() => {
-                      navigate(`/search?q=${encodeURIComponent(search)}`);
-                      onClose();
-                    }}
-                  >
-                    {t("search.view_all")}
-                  </button>
+                  {products.length >= 4 && (
+                    <button
+                      className="mt-8 px-8 py-2 bg-black text-white rounded-full font-bold hover:bg-gray-900"
+                      onClick={() => {
+                        navigate(
+                          `/search?q=${encodeURIComponent(search.trim())}`
+                        );
+                        onClose();
+                      }}
+                    >
+                      {t("search.view_all", "Xem tất cả")}
+                    </button>
+                  )}
                 </>
               ) : (
                 <div className="text-gray-500 mt-8">
@@ -189,6 +197,7 @@ export default function SearchPopup({ show, onClose }) {
                   <button
                     key={kw}
                     className="border rounded-full px-4 py-1 hover:bg-gray-100"
+                    onClick={() => handleKeywordClick(kw)}
                   >
                     {kw}
                   </button>
