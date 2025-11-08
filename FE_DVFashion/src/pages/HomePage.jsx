@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
@@ -18,11 +18,16 @@ export default function HomePage() {
 
   // Lấy danh sách sản phẩm từ API
   const currentLanguage = i18n.language || "VI";
-  const { products = [], isLoading: isLoadingProducts } = useProduct({
-    lang: currentLanguage,
-    size: 12,
-    status: "ACTIVE",
-  });
+  const productParams = useMemo(
+    () => ({
+      lang: currentLanguage,
+      size: 12,
+      status: "ACTIVE",
+    }),
+    [currentLanguage]
+  );
+  const { products = [], isLoading: isLoadingProducts } =
+    useProduct(productParams);
 
   // Chỉ lấy sản phẩm gợi ý khi đã đăng nhập
   const {

@@ -14,7 +14,11 @@ import { useAuth } from "../hooks/useAuth";
  * @param {number} [params.productId] - The ID of the product (optional for homepage).
  * @param {number} [params.limit=10] - The number of recommendations to fetch.
  */
-export const useHybridRecommendations = ({ productId = null, limit = 10 }) => {
+export const useHybridRecommendations = ({
+  productId = null,
+  limit = 10,
+  enabled = true,
+}) => {
   const { user, isAuthenticated } = useAuth();
   const userId = isAuthenticated ? user?.id : null;
 
@@ -22,7 +26,7 @@ export const useHybridRecommendations = ({ productId = null, limit = 10 }) => {
     queryKey: ["recommendations", "hybrid", { productId, userId, limit }],
     queryFn: () => getHybridRecommendations({ productId, userId, limit }),
     // Enable query even if productId is null (for homepage recommendations)
-    enabled: true,
+    enabled: enabled && isAuthenticated,
     staleTime: 1000 * 60 * 5,
     // Normalize response data
     select: (data) => {

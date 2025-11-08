@@ -1,14 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addressAPI } from "../services/addressAPI";
 import { toast } from "react-toastify";
+import { useAuth } from "./useAuth";
 
 export const useAddress = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   // Get all addresses
   const { data, isLoading, error } = useQuery({
     queryKey: ["addresses"],
     queryFn: addressAPI.getAllAddress,
+    enabled: isAuthenticated,
     select: (res) => {
       // Normalize various possible shapes to an array
       if (!res) return [];

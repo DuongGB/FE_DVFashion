@@ -30,13 +30,22 @@ export default function CartPage() {
   const { availableVouchers } = useCustomerVoucher({ page: 0, size: 100 });
   const vouchers = availableVouchers?.values || [];
 
+  const addressHooks = useAddress();
+
   const {
     defaultAddress,
     addresses,
     fetchProvinces,
     fetchDistricts,
     fetchWards,
-  } = useAddress();
+  } = addressHooks;
+
+  const safeDefaultAddress = isAuthenticated ? defaultAddress : null;
+  const safeAddresses = isAuthenticated ? addresses : [];
+  const safeFetchProvinces = isAuthenticated ? fetchProvinces : async () => [];
+  const safeFetchDistricts = isAuthenticated ? fetchDistricts : async () => [];
+  const safeFetchWards = isAuthenticated ? fetchWards : async () => [];
+
   const {
     mutate: createOrder,
     mutateAsync: createOrderAsync,
@@ -90,7 +99,7 @@ export default function CartPage() {
   // helper to build shippingInfo payload (returns null if missing required fields)
   const buildShippingInfoForCalc = (useSelectedAddress = false) => {
     const items = filteredCart.map((it) => ({ cartItemId: it.cartItemId }));
-    if (!items.length) return null;
+    if (!items?.length) return null;
 
     const infoSource =
       useSelectedAddress && selectedAddress
@@ -179,7 +188,7 @@ export default function CartPage() {
 
     try {
       // ensure provinces loaded
-      if (!locationData.provinces.length) {
+      if (!locationData.provinces?.length) {
         const provincesRaw = await fetchProvinces();
         const mapped = (provincesRaw || []).map((p) => ({
           code: p.provinceId,
@@ -190,7 +199,7 @@ export default function CartPage() {
 
       // find province object (may be in state after the step above)
       const province = (
-        locationData.provinces.length ? locationData.provinces : []
+        locationData.provinces?.length ? locationData.provinces : []
       ).find((p) => p.name === addr.city);
 
       if (!province) {
@@ -296,7 +305,7 @@ export default function CartPage() {
       }
 
       // if payload is null but we have a selectedAddress, try to map it to codes and calculate
-      if (selectedAddress && filteredCart.length > 0) {
+      if (selectedAddress && filteredCart?.length > 0) {
         try {
           const { toDistrictId, toWardCode } = await mapAddressToCodes(
             selectedAddress
@@ -366,7 +375,7 @@ export default function CartPage() {
     shipping.name,
     shipping.phone,
     selectedAddress,
-    filteredCart.length,
+    filteredCart?.length,
     payment,
   ]);
 
@@ -521,11 +530,14 @@ export default function CartPage() {
     return ward ? ward.name : "";
   };
 
-  // Auto-select default address when component mounts or defaultAddress changes
+  // Tự động chọn địa chỉ mặc định khi có thay đổi
   useEffect(() => {
-    if (defaultAddress && !selectedAddress && !manualDeselect) {
-      handleSelectAddress(defaultAddress);
-    }
+    // Nếu đã có selectedAddress thì không làm gì
+    if (!defaultAddress || selectedAddress || manualDeselect) return;
+    // Chỉ gọi khi selectedAddress chưa được set
+    setSelectedAddress(defaultAddress);
+    setManualDeselect(false);
+    // Không gọi handleSelectAddress ở đây!
   }, [defaultAddress, selectedAddress, manualDeselect]);
 
   // Sync selectedAddress if it's deleted from the address list
@@ -556,7 +568,8 @@ export default function CartPage() {
   // Mặc định selected tất cả khi cartItems thay đổi
   useEffect(() => {
     setSelected(cartItems.map((item) => item.cartItemId));
-  }, [cartItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems.length]);
 
   // Đồng bộ selected khi giỏ hàng thay đổi
   useEffect(() => {
@@ -567,7 +580,7 @@ export default function CartPage() {
         ...newIds.filter((id) => !prev.includes(id)),
       ];
     });
-  }, [cartItems.length]);
+  }, [cartItems?.length]);
 
   // Sắp xếp lại cartItems theo itemOrder
   const orderedCartItems = useMemo(() => {
@@ -627,7 +640,7 @@ export default function CartPage() {
           // update locationData with loaded districts/wards so later lookups work
           setLocationData((prev) => ({
             ...prev,
-            provinces: prev.provinces.length
+            provinces: prev.provinces?.length
               ? prev.provinces
               : locationData.provinces,
             districts: mappedDistricts,
@@ -640,7 +653,7 @@ export default function CartPage() {
             province: province.code?.toString() ?? "",
             district: districtObj ? districtObj.code?.toString() ?? "" : "",
             ward:
-              mappedWards.length > 0
+              mappedWards?.length > 0
                 ? mappedWards
                     .find((w) => w.name === address.ward)
                     ?.code?.toString() ?? ""
@@ -818,7 +831,7 @@ export default function CartPage() {
 
   // Hàm xử lý khi nhấn nút Đặt hàng
   const handleCreateOrder = async () => {
-    if (filteredCart.length === 0) {
+    if (filteredCart?.length === 0) {
       toast.warn(t("cart.select_product_to_order"));
       return;
     }
@@ -1162,7 +1175,7 @@ export default function CartPage() {
             <input
               type="checkbox"
               checked={
-                selected?.length === cartItems?.length && cartItems.length > 0
+                selected?.length === cartItems?.length && cartItems?.length > 0
               }
               onChange={handleSelectAll}
               className="accent-blue-600"
@@ -1178,7 +1191,7 @@ export default function CartPage() {
         </div>
 
         <div className="overflow-y-auto h-full flex-1 pr-2 custom-scroll">
-          {orderedCartItems.length === 0 ? (
+          {orderedCartItems?.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-24">
               <div className="flex items-center justify-center w-24 h-24 rounded-full bg-blue-50 mb-6 shadow-inner">
                 <IconShoppingBag size={48} className="text-blue-400" />
@@ -1317,11 +1330,12 @@ export default function CartPage() {
             </div>
 
             {/* Available Vouchers */}
-            {validVouchers.length > 0 && !selectedVoucherCode && (
+            {validVouchers?.length > 0 && !selectedVoucherCode && (
               <div>
                 <details className="text-sm">
                   <summary className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium">
-                    {t("cart.view_available_vouchers")} ({validVouchers.length})
+                    {t("cart.view_available_vouchers")} ({validVouchers?.length}
+                    )
                   </summary>
                   <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
                     {validVouchers.map((voucher) => {

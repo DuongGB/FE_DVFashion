@@ -6,7 +6,7 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Pagination from "../../components/common/Pagination";
 import ProductDetailModal from "../../components/ui/product/ProductDetailModal";
@@ -35,9 +35,10 @@ export default function ProductPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0); // Backend uses 0-indexed pages
+  const [currentPage, setCurrentPage] = useState(0);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loadingStatusId, setLoadingStatusId] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
 
   // Advanced filters
   const [filters, setFilters] = useState({
@@ -72,7 +73,10 @@ export default function ProductPage() {
   };
 
   // Fetch products with current filters
-  const apiParams = buildApiParams();
+  const apiParams = useMemo(
+    () => buildApiParams(),
+    [search, statusFilter, filters, currentPage, language]
+  );
   const {
     products,
     totalElements,
@@ -430,11 +434,15 @@ export default function ProductPage() {
                 size={16}
               />
               <input
-                type="text"
-                placeholder={t("admin.product.search_placeholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearch(searchInput);
+                    setCurrentPage(0);
+                  }
+                }}
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
               />
             </div>
           </div>
@@ -442,7 +450,7 @@ export default function ProductPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
             >
               <option value="">{t("admin.product.all_status")}</option>
               <option value="active">{t("admin.product.status.active")}</option>
@@ -460,7 +468,7 @@ export default function ProductPage() {
           <div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm ${
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-lg ${
                 showAdvancedFilters
                   ? "bg-blue-50 border-blue-300 text-blue-700"
                   : "border-white/30 hover:bg-white/70"
@@ -602,7 +610,6 @@ export default function ProductPage() {
               <th className="p-3">{t("admin.product.columns.image")}</th>
               <th className="p-3">{t("admin.product.columns.name")}</th>
               <th className="p-3">{t("admin.product.columns.category")}</th>
-              <th className="p-3">{t("admin.product.columns.material")}</th>
               <th className="p-3">
                 {t("admin.product.columns.original_price")}
               </th>
@@ -641,17 +648,9 @@ export default function ProductPage() {
                     <td className="p-3">
                       <div>
                         <p className="font-semibold">{product.name}</p>
-                        <p className="text-sm text-gray-500 truncate max-w-xs">
-                          {product.description}
-                        </p>
                       </div>
                     </td>
                     <td className="p-3">{product.categoryName}</td>
-                    <td className="p-3">
-                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
-                        {product.material}
-                      </span>
-                    </td>
                     <td className="p-3 font-medium">
                       {formatPrice(product.price)}
                     </td>

@@ -3,6 +3,14 @@ import axios from "axios";
 // Base API configuration
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Hàm kiểm tra đăng nhập
+function isUserAuthenticated() {
+  // Nếu dùng cookie:
+  return document.cookie.includes("isAuthenticated=true");
+  // Nếu dùng localStorage:
+  // return localStorage.getItem("isAuthenticated") === "true";
+}
+
 // Create axios instance with base config
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -44,33 +52,30 @@ api.interceptors.response.use(
     // Variable to hold the original request
     const originalRequest = error.config;
 
-    // If the error is 401 (Unauthorized) and the request has not been retried yet
+    // Nếu lỗi 401 và chưa retry
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Nếu đã logout thì không gọi refresh-token nữa
+      if (!isUserAuthenticated()) {
+        // Có thể clear cache hoặc chuyển hướng về login nếu muốn
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
-      // If not refreshing, set the flag and call the refresh endpoint
       if (!isRefreshing) {
         isRefreshing = true;
-
         try {
-          // Call the refresh token endpoint
           await api.post("/auth/refresh-token");
-
-          // set the flag to false and notify subscribers
           isRefreshing = false;
           onRefreshed();
-
-          // Retry the original request with the new token
-          return api(originalRequest); // Retry original request
+          return api(originalRequest);
         } catch (err) {
           isRefreshing = false;
-          // QueryClient.clear(); // Clear cache when token refresh fails
-          document.cookie = "isAuthenticated=false; path=/;"; // clear flag
+          document.cookie = "isAuthenticated=false; path=/;";
           return Promise.reject(err);
         }
       }
 
-      // If already refreshing, return a promise that resolves when the token is refreshed
       return new Promise((resolve) => {
         subscribeTokenRefresh(() => {
           resolve(api(originalRequest));

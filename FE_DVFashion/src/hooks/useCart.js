@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartAPI } from "../services/cartAPI";
+import { useAuth } from "./useAuth";
 
 export const useCart = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   // Lấy giỏ hàng
   const {
@@ -21,6 +23,7 @@ export const useCart = () => {
         return { items: [] };
       }
     },
+    enabled: isAuthenticated,
     retry: (failureCount, error) => {
       if (error.response?.status === 401) {
         return false;
