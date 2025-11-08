@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useProduct, useProductsByCategoryPaging } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,6 @@ export default function CategoryProductPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "VI";
 
-  // keep fetching all products as fallback when no category selected
   const { products = [], isLoading: loadingProducts } = useProduct(lang);
   const { categories = [], isLoading: loadingCategories } =
     usePublicCategories(lang);
@@ -25,84 +24,71 @@ export default function CategoryProductPage() {
   })();
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
+  const prevCategoryIdRef = useRef(null);
 
+  // Sync selectedCategory từ URL
   useEffect(() => {
     const p = new URLSearchParams(location.search);
     const raw = p.get("category") || "";
     const decoded = decodeId(raw);
-    setSelectedCategory(decoded === null ? raw : decoded);
-    setCurrentPage(1);
+    const next = decoded === null ? raw : decoded;
+    setSelectedCategory(next);
   }, [location.search]);
 
-  // derive numeric categoryId if possible (from selectedCategory, categories list or encoded param)
-  const selectedCategoryId = (() => {
+  // Resolve numeric id
+  const selectedCategoryId = useMemo(() => {
     if (!selectedCategory) return null;
-    // match by raw id string
     const byId = categories.find(
       (c) => String(c.id) === String(selectedCategory)
     );
     if (byId) return byId.id;
-    // match by encoded initial param
     const byEncoded = categories.find(
       (c) => initialCategoryRaw && encodeId(c.id) === initialCategoryRaw
     );
     if (byEncoded) return byEncoded.id;
-    // numeric string fallback
     if (/^\d+$/.test(String(selectedCategory))) return Number(selectedCategory);
     return null;
-  })();
+  }, [selectedCategory, categories, initialCategoryRaw]);
 
-  // server-side paging hook for category
+  // Fetch theo category (server paging)
   const {
     data: categoryPage = { content: [], totalElements: 0 },
     isLoading: loadingCategoryProducts,
   } = useProductsByCategoryPaging(
     selectedCategoryId,
-    // backend pages are 0-based
     Math.max(0, currentPage - 1),
     pageSize,
     lang
   );
 
+  // Reset page chỉ khi categoryId thực sự đổi
   useEffect(() => {
-    // Use backend result when categoryId present, else use all products (client-side)
-    const all = selectedCategoryId
+    if (prevCategoryIdRef.current !== selectedCategoryId) {
+      setCurrentPage(1);
+      prevCategoryIdRef.current = selectedCategoryId;
+    }
+  }, [selectedCategoryId]);
+
+  // Tính filteredProducts với useMemo (không setState)
+  const filteredProducts = useMemo(() => {
+    const source = selectedCategoryId
       ? categoryPage.content || []
       : products || [];
 
-    // filter only ACTIVE
-    const onlyActive = (all || []).filter(
-      (p) => !p.status || p.status === "ACTIVE"
-    );
+    const onlyActive = source.filter((p) => !p.status || p.status === "ACTIVE");
 
-    if (!selectedCategory) {
-      setFilteredProducts(onlyActive);
-      setCurrentPage(1);
-      return;
-    }
+    if (!selectedCategory) return onlyActive;
 
-    // If we used backend fetch by categoryId, data already paginated and filtered
-    if (selectedCategoryId) {
-      setFilteredProducts(onlyActive);
-      // ensure current page valid when backend total changes
-      const totalPages = Math.max(
-        1,
-        Math.ceil((categoryPage.totalElements || 0) / pageSize)
-      );
-      if (currentPage > totalPages) setCurrentPage(1);
-      return;
-    }
+    if (selectedCategoryId) return onlyActive;
 
-    // Fallback: selectedCategory may be category name or id string but not resolvable to numeric id -> client filter
     const catById = categories.find(
       (c) => String(c.id) === String(selectedCategory)
     );
     const targetCategoryName = catById?.name || selectedCategory;
 
-    const result = onlyActive.filter((prod) => {
+    return onlyActive.filter((prod) => {
       if (
         prod.categoryId &&
         String(prod.categoryId) === String(selectedCategory)
@@ -116,52 +102,55 @@ export default function CategoryProductPage() {
         return true;
       return false;
     });
-
-    setFilteredProducts(result);
-    setCurrentPage(1);
   }, [
     products,
-    categoryPage,
+    categoryPage.content, // chỉ mảng content
     selectedCategory,
-    categories,
     selectedCategoryId,
-    currentPage,
-    pageSize,
+    categories,
   ]);
+
+  // Giữ currentPage hợp lệ với server paging
+  useEffect(() => {
+    if (!selectedCategoryId) return;
+    const totalPagesCalc = Math.max(
+      1,
+      Math.ceil((categoryPage.totalElements || 0) / pageSize)
+    );
+    if (currentPage > totalPagesCalc) {
+      setCurrentPage(totalPagesCalc);
+    }
+  }, [selectedCategoryId, categoryPage.totalElements, pageSize, currentPage]);
 
   const totalPages = selectedCategoryId
     ? Math.max(1, Math.ceil((categoryPage.totalElements || 0) / pageSize))
-    : Math.ceil(filteredProducts.length / pageSize);
+    : Math.max(1, Math.ceil(filteredProducts.length / pageSize));
 
-  // when server-paged, filteredProducts already contains current page content
   const paginatedProducts = selectedCategoryId
     ? filteredProducts
     : filteredProducts.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize
       );
-  const currentCategoryName = (() => {
+
+  const currentCategoryName = useMemo(() => {
     if (!selectedCategory) return "";
-    // 1) nếu có numeric id -> lấy tên từ danh sách categories
     if (selectedCategoryId) {
       const c = categories.find(
         (cat) => String(cat.id) === String(selectedCategoryId)
       );
       if (c?.name) return c.name;
     }
-    // 2) nếu param ban đầu là encoded id -> tìm theo encodeId
     if (initialCategoryRaw) {
       const cEnc = categories.find(
         (cat) => encodeId(cat.id) === String(initialCategoryRaw)
       );
       if (cEnc?.name) return cEnc.name;
     }
-    // 3) thử match theo id string
     const cByIdString = categories.find(
       (cat) => String(cat.id) === String(selectedCategory)
     );
     if (cByIdString?.name) return cByIdString.name;
-    // 4) thử match theo tên (case-insensitive)
     const cByName = categories.find(
       (cat) =>
         cat.name &&
@@ -169,9 +158,8 @@ export default function CategoryProductPage() {
           String(selectedCategory).toLowerCase()
     );
     if (cByName?.name) return cByName.name;
-    // 5) fallback: trả về chính giá trị selectedCategory (có thể là tên)
     return String(selectedCategory);
-  })();
+  }, [selectedCategory, selectedCategoryId, categories, initialCategoryRaw]);
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">

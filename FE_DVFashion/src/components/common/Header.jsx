@@ -12,6 +12,7 @@ import ModalAccount from "../ui/account/ModalAccount";
 import AuthModal from "../ui/auth/AuthModal";
 import CartDropdown from "../ui/cart/CartDropdown";
 import SearchPopup from "./SearchPopup";
+import { encodeId } from "../../utils/encodeId";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -104,7 +105,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const navigate = useNavigate();
 
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
-  console.log("Fetched categories in MainMenu:", categories);
+  // console.log("Fetched categories in MainMenu:", categories);
 
   const [activeMenu, setActiveMenu] = useState(null);
 
@@ -129,14 +130,20 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         if (hasUnisex) groups.unisex.push(cat);
         else if (hasMen) groups.men.push(cat);
         else if (hasWomen) groups.women.push(cat);
-        else groups.unisex.push(cat); // fallback
+        else groups.unisex.push(cat);
       });
     return groups;
   })();
 
-  const handleCategoryClick = (categoryId) => {
-    navigate(`/products?category=${categoryId}`);
-  };
+  const handleCategoryClick = useCallback(
+    (category) => {
+      // Encode id để CategoryProductPage giải mã được (decodeId)
+      const param = encodeId(category.id);
+      navigate(`/products?category=${param}`);
+      setActiveMenu(null); // đóng mega menu sau khi chuyển trang
+    },
+    [navigate]
+  );
 
   // Xử lý hover vào menu item
   const handleMouseEnter = useCallback(
@@ -419,7 +426,8 @@ function MegaMenu({
                 <button
                   type="button"
                   className="text-left w-full hover:text-orange-600 font-semibold transition-colors"
-                  onClick={() => onCategoryClick(cat.id)}
+                  onClick={() => onCategoryClick(cat)}
+                  aria-label={`Open category ${cat.name}`}
                 >
                   {cat.name}
                 </button>
