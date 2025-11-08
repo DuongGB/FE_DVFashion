@@ -8,6 +8,7 @@ import ProductCarousel from "../components/common/ProductCarousel";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
 import { useHybridRecommendations } from "../hooks/useProductRecomendations";
+import VoucherSection from "./customer/voucher/VoucherSection";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -17,18 +18,28 @@ export default function HomePage() {
 
   // Lấy danh sách sản phẩm từ API
   const currentLanguage = i18n.language || "VI";
-  const { products = [], isLoading: isLoadingProducts } =
-    useProduct(currentLanguage);
+  const { products = [], isLoading: isLoadingProducts } = useProduct({
+    lang: currentLanguage,
+    size: 12,
+    status: "ACTIVE",
+  });
 
-  // Lấy sản phẩm gợi ý dựa trên behavior (không cần productId ở trang chủ)
-  const { data: recommendedProducts, isLoading: isLoadingRecommendations } =
-    useHybridRecommendations({ productId: null, limit: 12 });
+  // Chỉ lấy sản phẩm gợi ý khi đã đăng nhập
+  const {
+    data: recommendedProducts = [],
+    isLoading: isLoadingRecommendations,
+    error: recommendationError,
+  } = useHybridRecommendations({
+    productId: null,
+    limit: 12,
+    enabled: isAuthenticated,
+  });
 
   useEffect(() => {
     // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
     if (isAuthenticated && user?.preferredLanguage) {
       i18n.changeLanguage(user.preferredLanguage);
-      localStorage.setItem("i18nextLng", user.preferredLanguage); // Lưu vào localStorage
+      localStorage.setItem("i18nextLng", user.preferredLanguage);
     } else {
       const savedLanguage = localStorage.getItem("i18nextLng") || "VI";
       if (i18n.language !== savedLanguage) {
@@ -39,11 +50,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Chỉ redirect nếu đang ở trang chủ "/"
-    if (
-      isAuthenticated &&
-      user?.roles &&
-      location.pathname === "/" // chỉ redirect ở trang chủ
-    ) {
+    if (isAuthenticated && user?.roles && location.pathname === "/") {
       const defaultRoute = getDefaultRouteByRoles(user?.roles);
       // Chỉ redirect nếu defaultRoute khác "/" và KHÔNG phải là "/customer"
       if (
@@ -73,6 +80,32 @@ export default function HomePage() {
     },
   ];
 
+  // Xác định sản phẩm để hiển thị dựa trên trạng thái đăng nhập
+  const displayProducts = (() => {
+    // Nếu chưa đăng nhập, luôn hiển thị sản phẩm từ getAll
+    if (!isAuthenticated) {
+      return isLoadingProducts ? null : products;
+    }
+
+    // Nếu đã đăng nhập, ưu tiên sản phẩm gợi ý
+    if (isLoadingRecommendations) {
+      return null;
+    }
+
+    // Hiển thị sản phẩm gợi ý nếu có, không thì fallback về products
+    if (recommendedProducts && recommendedProducts.length > 0) {
+      return recommendedProducts;
+    }
+
+    // Fallback về danh sách sản phẩm thông thường nếu không có gợi ý
+    return isLoadingProducts ? null : products;
+  })();
+
+  // Xác định trạng thái loading
+  const isLoading = !isAuthenticated
+    ? isLoadingProducts
+    : isLoadingRecommendations || isLoadingProducts;
+
   return (
     <div className="font-sans">
       {/* Banner */}
@@ -80,6 +113,9 @@ export default function HomePage() {
 
       {/* Main content */}
       <Category />
+
+      {/* Voucher Section */}
+      <VoucherSection />
 
       {/* Advertisement */}
       <div className="w-full max-w-7xl mx-auto px-4 py-10">
@@ -109,15 +145,28 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Content */}
-      {isLoadingRecommendations || isLoadingProducts ? (
-        <div className="text-center py-10">Đang tải sản phẩm...</div>
-      ) : (
+      {/* Product Carousel */}
+      {isLoading ? (
+        <div className="w-full max-w-7xl mx-auto px-10 py-10">
+          <div className="text-center py-10 text-gray-500">
+            {t("common.loading")} {t("product.loading")}...
+          </div>
+        </div>
+      ) : displayProducts && displayProducts.length > 0 ? (
         <ProductCarousel
-          products={
-            recommendedProducts?.length > 0 ? recommendedProducts : products
+          products={displayProducts}
+          title={
+            isAuthenticated
+              ? t("product.recommended_for_you")
+              : t("product.featured_products")
           }
         />
+      ) : (
+        <div className="w-full max-w-7xl mx-auto px-10 py-10">
+          <div className="text-center py-10 text-gray-500">
+            {t("product.no_products_available")}
+          </div>
+        </div>
       )}
     </div>
   );

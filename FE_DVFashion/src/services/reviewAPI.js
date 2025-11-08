@@ -1,9 +1,9 @@
 import api from "./api";
 
+// ==================== REVIEW APIs ====================
+
 /**
- * Retrieves all reviews for admin with filtering and pagination.
- * @param {object} params - Filtering and pagination parameters.
- * @returns {Promise<object>} A paginated response of reviews.
+ * Lấy tất cả đánh giá cho admin với bộ lọc và phân trang.
  */
 export const getAllReviewsForAdmin = async (params) => {
   const response = await api.get("/reviews/admin/all", { params });
@@ -11,12 +11,7 @@ export const getAllReviewsForAdmin = async (params) => {
 };
 
 /**
- * Moderates a review by an admin (approve, reject, hide).
- * @param {number} reviewId - The ID of the review to moderate.
- * @param {object} request - The moderation request body.
- * @param {string} request.status - The new status (e.g., 'APPROVED', 'REJECTED', 'HIDDEN').
- * @param {string} [request.adminComment] - An optional comment from the admin.
- * @returns {Promise<object>} The updated review.
+ * Duyệt một đánh giá bởi admin.
  */
 export const moderateReview = async (reviewId, request) => {
   const response = await api.put(`/reviews/${reviewId}/moderate`, request);
@@ -24,10 +19,7 @@ export const moderateReview = async (reviewId, request) => {
 };
 
 /**
- * Retrieves reviews for a specific product with filtering.
- * @param {number} productId - The ID of the product.
- * @param {object} params - Filtering parameters (e.g., rating, hasImages, page, size).
- * @returns {Promise<object>} The product reviews and statistics.
+ * Lấy đánh giá của một sản phẩm với bộ lọc và phân trang.
  */
 export const getProductReviewsFilter = async (productId, params) => {
   const response = await api.get(`/reviews/product/${productId}`, { params });
@@ -35,11 +27,7 @@ export const getProductReviewsFilter = async (productId, params) => {
 };
 
 /**
- * Creates a new review for a product (for customers).
- * @param {object} data - The review data.
- * @param {object} data.review - The review JSON data (CreateReviewRequest).
- * @param {Array<File>} data.imageFiles - Optional list of image files.
- * @returns {Promise<object>} The created review.
+ * Tạo một đánh giá mới.
  */
 export const createReview = async ({ review, imageFiles }) => {
   const formData = new FormData();
@@ -57,12 +45,7 @@ export const createReview = async ({ review, imageFiles }) => {
 };
 
 /**
- * Updates an existing review (for customers).
- * @param {object} data - The update data.
- * @param {number} data.reviewId - The ID of the review to update.
- * @param {object} [data.review] - The review JSON data (UpdateReviewRequest).
- * @param {Array<File>} [data.imageFiles] - Optional list of new image files.
- * @returns {Promise<object>} The updated review.
+ * Cập nhật một đánh giá hiện có.
  */
 export const updateReview = async ({ reviewId, review, imageFiles }) => {
   const formData = new FormData();
@@ -82,11 +65,7 @@ export const updateReview = async ({ reviewId, review, imageFiles }) => {
 };
 
 /**
- * Checks if a user can review a specific product from an order.
- * @param {object} params - The parameters.
- * @param {number} params.orderId - The order ID.
- * @param {number} params.productVariantId - The product variant ID.
- * @returns {Promise<object>} A boolean indicating if the user can review.
+ * Kiểm tra xem người dùng có thể đánh giá sản phẩm hay không.
  */
 export const canReviewProduct = async ({ orderId, productVariantId }) => {
   const response = await api.get("/reviews/can-review", {
@@ -96,9 +75,7 @@ export const canReviewProduct = async ({ orderId, productVariantId }) => {
 };
 
 /**
- * Checks if a user can edit their own review.
- * @param {number} reviewId - The ID of the review.
- * @returns {Promise<object>} A boolean indicating if the user can edit.
+ * Kiểm tra xem người dùng có thể chỉnh sửa đánh giá hay không.
  */
 export const canEditReview = async (reviewId) => {
   const response = await api.get(`/reviews/${reviewId}/can-edit`);
@@ -106,11 +83,62 @@ export const canEditReview = async (reviewId) => {
 };
 
 /**
- * Lấy danh sách đánh giá của chính user hiện tại.
- * @returns {Promise<Array>} Danh sách review của user.
- * @param {object} params - Tham số lọc và phân trang.
+ * Lấy tất cả đánh giá của người dùng hiện tại.
  */
 export const getMyReviews = async (params = {}) => {
   const response = await api.get("/reviews/my-reviews", { params });
   return response.data.data;
+};
+
+// ==================== REVIEW REPLY APIs ====================
+
+/**
+ * Tạo một phản hồi đánh giá mới.
+ */
+export const createReviewReply = async (request) => {
+  const response = await api.post("/review-replies", request);
+  return response.data;
+};
+
+/**
+ * Cập nhật một phản hồi đánh giá.
+ */
+export const updateReviewReply = async ({ replyId, request }) => {
+  const response = await api.put(`/review-replies/${replyId}`, request);
+  return response.data;
+};
+
+/**
+ * Xóa một phản hồi đánh giá.
+ */
+export const deleteReviewReply = async (replyId) => {
+  const response = await api.delete(`/review-replies/${replyId}`);
+  return response.data;
+};
+
+/**
+ * Lấy tất cả phản hồi đánh giá cho khách hàng.
+ */
+export const getReviewRepliesForCustomer = async (reviewId) => {
+  const response = await api.get(`/review-replies/review/${reviewId}/customer`);
+  return response.data;
+};
+
+/**
+ * Lấy tất cả phản hồi đánh giá cho admin.
+ */
+export const getAllReviewRepliesForAdmin = async (reviewId) => {
+  const response = await api.get(`/review-replies/review/${reviewId}/admin`);
+  return response.data;
+};
+
+/**
+ * Admin duyệt một phản hồi đánh giá.
+ */
+export const moderateReviewReply = async ({ replyId, request }) => {
+  const response = await api.put(
+    `/review-replies/${replyId}/moderate`,
+    request
+  );
+  return response.data;
 };

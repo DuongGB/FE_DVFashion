@@ -3,15 +3,15 @@ import { ShoppingCart, User } from "react-feather";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo_DVF.png";
+import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
+import { useCart } from "../../hooks/useCart";
+import { usePublicCategories } from "../../hooks/useCategory";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
 import AuthModal from "../ui/auth/AuthModal";
 import CartDropdown from "../ui/cart/CartDropdown";
 import SearchPopup from "./SearchPopup";
-import { useAuthModal } from "../../contexts/AuthModalContext";
-import { useCart } from "../../hooks/useCart";
-import { usePublicCategories } from "../../hooks/useCategory";
 
 const LangSwitchButton = ({ lang, onLangChange }) => (
   <button
@@ -48,43 +48,45 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
     localStorage.setItem("i18nextLng", newLang);
   };
   return (
-    <div className="bg-gray-500 text-white flex justify-between px-8 py-2 text-sm">
-      <Link to="/">{t("header.about_dvfashion")}</Link>
-      <div className="flex gap-4">
-        {/* Nút chuyển đổi ngôn ngữ */}
-        <LangSwitchButton lang={lang} onLangChange={handleLangChange} />
-        <Link to="#">{t("header.dvfclub")}</Link>
-        <button
-          className="hover:underline cursor-pointer"
-          onClick={() => navigate("/blog")}
-        >
-          {t("header.blog")}
-        </button>
-        <button
-          className="hover:underline cursor-pointer"
-          onClick={() => navigate("/help")}
-        >
-          {t("header.customer_service")}
-        </button>
-        {!isAuthenticated && (
+    <div className="bg-gray-500 text-white">
+      <div className="max-w-7xl mx-auto flex justify-between px-6 py-2 text-sm">
+        <Link to="/">{t("header.about_dvfashion")}</Link>
+        <div className="flex gap-4">
+          {/* Nút chuyển đổi ngôn ngữ */}
+          <LangSwitchButton lang={lang} onLangChange={handleLangChange} />
+          <Link to="#">{t("header.dvfclub")}</Link>
           <button
             className="hover:underline cursor-pointer"
-            onClick={onLoginClick}
+            onClick={() => navigate("/blog")}
           >
-            {t("header.login")}
+            {t("header.blog")}
           </button>
-        )}
-        {isAuthenticated && (
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={onUserClick}
+          <button
+            className="hover:underline cursor-pointer"
+            onClick={() => navigate("/help")}
           >
-            <User size={18} />
-            <span className="text-sm font-semibold">
-              {getLastName(user?.fullName)}
-            </span>
-          </div>
-        )}
+            {t("header.customer_service")}
+          </button>
+          {!isAuthenticated && (
+            <button
+              className="hover:underline cursor-pointer"
+              onClick={onLoginClick}
+            >
+              {t("header.login")}
+            </button>
+          )}
+          {isAuthenticated && (
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={onUserClick}
+            >
+              <User size={18} />
+              <span className="text-sm font-semibold">
+                {getLastName(user?.fullName)}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -102,65 +104,99 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const navigate = useNavigate();
 
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
+  console.log("Fetched categories in MainMenu:", categories);
 
   const [activeMenu, setActiveMenu] = useState(null);
 
-  const handleCategoryClick = (category) => {
-    navigate(`/products?category=${category.id}`);
+  // Chuẩn hóa chuỗi để so khớp tiếng Việt/Anh, bỏ dấu
+  const normalize = (s = "") =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  // Lọc & nhóm categories theo men/women/unisex dựa trên name/description
+  const categoriesByMenu = (() => {
+    const groups = { men: [], women: [], unisex: [] };
+    (categories || [])
+      .filter((cat) => cat?.active)
+      .forEach((cat) => {
+        const text = normalize(`${cat?.name || ""} ${cat?.description || ""}`);
+        const hasMen = text.includes("nam") || text.includes("men");
+        const hasWomen = text.includes("nu") || text.includes("women");
+        const hasUnisex = text.includes("unisex") || (hasMen && hasWomen);
+        if (hasUnisex) groups.unisex.push(cat);
+        else if (hasMen) groups.men.push(cat);
+        else if (hasWomen) groups.women.push(cat);
+        else groups.unisex.push(cat); // fallback
+      });
+    return groups;
+  })();
+
+  const handleCategoryClick = (categoryId) => {
+    navigate(`/products?category=${categoryId}`);
   };
 
-  // Đóng popup search
-  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
+  // Xử lý hover vào menu item
+  const handleMouseEnter = useCallback(
+    (menuKey) => {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        setHideTimeout(null);
+      }
+      setActiveMenu(menuKey);
+    },
+    [hideTimeout]
+  );
 
-  // Xử lý hover vào từng menu item
-  const handleMouseEnter = (menuKey) => {
-    if (hideTimeout) clearTimeout(hideTimeout);
-    setActiveMenu(menuKey);
-  };
-
-  const handleMouseLeave = () => {
+  // Xử lý rời khỏi menu item
+  const handleMouseLeave = useCallback(() => {
     const timeout = setTimeout(() => {
       setActiveMenu(null);
-    }, 150); // delay 150ms tránh flicker
+    }, 200);
     setHideTimeout(timeout);
-  };
+  }, []);
+
+  // Xử lý đóng search popup
+  const handleCloseSearch = useCallback(() => {
+    setShowSearch(false);
+  }, []);
 
   const menuItems = [
-    {
-      key: "new",
-      label: t("header.navigation.new"),
-      color: "text-blue-600",
-      underline: "bg-blue-600",
-    },
+    // {
+    //   key: "new",
+    //   label: t("header.navigation.new"),
+    //   color: "text-blue-600",
+    //   underline: "bg-blue-600",
+    // },
     {
       key: "men",
       label: t("header.navigation.men"),
       color: "",
       underline: "bg-black",
+      categories: categoriesByMenu.men,
     },
     {
       key: "women",
       label: t("header.navigation.women"),
       color: "",
       underline: "bg-black",
+      categories: categoriesByMenu.women,
     },
     {
-      key: "sports",
-      label: t("header.navigation.sports"),
+      key: "unisex",
+      label: t("header.navigation.unisex"),
       color: "",
       underline: "bg-black",
-    },
-    {
-      key: "sale",
-      label: t("header.navigation.sale"),
-      color: "text-red-600",
-      underline: "bg-red-600",
+      categories: categoriesByMenu.unisex,
     },
     {
       key: "cs",
       label: t("header.navigation.cs"),
       color: "",
       underline: "bg-black",
+      onClick: () => navigate("/help"),
     },
   ];
 
@@ -182,13 +218,22 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSearch, showCart]);
 
+  // Cleanup timeout khi component unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+      }
+    };
+  }, [hideTimeout]);
+
   // Xóa sản phẩm khỏi giỏ hàng
   const handleRemoveCartItem = async (cartItemId) => {
     await removeItem(cartItemId);
   };
 
   const handleViewAllCart = (e) => {
-    e.stopPropagation(); // Ngăn chặn sự kiện nổi bọt
+    e.stopPropagation();
     window.location.href = "/cart";
   };
 
@@ -196,109 +241,120 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const cartLength = cart?.items?.length || 0;
 
   return (
-    <div className="bg-white flex items-center justify-between px-8 py-4 shadow sticky top-0 z-50">
-      {/* Logo */}
-      <div className="flex items-center gap-4 w-[110px]">
-        <Link to="/" className="text-2xl font-bold text-orange-600 w-full">
-          <img
-            src={logo}
-            alt="DVFASHION"
-            className="h-8 w-full object-contain"
-          />
-        </Link>
-      </div>
-      {/* Nav */}
-      <nav className="flex gap-8 font-bold text-lg items-center relative w-full justify-center">
-        {menuItems.map((item) => (
-          <div
-            key={item.key}
-            className="group relative w-[110px] flex justify-center"
-            onMouseEnter={() => handleMouseEnter(item.key)}
-            onMouseLeave={handleMouseLeave}
-          >
-            <Link
-              onClick={handleCategoryClick}
-              className={`cursor-pointer w-full text-center ${item.color}`}
-            >
-              {item.label}
-            </Link>
-            <div
-              className={`absolute left-0 right-0 -bottom-1 h-[3px] w-0 ${item.underline} rounded-full transition-all duration-500 group-hover:w-full`}
-            ></div>
-            {/* MegaMenu chỉ hiện khi activeMenu === item.key */}
-            {activeMenu === item.key && (
-              <MegaMenu
-                onMouseEnter={() => handleMouseEnter(item.key)}
-                onMouseLeave={handleMouseLeave}
-                categories={categories}
-                isLoading={isLoading}
-                error={error}
-              />
-            )}
-          </div>
-        ))}
-      </nav>
-      {/* Search, Account, Cart */}
-      <div className="flex items-center gap-4" ref={searchRef}>
-        {/* Nút mở popup search */}
-        <div
-          className="flex-1 flex items-center"
-          onClick={() => {
-            if (!showSearch) setShowSearch(true);
-          }}
-        >
-          {/* Thanh search chỉ là khung giả, không nhập được */}
-          <div className="relative w-[350px] cursor-pointer">
-            <input
-              type="text"
-              placeholder={t("header.search_placeholder")}
-              className="border rounded-full px-10 py-2 w-full bg-gray-50 cursor-pointer"
-              readOnly
+    <div className="sticky top-0 z-50 border-b border-white/40 shadow-lg backdrop-blur-xl bg-white/40">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 min-w-[160px]">
+          <div className="flex items-center gap-2">
+            <img
+              src={logo}
+              alt="DVFASHION logo"
+              className="h-9 w-9 rounded-lg shadow-md ring-1 ring-white/50 bg-white/70 backdrop-blur"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
+            <span className="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600">
+              DVFASHION
             </span>
           </div>
-        </div>
-        <SearchPopup show={showSearch} onClose={handleCloseSearch} />
-        {/* Account và Cart giữ nguyên */}
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={onUserClick}
-        >
-          <User size={24} />
-          <span className="text-sm font-semibold" onClick={onUserClick}>
-            {isAuthenticated
-              ? getLastName(user?.fullName)
-              : t("header.account")}
-          </span>
-        </div>
-        {/* Shopping Cart */}
-        <div
-          className="relative cursor-pointer group"
-          ref={cartRef}
-          onClick={handleViewAllCart}
-        >
-          <ShoppingCart size={24} />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            {cartLength}
-          </span>
-          <div className="hidden group-hover:block">
-            <CartDropdown
-              cart={cart}
-              onRemove={handleRemoveCartItem}
-              onViewAll={handleViewAllCart}
-            />
+        </Link>
+        {/* Nav */}
+        <nav className="flex gap-2 font-bold text-[15px] items-center relative w-full justify-center">
+          {menuItems.map((item) => (
+            <div
+              key={item.key}
+              className="group relative inline-flex items-center"
+              onMouseEnter={() => handleMouseEnter(item.key)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                type="button"
+                className={`px-3 py-1 cursor-pointer text-center whitespace-nowrap ${item.color}`}
+                onClick={item.onClick}
+              >
+                {item.label}
+              </button>
+              <div
+                className={`pointer-events-none absolute left-0 right-0 -bottom-1 h-[2px] w-0 ${item.underline} rounded-full transition-all duration-300 group-hover:w-full`}
+              ></div>
+              {activeMenu === item.key &&
+                (item.categories?.length > 0 ||
+                  item.key === "new" ||
+                  item.key === "sale") && (
+                  <MegaMenu
+                    onMouseEnter={() => handleMouseEnter(item.key)}
+                    onMouseLeave={handleMouseLeave}
+                    categories={item.categories || []}
+                    isLoading={isLoading}
+                    error={error}
+                    onCategoryClick={handleCategoryClick}
+                    menuType={item.key}
+                  />
+                )}
+            </div>
+          ))}
+        </nav>
+        {/* Search, Account, Cart */}
+        <div className="flex items-center gap-4" ref={searchRef}>
+          <div
+            className="flex-1 flex items-center"
+            onClick={() => {
+              if (!showSearch) setShowSearch(true);
+            }}
+          >
+            {/* Thanh search glass */}
+            <div className="relative w-[320px] cursor-pointer">
+              <input
+                type="text"
+                placeholder={t("header.search_placeholder")}
+                className="border border-white/40 rounded-full px-10 py-2 w-full bg-white/60 backdrop-blur placeholder-gray-600 text-gray-800 shadow-inner focus:outline-none focus:ring-2 focus:ring-white/50"
+                readOnly
+                aria-label={t("header.search_placeholder")}
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </span>
+            </div>
+          </div>
+          <SearchPopup show={showSearch} onClose={handleCloseSearch} />
+          {/* Account và Cart */}
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={onUserClick}
+          >
+            <User size={24} />
+            <span className="text-sm font-semibold" onClick={onUserClick}>
+              {isAuthenticated
+                ? getLastName(user?.fullName)
+                : t("header.account")}
+            </span>
+          </div>
+          {/* Shopping Cart */}
+          <div
+            className="relative cursor-pointer group"
+            ref={cartRef}
+            onClick={handleViewAllCart}
+          >
+            <ShoppingCart size={24} />
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 shadow">
+              {cartLength}
+            </span>
+            <div className="hidden group-hover:block">
+              <CartDropdown
+                cart={cart}
+                onRemove={handleRemoveCartItem}
+                onViewAll={handleViewAllCart}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -306,27 +362,27 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   );
 }
 
-// MegaMenu component
 function MegaMenu({
   onMouseEnter,
   onMouseLeave,
   categories,
   isLoading,
   error,
+  onCategoryClick,
+  menuType,
 }) {
-  const { t, i18n } = useTranslation();
-
-  // Chỉ lấy các category active
-  const activeCategories = categories?.filter((cat) => cat.active) || [];
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
       <div
-        className="p-8 text-center"
+        className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white/70 shadow-2xl rounded-2xl py-8 px-10 z-50 text-base border border-white/40"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        {t("category.loading", "Đang tải danh mục...")}
+        <div className="p-8 text-center">
+          {t("category.loading", "Đang tải danh mục...")}
+        </div>
       </div>
     );
   }
@@ -334,58 +390,47 @@ function MegaMenu({
   if (error) {
     return (
       <div
-        className="p-8 text-center text-red-500"
+        className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white/70 backdrop-blur-2xl shadow-2xl rounded-2xl py-8 px-10 z-50 text-base border border-white/40"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        {t("category.error_loading")}
+        <div className="p-8 text-center text-red-500">
+          {t("category.error_loading")}
+        </div>
       </div>
     );
   }
+
   return (
     <div
-      className="fixed left-1/2 top-[95px] transform -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white shadow-2xl rounded-2xl py-8 px-0 flex gap-0 opacity-100 pointer-events-auto transition-all duration-200 z-50 text-base border border-gray-200 overflow-hidden"
+      className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white shadow-2xl rounded-2xl py-8 px-0 flex gap-0 opacity-100 pointer-events-auto transition-all duration-200 z-50 text-base border border-gray-200 overflow-hidden"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{ minHeight: "420px" }}
+      role="menu"
+      aria-label="Mega menu"
     >
-      {/* Banner left */}
-      <div className="flex flex-1 gap-8 px-10">
-        {activeCategories.map((cat) => (
-          <div key={cat.id} className="flex-1 min-w-[180px]">
-            <h4 className="font-bold mb-2 text-lg flex items-center">
-              {cat.name}
-            </h4>
-            <ul className="space-y-1">
-              <li>
-                <span className="text-sm text-gray-500">{cat.description}</span>
-              </li>
-            </ul>
+      {/* Categories section */}
+      <div className="flex-1 px-10">
+        {categories.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-6">
+            {categories.map((cat) => (
+              <div key={cat.id} className="min-w-[150px]">
+                <button
+                  type="button"
+                  className="text-left w-full hover:text-orange-600 font-semibold transition-colors"
+                  onClick={() => onCategoryClick(cat.id)}
+                >
+                  {cat.name}
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {/* Banner right */}
-      <div className="flex flex-col gap-4 w-56 pr-10">
-        <div className="relative rounded-xl overflow-hidden shadow-lg">
-          <img
-            src="/assets/banner_2_9.png"
-            alt="Bộ sưu tập 2.9"
-            className="w-full h-32 object-cover"
-          />
-          <div className="absolute bottom-2 left-2 text-white font-bold text-lg drop-shadow">
-            Bộ sưu tập 2.9
+        ) : (
+          <div className="flex-1 text-center text-gray-600 py-8">
+            {t("category.no_categories", "Không có danh mục nào")}
           </div>
-        </div>
-        <div className="relative rounded-xl overflow-hidden shadow-lg">
-          <img
-            src="/assets/banner_sport.png"
-            alt="Pickleball Nam"
-            className="w-full h-32 object-cover"
-          />
-          <div className="absolute bottom-2 left-2 text-white font-bold text-lg drop-shadow">
-            Pickleball Nam
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

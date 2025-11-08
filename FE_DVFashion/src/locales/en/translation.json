@@ -12,26 +12,44 @@
       "new": "NEW",
       "men": "MEN",
       "women": "WOMEN",
-      "sports": "SPORTS",
+      "unisex": "UNISEX",
       "sale": "SALE",
       "cs": "C&S"
     }
   },
   "search": {
     "result_title": "Search results",
-    "view_all": "VIEW ALL",
+    "result_for": "Results for",
+    "products_found": "products",
+    "search_button": "Search",
+    "filters": "Filters",
+    "apply_filters": "Apply",
+    "clear_filters": "Clear filters",
+    "all_categories": "All categories",
+    "category": "Category",
+    "price_range": "Price range",
+    "min_price": "Min",
+    "max_price": "Max",
+    "price": {
+      "under_200k": "Under 200k",
+      "200k_500k": "200k - 500k",
+      "500k_1m": "500k - 1M",
+      "over_1m": "Over 1M"
+    },
+    "promotion": "Promotion",
+    "on_sale_only": "Only discounted products",
+    "on_sale": "On sale",
+    "sort_by": "Sort by",
+    "sort": {
+      "default": "Default",
+      "price_asc": "Price: Low to High",
+      "price_desc": "Price: High to Low",
+      "name_asc": "Name A-Z",
+      "name_desc": "Name Z-A",
+      "newest": "Newest"
+    },
     "no_result": "No matching products found",
-    "suggest_title": "Today's trending keywords",
-    "no_recent": "No recently viewed products",
-    "close": "Close",
-    "keywords": {
-      "tshirt": "T-shirt",
-      "shorts": "Shorts",
-      "polo": "Polo Shirt",
-      "sun_protection_jacket": "Sun Protection Jacket",
-      "sun_protection_gloves": "Sun Protection Gloves",
-      "trousers": "Trousers"
-    }
+    "enter_keyword": "Enter a keyword to search for products"
   },
   "about_dvfashion": "ABOUT DVFASHION",
   "dvfclub": "DVFclub",
@@ -61,6 +79,23 @@
     "error_loading": "Unable to load categories. Please try again later.",
     "no_categories": "No categories available to display.",
     "tagline": "↠ Freedom to grow ↞"
+  },
+  "voucher": {
+    "section_title": "Special Vouchers For You",
+    "section_subtitle": "Save more with exclusive discount codes",
+    "expiring_soon": "Expiring Soon",
+    "discount": "OFF",
+    "code": "Code: ",
+    "usage_left": "Remaining",
+    "valid_until": "Valid until",
+    "copy_code": "Copy Code",
+    "copied": "Voucher code copied!",
+    "loading": "Loading vouchers...",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "min_order": "Min order",
+    "max_discount": "Max discount",
+    "product_specific_note": "Applies to selected products"
   },
   "footer": {
     "feedback_title": "DVFashion listens to you!",
@@ -315,6 +350,7 @@
     }
   },
   "product": {
+    "loading": "products",
     "card": {
       "quick_add": "Quick add to cart",
       "choose_valid_color": "Please select a valid color.",
@@ -341,6 +377,16 @@
     }
   },
   "cart": {
+    "voucher_code": "Voucher Code",
+    "enter_voucher_code": "Enter voucher code",
+    "apply": "Apply",
+    "voucher_applied": "Voucher applied",
+    "voucher_removed": "Voucher removed",
+    "invalid_voucher": "Invalid voucher code",
+    "voucher_min_order_not_met": "Minimum order {{amount}}",
+    "view_available_vouchers": "View available vouchers",
+    "available_promotions": "Available Promotions",
+    "discount": "Discount",
     "title": "Cart",
     "shipping_info": "Shipping Information",
     "choose_from_address_book": "Choose from Address Book",
@@ -367,12 +413,10 @@
     "payment_online": "PayPal Payment",
     "payment_online_note": "Credit card, e-wallet",
     "discount_code_placeholder": "Enter discount code",
-    "apply": "Apply",
-    "promotion_expiry": "Expires: {{date}}",
-    "promotion_not_qualified": "Not qualified",
     "no_address_selected": "No delivery address selected",
     "select_address": "Select Address",
     "cancel_selection": "Cancel Selection",
+    "voucher_not_active": "Voucher is not valid yet",
     "using_selected_address_note": "Using address from address book",
     "salutation": {
       "default": "Salutation",
@@ -391,18 +435,36 @@
     "fill_shipping_info": "Please fill in all shipping information.",
     "quantity": "Quantity",
     "empty_cart": "Your cart is empty",
-    "processing_order": "Processing order, please waiting..."
+    "processing_order": "Processing order, please waiting...",
+    "voucher_max_usage_reached": "You have reached the maximum usage limit for this voucher!",
+    "voucher_not_available": "Voucher is not available",
+    "voucher_expired": "Voucher has expired",
+    "voucher_not_applicable": "Voucher is not applicable for this order"
   },
   "order": {
-    "update_note": "Only orders with 'Pending' status or 'Processing' status can be update!",
+    "update_order": "Update Order",
+    "update_note": "Only orders with 'Pending' or 'Processing' status can be updated.",
+    "shipping_not_editable": "Shipping information cannot be edited for processed orders (Processing/Shipped/Delivered)",
+    "cancellation_reason": "Cancellation Reason",
+    "cancellation_reason_required": "Please enter cancellation reason",
+    "no_changes": "No changes detected",
+    "payment_status_label": "Payment Status",
+    "payment_status": {
+      "pending": "Pending Payment",
+      "completed": "Completed",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "canceled": "Payment Canceled"
+    },
     "create_success": "Order created successfully!",
-    "create_fail": "Only orders with 'Pending' status or 'Processing' status can be update!",
+    "create_fail": "Failed to create order.",
+    "create_in_progress": "Order creation in progress, please wait...",
     "payment_confirm_success": "Payment confirmed successfully!",
     "payment_confirm_fail": "Failed to confirm payment.",
     "payment_cancel_warn": "Payment has been cancelled.",
     "payment_cancel_error": "An error occurred.",
     "update_success": "Order updated successfully!",
-    "update_fail": "Failed to update order.",
+    "update_fail": "Failed to update order!",
     "total_amount": "Total Amount",
     "return_exchange": "Return/Exchange",
     "review": "Review",
@@ -425,6 +487,16 @@
     "shipping_fee": "Shipping Fee",
     "estimated_delivery": "Estimated Delivery",
     "estimated_delivery_time": "Estimated delivery time",
+    "cancel_order": "Cancel Order",
+    "cancel_order_confirm_title": "Confirm Order Cancellation",
+    "cancel_order_confirm_message": "Are you sure you want to cancel order #{{orderNumber}}?",
+    "cancellation_reason_label": "Cancellation Reason",
+    "cancellation_reason_placeholder": "Please provide a reason for cancellation (max 500 characters)...",
+    "cancel_success": "Order cancelled successfully!",
+    "cancel_error": "Failed to cancel order!",
+    "cancel_time_limit": "Orders can only be cancelled within 2 hours of placement.",
+    "cancel_status_error": "Only orders with 'Pending' or 'Processing' status can be cancelled.",
+    "cancelling": "Cancelling...",
     "payment_method": {
       "title": "Payment Method",
       "cod": "Cash on Delivery",
@@ -449,6 +521,32 @@
     },
     "stats": {
       "total_orders": "Total Orders"
+    },
+    "common": {
+      "all": "All",
+      "loading": "Loading",
+      "saving": "Saving",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "Add",
+      "confirm": "Confirm",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "search": "Search",
+      "filter": "Filter",
+      "sort": "Sort",
+      "view_details": "View Details",
+      "close": "Close",
+      "select": "Select",
+      "submit": "Submit",
+      "reset": "Reset",
+      "error": "An error occurred",
+      "processing": "Processing...",
+      "note": "Note",
+      "none": "None"
     }
   },
   "address": {
@@ -504,7 +602,24 @@
     "delete_message": "Are you sure you want to {{action}} {{itemType}} \"{{itemName}}\"?"
   },
   "review": {
-    "title": "Product Review",
+    "show_replies": "Show replies",
+    "hide_replies": "Hide replies",
+    "shop": "Shop",
+    "you": "You",
+    "add_reply": "Add a reply",
+    "reply_placeholder": "Write your reply...",
+    "total_reviews": "{{count}} Reviews",
+    "clear_filters": "Clear filters",
+    "with_images": "With images",
+    "title": "Product Reviews",
+    "view_images": "View {{count}} images",
+    "hide_images": "Hide images",
+    "view_replies": "View {{count}} replies",
+    "sort": {
+      "newest": "Newest",
+      "highest": "Highest to lowest",
+      "lowest": "Lowest to highest"
+    },
     "rating": "Your Rating",
     "comment": "Your thoughts on the product",
     "comment_placeholder": "Please share your thoughts about this product...",
@@ -538,6 +653,16 @@
       "update_success": "Review updated successfully!",
       "create_failed": "You have not filled in the review information!",
       "update_failed": "An error occurred while updating!"
+    },
+    "review_reply": {
+      "create_success": "Reply posted successfully",
+      "create_failed": "Failed to post reply",
+      "update_success": "Reply updated successfully",
+      "update_failed": "Failed to update reply",
+      "delete_success": "Reply deleted successfully",
+      "delete_failed": "Failed to delete reply",
+      "moderate_success": "Reply moderated successfully",
+      "moderate_failed": "Failed to moderate reply"
     }
   },
   "common": {
@@ -564,7 +689,34 @@
     "error": "An error occurred",
     "processing": "Processing...",
     "note": "Note",
-    "none": "None"
+    "none": "None",
+    "reply": "Reply",
+    "sending": "Sending"
+  },
+  "review_reply": {
+    "title": "Discussion",
+    "write_reply": "Write a reply",
+    "edit_reply": "Edit reply",
+    "placeholder": "Share your thoughts...",
+    "edit_placeholder": "Update your reply...",
+    "submit": "Submit",
+    "no_replies": "No replies yet. Be the first to comment!",
+    "edited": "edited",
+    "edited_at": "Edited at",
+    "approve": "Approve",
+    "reject": "Reject",
+    "hide": "Hide",
+    "delete_confirm_title": "Delete Reply",
+    "delete_confirm_message": "Are you sure you want to delete this reply? This action cannot be undone.",
+    "restore": "Restore",
+    "mark_pending": "Mark as Pending",
+    "need_review": "Need Review",
+    "status": {
+      "APPROVED": "Approved",
+      "PENDING": "Pending",
+      "REJECTED": "Rejected",
+      "HIDDEN": "Hidden"
+    }
   },
 
   "admin": {
@@ -575,6 +727,9 @@
       "update_account": "Update Account",
       "notifications": "Notifications",
       "update": "Update"
+    },
+    "order": {
+      "search": "Search by order number, customer name..."
     },
     "brand": {
       "title": "Brand Management",
@@ -1492,7 +1647,7 @@
       "promotions": "Promotions",
       "human_resources": "Human Resources",
       "employees": "Employees",
-      "reports_analytics": "Reports & Analytics",
+      "reports_analytics": "Statistics Reports",
       "reports_management": "Reports Management",
       "revenue_forecast": "Revenue Forecast",
       "display_pages": "Display Pages",
@@ -1535,6 +1690,7 @@
       "recent_activity": {
         "title": "Recent Activity",
         "view_all": "View all activities →",
+        "no_activities": "No recent activities",
         "activities": {
           "new_order": "New Order",
           "new_customer": "New Customer",
@@ -1559,6 +1715,7 @@
         "title": "Best Selling Products",
         "view_all": "View all →",
         "sold": "{{count}} sold",
+        "no_products": "No products to display",
         "sample_products": {
           "basic_tshirt": "Men's Basic T-shirt",
           "slim_jeans": "Slim Fit Jeans",
@@ -1569,7 +1726,10 @@
       }
     },
     "inventory": {
+      "min_stock": "Minimum Stock",
       "title": "Inventory Management",
+      "import_stock": "Import Stock",
+      "export": "Export Stock",
       "total_products": "Total Products",
       "normal_stock": "Normal Stock",
       "low_stock": "Low Stock",
@@ -1578,33 +1738,31 @@
       "error": "Error loading inventory data!",
       "search_placeholder": "Search by name, size...",
       "all": "All",
+      "filter_low": "Low Stock",
+      "filter_out": "Out of Stock",
       "advanced_filters": "Advanced Filters",
       "clear_all": "Clear All",
       "color": "Color",
       "size": "Size",
       "active_filters": "Filtering by:",
-      "search": "Search: \"{{search}}\"",
-      "filter_low": "Low Stock",
-      "filter_out": "Out of Stock",
       "showing_results": "Showing {{current}} of {{total}} records",
-      "no_data": "No inventory data.",
-      "id": "ID",
+      "no_data": "No inventory data",
+      "no_data_description": "Import/export transactions will be shown here",
       "product": "Product",
       "stock": "Stock",
       "reserved": "Reserved",
       "available": "Available",
-      "min_stock": "Min Stock",
+      "min": "Min",
       "status": "Status",
       "last_updated": "Last Updated",
       "actions": "Actions",
       "status_normal": "Normal",
       "status_low": "Low",
       "status_out": "Out of Stock",
+      "in_orders": "In Orders",
+      "ready": "Ready",
       "view_detail": "View Details",
-      "import": "Import",
-      "export": "Export",
-      "adjust": "Adjust Stock",
-      "import_stock": "Import Stock"
+      "adjust": "Adjust Stock"
     },
     "general_import": {
       "title": "General Stock Import",
@@ -1727,6 +1885,13 @@
       "loading": "Loading data...",
       "no_reviews": "No reviews found.",
       "error_loading": "Error loading data: {{message}}",
+      "final_state": "Final State",
+      "rating_star": "star(s)",
+      "active_filters": "Active filters",
+      "search": "Search",
+      "clear_all_filters": "Clear all filters",
+      "showing_results": "Showing {{current}} of {{total}} reviews",
+      "verified_purchase": "Verified",
       "columns": {
         "customer": "Customer",
         "product": "Product",
@@ -1801,6 +1966,78 @@
           "poor": "Poor",
           "very_poor": "Very Poor"
         }
+      }
+    },
+    "statistics": {
+      "title": "Revenue Statistics",
+      "subtitle": "Analyze and forecast business trends",
+      "tabs": {
+        "daily": "Daily",
+        "monthly": "Monthly",
+        "yearly": "Yearly"
+      },
+      "date_range": {
+        "from": "From",
+        "to": "To"
+      },
+      "year_selector": {
+        "label": "Year"
+      },
+      "export": {
+        "button": "Export CSV",
+        "success": "File exported successfully!",
+        "error": "Error exporting CSV file"
+      },
+      "cards": {
+        "revenue": {
+          "title": "Revenue",
+          "daily": "date range",
+          "monthly": "this month",
+          "yearly": "this year",
+          "growth": "vs last month"
+        },
+        "forecast": {
+          "title": "Next 3 months forecast",
+          "note": "Based on linear regression"
+        },
+        "total_items": {
+          "title": "Total Items"
+        },
+        "status": {
+          "title": "Status",
+          "loading": "Loading…",
+          "ready": "Ready"
+        }
+      },
+      "chart": {
+        "title": {
+          "daily": "Daily Revenue Chart",
+          "monthly": "Monthly Revenue Chart",
+          "yearly": "Yearly Revenue Chart"
+        },
+        "types": {
+          "combo": "Combo",
+          "line": "Line",
+          "area": "Area",
+          "bar": "Bar"
+        },
+        "legend": {
+          "actual": "Actual",
+          "predicted": "Predicted"
+        },
+        "loading": "Loading data...",
+        "no_data": "No data available"
+      },
+      "pie_chart": {
+        "title": "Monthly Revenue Distribution",
+        "top_months": "Top 5 Highest Months"
+      },
+      "notes": {
+        "title": "Important Notes",
+        "csv_export": "CSV export will use data from the current view mode.",
+        "forecast_note": "Revenue forecast uses linear regression model, for reference only.",
+        "realtime": "Data is updated in real-time from the system.",
+        "multiple_views": "Charts support multiple display types for multi-dimensional analysis."
       }
     }
   },

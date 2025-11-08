@@ -97,14 +97,14 @@ export default function InventoryDetailModal({
     .reduce((sum, t) => sum + Math.abs(t.quantity), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconBox size={28} className="text-white" />
             <h2 className="text-2xl font-bold">
@@ -113,18 +113,18 @@ export default function InventoryDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/70 text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
         </div>
 
-        <div className="p-6 flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="p-2 flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
             {/* Thông tin sản phẩm & tồn kho */}
             <div className="space-y-4">
               {/* Thông tin sản phẩm */}
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconPackage size={18} className="text-blue-600" />
                   {t("admin.inventory_detail.product_info")}
@@ -176,7 +176,7 @@ export default function InventoryDetailModal({
               </div>
 
               {/* Thông tin tồn kho */}
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconClipboardList size={18} className="text-purple-600" />
                   {t("admin.inventory_detail.stock_info")}
@@ -232,7 +232,7 @@ export default function InventoryDetailModal({
 
             {/* Lịch sử giao dịch */}
             <div className="space-y-4">
-              <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg h-full">
                 <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                   <IconHistory size={18} className="text-orange-600" />
                   {t("admin.inventory_detail.transaction_history")}
@@ -242,11 +242,11 @@ export default function InventoryDetailModal({
                     })}
                   </span>
                 </h3>
-                <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-full overflow-y-auto">
                   {inventoryTransactions.length > 0 ? (
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-100">
+                        <tr className="bg-white/60">
                           <th className="p-2">
                             {t("admin.inventory_detail.transaction_type")}
                           </th>
@@ -269,7 +269,10 @@ export default function InventoryDetailModal({
                       </thead>
                       <tbody>
                         {inventoryTransactions.map((transaction) => (
-                          <tr key={transaction.id} className="border-b">
+                          <tr
+                            key={transaction.id}
+                            className="border-b border-white/30"
+                          >
                             <td className="p-2">
                               <span
                                 className={`px-2 py-1 rounded text-xs text-white font-medium ${
@@ -296,7 +299,7 @@ export default function InventoryDetailModal({
                                 {transaction.quantity}
                               </span>
                             </td>
-                            <td className="p-2 font-mono text-xs bg-gray-100 rounded">
+                            <td className="p-2 font-mono text-xs bg-white/60 rounded">
                               {transaction.reference}
                             </td>
                             <td className="p-2">
@@ -325,7 +328,7 @@ export default function InventoryDetailModal({
 
           {/* Thống kê giao dịch */}
           {inventoryTransactions.length > 0 && (
-            <div className="mt-6 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+            <div className="mt-6 backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
               <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
                 <IconAlertTriangle size={18} className="text-yellow-600" />
                 {t("admin.inventory_detail.transaction_stats")}
@@ -360,7 +363,7 @@ export default function InventoryDetailModal({
           )}
 
           {/* Timestamps */}
-          <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm mt-6">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg mt-3">
             <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
               <IconCalendar size={18} className="text-green-600" />
               {t("admin.inventory_detail.timestamps")}
@@ -383,16 +386,6 @@ export default function InventoryDetailModal({
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 cursor-pointer"
-            >
-              {t("admin.inventory_detail.close")}
-            </button>
           </div>
         </div>
       </div>

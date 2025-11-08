@@ -50,7 +50,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
         variant.sizes?.forEach((size) => {
           allSizes.push({
             sizeId: size.id,
-            sizeName: size.name,
+            sizeName: size.sizeName,
             variantColor: variant.color,
             variantId: variant.id,
             stockQuantity: size.stockQuantity || 0,
@@ -169,12 +169,13 @@ export default function GeneralExportStockModal({ open, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 min-h-screen">
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-orange-600 to-yellow-600 text-white">
+        {/* Header */}
+        <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
             <IconPackageExport size={28} />
             <h2 className="text-2xl font-bold">
@@ -183,15 +184,15 @@ export default function GeneralExportStockModal({ open, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/70 text-white rounded-full hover:bg-gray-800 cursor-pointer"
+            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-gray-800 cursor-pointer"
           >
             <IconX size={20} />
           </button>
         </div>
 
-        <div className="p-8">
+        <div className="p-3">
           {/* Search Product Section */}
-          <div className="mb-6">
+          <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t("admin.general_import.product_id_label")}
             </label>
@@ -201,14 +202,14 @@ export default function GeneralExportStockModal({ open, onClose }) {
                 value={productIdInput}
                 onChange={(e) => setProductIdInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/80 backdrop-blur-sm"
                 placeholder={t("admin.general_import.product_id_placeholder")}
                 disabled={isFinding || isLoadingProduct}
               />
               <button
                 type="button"
                 onClick={handleFindProduct}
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-lg hover:from-orange-700 hover:to-yellow-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow"
                 disabled={isFinding || isLoadingProduct}
               >
                 {isFinding || isLoadingProduct ? (
@@ -225,7 +226,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
 
           {/* Product Info */}
           {productData && availableSizes.length > 0 && (
-            <div className="mb-6 bg-gray-50 border border-gray-200 p-4 rounded-lg">
+            <div className="mb-3 backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
               <h3 className="font-semibold text-lg mb-3 text-gray-700">
                 {t("admin.general_import.product_info")}
               </h3>
@@ -255,7 +256,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                       className={`p-3 border-2 rounded-lg text-left transition-all cursor-pointer ${
                         selectedSizeId === size.sizeId
                           ? "border-orange-600 bg-orange-50"
-                          : "border-gray-300 hover:border-orange-400 hover:bg-gray-100"
+                          : "border-white/30 hover:border-orange-400 hover:bg-white/30"
                       }`}
                     >
                       <div className="font-semibold text-gray-800">
@@ -279,7 +280,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Info */}
-                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
                   <h3 className="font-semibold text-lg mb-3 text-gray-700">
                     {t("admin.export_stock.product_info")}
                   </h3>
@@ -321,7 +322,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                       max={foundInventory.availableQuantity}
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/80 backdrop-blur-sm"
                       required
                     />
                     <div className="text-xs text-gray-500 mt-1">
@@ -339,7 +340,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                       type="text"
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/80 backdrop-blur-sm"
                       required
                     />
                   </div>
@@ -350,7 +351,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-3 py-2 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/80 backdrop-blur-sm"
                       rows={2}
                     />
                   </div>
@@ -367,17 +368,17 @@ export default function GeneralExportStockModal({ open, onClose }) {
               )}
 
               {/* Footer */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-300">
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/30">
                 <button
                   type="button"
                   onClick={resetSearch}
-                  className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="px-6 py-2 text-gray-600 bg-white/80 backdrop-blur-sm border border-white/30 rounded-lg hover:bg-gray-50 hover:border-gray-400 cursor-pointer"
                 >
                   {t("admin.general_import.find_another")}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2 bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-lg hover:from-orange-700 hover:to-yellow-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-lg"
                   disabled={isExporting}
                 >
                   <IconMinus size={16} />

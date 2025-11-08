@@ -49,7 +49,7 @@ export default function CartBottom({
   const handleOrderClick = () => {
     if (isLoading) return;
 
-    // Handle empty cart with translated toast
+    // Kiểm tra giỏ hàng trống
     if (!cart || cart.length === 0) {
       toast.info(t("cart.empty_cart"));
       return;
@@ -111,7 +111,7 @@ export default function CartBottom({
           </div>
           <button
             className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
-            disabled={creatingLock} // disable while creating
+            disabled={creatingLock}
             onClick={handleOrderClick}
           >
             {creatingLock ? t("cart.processing") : t("cart.place_order")}

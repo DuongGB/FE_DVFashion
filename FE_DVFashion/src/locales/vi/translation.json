@@ -12,26 +12,44 @@
       "new": "NEW",
       "men": "NAM",
       "women": "NỮ",
-      "sports": "THỂ THAO",
+      "unisex": "UNISEX",
       "sale": "SALE",
       "cs": "C&S"
     }
   },
   "search": {
     "result_title": "Kết quả tìm kiếm",
-    "view_all": "XEM TẤT CẢ",
+    "result_for": "Kết quả cho",
+    "products_found": "sản phẩm",
+    "search_button": "Tìm kiếm",
+    "filters": "Bộ lọc",
+    "apply_filters": "Áp dụng",
+    "clear_filters": "Xóa bộ lọc",
+    "all_categories": "Tất cả danh mục",
+    "category": "Danh mục",
+    "price_range": "Khoảng giá",
+    "min_price": "Từ",
+    "max_price": "Đến",
+    "price": {
+      "under_200k": "Dưới 200k",
+      "200k_500k": "200k - 500k",
+      "500k_1m": "500k - 1tr",
+      "over_1m": "Trên 1tr"
+    },
+    "promotion": "Khuyến mãi",
+    "on_sale_only": "Chỉ sản phẩm giảm giá",
+    "on_sale": "Đang giảm giá",
+    "sort_by": "Sắp xếp",
+    "sort": {
+      "default": "Mặc định",
+      "price_asc": "Giá tăng dần",
+      "price_desc": "Giá giảm dần",
+      "name_asc": "Tên A-Z",
+      "name_desc": "Tên Z-A",
+      "newest": "Mới nhất"
+    },
     "no_result": "Không tìm thấy sản phẩm phù hợp",
-    "suggest_title": "Từ khóa nổi bật ngày hôm nay",
-    "no_recent": "Không có sản phẩm đã xem gần đây",
-    "close": "Đóng",
-    "keywords": {
-      "tshirt": "Áo thun",
-      "shorts": "Quần Shorts",
-      "polo": "Áo Polo",
-      "sun_protection_jacket": "Áo khoác chống nắng",
-      "sun_protection_gloves": "Găng tay chống nắng",
-      "trousers": "Quần dài"
-    }
+    "enter_keyword": "Nhập từ khóa để tìm kiếm sản phẩm"
   },
   "about_dvfashion": "VỀ DVFASHION",
   "dvfclub": "DVFclub",
@@ -56,6 +74,23 @@
       "subtitle": "Tặng phụ kiện cho đơn từ 399k | Freeship",
       "button": "KHÁM PHÁ"
     }
+  },
+  "voucher": {
+    "section_title": "Mã Giảm Giá Đặc Biệt",
+    "section_subtitle": "Tiết kiệm hơn với các mã giảm giá độc quyền",
+    "expiring_soon": "Sắp hết hạn",
+    "discount": "GIẢM",
+    "code": "Mã: ",
+    "usage_left": "Còn lại",
+    "valid_until": "Có hiệu lực đến",
+    "copy_code": "Sao Chép Mã",
+    "copied": "Đã sao chép mã giảm giá!",
+    "loading": "Đang tải voucher...",
+    "start_date": "Bắt đầu",
+    "end_date": "Kết thúc",
+    "min_order": "Đơn tối thiểu",
+    "max_discount": "Giảm tối đa",
+    "product_specific_note": "Áp dụng cho một số sản phẩm"
   },
   "category": {
     "error_loading": "Không thể tải danh mục. Vui lòng thử lại sau.",
@@ -314,6 +349,7 @@
     }
   },
   "product": {
+    "loading": "sản phẩm",
     "card": {
       "quick_add": "Thêm nhanh vào giỏ hàng",
       "choose_valid_color": "Vui lòng chọn màu sắc hợp lệ.",
@@ -340,6 +376,16 @@
     }
   },
   "cart": {
+    "voucher_code": "Mã giảm giá",
+    "enter_voucher_code": "Nhập mã giảm giá",
+    "apply": "Áp dụng",
+    "voucher_applied": "Đã áp dụng voucher",
+    "voucher_removed": "Đã xóa voucher",
+    "invalid_voucher": "Mã giảm giá không hợp lệ",
+    "voucher_min_order_not_met": "Đơn hàng tối thiểu {{amount}}",
+    "view_available_vouchers": "Xem voucher khả dụng",
+    "available_promotions": "Khuyến mãi có sẵn",
+    "discount": "Giảm giá",
     "title": "Giỏ hàng",
     "shipping_info": "Thông tin giao hàng",
     "choose_from_address_book": "Chọn từ sổ địa chỉ",
@@ -366,13 +412,11 @@
     "payment_online": "Thanh toán PayPal",
     "payment_online_note": "Thẻ tín dụng, ví điện tử",
     "discount_code_placeholder": "Nhập mã giảm giá",
-    "apply": "Áp dụng",
-    "promotion_expiry": "Hết hạn: {{date}}",
-    "promotion_not_qualified": "Chưa đủ điều kiện",
     "no_address_selected": "Chưa chọn địa chỉ giao hàng",
     "select_address": "Chọn địa chỉ",
     "cancel_selection": "Hủy chọn",
     "using_selected_address_note": "Đang sử dụng địa chỉ từ sổ địa chỉ",
+    "voucher_not_active": "Voucher chưa có hiệu lực",
     "salutation": {
       "default": "Danh xưng",
       "male": "Anh",
@@ -390,19 +434,35 @@
     "fill_shipping_info": "Vui lòng điền đầy đủ thông tin giao hàng.",
     "quantity": "Số lượng",
     "empty_cart": "Giỏ hàng của bạn đang trống.",
-    "processing_order": "Đang xử lý đơn, xin vui lòng đợi..."
+    "processing_order": "Đang xử lý đơn, xin vui lòng đợi...",
+    "voucher_max_usage_reached": "Bạn đã sử dụng hết lượt áp dụng voucher này!",
+    "voucher_not_available": "Voucher không khả dụng",
+    "voucher_expired": "Voucher đã hết hạn",
+    "voucher_not_applicable": "Voucher không áp dụng cho đơn hàng này"
   },
   "order": {
     "update_order": "Cập nhật đơn hàng",
-    "update_note": "Chỉ cập nhật được đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
+    "update_note": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
+    "shipping_not_editable": "Thông tin giao hàng không thể chỉnh sửa cho đơn hàng đã xử lý (Processing/Shipped/Delivered)",
+    "cancellation_reason": "Lý do hủy",
+    "no_changes": "Không có thay đổi nào",
+    "payment_status_label": "Trạng thái thanh toán",
+    "payment_status": {
+      "pending": "Chờ thanh toán",
+      "completed": "Đã thanh toán",
+      "failed": "Thanh toán thất bại",
+      "refunded": "Đã hoàn tiền",
+      "canceled": "Đã hủy thanh toán"
+    },
     "create_success": "Tạo đơn hàng thành công!",
     "create_fail": "Tạo đơn hàng thất bại.",
+    "create_in_progress": "Đang tạo đơn hàng, vui lòng đợi...",
     "payment_confirm_success": "Thanh toán đã được xác nhận thành công!",
     "payment_confirm_fail": "Không thể xác nhận thanh toán.",
     "payment_cancel_warn": "Thanh toán đã bị hủy.",
     "payment_cancel_error": "Có lỗi xảy ra.",
     "update_success": "Cập nhật đơn hàng thành công!",
-    "update_fail": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý!",
+    "update_fail": "Cập nhật đơn hàng thất bại!",
     "total_amount": "Thành tiền",
     "return_exchange": "Đổi/Trả",
     "review": "Đánh giá",
@@ -425,6 +485,17 @@
     "shipping_fee": "Phí vận chuyển",
     "estimated_delivery": "Dự kiến giao hàng",
     "estimated_delivery_time": "Thời gian giao dự kiến",
+    "cancel_order": "Hủy Đơn Hàng",
+    "cancel_order_confirm_title": "Xác nhận hủy đơn hàng",
+    "cancel_order_confirm_message": "Bạn có chắc chắn muốn hủy đơn hàng #{{orderNumber}} không?",
+    "cancellation_reason_label": "Lý do hủy đơn",
+    "cancellation_reason_placeholder": "Vui lòng cho biết lý do hủy đơn hàng (tối đa 500 ký tự)...",
+    "cancellation_reason_required": "Vui lòng nhập lý do hủy đơn",
+    "cancel_success": "Hủy đơn hàng thành công!",
+    "cancel_error": "Không thể hủy đơn hàng!",
+    "cancel_time_limit": "Chỉ có thể hủy đơn hàng trong vòng 24 giờ sau khi đặt",
+    "cancel_status_error": "Chỉ có thể hủy đơn hàng ở trạng thái Chờ xác nhận hoặc Đã xác nhận",
+    "cancelling": "Đang hủy...",
     "payment_method": {
       "title": "Hình thức thanh toán",
       "cod": "Thanh toán khi nhận hàng",
@@ -442,14 +513,40 @@
       "pending": "Chờ xác nhận",
       "confirmed": "Đã xác nhận",
       "processing": "Đang xử lý",
-      "shipped": "Đang giao hàng",
-      "delivered": "Giao thành công",
+      "shipped": "Đã gửi hàng",
+      "delivered": "Đã giao hàng",
       "canceled": "Đã hủy",
       "returned": "Đã trả hàng",
       "undefined": "Không xác định"
     },
     "stats": {
       "total_orders": "Tổng đơn hàng"
+    },
+    "common": {
+      "all": "Tất cả",
+      "loading": "Đang tải",
+      "saving": "Đang lưu",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "edit": "Sửa",
+      "delete": "Xóa",
+      "add": "Thêm",
+      "confirm": "Xác nhận",
+      "back": "Quay lại",
+      "next": "Tiếp theo",
+      "previous": "Trước đó",
+      "search": "Tìm kiếm",
+      "filter": "Lọc",
+      "sort": "Sắp xếp",
+      "view_details": "Xem chi tiết",
+      "close": "Đóng",
+      "select": "Chọn",
+      "submit": "Gửi",
+      "reset": "Đặt lại",
+      "error": "Đã có lỗi xảy ra",
+      "processing": "Đang xử lý...",
+      "note": "Ghi chú",
+      "none": "Không có"
     }
   },
   "address": {
@@ -497,7 +594,24 @@
     }
   },
   "review": {
+    "show_replies": "Hiển thị phản hồi",
+    "shop": "Cửa hàng",
+    "you": "Bạn",
+    "add_reply": "Thêm phản hồi",
+    "reply_placeholder": "Nhập phản hồi của bạn...",
     "title": "Đánh giá sản phẩm",
+    "total_reviews": "{{count}} đánh giá",
+    "clear_filters": "Xóa lọc",
+    "with_images": "Có ảnh",
+    "view_images": "Xem {{count}} ảnh",
+    "hide_images": "Ẩn ảnh",
+    "view_replies": "Xem {{count}} phản hồi",
+    "hide_replies": "Ẩn phản hồi",
+    "sort": {
+      "newest": "Mới nhất",
+      "highest": "Cao đến thấp",
+      "lowest": "Thấp đến cao"
+    },
     "rating": "Đánh giá của bạn",
     "comment": "Cảm nhận về sản phẩm",
     "comment_placeholder": "Hãy chia sẻ cảm nhận của bạn về sản phẩm này nhé...",
@@ -531,6 +645,16 @@
       "update_success": "Cập nhật đánh giá thành công!",
       "create_failed": "Bạn chưa điền thông tin đánh giá!",
       "update_failed": "Có lỗi xảy ra khi cập nhật!"
+    },
+    "review_reply": {
+      "create_success": "Đã đăng phản hồi thành công",
+      "create_failed": "Không thể đăng phản hồi",
+      "update_success": "Đã cập nhật phản hồi thành công",
+      "update_failed": "Không thể cập nhật phản hồi",
+      "delete_success": "Đã xóa phản hồi thành công",
+      "delete_failed": "Không thể xóa phản hồi",
+      "moderate_success": "Đã kiểm duyệt phản hồi thành công",
+      "moderate_failed": "Không thể kiểm duyệt phản hồi"
     }
   },
   "confirm": {
@@ -565,7 +689,35 @@
     "error": "Đã có lỗi xảy ra",
     "processing": "Đang xử lý...",
     "note": "Ghi chú",
-    "none": "Không có"
+    "none": "Không có",
+    "reply": "Trả lời",
+    "sending": "Đang gửi"
+  },
+  "review_reply": {
+    "title": "Thảo luận",
+    "write_reply": "Viết phản hồi",
+    "edit_reply": "Chỉnh sửa phản hồi",
+    "placeholder": "Chia sẻ suy nghĩ của bạn...",
+    "edit_placeholder": "Cập nhật phản hồi của bạn...",
+    "submit": "Gửi",
+    "no_replies": "Chưa có phản hồi nào. Hãy là người đầu tiên bình luận!",
+    "edited": "đã chỉnh sửa",
+    "edited_at": "Chỉnh sửa lúc",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "hide": "Ẩn",
+    "delete_confirm_title": "Xóa phản hồi",
+    "delete_confirm_message": "Bạn có chắc chắn muốn xóa phản hồi này? Hành động này không thể hoàn tác.",
+    "restore": "Khôi phục",
+    "mark_pending": "Đánh dấu chờ duyệt",
+    "need_review": "Cần xem xét",
+    "hint_enter": "Nhấn Enter để gửi, Shift+Enter để xuống dòng",
+    "status": {
+      "APPROVED": "Đã duyệt",
+      "PENDING": "Chờ duyệt",
+      "REJECTED": "Đã từ chối",
+      "HIDDEN": "Đã ẩn"
+    }
   },
 
   "admin": {
@@ -576,6 +728,9 @@
       "update_account": "Cập nhật tài khoản",
       "notifications": "Thông báo",
       "update": "Cập nhật"
+    },
+    "order": {
+      "search": "Tìm kiếm theo mã đơn hàng, tên khách hàng..."
     },
     "brand": {
       "title": "Quản lý thương hiệu",
@@ -1495,7 +1650,7 @@
       "human_resources": "Nhân sự",
       "employees": "Nhân viên",
       "reports_analytics": "Báo cáo & phân tích",
-      "reports_management": "Quản lý báo cáo",
+      "reports_management": "Thống kê báo cáo",
       "revenue_forecast": "Dự báo doanh thu",
       "display_pages": "Trang hiển thị",
       "customer_page": "Trang khách hàng",
@@ -1537,6 +1692,7 @@
       "recent_activity": {
         "title": "Hoạt động gần đây",
         "view_all": "Xem tất cả hoạt động →",
+        "no_activities": "Chưa có hoạt động nào",
         "activities": {
           "new_order": "Đơn hàng mới",
           "new_customer": "Khách hàng mới",
@@ -1561,6 +1717,7 @@
         "title": "Sản phẩm bán chạy",
         "view_all": "Xem tất cả →",
         "sold": "{{count}} đã bán",
+        "no_products": "Chưa có sản phẩm bán",
         "sample_products": {
           "basic_tshirt": "Áo thun nam basic",
           "slim_jeans": "Quần jeans slim fit",
@@ -1571,7 +1728,10 @@
       }
     },
     "inventory": {
+      "min_stock": "Tồn kho tối thiểu",
       "title": "Quản lý kho hàng",
+      "import_stock": "Nhập kho",
+      "export": "Xuất kho",
       "total_products": "Tổng sản phẩm",
       "normal_stock": "Tồn kho bình thường",
       "low_stock": "Sắp hết hàng",
@@ -1580,33 +1740,31 @@
       "error": "Lỗi tải dữ liệu kho!",
       "search_placeholder": "Tìm kiếm theo tên, size...",
       "all": "Tất cả",
+      "filter_low": "Sắp hết hàng",
+      "filter_out": "Hết hàng",
       "advanced_filters": "Bộ lọc nâng cao",
       "clear_all": "Xoá tất cả",
       "color": "Màu sắc",
-      "size": "Size",
+      "size": "Kích thước",
       "active_filters": "Đang lọc theo:",
-      "search": "Tìm: \"{{search}}\"",
-      "filter_low": "Sắp hết hàng",
-      "filter_out": "Hết hàng",
       "showing_results": "Hiển thị {{current}} trên tổng số {{total}} bản ghi",
-      "no_data": "Không có dữ liệu kho hàng.",
-      "id": "ID",
+      "no_data": "Không có dữ liệu kho hàng",
+      "no_data_description": "Các giao dịch nhập/xuất kho sẽ hiển thị tại đây",
       "product": "Sản phẩm",
       "stock": "Tồn kho",
       "reserved": "Đặt trước",
       "available": "Khả dụng",
-      "min_stock": "Mức tối thiểu",
+      "min": "Tối thiểu",
       "status": "Trạng thái",
       "last_updated": "Cập nhật cuối",
       "actions": "Hành động",
       "status_normal": "Bình thường",
       "status_low": "Sắp hết",
       "status_out": "Hết hàng",
+      "in_orders": "Trong đơn",
+      "ready": "Sẵn sàng",
       "view_detail": "Xem chi tiết",
-      "import": "Nhập kho",
-      "export": "Xuất kho",
-      "adjust": "Điều chỉnh tồn kho",
-      "import_stock": "Nhập kho"
+      "adjust": "Điều chỉnh tồn kho"
     },
     "general_import": {
       "title": "Nhập Kho Tổng Quát",
@@ -1729,6 +1887,13 @@
       "loading": "Đang tải dữ liệu...",
       "no_reviews": "Không tìm thấy đánh giá nào.",
       "error_loading": "Lỗi khi tải dữ liệu: {{message}}",
+      "final_state": "Trạng thái cuối",
+      "rating_star": "sao",
+      "active_filters": "Bộ lọc đang áp dụng",
+      "search": "Tìm kiếm",
+      "clear_all_filters": "Xóa tất cả bộ lọc",
+      "showing_results": "Hiển thị {{current}} trong tổng số {{total}} đánh giá",
+      "verified_purchase": "Đã xác thực",
       "columns": {
         "customer": "Khách hàng",
         "product": "Sản phẩm",
@@ -1803,6 +1968,78 @@
           "poor": "Kém",
           "very_poor": "Rất kém"
         }
+      }
+    },
+    "statistics": {
+      "title": "Thống kê doanh thu",
+      "subtitle": "Phân tích và dự đoán xu hướng kinh doanh",
+      "tabs": {
+        "daily": "Theo ngày",
+        "monthly": "Theo tháng",
+        "yearly": "Theo năm"
+      },
+      "date_range": {
+        "from": "Từ",
+        "to": "Đến"
+      },
+      "year_selector": {
+        "label": "Năm"
+      },
+      "export": {
+        "button": "Xuất CSV",
+        "success": "Xuất file thành công!",
+        "error": "Lỗi khi xuất file CSV"
+      },
+      "cards": {
+        "revenue": {
+          "title": "Doanh thu",
+          "daily": "khoảng ngày",
+          "monthly": "tháng này",
+          "yearly": "năm nay",
+          "growth": "so với tháng trước"
+        },
+        "forecast": {
+          "title": "Dự đoán 3 tháng tới",
+          "note": "Dựa trên hồi quy tuyến tính"
+        },
+        "total_items": {
+          "title": "Tổng mục"
+        },
+        "status": {
+          "title": "Trạng thái",
+          "loading": "Đang tải…",
+          "ready": "Sẵn sàng"
+        }
+      },
+      "chart": {
+        "title": {
+          "daily": "Biểu đồ doanh thu theo ngày",
+          "monthly": "Biểu đồ doanh thu theo tháng",
+          "yearly": "Biểu đồ doanh thu theo năm"
+        },
+        "types": {
+          "combo": "Kết hợp",
+          "line": "Đường",
+          "area": "Vùng",
+          "bar": "Cột"
+        },
+        "legend": {
+          "actual": "Thực tế",
+          "predicted": "Dự đoán"
+        },
+        "loading": "Đang tải dữ liệu...",
+        "no_data": "Chưa có dữ liệu"
+      },
+      "pie_chart": {
+        "title": "Phân bổ doanh thu theo tháng",
+        "top_months": "Top 5 tháng cao nhất"
+      },
+      "notes": {
+        "title": "Ghi chú quan trọng",
+        "csv_export": "Xuất CSV sẽ lấy dữ liệu theo chế độ xem hiện tại.",
+        "forecast_note": "Dự đoán doanh thu sử dụng mô hình hồi quy tuyến tính, chỉ mang tính tham khảo.",
+        "realtime": "Dữ liệu được cập nhật real-time từ hệ thống.",
+        "multiple_views": "Biểu đồ hỗ trợ nhiều dạng hiển thị để phân tích đa chiều."
       }
     }
   },

@@ -28,10 +28,18 @@ export default function CategoryPage() {
     delete: null,
   });
   const [originalOrder, setOriginalOrder] = useState([]);
+  const [localCategories, setLocalCategories] = useState([]);
   const pageSize = 10;
 
   // Use the category hook with dynamic language
   const { categories, isLoading, error, update } = useCategory(language);
+
+  // Đồng bộ localCategories khi categories thay đổi
+  useEffect(() => {
+    if (categories) {
+      setLocalCategories(categories);
+    }
+  }, [categories]);
 
   // Force re-render when language changes
   useEffect(() => {
@@ -67,25 +75,36 @@ export default function CategoryPage() {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Sort categories by original order to maintain position
+  // Sắp xếp danh mục theo thứ tự ban đầu
   const sortedCategories = useMemo(() => {
-    if (!categories) return [];
+    if (!localCategories) return [];
 
-    return [...categories].sort((a, b) => a.id - b.id);
-  }, [categories]);
+    return [...localCategories].sort((a, b) => a.id - b.id);
+  }, [localCategories]);
 
-  // Filter categories with stable sorting
+  // Loc danh mục dựa trên tìm kiếm và trạng thái
   const filteredCategories = useMemo(() => {
+    if (!sortedCategories || sortedCategories.length === 0) return [];
+
     return sortedCategories.filter((category) => {
+      // Đảm bảo category tồn tại
+      if (!category) return false;
+
+      // Kiểm tra an toàn cho các thuộc tính
+      const name = (category.name || "").toLowerCase();
+      const description = (category.description || "").toLowerCase();
+      const id = (category.id || "").toString();
+      const searchLower = search.toLowerCase();
+
       const matchesSearch =
-        category.name.toLowerCase().includes(search.toLowerCase()) ||
-        category.description.toLowerCase().includes(search.toLowerCase()) ||
-        category.id.toString().includes(search);
+        name.includes(searchLower) ||
+        description.includes(searchLower) ||
+        id.includes(search);
 
       const matchesStatus =
         !statusFilter ||
-        (statusFilter === "active" && category.active) ||
-        (statusFilter === "inactive" && !category.active);
+        (statusFilter === "active" && category.active === true) ||
+        (statusFilter === "inactive" && category.active === false);
 
       return matchesSearch && matchesStatus;
     });
@@ -129,7 +148,37 @@ export default function CategoryPage() {
     setShowEditModal(true);
   };
 
-  // Handle toggle status with position preservation
+  const handleCloseEditModal = (updatedCategory) => {
+    if (updatedCategory) {
+      // Cập nhật local state ngay lập tức
+      setLocalCategories((prev) => {
+        const existingIndex = prev.findIndex(
+          (cat) => cat.id === updatedCategory.id
+        );
+
+        if (existingIndex >= 0) {
+          // Update existing category
+          const newCategories = [...prev];
+          newCategories[existingIndex] = {
+            ...newCategories[existingIndex],
+            ...updatedCategory,
+            // Đảm bảo imageUrl được cập nhật
+            imageUrl: updatedCategory.imageUrl || updatedCategory.image,
+            image: updatedCategory.image || updatedCategory.imageUrl,
+          };
+          return newCategories;
+        } else {
+          // Add new category
+          return [...prev, updatedCategory];
+        }
+      });
+    }
+
+    setShowEditModal(false);
+    setSelectedCategory(null);
+  };
+
+  // Hàm xử lý thay đổi trạng thái danh mục
   const handleToggleStatus = async (category) => {
     // Kiểm tra quyền trước khi thực hiện
     if (isStaff) {
@@ -189,11 +238,27 @@ export default function CategoryPage() {
             })
           );
 
-          await update({
+          const result = await update({
             categoryId: category.id,
             categoryData,
             lang: language,
           });
+
+          // Cập nhật local state ngay lập tức
+          if (result) {
+            setLocalCategories((prev) =>
+              prev.map((cat) =>
+                cat.id === category.id
+                  ? {
+                      ...cat,
+                      ...result,
+                      imageUrl: result.imageUrl || result.image,
+                      image: result.image || result.imageUrl,
+                    }
+                  : cat
+              )
+            );
+          }
 
           const successMessage = `${actionText} ${t(
             "admin.category.title"
@@ -252,7 +317,6 @@ export default function CategoryPage() {
           {t("admin.category.title")}
         </h1>
         <div className="flex items-center gap-4">
-          {/* Chỉ hiển thị nút tạo danh mục cho admin */}
           {!isStaff && (
             <button
               onClick={handleCreate}
@@ -262,7 +326,6 @@ export default function CategoryPage() {
               {t("admin.category.create_category")}
             </button>
           )}
-          {/* Hiển thị thông báo cho staff */}
           {isStaff && (
             <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
@@ -276,7 +339,7 @@ export default function CategoryPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -286,8 +349,7 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -299,8 +361,7 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -315,9 +376,8 @@ export default function CategoryPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
               <IconSearch
@@ -329,17 +389,15 @@ export default function CategoryPage() {
                 placeholder={t("admin.category.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-
-          {/* Status Filter */}
           <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{t("admin.category.all_status")}</option>
               <option value="active">
@@ -362,7 +420,7 @@ export default function CategoryPage() {
       </div>
 
       {/* Categories Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-400">
@@ -388,15 +446,14 @@ export default function CategoryPage() {
               paginatedCategories.map((category, index) => (
                 <tr
                   key={`category-${category.id}-${index}`}
-                  className="border-b hover:bg-gray-300 transition-colors"
+                  className="border-b hover:bg-white/80 transition-colors"
                 >
-                  <td className="p-3">{category.id}</td>
-
+                  <td className="p-3">{category.id || "-"}</td>
                   <td className="p-3">
                     {category.imageUrl || category.image ? (
                       <img
                         src={category.imageUrl || category.image}
-                        alt={category.name}
+                        alt={category.name || "Category"}
                         className="w-10 h-10 rounded object-cover"
                         onError={(e) => {
                           e.target.style.display = "none";
@@ -414,28 +471,23 @@ export default function CategoryPage() {
                       No Image
                     </div>
                   </td>
-
                   <td className="p-3">
                     <div>
-                      <p className="font-semibold">{category.name}</p>
+                      <p className="font-semibold">{category.name || "N/A"}</p>
                     </div>
                   </td>
-
                   <td className="p-3">
                     <div className="max-w-xs">
                       <p
                         className="text-sm truncate"
-                        title={category.description}
+                        title={category.description || ""}
                       >
-                        {category.description}
+                        {category.description || "N/A"}
                       </p>
                     </div>
                   </td>
-
-                  {/* Status cell - chỉ admin mới có thể click để thay đổi */}
                   <td className="p-3">
                     {isStaff ? (
-                      // Staff chỉ xem, không thể thay đổi
                       <span
                         className={`px-3 py-1 rounded text-sm font-medium ${
                           category.active
@@ -448,7 +500,6 @@ export default function CategoryPage() {
                           : t("admin.category.status.inactive")}
                       </span>
                     ) : (
-                      // Admin có thể click để thay đổi
                       <button
                         onClick={() => handleToggleStatus(category)}
                         disabled={loadingItems.status === category.id}
@@ -477,10 +528,8 @@ export default function CategoryPage() {
                       </button>
                     )}
                   </td>
-
                   <td className="p-3">
                     <div className="flex gap-2">
-                      {/* Nút xem chi tiết - tất cả đều có thể xem */}
                       <button
                         onClick={() => handleViewDetail(category)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
@@ -488,8 +537,6 @@ export default function CategoryPage() {
                       >
                         <IconEye size={24} />
                       </button>
-
-                      {/* Nút chỉnh sửa - chỉ admin mới có */}
                       {!isStaff ? (
                         <button
                           onClick={() => handleEdit(category)}
@@ -499,7 +546,6 @@ export default function CategoryPage() {
                           <IconEdit size={24} />
                         </button>
                       ) : (
-                        // Hiển thị icon disabled cho staff
                         <button
                           className="text-gray-400 p-1 cursor-not-allowed opacity-50"
                           onClick={() => handleEdit(category)}
@@ -546,10 +592,7 @@ export default function CategoryPage() {
       {/* Category Form Modal */}
       <CategoryForm
         isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedCategory(null);
-        }}
+        onClose={handleCloseEditModal}
         category={selectedCategory}
       />
     </div>

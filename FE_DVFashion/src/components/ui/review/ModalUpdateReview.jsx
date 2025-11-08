@@ -64,11 +64,19 @@ export default function ModalUpdateReview({
   if (!show || !review) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden
+        rounded-3xl shadow-2xl border border-white/30
+        bg-gradient-to-br from-white/70 via-white/40 to-blue-200/50
+        backdrop-blur-2xl
+        transition-all duration-300
+        animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 bg-black rounded-full p-1.5 text-white hover:bg-gray-700 z-10 cursor-pointer"
+          className="absolute top-4 right-4 text-gray-600 hover:text-blue-700 cursor-pointer bg-white/60 backdrop-blur-sm rounded-full p-2 shadow z-10 transition"
         >
           <IconX size={24} />
         </button>
@@ -97,7 +105,7 @@ export default function ModalUpdateReview({
               {t("review.comment")}
             </label>
             <textarea
-              className="w-full border rounded p-2"
+              className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -108,7 +116,6 @@ export default function ModalUpdateReview({
             <label className="block font-semibold mb-1">
               {t("review.upload_images")}
             </label>
-            {/* Nút chọn ảnh */}
             <input
               type="file"
               multiple
@@ -124,7 +131,7 @@ export default function ModalUpdateReview({
                     <img
                       src={url}
                       alt="preview"
-                      className="w-16 h-16 object-cover rounded border"
+                      className="w-16 h-16 object-cover rounded-lg border border-white/30 shadow"
                     />
                     <button
                       type="button"
@@ -146,7 +153,7 @@ export default function ModalUpdateReview({
                     <img
                       src={url}
                       alt="old"
-                      className="w-16 h-16 object-cover rounded border"
+                      className="w-16 h-16 object-cover rounded-lg border border-white/30 shadow"
                     />
                     <button
                       type="button"
@@ -163,7 +170,7 @@ export default function ModalUpdateReview({
           </div>
           <button
             type="submit"
-            className="w-full bg-black text-white rounded-lg px-6 py-3 font-bold text-base hover:opacity-80 disabled:opacity-50 cursor-pointer"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg px-6 py-3 font-bold text-base hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-lg transition-all duration-200"
             disabled={isSubmitting}
           >
             {isSubmitting ? t("review.updating") : t("review.update")}

@@ -46,11 +46,12 @@ const InfoRow = ({ label, value }) => {
 const AccountInfo = ({ user, onUpdateClick, onPasswordChangeClick }) => {
   const { t } = useTranslation();
   return (
-    <>
-      <h2 className="text-3xl font-bold mb-8">
+    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-6 rounded-3xl shadow-2xl backdrop-blur-lg">
+      <h2 className="text-3xl font-bold mb-6 drop-shadow">
         {t("account.main.account_info")}
       </h2>
-      <div className="mb-8">
+
+      <div className="mb-6 bg-white/30 p-6 rounded-xl backdrop-blur-sm border border-white/20">
         <InfoRow
           label={t("account.main.full_name")}
           value={user?.fullName || t("account.main.not_updated")}
@@ -67,26 +68,35 @@ const AccountInfo = ({ user, onUpdateClick, onPasswordChangeClick }) => {
           label={t("account.main.dob")}
           value={user?.dob || t("account.main.dob_placeholder")}
         />
-        <button
-          className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
-          onClick={onUpdateClick}
-        >
-          {t("account.main.update")}
-        </button>
+        <div className="mt-4">
+          <button
+            className="border rounded-full px-6 py-2 font-bold cursor-pointer bg-white/40 hover:bg-white/60 transition"
+            onClick={onUpdateClick}
+          >
+            {t("account.main.update")}
+          </button>
+        </div>
       </div>
-      <h3 className="text-xl font-bold mb-4">{t("account.main.login_info")}</h3>
-      <InfoRow
-        label={t("account.main.email")}
-        value={user?.email || t("account.main.not_updated")}
-      />
-      <InfoRow label={t("account.main.password")} value="************" />
-      <button
-        className="border rounded-full px-6 py-2 font-bold mt-4 cursor-pointer"
-        onClick={onPasswordChangeClick}
-      >
-        {t("account.main.update")}
-      </button>
-    </>
+
+      <div className="bg-white/30 p-6 rounded-xl backdrop-blur-sm border border-white/20">
+        <h3 className="text-xl font-bold mb-4">
+          {t("account.main.login_info")}
+        </h3>
+        <InfoRow
+          label={t("account.main.email")}
+          value={user?.email || t("account.main.not_updated")}
+        />
+        <InfoRow label={t("account.main.password")} value="************" />
+        <div className="mt-4">
+          <button
+            className="border rounded-full px-6 py-2 font-bold cursor-pointer bg-white/40 hover:bg-white/60 transition"
+            onClick={onPasswordChangeClick}
+          >
+            {t("account.main.update")}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -127,11 +137,6 @@ export default function AccountPage() {
       id: "order_history",
       icon: <IconShoppingCart size={24} />,
       text: t("account.sidebar.order_history"),
-    },
-    {
-      id: "dvf_cash_history",
-      icon: <IconCoin size={24} />,
-      text: t("account.sidebar.dvf_cash_history"),
     },
     {
       id: "voucher_wallet",

@@ -7,8 +7,7 @@ import api from "./api";
  * @param {object} orderData.shippingInfo - The shipping information.
  * @param {string} [orderData.notes] - Optional notes for the order.
  * @param {string} orderData.paymentMethod - Payment method ('CASH_ON_DELIVERY', 'PAYPAL').
- * @param {number} [orderData.promotionId] - Optional promotion ID.
- * @param {number} orderData.shippingFee - The shipping fee.
+ * @param {string} [orderData.voucherCode] - Optional voucher code.
  * @returns {Promise<object>} Dữ liệu phản hồi từ API.
  */
 export const createOrder = async (orderData) => {
@@ -134,4 +133,15 @@ export const cancelPayPalPayment = async (orderNumber) => {
 export const getAllOrdersPaging = async (params) => {
   const response = await api.get("/orders", { params });
   return response.data?.data;
+};
+
+/**
+ * Cancels an order by the customer who owns it.
+ * @param {string} orderNumber - The order number.
+ * @param {object} cancelData - The cancellation data { cancellationReason: string }.
+ * @returns {Promise<object>} The cancelled order response.
+ */
+export const cancelOrderByCustomer = async (orderNumber, cancelData) => {
+  const response = await api.put(`/orders/${orderNumber}/cancel`, cancelData);
+  return response.data;
 };

@@ -54,11 +54,16 @@ export default function ProductCard({ product }) {
 
   // Tính phần trăm giảm giá dựa trên price và currentPrice
   const discountPercent =
-    product.price && product.currentPrice
+    product.price &&
+    product.currentPrice &&
+    product.currentPrice < product.price
       ? Math.round(
           ((product.price - product.currentPrice) / product.price) * 100
         )
       : null;
+
+  // Kiểm tra xem có đang giảm giá không
+  const isOnSale = product.currentPrice && product.currentPrice < product.price;
 
   // Hàm xử lý thêm nhanh vào giỏ hàng
   const handleQuickAddToCart = async (sizeName) => {
@@ -104,7 +109,8 @@ export default function ProductCard({ product }) {
           alt={product.name}
           className="w-full h-[300px] object-cover rounded-lg"
         />
-        {product.onSale && discountPercent && (
+        {/* Badge giảm giá trên ảnh */}
+        {isOnSale && discountPercent && (
           <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold">
             -{discountPercent}%
           </span>
@@ -133,7 +139,7 @@ export default function ProductCard({ product }) {
         </div>
       </div>
       {/* Màu sắc */}
-      <div className="flex gap-2 mt-2 ">
+      <div className="flex gap-2 mt-2">
         {colors.map((color, idx) => (
           <span
             key={`${color}-${idx}`}
@@ -152,6 +158,7 @@ export default function ProductCard({ product }) {
       {/* Tên + Giá */}
       <h3 className="text-sm mt-2">{product.name}</h3>
       <div className="flex items-center gap-2">
+        {/* Hiển thị currentPrice (giá sau giảm) hoặc price (giá gốc) */}
         <span className="font-bold text-base text-black">
           {product.currentPrice
             ? `${product.currentPrice.toLocaleString()}₫`
@@ -160,10 +167,10 @@ export default function ProductCard({ product }) {
             : ""}
         </span>
 
-        {/* Không hiển thị giá gốc theo yêu cầu; chỉ show % giảm nếu có */}
-        {product.onSale && discountPercent && (
-          <span className="text-blue-600 text-xs font-semibold">
-            -{discountPercent}%
+        {/* Nếu có giảm giá, hiển thị giá gốc gạch ngang */}
+        {isOnSale && (
+          <span className="line-through text-gray-400 text-sm">
+            {product.price?.toLocaleString()}₫
           </span>
         )}
       </div>

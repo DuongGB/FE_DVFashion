@@ -9,17 +9,12 @@ import CartLayout from "./layouts/CartLayout";
 import MainLayout from "./layouts/MainLayout";
 import StaffLayout from "./layouts/StaffLayout";
 import AdminPage from "./pages/admin/AdminPage";
-import AnalystReportPage from "./pages/admin/AnalystReportPage";
 import BrandPage from "./pages/admin/BrandPage";
 import CategoryPage from "./pages/admin/CategoryPage";
 import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
 import EmployeePage from "./pages/admin/EmployeePage";
-import ForecastPage from "./pages/admin/ForecastPage";
 import InventoryPage from "./pages/admin/InventoryPage";
-import {
-  default as OrderPage,
-  default as OrdersPage,
-} from "./pages/admin/OrderPage";
+import OrderPage from "./pages/admin/OrderPage";
 import ProductPage from "./pages/admin/ProductPage";
 import PromotionPage from "./pages/admin/PromotionPage";
 import ReviewPage from "./pages/admin/ReviewPage";
@@ -35,6 +30,8 @@ import SearchProductPage from "./pages/SearchProductPage";
 import StaffPage from "./pages/staff/StaffPage";
 import CategoryProductPage from "./pages/CategoryProductPage";
 import VoucherPage from "./pages/admin/VoucherPage";
+import PayPalCancelHandler from "./pages/customer/order/PaypalCancelHandler";
+import StatisticsPage from "./pages/admin/StatisticsPage";
 
 function App() {
   return (
@@ -56,9 +53,8 @@ function App() {
               <Route path="promotions" element={<PromotionPage />} />
               <Route path="customers" element={<CustomerManagermentPage />} />
               <Route path="employees" element={<EmployeePage />} />
-              <Route path="reports" element={<AnalystReportPage />} />
-              <Route path="forecasts" element={<ForecastPage />} />
               <Route path="orders" element={<OrderPage />} />
+              <Route path="statistics" element={<StatisticsPage />} />
               <Route path="vouchers" element={<VoucherPage />} />
             </Route>
           </Route>
@@ -112,11 +108,15 @@ function App() {
               path="/payment/paypal/success"
               element={<PayPalSuccessHandler />}
             />
+            <Route
+              path="/payment/paypal/cancel"
+              element={<PayPalCancelHandler />}
+            />
           </Route>
         </Routes>
         <ToastContainer
           position="top-right"
-          autoClose={3000}
+          autoClose={2000}
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick

@@ -262,24 +262,20 @@ const ReviewForm = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gray-50">
+        <div className="bg-gradient-to-r from-yellow-500 to-purple-600 text-white p-6 flex justify-between items-center rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <IconStar size={24} className="text-yellow-500" />
-            <h2 className="text-xl font-semibold text-gray-800">
+            <IconStar size={24} className="text-yellow-200" />
+            <h2 className="text-xl font-semibold text-white">
               {review ? "Chỉnh sửa đánh giá" : "Tạo đánh giá mới"}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black text-white rounded-full transition-colors cursor-pointer hover:bg-gray-800"
+            className="bg-black/30 backdrop-blur-sm text-white rounded-full p-2 hover:bg-black/50 transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
@@ -289,25 +285,25 @@ const ReviewForm = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Order/Product Information (if available) */}
           {orderItem && (
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-lg mb-3 text-blue-800 flex items-center gap-2">
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg mb-4">
+              <h3 className="font-semibold text-lg mb-3 text-yellow-800 flex items-center gap-2">
                 <IconPackage size={18} />
                 Thông tin sản phẩm
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm text-blue-600 font-medium">
+                  <span className="text-sm text-yellow-600 font-medium">
                     Sản phẩm:
                   </span>
-                  <p className="text-blue-800 font-semibold">
+                  <p className="text-yellow-800 font-semibold">
                     {orderItem.productVariant?.product?.name}
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm text-blue-600 font-medium">
+                  <span className="text-sm text-yellow-600 font-medium">
                     Biến thể:
                   </span>
-                  <p className="text-blue-800">
+                  <p className="text-yellow-800">
                     {orderItem.productVariant?.color} -{" "}
                     {orderItem.productVariant?.size}
                   </p>
@@ -350,8 +346,8 @@ const ReviewForm = ({
               onChange={handleChange}
               rows={5}
               maxLength={1000}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none ${
-                errors.comment ? "border-red-500" : "border-gray-300"
+              className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none transition-all duration-200 ${
+                errors.comment ? "border-red-500" : "hover:border-gray-400"
               }`}
               placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
             />
@@ -373,10 +369,8 @@ const ReviewForm = ({
               <IconPhoto size={16} className="inline mr-1" />
               Hình ảnh (Tùy chọn)
             </label>
-
-            {/* Upload Button */}
             <div className="mb-4">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-white/30 border-dashed rounded-lg cursor-pointer backdrop-blur-sm bg-white/60 hover:bg-white/80 transition-colors">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <IconUpload size={24} className="text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500">
@@ -397,7 +391,6 @@ const ReviewForm = ({
                 />
               </label>
             </div>
-
             {/* Image Preview */}
             {formData.images.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -406,7 +399,7 @@ const ReviewForm = ({
                     <img
                       src={image.url || image}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border"
+                      className="w-full h-24 object-cover rounded-lg border border-white/30 shadow"
                     />
                     <button
                       type="button"
@@ -419,7 +412,6 @@ const ReviewForm = ({
                 ))}
               </div>
             )}
-
             {errors.images && (
               <p className="text-red-500 text-sm mt-2">{errors.images}</p>
             )}
@@ -435,8 +427,8 @@ const ReviewForm = ({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
-                  errors.status ? "border-red-500" : "border-gray-300"
+                className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200 ${
+                  errors.status ? "border-red-500" : "hover:border-gray-400"
                 }`}
               >
                 <option value="PENDING">Chờ duyệt</option>
@@ -478,19 +470,19 @@ const ReviewForm = ({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t border-white/30">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-6 py-2 text-gray-600 backdrop-blur-sm bg-white/70 border border-white/30 rounded-lg hover:bg-white/90 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2 bg-gradient-to-r from-yellow-600 to-purple-600 text-white rounded-lg shadow-lg hover:from-yellow-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <>

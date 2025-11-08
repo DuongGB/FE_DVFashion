@@ -16,7 +16,7 @@ export const useCategory = (lang = "VI") => {
     queryFn: async () => {
       try {
         const res = await categoryAPI.getAllCategories(lang);
-        console.log("Categories response:", res.data);
+        // console.log("Categories response:", res.data);
 
         // Process categories to ensure proper image URLs
         const processedCategories = (res.data.data || res.data || []).map(
