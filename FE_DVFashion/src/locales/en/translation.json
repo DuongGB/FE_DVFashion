@@ -609,7 +609,17 @@
     "add_reply": "Add a reply",
     "reply_placeholder": "Write your reply...",
     "total_reviews": "{{count}} Reviews",
-    "title": "Product Review",
+    "clear_filters": "Clear filters",
+    "with_images": "With images",
+    "title": "Product Reviews",
+    "view_images": "View {{count}} images",
+    "hide_images": "Hide images",
+    "view_replies": "View {{count}} replies",
+    "sort": {
+      "newest": "Newest",
+      "highest": "Highest to lowest",
+      "lowest": "Lowest to highest"
+    },
     "rating": "Your Rating",
     "comment": "Your thoughts on the product",
     "comment_placeholder": "Please share your thoughts about this product...",

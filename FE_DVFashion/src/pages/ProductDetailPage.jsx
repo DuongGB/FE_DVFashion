@@ -10,6 +10,7 @@ import { useCart } from "../hooks/useCart";
 import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 import ProductRecommendations from "./ProductRecommendations";
+import ProductReviews from "../components/ui/product/ProductReviews";
 
 export default function ProductDetailPage() {
   const { t, i18n } = useTranslation();
@@ -280,6 +281,8 @@ export default function ProductDetailPage() {
 
       {/* Gợi ý sản phẩm */}
       <ProductRecommendations productId={id} />
+      {/* Reviews */}
+      <ProductReviews productId={id} />
     </div>
   );
 }
