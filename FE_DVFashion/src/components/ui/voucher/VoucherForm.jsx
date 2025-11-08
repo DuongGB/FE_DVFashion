@@ -184,15 +184,20 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
       allowSaveBeforeActive: !!values.allowSaveBeforeActive,
       discountType: values.discountType,
       discountValue: Number(values.discountValue),
-      hasMaxDiscount: !!values.hasMaxDiscount,
-      maxDiscountAmount: values.hasMaxDiscount
-        ? Number(values.maxDiscountAmount)
-        : null,
       minOrderAmount: values.minOrderAmount ? Number(values.minOrderAmount) : 0,
       maxTotalUsage: Number(values.maxTotalUsage),
       maxUsagePerUser: Number(values.maxUsagePerUser),
       isActive: !!values.isActive,
     };
+
+    // Only include max discount fields for percentage type
+    if (values.discountType === "PERCENTAGE") {
+      payload.hasMaxDiscount = !!values.hasMaxDiscount;
+      payload.maxDiscountAmount = values.hasMaxDiscount
+        ? Number(values.maxDiscountAmount)
+        : null;
+    }
+
     if (values.voucherType === "PRODUCT_SPECIFIC") {
       payload.productIds = (selectedProducts || []).map((p) => p.productId);
     }
