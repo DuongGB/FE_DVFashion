@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function PromotionPage() {
   const { t, i18n } = useTranslation();
-  // Get language from i18n instead of local state
   const language = i18n.language || "VI";
   const [search, setSearch] = useState("");
 
@@ -28,33 +27,52 @@ export default function PromotionPage() {
 
   const navigate = useNavigate();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1); // 1-based for UI
   const [showForm, setShowForm] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDetailPromotion, setSelectedDetailPromotion] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [loadingItems, setLoadingItems] = useState({
-    status: null,
-  });
+  const [loadingItems, setLoadingItems] = useState({ status: null });
   const pageSize = 10;
 
-  // Use promotion hook
-  const { promotions, isLoading, error, deletePromotion } =
+  const { usePromotionsPaging, useActivePromotionsPaging, deletePromotion } =
     usePromotion(language);
+
+  // Trigger both hooks but enable only the relevant one (avoid conditional hook calls)
+  const adminQuery = usePromotionsPaging({
+    page: currentPage - 1, // backend is 0-based
+    size: pageSize,
+    enabled: !isStaff,
+  });
+  const publicQuery = useActivePromotionsPaging({
+    page: currentPage - 1,
+    size: pageSize,
+    enabled: isStaff,
+  });
+
+  const query = isStaff ? publicQuery : adminQuery;
+
+  const promotionsPage = query.data ?? {
+    page: currentPage - 1,
+    size: pageSize,
+    totalElements: 0,
+    totalPages: 0,
+    sorts: [],
+    values: [],
+    filters: null,
+    last: true,
+  };
 
   // Force re-render when language changes
   useEffect(() => {
     const handleLanguageChange = () => {};
-
     i18n.on("languageChanged", handleLanguageChange);
-
     return () => {
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, [i18n]);
 
-  // Xử lý xóa khuyến mãi
   const handleDeletePromotion = (promotion) => {
     if (isStaff) {
       toast.error(
@@ -103,42 +121,38 @@ export default function PromotionPage() {
     });
   };
 
-  // Helper function: Chuyển đổi định dạng ngày tháng theo ngôn ngữ
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "";
     const date = new Date(dateTimeString);
     const time = date.toLocaleTimeString(
       language === "VI" ? "vi-VN" : "en-US",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }
+      { hour: "2-digit", minute: "2-digit", second: "2-digit" }
     );
     const day = date.getDate();
-    const month = date.getMonth() + 1; // Months are zero-based
+    const month = date.getMonth() + 1;
     const year = date.getFullYear();
     return `${time} ${day}/${month}/${year}`;
   };
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // Sort promotions by id
+  // Sort current page by id asc (server-side sort could be added later)
   const sortedPromotions = useMemo(() => {
-    if (!promotions) return [];
-    return [...promotions].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [promotions]);
+    const values = promotionsPage?.values ?? [];
+    return [...values].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+  }, [promotionsPage?.values]);
 
-  // Lọc theo tên và trạng thái
+  // Filter only within current page (server doesn't support filters/search)
   const filteredPromotions = useMemo(() => {
     return sortedPromotions.filter((promo) => {
+      const s = search.trim().toLowerCase();
       const matchesSearch =
-        promo.name?.toLowerCase().includes(search.toLowerCase()) ||
-        promo.description?.toLowerCase().includes(search.toLowerCase()) ||
-        promo.id?.toString().includes(search);
+        !s ||
+        promo.name?.toLowerCase().includes(s) ||
+        promo.description?.toLowerCase().includes(s) ||
+        promo.id?.toString().includes(s);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -149,15 +163,12 @@ export default function PromotionPage() {
     });
   }, [sortedPromotions, search, statusFilter]);
 
-  const totalPages = Math.ceil(filteredPromotions.length / pageSize);
-  const paginatedPromotions = filteredPromotions.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const totalPages = promotionsPage?.totalPages || 0;
 
-  // Calculate statistics
   const stats = {
-    total: sortedPromotions?.length || 0,
+    // Total from backend across all items
+    total: promotionsPage?.totalElements || 0,
+    // Per-page stats (since server doesn’t provide global breakdowns)
     active: sortedPromotions?.filter((p) => p.active).length || 0,
     inactive: sortedPromotions?.filter((p) => !p.active).length || 0,
     expired:
@@ -167,7 +178,13 @@ export default function PromotionPage() {
       ).length || 0,
   };
 
-  // Xử lý tạo khuyến mãi mới
+  // Handle status filter change
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Handle create/edit/view remain unchanged
   const handleCreatePromotion = () => {
     if (isStaff) {
       toast.error(
@@ -181,7 +198,6 @@ export default function PromotionPage() {
     setShowForm(true);
   };
 
-  // Xử lý chỉnh sửa khuyến mãi
   const handleEditPromotion = (promotion) => {
     if (isStaff) {
       toast.error(
@@ -195,180 +211,35 @@ export default function PromotionPage() {
     setShowForm(true);
   };
 
-  // Xử lý xem chi tiết khuyến mãi
   const handleViewPromotion = (promotion) => {
     setSelectedDetailPromotion(promotion);
     setShowDetailModal(true);
   };
 
-  // Đóng form
   const handleCloseForm = () => {
     setShowForm(false);
     setSelectedPromotion(null);
   };
 
-  // Handle status filter change
-  const handleStatusFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-    setCurrentPage(1); // Reset to first page
-  };
-
-  // Helper function: dùng để làm sạch và chuẩn hóa dữ liệu khuyến mãi trước khi gửi lên API
-  const cleanPromotionData = (promotion, newStatus = null) => {
-    // Helper function để format date
-    const formatDateForAPI = (dateString) => {
-      if (!dateString) return null;
-      // Nếu đã có format yyyy-MM-dd thì return luôn
-      if (dateString.includes("T")) {
-        return dateString.split("T")[0];
-      }
-      return dateString;
-    };
-
-    return {
-      name: promotion.name,
-      description: promotion.description || null,
-      type: promotion.type,
-      value: promotion.value,
-      maxUsages: promotion.maxUsages || null,
-      startDate: formatDateForAPI(promotion.startDate),
-      endDate: formatDateForAPI(promotion.endDate),
-      active: newStatus !== null ? newStatus : promotion.active,
-      // keep promotionProducts if exists (backend requires it on create; on update it can be omitted)
-      ...(promotion.promotionProducts
-        ? { promotionProducts: promotion.promotionProducts }
-        : {}),
-      // bannerFile should be handled by PromotionForm when submitting; toggle action doesn't include file
-    };
-  };
-
-  // Handle toggle status with position preservation
-  // const handleToggleStatus = async (promotion) => {
-  //   // Kiểm tra quyền trước khi thực hiện
-  //   if (isStaff) {
-  //     toast.error(
-  //       t("admin.promotion.messages.staff_status_denied") ||
-  //         "Nhân viên không có quyền thay đổi trạng thái khuyến mãi!",
-  //       { autoClose: 2000, position: "top-center" }
-  //     );
-  //     return;
-  //   }
-
-  //   const newStatus = !promotion.active;
-  //   const actionText = newStatus
-  //     ? t("admin.promotion.actions.activate")
-  //     : t("admin.promotion.actions.deactivate");
-
-  //   // Sử dụng translation key thay vì hardcoded text
-  //   const confirmText = newStatus
-  //     ? t("admin.promotion.actions.activate")
-  //     : t("admin.promotion.actions.deactivate");
-
-  //   const cancelText = language === "VI" ? "Hủy" : "Cancel";
-
-  //   const title = newStatus
-  //     ? t("admin.promotion.actions.confirm_activate")
-  //     : t("admin.promotion.actions.confirm_deactivate");
-
-  //   const message = t("admin.promotion.actions.confirm_message", {
-  //     action: actionText,
-  //     name: promotion.name,
-  //   });
-
-  //   showConfirmationToast({
-  //     title,
-  //     message,
-  //     confirmText,
-  //     cancelText,
-  //     confirmButtonClass: `${
-  //       newStatus
-  //         ? "bg-green-600 hover:bg-green-700"
-  //         : "bg-red-600 hover:bg-red-700"
-  //     } text-white px-3 py-1 rounded transition-colors cursor-pointer`,
-  //     onConfirm: async () => {
-  //       // Set loading state
-  //       setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
-
-  //       try {
-  //         // Sử dụng helper function để clean data
-  //         const promotionData = cleanPromotionData(promotion, newStatus);
-
-  //         await updatePromotion({
-  //           promotionId: promotion.id,
-  //           promotionData,
-  //           lang: language,
-  //         });
-
-  //         const successMessage = newStatus
-  //           ? t("admin.promotion.actions.success_activate")
-  //           : t("admin.promotion.actions.success_deactivate");
-
-  //         toast.success(successMessage);
-  //       } catch (error) {
-  //         console.error("Error updating promotion status:", error);
-
-  //         // If unauthorized, show message and optionally redirect to login
-  //         const status = error?.response?.status;
-  //         const respData = error?.response?.data;
-
-  //         if (status === 401) {
-  //           const msg =
-  //             respData?.error?.message ||
-  //             respData?.message ||
-  //             t("admin.promotion.errors.unauthorized") ||
-  //             "Unauthorized. Please login.";
-  //           toast.error(msg, { autoClose: 3000, position: "top-center" });
-  //           // optional: navigate to login page
-  //           // navigate("/login");
-  //           return;
-  //         }
-
-  //         // Build friendly error message
-  //         let errorMessage = t("admin.promotion.actions.error_activate");
-
-  //         if (respData?.message) {
-  //           errorMessage = respData.message;
-  //         } else if (respData?.error?.message) {
-  //           errorMessage = respData.error.message;
-  //         } else if (error.message) {
-  //           errorMessage = error.message;
-  //         } else {
-  //           errorMessage = newStatus
-  //             ? t("admin.promotion.actions.error_activate")
-  //             : t("admin.promotion.actions.error_deactivate");
-  //         }
-
-  //         toast.error(errorMessage);
-  //       } finally {
-  //         // Clear loading state
-  //         setLoadingItems((prev) => ({ ...prev, status: null }));
-  //       }
-  //     },
-  //   });
-  // };
-
-  // Handle error state
-  if (error) {
-    // Normalize possible axios error shapes
-    const resp = error?.response?.data ?? error;
+  // Error UI (admin or staff query)
+  if (query.error) {
+    const resp = query.error?.response?.data ?? query.error;
     const message =
       resp?.error?.message ||
       resp?.message ||
       (language === "VI"
         ? "Có lỗi xảy ra khi tải danh sách khuyến mãi"
         : "Error loading promotions");
-
     const details =
       resp?.error?.code || resp?.statusCode
         ? ` (${resp?.error?.code ?? resp?.statusCode})`
         : "";
-
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
           <p className="text-red-500 text-lg">{message + details}</p>
           <p className="text-gray-500 mt-2">
-            {error.message ||
+            {query.error.message ||
               (language === "VI"
                 ? "Vui lòng thử lại sau"
                 : "Please try again later")}
@@ -495,8 +366,8 @@ export default function PromotionPage() {
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
         {t("admin.promotion.showing_results", {
-          current: paginatedPromotions.length,
-          total: filteredPromotions.length,
+          current: filteredPromotions.length,
+          total: promotionsPage.totalElements || 0,
         })}
       </div>
 
@@ -519,7 +390,7 @@ export default function PromotionPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
+            {query.isLoading ? (
               <tr>
                 <td colSpan={11} className="text-center text-gray-500 p-4">
                   <div className="flex items-center justify-center gap-2">
@@ -528,8 +399,8 @@ export default function PromotionPage() {
                   </div>
                 </td>
               </tr>
-            ) : paginatedPromotions.length > 0 ? (
-              paginatedPromotions.map((promo, index) => (
+            ) : filteredPromotions.length > 0 ? (
+              filteredPromotions.map((promo, index) => (
                 <tr
                   key={`promotion-${promo.id}-${index}`}
                   className="border-b hover:bg-white/80 transition-colors"
@@ -648,7 +519,7 @@ export default function PromotionPage() {
 
       <Pagination
         currentPage={currentPage}
-        totalItems={filteredPromotions.length}
+        totalItems={promotionsPage.totalElements || 0}
         pageSize={pageSize}
         totalPages={totalPages}
         onPageChange={(page) => setCurrentPage(page)}

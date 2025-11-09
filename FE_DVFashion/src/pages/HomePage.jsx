@@ -7,8 +7,8 @@ import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
 import { useTranslation } from "react-i18next";
 import { useProduct } from "../hooks/useProduct";
-import { useHybridRecommendations } from "../hooks/useProductRecomendations";
-import VoucherSection from "./customer/voucher/VoucherSection";
+import { usePromotion } from "../hooks/usePromotion";
+import { encodeId } from "../utils/encodeId";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -16,8 +16,19 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  // Lấy danh sách sản phẩm từ API
   const currentLanguage = i18n.language || "VI";
+
+  // Public: fetch active promotions (first page)
+  const { useActivePromotionsPaging } = usePromotion(currentLanguage);
+  const {
+    data: activePromosPage,
+    isLoading: isLoadingPromotions,
+    error: promotionsError,
+  } = useActivePromotionsPaging({ page: 0, size: 8 });
+
+  const activePromotions = activePromosPage?.values ?? [];
+
+  // Products (existing)
   const productParams = useMemo(
     () => ({
       lang: currentLanguage,
@@ -29,19 +40,7 @@ export default function HomePage() {
   const { products = [], isLoading: isLoadingProducts } =
     useProduct(productParams);
 
-  // Chỉ lấy sản phẩm gợi ý khi đã đăng nhập
-  const {
-    data: recommendedProducts = [],
-    isLoading: isLoadingRecommendations,
-    error: recommendationError,
-  } = useHybridRecommendations({
-    productId: null,
-    limit: 12,
-    enabled: isAuthenticated,
-  });
-
   useEffect(() => {
-    // Cập nhật ngôn ngữ dựa trên trạng thái đăng nhập
     if (isAuthenticated && user?.preferredLanguage) {
       i18n.changeLanguage(user.preferredLanguage);
       localStorage.setItem("i18nextLng", user.preferredLanguage);
@@ -54,10 +53,8 @@ export default function HomePage() {
   }, [isAuthenticated, user, i18n]);
 
   useEffect(() => {
-    // Chỉ redirect nếu đang ở trang chủ "/"
     if (isAuthenticated && user?.roles && location.pathname === "/") {
       const defaultRoute = getDefaultRouteByRoles(user?.roles);
-      // Chỉ redirect nếu defaultRoute khác "/" và KHÔNG phải là "/customer"
       if (
         defaultRoute !== "/" &&
         defaultRoute !== "/customer" &&
@@ -85,31 +82,33 @@ export default function HomePage() {
     },
   ];
 
-  // Xác định sản phẩm để hiển thị dựa trên trạng thái đăng nhập
-  const displayProducts = (() => {
-    // Nếu chưa đăng nhập, luôn hiển thị sản phẩm từ getAll
-    if (!isAuthenticated) {
-      return isLoadingProducts ? null : products;
-    }
+  const displayProducts = isLoadingProducts ? null : products;
+  const isLoading = isLoadingProducts;
 
-    // Nếu đã đăng nhập, ưu tiên sản phẩm gợi ý
-    if (isLoadingRecommendations) {
-      return null;
-    }
+  {
+    isLoading ? (
+      <div className="w-full max-w-7xl mx-auto px-10 py-10">
+        <div className="text-center py-10 text-gray-500">
+          {t("common.loading")} {t("product.loading")}...
+        </div>
+      </div>
+    ) : displayProducts && displayProducts.length > 0 ? (
+      <ProductCarousel
+        products={displayProducts}
+        title={t("product.featured_products")}
+      />
+    ) : (
+      <div className="w-full max-w-7xl mx-auto px-10 py-10">
+        <div className="text-center py-10 text-gray-500">
+          {t("product.no_products_available")}
+        </div>
+      </div>
+    );
+  }
 
-    // Hiển thị sản phẩm gợi ý nếu có, không thì fallback về products
-    if (recommendedProducts && recommendedProducts.length > 0) {
-      return recommendedProducts;
-    }
-
-    // Fallback về danh sách sản phẩm thông thường nếu không có gợi ý
-    return isLoadingProducts ? null : products;
-  })();
-
-  // Xác định trạng thái loading
-  const isLoading = !isAuthenticated
-    ? isLoadingProducts
-    : isLoadingRecommendations || isLoadingProducts;
+  const openPromotion = (promoId) => {
+    navigate(`/promotion/${encodeId(promoId)}`);
+  };
 
   return (
     <div className="font-sans">
@@ -119,9 +118,6 @@ export default function HomePage() {
       {/* Main content */}
       <Category />
 
-      {/* Voucher Section */}
-      <VoucherSection />
-
       {/* Advertisement */}
       <div className="w-full max-w-7xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,14 +126,11 @@ export default function HomePage() {
               key={ad.id}
               className="relative rounded-2xl overflow-hidden group"
             >
-              {/* Background image */}
               <img
                 src={ad.image}
                 alt={ad.title}
                 className="w-full h-[400px] object-cover transform group-hover:scale-105 transition duration-500"
               />
-
-              {/* Overlay content */}
               <div className="absolute inset-0 bg-black/30 flex flex-col justify-end p-6">
                 <h2 className="text-white text-3xl font-bold">{ad.title}</h2>
                 <p className="text-white text-sm mt-2">{ad.subtitle}</p>

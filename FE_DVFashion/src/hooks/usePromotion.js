@@ -1,121 +1,225 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { promotionAPI } from "../services/promotionAPI";
 
-export const usePromotion = (lang = "VI") => {
+const normalizeLang = (l = "VI") =>
+  l?.toUpperCase().startsWith("VI") ? "VI" : "EN";
+
+export const usePromotion = (langInput = "VI") => {
+  const lang = normalizeLang(langInput);
   const queryClient = useQueryClient();
 
-  // Fetch all promotions
+  // Paging hook for admin promotions
+  const usePromotionsPaging = ({
+    page = 0,
+    size = 12,
+    sorts = [],
+    enabled = true,
+  } = {}) => {
+    return useQuery({
+      queryKey: ["promotions", "paging", lang, page, size, sorts],
+      queryFn: async () => {
+        const res = await promotionAPI.fetchPromotionsPaging({
+          lang,
+          page,
+          size,
+          sorts,
+        });
+        const data = res.data?.data ?? res.data ?? null;
+        if (!data) {
+          return {
+            page,
+            size,
+            totalElements: 0,
+            totalPages: 0,
+            sorts: [],
+            values: [],
+            filters: null,
+            last: true,
+          };
+        }
+        return {
+          page: data.page ?? page,
+          size: data.size ?? size,
+          totalElements: data.totalElements ?? 0,
+          totalPages: data.totalPages ?? 0,
+          sorts: Array.isArray(data.sorts) ? data.sorts : [],
+          values: Array.isArray(data.values) ? data.values : [],
+          filters: data.filters ?? null,
+          last: data.last ?? true,
+        };
+      },
+      enabled,
+      keepPreviousData: true,
+      staleTime: 1000 * 30,
+    });
+  };
+
+  // Active promotions paging
+  const useActivePromotionsPaging = ({
+    page = 0,
+    size = 12,
+    enabled = true,
+  } = {}) => {
+    return useQuery({
+      queryKey: ["promotions", "active", "paging", lang, page, size],
+      queryFn: async () => {
+        const res = await promotionAPI.fetchActivePromotionsPaging({
+          lang,
+          page,
+          size,
+        });
+        const data = res.data?.data ?? res.data ?? null;
+        if (!data) {
+          return {
+            page,
+            size,
+            totalElements: 0,
+            totalPages: 0,
+            sorts: [],
+            values: [],
+            filters: null,
+            last: true,
+          };
+        }
+        return {
+          page: data.page ?? page,
+          size: data.size ?? size,
+          totalElements: data.totalElements ?? 0,
+          totalPages: data.totalPages ?? 0,
+          sorts: Array.isArray(data.sorts) ? data.sorts : [],
+          values: Array.isArray(data.values) ? data.values : [],
+          filters: data.filters ?? null,
+          last: data.last ?? true,
+        };
+      },
+      enabled,
+      keepPreviousData: true,
+      staleTime: 1000 * 30,
+    });
+  };
+
+  // Legacy simple list (now derived from paging fetchPromotions)
   const {
-    data: promotions,
+    data: promotionsPage,
     isLoading,
+    isFetching,
     error,
   } = useQuery({
-    queryKey: ["promotions", "all", lang],
+    queryKey: ["promotions", "legacy", lang],
     queryFn: async () => {
-      const res = await promotionAPI.fetchPromotions(lang);
-      // backend returns ApiResponse wrapper -> try to normalize
-      const payload = res.data?.data ?? res.data ?? [];
-      return payload;
+      const pageData = await promotionAPI.fetchPromotions(lang);
+      return pageData;
     },
+    staleTime: 1000 * 60,
     retry: (failureCount, error) => {
-      if (error?.response?.status === 401) {
-        return false;
-      }
+      if (error?.response?.status === 401) return false;
       return failureCount < 2;
     },
   });
 
-  // Create promotion mutation
-  const createPromotionMutation = useMutation({
-    mutationFn: ({ promotionData, lang }) =>
-      promotionAPI.createPromotion(promotionData, lang),
-    onSuccess: () => {
-      // invalidate all promotions queries
-      queryClient.invalidateQueries(["promotions"]);
-    },
-    onError: (error) => {
-      console.error("Create promotion error:", error);
-      throw error;
-    },
-  });
+  const promotions = promotionsPage?.values ?? [];
 
-  // Update promotion mutation
-  const updatePromotionMutation = useMutation({
-    mutationFn: ({ promotionId, promotionData, lang }) =>
-      promotionAPI.updatePromotion(promotionId, promotionData, lang),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(["promotions"]);
-      queryClient.invalidateQueries(["promotion", variables.promotionId]);
-    },
-    onError: (error) => {
-      console.error("Update promotion error:", error);
-      throw error;
-    },
-  });
-
-  // Remove product from promotion mutation
-  const removeProductMutation = useMutation({
-    mutationFn: ({ promotionId, productId, lang }) =>
-      promotionAPI.removeProductFromPromotion(promotionId, productId, lang),
-    onSuccess: (_, variables) => {
-      // refresh list and single promotion cache
-      queryClient.invalidateQueries(["promotions"]);
-      queryClient.invalidateQueries(["promotion", variables.promotionId]);
-    },
-    onError: (error) => {
-      console.error("Remove product from promotion error:", error);
-      throw error;
-    },
-  });
-
-  // Get promotion by ID mutation
-  const usePromotionById = (promotionId, enabled = false) => {
+  // Single promotion
+  const usePromotionById = (promotionId, enabled = true) => {
+    const langNorm = lang;
     return useQuery({
-      queryKey: ["promotion", promotionId, lang],
-      queryFn: () => promotionAPI.getPromotionById(promotionId, lang),
+      queryKey: ["promotion", promotionId, langNorm],
+      queryFn: async () => {
+        const res = await promotionAPI.getPromotionById(promotionId, langNorm);
+        const data = res.data?.data ?? res.data ?? null;
+        return data
+          ? {
+              ...data,
+              promotionProducts: Array.isArray(data.promotionProducts)
+                ? data.promotionProducts
+                : [],
+            }
+          : null;
+      },
       enabled: enabled && !!promotionId,
-      select: (data) => data.data,
+      staleTime: 1000 * 60,
+      retry: (failureCount, error) => {
+        if (error?.response?.status === 404) return false;
+        return failureCount < 2;
+      },
     });
   };
 
-  // Delete promotion mutation
+  const createPromotionMutation = useMutation({
+    mutationFn: ({ promotionData, lang }) =>
+      promotionAPI.createPromotion(promotionData, normalizeLang(lang ?? lang)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["promotions"] });
+    },
+  });
+
+  const updatePromotionMutation = useMutation({
+    mutationFn: ({ promotionId, promotionData, lang }) =>
+      promotionAPI.updatePromotion(
+        promotionId,
+        promotionData,
+        normalizeLang(lang ?? lang)
+      ),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["promotions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["promotion", vars.promotionId],
+      });
+    },
+  });
+
+  const removeProductMutation = useMutation({
+    mutationFn: ({ promotionId, productId, lang }) =>
+      promotionAPI.removeProductFromPromotion(
+        promotionId,
+        productId,
+        normalizeLang(lang ?? lang)
+      ),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["promotions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["promotion", vars.promotionId],
+      });
+    },
+  });
+
   const deletePromotionMutation = useMutation({
     mutationFn: ({ promotionId, lang = "VI" }) =>
-      promotionAPI.deletePromotion(promotionId, lang),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(["promotions"]);
-      queryClient.invalidateQueries(["promotion", variables.promotionId]);
-    },
-    onError: (error) => {
-      console.error("Delete promotion error:", error);
-      throw error;
+      promotionAPI.deletePromotion(promotionId, normalizeLang(lang)),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["promotions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["promotion", vars.promotionId],
+      });
     },
   });
 
   return {
-    // Fetched data
+    // Legacy list
     promotions,
+    promotionsPage,
     isLoading,
+    isFetching,
     error,
 
+    // Paging hooks
+    usePromotionsPaging,
+    useActivePromotionsPaging,
+
+    // CRUD
     createPromotion: createPromotionMutation.mutateAsync,
     isCreating: createPromotionMutation.isPending,
-    CreateError: createPromotionMutation.error,
 
     updatePromotion: updatePromotionMutation.mutateAsync,
     isUpdating: updatePromotionMutation.isPending,
-    UpdateError: updatePromotionMutation.error,
 
     removeProduct: removeProductMutation.mutateAsync,
     isRemoving: removeProductMutation.isPending,
-    RemoveProductError: removeProductMutation.error,
 
     deletePromotion: deletePromotionMutation.mutateAsync,
     isDeleting: deletePromotionMutation.isPending,
-    deleteError: deletePromotionMutation.error,
 
-    getPromotionById: usePromotionById.mutateAsync,
-    isLoadingPromotionById: usePromotionById.isPending,
-    PromotionByIdError: usePromotionById.error,
+    // Single item hook
+    usePromotionById,
   };
 };

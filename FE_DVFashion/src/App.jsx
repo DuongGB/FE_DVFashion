@@ -32,6 +32,7 @@ import CategoryProductPage from "./pages/CategoryProductPage";
 import VoucherPage from "./pages/admin/VoucherPage";
 import PayPalCancelHandler from "./pages/customer/order/PaypalCancelHandler";
 import StatisticsPage from "./pages/admin/StatisticsPage";
+import PromotionProductsPage from "./pages/customer/promotion/PromotionProductsPage";
 
 function App() {
   return (
@@ -84,6 +85,10 @@ function App() {
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/search" element={<SearchProductPage />} />
             <Route path="/products" element={<CategoryProductPage />} />
+            <Route
+              path="/promotions/:promotionId"
+              element={<PromotionProductsPage />}
+            />
 
             <Route
               element={

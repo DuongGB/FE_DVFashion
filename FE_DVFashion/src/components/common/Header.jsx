@@ -7,6 +7,7 @@ import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { usePublicCategories } from "../../hooks/useCategory";
+import { usePromotion } from "../../hooks/usePromotion";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
 import AuthModal from "../ui/auth/AuthModal";
@@ -106,6 +107,14 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 
   const { categories, isLoading, error } = usePublicCategories(i18n.language);
   // console.log("Fetched categories in MainMenu:", categories);
+  const { useActivePromotionsPaging } = usePromotion(i18n.language || "VI");
+  const {
+    data: activePromosPage,
+    isLoading: isLoadingPromotions,
+    error: promotionsError,
+  } = useActivePromotionsPaging({ page: 0, size: 8 });
+
+  const promotions = activePromosPage?.values ?? [];
 
   const [activeMenu, setActiveMenu] = useState(null);
 
@@ -171,12 +180,6 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   }, []);
 
   const menuItems = [
-    // {
-    //   key: "new",
-    //   label: t("header.navigation.new"),
-    //   color: "text-blue-600",
-    //   underline: "bg-blue-600",
-    // },
     {
       key: "men",
       label: t("header.navigation.men"),
@@ -199,6 +202,13 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       categories: categoriesByMenu.unisex,
     },
     {
+      key: "promotion",
+      label: t("header.navigation.promotion"),
+      color: "",
+      underline: "bg-black",
+      promotions,
+    },
+    {
       key: "cs",
       label: t("header.navigation.cs"),
       color: "",
@@ -206,6 +216,16 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
       onClick: () => navigate("/help"),
     },
   ];
+
+  //Xử lý click promotion
+  const handlePromotionClick = useCallback(
+    (promotion) => {
+      const param = encodeId(promotion.id);
+      navigate(`/promotions/${param}`);
+      setActiveMenu(null);
+    },
+    [navigate]
+  );
 
   // Đóng popup khi click ra ngoài
   useEffect(() => {
@@ -280,19 +300,22 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
                 {item.label}
               </button>
               <div
-                className={`pointer-events-none absolute left-0 right-0 -bottom-1 h-[2px] w-0 ${item.underline} rounded-full transition-all duration-300 group-hover:w-full`}
+                className={`pointer-events-none absolute left-0 right-0 -bottom-1 h-[2px] w-0 ${item.underline} rounded-full transition-all duration-300 group-hover:w-full bg-red-500`}
               ></div>
               {activeMenu === item.key &&
                 (item.categories?.length > 0 ||
-                  item.key === "new" ||
-                  item.key === "sale") && (
+                  item.promotions?.length > 0) && (
                   <MegaMenu
                     onMouseEnter={() => handleMouseEnter(item.key)}
                     onMouseLeave={handleMouseLeave}
                     categories={item.categories || []}
-                    isLoading={isLoading}
-                    error={error}
+                    promotions={item.promotions || []}
+                    isLoading={
+                      item.key === "promotion" ? isLoadingPromotions : isLoading
+                    }
+                    error={item.key === "promotion" ? promotionsError : error}
                     onCategoryClick={handleCategoryClick}
+                    onPromotionClick={handlePromotionClick}
                     menuType={item.key}
                   />
                 )}
@@ -373,63 +396,150 @@ function MegaMenu({
   onMouseEnter,
   onMouseLeave,
   categories,
+  promotions = [],
   isLoading,
   error,
   onCategoryClick,
+  onPromotionClick,
   menuType,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  if (isLoading) {
+  // Make borders clearer and layout constrained
+  const containerBase =
+    "fixed left-1/2 -translate-x-1/2 top-[64px] w-[92vw] max-w-[1280px] bg-white/95 backdrop-blur-lg shadow-2xl rounded-2xl z-50";
+  const containerBorder = "border-2 border-gray-300 ring-1 ring-black/5";
+
+  if (menuType === "promotion") {
+    const displayPromotions = (promotions || []).slice(0, 8); // max 8 promos, 2 rows
+
+    if (isLoading) {
+      return (
+        <div
+          className={`${containerBase} ${containerBorder} py-8 px-10`}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        >
+          <h3 className="text-lg font-bold mb-6">
+            {t("promotion.active_promotions")}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-32 rounded-lg bg-gray-100 border border-gray-200"
+              ></div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (error || displayPromotions.length === 0) {
+      return (
+        <div
+          className={`${containerBase} ${containerBorder} py-10 px-10 text-center`}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        >
+          <p className="text-gray-600">
+            {t("promotion.not_found", "Không tìm thấy khuyến mãi")}
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div
-        className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white/70 shadow-2xl rounded-2xl py-8 px-10 z-50 text-base border border-white/40"
+        className={`${containerBase} ${containerBorder} py-8 px-10 flex flex-col gap-6`}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        role="menu"
+        aria-label="Promotions menu"
       >
-        <div className="p-8 text-center">
-          {t("category.loading", "Đang tải danh mục...")}
+        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          {t("promotion.active_promotions")}
+          <span className="text-sm font-medium text-gray-500">
+            ({displayPromotions.length})
+          </span>
+        </h3>
+
+        {/* 2 rows x 4 columns on md+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+          {displayPromotions.map((promo) => {
+            const productCount = promo.promotionProducts?.length || 0;
+            const endDate = new Date(promo.endDate);
+            const daysLeft = Math.ceil(
+              (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            );
+            return (
+              <button
+                key={promo.id}
+                type="button"
+                className="group text-left p-4 rounded-xl border border-gray-200 hover:border-orange-500 hover:shadow-lg transition-all"
+                onClick={() => onPromotionClick(promo)}
+              >
+                <h4 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors line-clamp-1">
+                  {promo.name}
+                </h4>
+                <p className="text-xs text-gray-500 line-clamp-2">
+                  {promo.description ||
+                    t("promotion.no_description", "Không có mô tả")}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+                  <span>{productCount}</span>
+                  <span>•</span>
+                  <span>
+                    {endDate.toLocaleDateString(
+                      i18n.language.startsWith("vi") ? "vi-VN" : "en-US"
+                    )}
+                  </span>
+                  {daysLeft >= 0 && (
+                    <>
+                      <span>•</span>
+                      <span className="text-orange-600 font-medium">
+                        {daysLeft} {t("header.days_left", "ngày còn lại")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div
-        className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white/70 backdrop-blur-2xl shadow-2xl rounded-2xl py-8 px-10 z-50 text-base border border-white/40"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      >
-        <div className="p-8 text-center text-red-500">
-          {t("category.error_loading")}
-        </div>
-      </div>
-    );
-  }
+  // Categories mega menu: compact, max 18 categories
+  const compactCategories = (categories || []).slice(0, 18);
 
   return (
     <div
-      className="fixed left-1/2 top-[95px] -translate-x-1/2 w-[92vw] max-w-[1500px] bg-white shadow-2xl rounded-2xl py-8 px-0 flex gap-0 opacity-100 pointer-events-auto transition-all duration-200 z-50 text-base border border-gray-200 overflow-hidden"
+      className={`${containerBase} ${containerBorder} py-8 px-8 flex gap-0 opacity-100 pointer-events-auto transition-all duration-200 text-base overflow-hidden`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      style={{ minHeight: "420px" }}
       role="menu"
       aria-label="Mega menu"
     >
-      {/* Categories section */}
-      <div className="flex-1 px-10">
-        {categories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-6">
-            {categories.map((cat) => (
-              <div key={cat.id} className="min-w-[150px]">
+      <div className="flex-1">
+        {compactCategories.length > 0 ? (
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))", // 6 cols x 3 rows = 18
+            }}
+          >
+            {compactCategories.map((cat) => (
+              <div key={cat.id} className="min-w-[120px]">
                 <button
                   type="button"
-                  className="text-left w-full hover:text-orange-600 font-semibold transition-colors"
+                  className="text-left w-full hover:text-orange-600 font-semibold transition-colors text-sm py-2 px-3 rounded-md hover:bg-orange-50 cursor-pointer"
                   onClick={() => onCategoryClick(cat)}
                   aria-label={`Open category ${cat.name}`}
+                  title={cat.name}
                 >
-                  {cat.name}
+                  <span className="line-clamp-1">{cat.name}</span>
                 </button>
               </div>
             ))}

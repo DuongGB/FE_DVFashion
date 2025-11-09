@@ -8,13 +8,15 @@
     "account": "Account",
     "search_placeholder": "Search...",
     "cart_items": "items",
+    "days_left": "days left",
     "navigation": {
       "new": "NEW",
       "men": "MEN",
       "women": "WOMEN",
       "unisex": "UNISEX",
       "sale": "SALE",
-      "cs": "C&S"
+      "cs": "C&S",
+      "promotion": "PROMOTION"
     }
   },
   "search": {
@@ -30,6 +32,7 @@
     "price_range": "Price range",
     "min_price": "Min",
     "max_price": "Max",
+    "showing_results": "Showing {{current}} of {{total}} products",
     "price": {
       "under_200k": "Under 200k",
       "200k_500k": "200k - 500k",
@@ -74,6 +77,15 @@
       "subtitle": "Free accessories for orders over 399K | Free shipping",
       "button": "DISCOVER"
     }
+  },
+  "promotion": {
+    "view_products": "View Products",
+    "active_promotions": "Promotion Programs",
+    "from": "From",
+    "to": "To",
+    "not_found": "No promotions found",
+    "no_products": "No products in this promotion",
+    "promotion_products": "Promotion Products"
   },
   "category": {
     "error_loading": "Unable to load categories. Please try again later.",
@@ -1071,6 +1083,7 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "start_date_in_past": "Start date must be today or later",
         "remove": " Remove",
         "already_added": "Already added",
         "already_in_other": "Already included in another promotion",
@@ -1590,8 +1603,6 @@
         "description_placeholder": "Enter product description...",
         "price": "Original Price",
         "sale_price": "Sale Price",
-        "brand": "Brand",
-        "select_brand": "Select Brand",
         "category": "Category",
         "select_category": "Select Category",
         "variant": "Variant",
@@ -1601,7 +1612,6 @@
         "additional_price": "Additional Price",
         "active": "Active",
         "inactive": "Inactive",
-        "out_of_stock": "Out of Stock",
         "discontinued": "Discontinued",
         "sizes": "Sizes",
         "add_size": "Add Size",
@@ -1616,6 +1626,19 @@
         "cancel": "Cancel",
         "submit_create": "Create Product",
         "submit_update": "Update Product"
+      },
+      "validation": {
+        "name_required": "Product name is required",
+        "price_required": "Original price > 0 is required",
+        "material_required": "Material is required",
+        "status_required": "Status is required",
+        "category_required": "Category is required",
+        "variants_required": "At least 1 variant is required",
+        "color_required": "Color is required",
+        "sizes_required": "At least 1 size is required",
+        "images_required": "At least 1 image is required",
+        "size_name_required": "Size name is required",
+        "stock_quantity_required": "Stock quantity >= 0 is required"
       },
       "detail": {
         "title": "Product Details",
@@ -1634,7 +1657,6 @@
         "original_price": "Original Price",
         "sale_price": "Sale Price",
         "on_sale": "ON SALE",
-        "total_stock": "Total Stock",
         "review_count": "Reviews",
         "review_unit": "reviews",
         "variants": "Product Variants ({{count}})",
@@ -1644,8 +1666,7 @@
         "primary_image": "Primary Image",
         "timestamps": "Timestamps",
         "created_at": "Created At",
-        "updated_at": "Last Updated",
-        "close": "Close"
+        "updated_at": "Last Updated"
       },
       "status": {
         "active": "Active",
@@ -1758,6 +1779,7 @@
       }
     },
     "inventory": {
+      "id": "Inventory ID",
       "min_stock": "Minimum Stock",
       "title": "Inventory Management",
       "import_stock": "Import Stock",
@@ -1966,6 +1988,8 @@
         "reason_placeholder": "Enter your reason here..."
       },
       "detail": {
+        "images": "Review Images",
+        "review_info": "Review Information",
         "title": "Review Details",
         "description": "View detailed information for {{name}}'s review",
         "rating_summary": "Rating Summary",
