@@ -33,7 +33,7 @@ export const useDailyRevenue = ({
   return useQuery({
     queryKey: ["statistics", "revenue", "daily", { startDate, endDate }],
     queryFn: () => statisticAPI.getDailyRevenue({ startDate, endDate }),
-    enabled: enabled && !!startDate && !!endDate,
+    enabled,
     staleTime: 1000 * 60 * 5,
     select: (response) => {
       console.log("Daily revenue response:", response);
