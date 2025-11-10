@@ -39,6 +39,8 @@ export default function ProductPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loadingStatusId, setLoadingStatusId] = useState(null);
   const [searchInput, setSearchInput] = useState("");
+  const [tempMinPrice, setTempMinPrice] = useState("");
+  const [tempMaxPrice, setTempMaxPrice] = useState("");
 
   // Advanced filters
   const [filters, setFilters] = useState({
@@ -63,7 +65,7 @@ export default function ProductPage() {
     if (search) params.search = search;
     if (statusFilter) params.status = statusFilter.toUpperCase();
     if (filters.categoryIds.length > 0) {
-      params.categoryId = filters.categoryIds[0]; // Backend only supports single categoryId
+      params.categoryId = filters.categoryIds[0];
     }
     if (filters.onSale !== null) params.onSale = filters.onSale;
     if (filters.priceRange.min) params.minPrice = filters.priceRange.min;
@@ -104,6 +106,11 @@ export default function ProductPage() {
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, [i18n]);
+
+  useEffect(() => {
+    setTempMinPrice(filters.priceRange.min);
+    setTempMaxPrice(filters.priceRange.max);
+  }, [showAdvancedFilters, filters.priceRange.min, filters.priceRange.max]);
 
   // Toggle status handler
   const handleToggleStatus = (product) => {
@@ -442,6 +449,7 @@ export default function ProductPage() {
                     setCurrentPage(0);
                   }
                 }}
+                placeholder={t("admin.product.search_placeholder")}
                 className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
               />
             </div>
@@ -509,13 +517,16 @@ export default function ProductPage() {
                 <input
                   type="number"
                   placeholder="0"
-                  value={filters.priceRange.min}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      priceRange: { ...prev.priceRange, min: e.target.value },
-                    }))
-                  }
+                  value={tempMinPrice}
+                  onChange={(e) => setTempMinPrice(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceRange: { ...prev.priceRange, min: tempMinPrice },
+                      }));
+                    }
+                  }}
                   className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -526,13 +537,16 @@ export default function ProductPage() {
                 <input
                   type="number"
                   placeholder="999999999"
-                  value={filters.priceRange.max}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      priceRange: { ...prev.priceRange, max: e.target.value },
-                    }))
-                  }
+                  value={tempMaxPrice}
+                  onChange={(e) => setTempMaxPrice(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceRange: { ...prev.priceRange, max: tempMaxPrice },
+                      }));
+                    }
+                  }}
                   className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

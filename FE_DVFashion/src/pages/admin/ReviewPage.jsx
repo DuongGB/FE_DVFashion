@@ -8,6 +8,7 @@ import {
   IconRestore,
   IconStarFilled,
   IconX,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,6 +48,7 @@ export default function ReviewPage() {
   }, {});
 
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch] = useDebounce(search, 500);
   const [statusFilter, setStatusFilter] = useState("");
   const [ratingFilter, setRatingFilter] = useState("");
@@ -129,13 +131,9 @@ export default function ReviewPage() {
     return filteredReviews.slice(startIndex, endIndex);
   }, [filteredReviews, currentPage, pageSize]);
 
-  // Calculate filtered statistics
+  // Tính toán lại thống kê dựa trên filteredReviews
   const filteredStats = useMemo(() => {
-    if (!statusFilter && !ratingFilter && !debouncedSearch) {
-      return stats; // Use original stats if no filters
-    }
-
-    // Calculate stats from filtered reviews
+    // Luôn tính lại averageRating từ filteredReviews
     const statusCounts = filteredReviews.reduce((acc, review) => {
       acc[review.status] = (acc[review.status] || 0) + 1;
       return acc;
@@ -160,12 +158,16 @@ export default function ReviewPage() {
       },
       averageRating,
     };
-  }, [filteredReviews, stats, statusFilter, ratingFilter, debouncedSearch]);
+  }, [filteredReviews]);
 
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0);
   }, [debouncedSearch, statusFilter, ratingFilter]);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   const handleModerate = (review, newStatus, actionText) => {
     const needsComment = newStatus === "REJECTED" || newStatus === "HIDDEN";
@@ -308,20 +310,25 @@ export default function ReviewPage() {
 
       {/* Filters */}
       <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
+        <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
+          <div className="flex-1">
             <input
               type="text"
               placeholder={t("admin.review.search_placeholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setSearch(searchInput);
+                }
+              }}
               className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="">{t("admin.review.all_status")}</option>
             {Object.entries(statusConfig).map(([key, { label }]) => (
@@ -333,7 +340,7 @@ export default function ReviewPage() {
           <select
             value={ratingFilter}
             onChange={(e) => setRatingFilter(e.target.value)}
-            className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="">{t("admin.review.all_ratings")}</option>
             {[5, 4, 3, 2, 1].map((star) => (
@@ -342,6 +349,14 @@ export default function ReviewPage() {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+            title={t("common.refresh") || "Làm mới"}
+          >
+            <IconRefresh size={18} />
+          </button>
         </div>
       </div>
 

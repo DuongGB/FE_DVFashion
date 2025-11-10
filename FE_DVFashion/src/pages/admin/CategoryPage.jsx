@@ -18,6 +18,7 @@ export default function CategoryPage() {
   const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -40,6 +41,11 @@ export default function CategoryPage() {
       setLocalCategories(categories);
     }
   }, [categories]);
+
+  // Đảm bảo khi đổi filter khác, cũng reset searchInput về search nếu muốn đồng bộ:
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   // Force re-render when language changes
   useEffect(() => {
@@ -387,8 +393,13 @@ export default function CategoryPage() {
               <input
                 type="text"
                 placeholder={t("admin.category.search_placeholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearch(searchInput);
+                  }
+                }}
                 className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

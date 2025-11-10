@@ -9,6 +9,7 @@ import {
   IconCash,
   IconBrandPaypal,
   IconBuildingBank,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import OrderDetailModal from "../../components/ui/order/OrderDetailModal";
@@ -71,6 +72,7 @@ const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
 
 export default function OrdersPage() {
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState("Tất cả");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("Tất cả");
@@ -113,7 +115,7 @@ export default function OrdersPage() {
     };
   }, [statsApi]);
 
-  const { data, isLoading, isError } = useAllOrdersPaging(params);
+  const { data, isLoading, isError, refetch } = useAllOrdersPaging(params);
 
   const orders = data?.values || [];
 
@@ -223,14 +225,17 @@ export default function OrdersPage() {
       </div>
 
       {/* Thanh công cụ */}
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
         <input
           type="text"
           placeholder={t("admin.order.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSearch(searchInput);
+              setCurrentPage(1);
+            }
           }}
           className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 flex-1 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
@@ -263,6 +268,13 @@ export default function OrdersPage() {
           <option value="PAYPAL">PayPal</option>
           <option value="BANK_TRANSFER">Chuyển khoản</option>
         </select>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+        >
+          <IconRefresh size={18} />
+        </button>
       </div>
 
       {/* Bảng đơn hàng */}
