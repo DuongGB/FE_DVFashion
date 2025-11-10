@@ -1726,6 +1726,25 @@
         "daily_views": "Daily Views",
         "change_from_last_month": "from last month"
       },
+      "recommendation_analytics": {
+        "title": "Recommendation Analytics",
+        "days_7": "7 days",
+        "days_30": "30 days",
+        "days_90": "90 days",
+        "days_all": "All time",
+        "total_recommendations": "Total Recommendations",
+        "ctr": "Click-through Rate",
+        "cart_rate": "Add-to-cart Rate",
+        "purchase_rate": "Purchase Rate",
+        "total_clicks": "Total clicks: {{count}}",
+        "total_add_to_carts": "Add to carts: {{count}}",
+        "total_purchases": "Purchases: {{count}}"
+      },
+      "top_recommended_products": {
+        "title": "Top Recommended Products",
+        "count": "{{count}} times",
+        "no_data": "No recommended product data"
+      },
       "charts": {
         "revenue_title": "Revenue Chart",
         "revenue_chart_title": "Monthly Revenue and Orders",

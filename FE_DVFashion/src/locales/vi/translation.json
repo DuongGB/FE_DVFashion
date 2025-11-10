@@ -1647,6 +1647,25 @@
         "daily_views": "Lượt xem hôm nay",
         "change_from_last_month": "từ tháng trước"
       },
+      "recommendation_analytics": {
+        "title": "Thống Kê Gợi Ý Sản Phẩm",
+        "days_7": "7 ngày",
+        "days_30": "30 ngày",
+        "days_90": "90 ngày",
+        "days_all": "Tất cả",
+        "total_recommendations": "Tổng gợi ý",
+        "ctr": "Tỷ lệ nhấp",
+        "cart_rate": "Tỷ lệ thêm giỏ",
+        "purchase_rate": "Tỷ lệ mua hàng",
+        "total_clicks": "Tổng nhấp: {{count}}",
+        "total_add_to_carts": "Thêm giỏ: {{count}}",
+        "total_purchases": "Mua hàng: {{count}}"
+      },
+      "top_recommended_products": {
+        "title": "Sản Phẩm Được Gợi Ý Nhiều Nhất",
+        "count": "{{count}} lần",
+        "no_data": "Chưa có dữ liệu gợi ý sản phẩm"
+      },
       "charts": {
         "revenue_title": "Biểu đồ doanh thu",
         "revenue_chart_title": "Doanh thu và Đơn hàng theo tháng",

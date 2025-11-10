@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import OrderDetailModal from "../../components/ui/order/OrderDetailModal";
 import OrderEditModal from "../../components/ui/order/OrderEditModal";
 import Pagination from "../../components/common/Pagination";
-import { useAllOrdersPaging } from "../../hooks/useOrder";
+import { useAllOrdersPaging, useOrderStatistics } from "../../hooks/useOrder";
 
 const statusColors = {
   PENDING: "bg-gray-500",
@@ -86,6 +86,33 @@ export default function OrdersPage() {
     sort: "orderDate,desc",
   };
 
+  const { data: statsApi, isLoading: statsLoading } = useOrderStatistics();
+
+  const stats = useMemo(() => {
+    if (!statsApi)
+      return {
+        all: 0,
+        pending: 0,
+        confirmed: 0,
+        processing: 0,
+        delivered: 0,
+        shipped: 0,
+        returned: 0,
+        canceled: 0,
+      };
+    const byStatus = statsApi.ordersByStatus || {};
+    return {
+      all: statsApi.totalOrders || 0,
+      pending: byStatus.PENDING || 0,
+      confirmed: byStatus.CONFIRMED || 0,
+      processing: byStatus.PROCESSING || 0,
+      delivered: byStatus.DELIVERED || 0,
+      shipped: byStatus.SHIPPED || 0,
+      returned: byStatus.RETURNED || 0,
+      canceled: byStatus.CANCELED || 0,
+    };
+  }, [statsApi]);
+
   const { data, isLoading, isError } = useAllOrdersPaging(params);
 
   const orders = data?.values || [];
@@ -111,42 +138,6 @@ export default function OrdersPage() {
   const paginatedOrders = filteredOrders;
   const totalPages = data?.totalPages ?? 1;
 
-  const stats = useMemo(() => {
-    const all = data?.totalElements ?? 0;
-
-    let pending = 0,
-      confirmed = 0,
-      processing = 0,
-      delivered = 0,
-      shipped = 0,
-      returned = 0,
-      canceled = 0,
-      totalAmount = 0;
-
-    orders.forEach((o) => {
-      if (o.status === "PENDING") pending++;
-      if (o.status === "CONFIRMED") confirmed++;
-      if (o.status === "PROCESSING") processing++;
-      if (o.status === "DELIVERED") delivered++;
-      if (o.status === "SHIPPED") shipped++;
-      if (o.status === "RETURNED") returned++;
-      if (o.status === "CANCELED") canceled++;
-      totalAmount += Number(o.totalAmount || 0);
-    });
-
-    return {
-      all,
-      pending,
-      confirmed,
-      processing,
-      delivered,
-      shipped,
-      returned,
-      canceled,
-      totalAmount,
-    };
-  }, [orders, data?.totalElements]);
-
   const mapToModalOrder = (order) => {
     if (!order) return null;
     return {
@@ -162,7 +153,7 @@ export default function OrdersPage() {
     };
   };
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return <div>{t("common.loading")}...</div>;
   }
 
