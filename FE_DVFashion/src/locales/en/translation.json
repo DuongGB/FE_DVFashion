@@ -363,6 +363,7 @@
   },
   "product": {
     "title": "Product Management",
+    "no_products_available": "No products available to display.",
     "create_product": "Create Product",
     "staff_view_only": "View Only Mode - Cannot Edit",
     "total_products": "Total Products",

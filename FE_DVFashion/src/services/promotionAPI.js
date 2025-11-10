@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const promotionAPI = {
-  //  paging for admin promotions
+  // paging for admin promotions
   fetchPromotionsPaging: ({
     lang = "VI",
     page = 0,
