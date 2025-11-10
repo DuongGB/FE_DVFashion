@@ -422,6 +422,7 @@
     "staff_no_permission": "You don't have permission to edit"
   },
   "cart": {
+    "not_logged_in": "You are not logged in!",
     "voucher_code": "Voucher Code",
     "enter_voucher_code": "Enter voucher code",
     "apply": "Apply",
@@ -429,7 +430,7 @@
     "voucher_removed": "Voucher removed",
     "invalid_voucher": "Invalid voucher code",
     "voucher_min_order_not_met": "Minimum order {{amount}}",
-    "view_available_vouchers": "View available vouchers",
+    "view_available_vouchers": "View vouchers",
     "available_promotions": "Available Promotions",
     "discount": "Discount",
     "title": "Cart",

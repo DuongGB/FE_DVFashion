@@ -49,6 +49,11 @@ export default function CartBottom({
   const handleOrderClick = () => {
     if (isLoading) return;
 
+    if (!isAuthenticated) {
+      toast.warn(t("cart.not_logged_in"));
+      return;
+    }
+
     // Kiểm tra giỏ hàng trống
     if (!cart || cart.length === 0) {
       toast.info(t("cart.empty_cart"));
@@ -62,10 +67,6 @@ export default function CartBottom({
       return;
     }
 
-    if (!isAuthenticated) {
-      authModal.openLogin({ stayOnPage: true });
-      return;
-    }
     if (onOrder) {
       onOrder();
     }

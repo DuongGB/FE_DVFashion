@@ -389,6 +389,7 @@
     }
   },
   "cart": {
+    "not_logged_in": "Vui lòng đăng nhập!",
     "voucher_code": "Mã giảm giá",
     "enter_voucher_code": "Nhập mã giảm giá",
     "apply": "Áp dụng",
@@ -396,7 +397,7 @@
     "voucher_removed": "Đã xóa voucher",
     "invalid_voucher": "Mã giảm giá không hợp lệ",
     "voucher_min_order_not_met": "Đơn hàng tối thiểu {{amount}}",
-    "view_available_vouchers": "Xem voucher khả dụng",
+    "view_available_vouchers": "Xem voucher",
     "available_promotions": "Khuyến mãi có sẵn",
     "discount": "Giảm giá",
     "title": "Giỏ hàng",
