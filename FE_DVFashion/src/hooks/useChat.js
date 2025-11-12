@@ -84,7 +84,6 @@ export const useChat = () => {
       chatAPI.sendMessageWithAttachment(roomCode, file, content),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(["chatMessages", variables.roomCode]);
-      toast.success("File sent successfully");
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to send file");
@@ -137,27 +136,13 @@ export const useChat = () => {
           const messageSubscription = websocketService.subscribe(
             `/topic/chat/${roomCode}`,
             (message) => {
-              console.log("📨 New message received via WebSocket:", message);
-              console.log("WS FIELDS:", {
-                id: message.id,
-                senderId: message.senderId,
-                senderName: message.senderName,
-                senderType: message.senderType,
-                senderRole: message.senderRole,
-                role: message.role,
-                isFromAdmin: message.isFromAdmin,
-                messageType: message.messageType,
-                createdAt: message.createdAt,
-                contentPreview: (message.content || "").slice(0, 100),
-              });
-
-              // ✅ Invalidate queries để trigger re-fetch
+              // Invalidate queries để trigger re-fetch
               queryClient.invalidateQueries(["chatMessages", roomCode]);
 
-              // ✅ Invalidate admin chat rooms để cập nhật danh sách
+              // Invalidate admin chat rooms để cập nhật danh sách
               queryClient.invalidateQueries(["adminChatRooms"]);
 
-              // ✅ Callback
+              // Callback
               if (onMessageReceived) onMessageReceived(message);
             }
           );

@@ -6,7 +6,12 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { isAdminMessage } from "../../../utils/isAdminMessage";
-import { IconX } from "@tabler/icons-react";
+import {
+  IconMessage2,
+  IconUserCircle,
+  IconUserQuestion,
+  IconX,
+} from "@tabler/icons-react";
 
 const ChatBox = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
@@ -14,7 +19,6 @@ const ChatBox = ({ isOpen, onClose }) => {
   const [roomCode, setRoomCode] = useState(null);
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [guestInfo, setGuestInfo] = useState({ name: "", phone: "" });
-  const [typingUsers, setTypingUsers] = useState([]);
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -23,6 +27,7 @@ const ChatBox = ({ isOpen, onClose }) => {
   const CHAT_GUEST_KEY = "chatGuestInfo";
   const prevUserRef = useRef(user);
   const creatingRoomRef = useRef(false);
+  const [pendingMessage, setPendingMessage] = useState(null);
 
   const {
     createGuestChatRoom,
@@ -63,12 +68,15 @@ const ChatBox = ({ isOpen, onClose }) => {
   // Clear chat storage bất cứ khi user thay đổi (login/logout)
   useEffect(() => {
     if (prevUserRef.current !== user) {
-      localStorage.removeItem(CHAT_ROOM_KEY);
-      localStorage.removeItem(CHAT_GUEST_KEY);
+      // Khi user thay đổi (login/logout), reset toàn bộ state chatbox
       setRoomCode(null);
       setIsRoomReady(false);
-      setTypingUsers([]);
       setShowGuestForm(!user);
+      setGuestInfo({ name: "", phone: "" });
+      setIsMinimized(false);
+      setPendingMessage(null);
+      localStorage.removeItem(CHAT_ROOM_KEY);
+      localStorage.removeItem(CHAT_GUEST_KEY);
     }
     prevUserRef.current = user;
   }, [user]);
@@ -101,47 +109,69 @@ const ChatBox = ({ isOpen, onClose }) => {
     }
   }, [isOpen, user]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setRoomCode(null);
+      setIsRoomReady(false);
+      setShowGuestForm(false);
+      setGuestInfo({ name: "", phone: "" });
+      setIsMinimized(false);
+      setPendingMessage(null);
+    }
+  }, [isOpen]);
+
   // Auto-create room cho user đã đăng nhập nếu chưa có room
   useEffect(() => {
     if (!isOpen || authLoading) return;
 
-    // Ưu tiên lấy roomCode từ localStorage
-    const savedRoomCode = localStorage.getItem(CHAT_ROOM_KEY);
     if (
       user &&
-      !roomCode &&
-      !savedRoomCode &&
-      !createCustomerChatRoom.isPending &&
-      !creatingRoomRef.current
+      Array.isArray(user.roles) &&
+      user.roles.includes("ROLE_CUSTOMER") &&
+      !user.roles.includes("ROLE_ADMIN")
     ) {
-      creatingRoomRef.current = true;
-      createCustomerChatRoom.mutate(undefined, {
-        onSuccess: (data) => {
-          const newRoomCode = data.data.roomCode;
-          setRoomCode(newRoomCode);
-          localStorage.setItem(CHAT_ROOM_KEY, newRoomCode);
-          setIsRoomReady(true);
-          setShowGuestForm(false);
-        },
-        onError: () => {
-          const fallback = localStorage.getItem(CHAT_ROOM_KEY);
-          if (fallback) {
-            setRoomCode(fallback);
-            setIsRoomReady(true);
-            setShowGuestForm(false);
-          }
-        },
-        onSettled: () => {
-          creatingRoomRef.current = false;
-        },
-      });
-    } else if (user && savedRoomCode && !roomCode) {
-      // Nếu có roomCode trong localStorage nhưng chưa set vào state
-      setRoomCode(savedRoomCode);
-      setIsRoomReady(true);
       setShowGuestForm(false);
+      setGuestInfo({ name: "", phone: "" });
+
+      if (
+        !roomCode &&
+        !createCustomerChatRoom.isPending &&
+        !creatingRoomRef.current
+      ) {
+        creatingRoomRef.current = true;
+        createCustomerChatRoom.mutate(undefined, {
+          onSuccess: (data) => {
+            const newRoomCode = data.data.roomCode;
+            setRoomCode(newRoomCode);
+            localStorage.setItem(CHAT_ROOM_KEY, newRoomCode);
+            setIsRoomReady(true);
+          },
+          onError: () => {
+            setIsRoomReady(false);
+          },
+          onSettled: () => {
+            creatingRoomRef.current = false;
+          },
+        });
+      }
+    } else if (!user) {
+      // Guest logic giữ nguyên
+      const savedRoomCode = localStorage.getItem(CHAT_ROOM_KEY);
+      const savedGuestInfo = localStorage.getItem(CHAT_GUEST_KEY);
+      if (savedRoomCode) {
+        setRoomCode(savedRoomCode);
+        setIsRoomReady(true);
+        if (savedGuestInfo) {
+          try {
+            setGuestInfo(JSON.parse(savedGuestInfo));
+          } catch {}
+        }
+        setShowGuestForm(false);
+      } else {
+        setShowGuestForm(true);
+      }
     }
-  }, [isOpen, user, roomCode, authLoading, createCustomerChatRoom.isPending]);
+  }, [isOpen, user, authLoading, roomCode, createCustomerChatRoom.isPending]);
 
   // Connect WebSocket when room code is available
   useEffect(() => {
@@ -150,35 +180,12 @@ const ChatBox = ({ isOpen, onClose }) => {
       const timer = setTimeout(() => {
         console.log("🔌 Connecting WebSocket for room:", roomCode);
 
-        connectWebSocket(
-          roomCode,
-          (message) => {
-            console.log("New message received:", message);
-            setTimeout(() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-          },
-          (indicator) => {
-            if (indicator.isTyping) {
-              setTypingUsers((prev) => {
-                if (!prev.includes(indicator.userName)) {
-                  return [...prev, indicator.userName];
-                }
-                return prev;
-              });
-
-              setTimeout(() => {
-                setTypingUsers((prev) =>
-                  prev.filter((name) => name !== indicator.userName)
-                );
-              }, 3000);
-            } else {
-              setTypingUsers((prev) =>
-                prev.filter((name) => name !== indicator.userName)
-              );
-            }
-          }
-        );
+        connectWebSocket(roomCode, (message) => {
+          console.log("New message received:", message);
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
+        });
       }, 1000); //Delay 1 giây để chắc chắn room đã được tạo
 
       return () => {
@@ -269,7 +276,34 @@ const ChatBox = ({ isOpen, onClose }) => {
 
   const handleSendFile = async (file, content) => {
     if (roomCode) {
-      await sendMessageWithAttachment.mutateAsync({ roomCode, file, content });
+      // Tạo tin nhắn tạm thời
+      const tempId = "pending-" + Date.now();
+      setPendingMessage({
+        id: tempId,
+        messageType: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        content,
+        attachments: [
+          {
+            id: tempId,
+            fileUrl: URL.createObjectURL(file),
+            fileName: file.name,
+            isLoading: true,
+          },
+        ],
+        senderName: user?.fullName || guestInfo.name || "Guest",
+        createdAt: new Date().toISOString(),
+        status: "SENDING",
+      });
+
+      try {
+        await sendMessageWithAttachment.mutateAsync({
+          roomCode,
+          file,
+          content,
+        });
+      } finally {
+        setPendingMessage(null);
+      }
     }
   };
 
@@ -308,13 +342,18 @@ const ChatBox = ({ isOpen, onClose }) => {
       <div
         className={`bg-white rounded-lg shadow-2xl transition-all duration-300 ${
           isMinimized ? "h-14" : "h-[500px]"
-        } w-80 flex flex-col overflow-hidden`}
+        } w-90 flex flex-col overflow-hidden`}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex items-center justify-between cursor-pointer">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-4 flex items-center justify-between cursor-pointer">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <i className="fas fa-headset text-blue-600"></i>
+            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+              {/* Avatar icon phù hợp */}
+              {user ? (
+                <IconUserCircle size={28} className="text-blue-600" />
+              ) : (
+                <IconUserQuestion size={28} className="text-blue-600" />
+              )}
             </div>
             <div>
               <h3 className="font-semibold">
@@ -340,7 +379,9 @@ const ChatBox = ({ isOpen, onClose }) => {
             <button
               onClick={() => setIsMinimized(!isMinimized)}
               className="hover:bg-blue-800 rounded p-1 transition"
-              aria-label={isMinimized ? "Maximize" : "Minimize"}
+              aria-label={
+                isMinimized ? t("common.maximize") : t("common.minimize")
+              }
             >
               <i
                 className={`fas ${
@@ -351,7 +392,7 @@ const ChatBox = ({ isOpen, onClose }) => {
             <button
               onClick={handleClose}
               className="hover:bg-blue-800 rounded p-1 transition cursor-pointer"
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <IconX size={16} />
             </button>
@@ -367,7 +408,7 @@ const ChatBox = ({ isOpen, onClose }) => {
                 <div className="w-full">
                   <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <i className="fas fa-comments text-blue-600 text-2xl"></i>
+                      <IconMessage2 size={32} className="text-blue-600" />
                     </div>
                     <h4 className="text-lg font-bold text-gray-800">
                       {t("customer_support.start_chat")}
@@ -443,7 +484,10 @@ const ChatBox = ({ isOpen, onClose }) => {
                 <div className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col">
                   {sortedMessages.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
-                      <i className="fas fa-comments text-3xl mb-2"></i>
+                      <IconMessage2
+                        size={32}
+                        className="mb-2 text-blue-300 mx-auto"
+                      />
                       <p className="text-sm">
                         {t("customer_support.no_messages")}
                       </p>
@@ -454,48 +498,22 @@ const ChatBox = ({ isOpen, onClose }) => {
                   ) : (
                     <>
                       {/* Render messages theo thứ tự cũ nhất -> mới nhất */}
-                      {sortedMessages.map((message) => {
-                        console.log(
-                          "Message:",
-                          message,
-                          "isAdmin:",
-                          isAdminMessage(message)
-                        );
-                        return (
-                          <ChatMessage
-                            key={message.id}
-                            message={message}
-                            isOwn={!isAdminMessage(message)}
-                          />
-                        );
-                      })}
-
-                      {/* Typing indicator */}
-                      {typingUsers.length > 0 && (
-                        <div className="flex justify-start mb-4">
-                          <div className="bg-gray-200 rounded-lg px-3 py-2">
-                            <div className="flex items-center gap-2">
-                              <div className="flex gap-1">
-                                <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-                                <span
-                                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                                  style={{ animationDelay: "0.2s" }}
-                                ></span>
-                                <span
-                                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                                  style={{ animationDelay: "0.4s" }}
-                                ></span>
-                              </div>
-                              <span className="text-xs text-gray-600">
-                                {typingUsers.join(", ")}{" "}
-                                {t("customer_support.is_typing")}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                      {sortedMessages.map((message) => (
+                        <ChatMessage
+                          key={message.id}
+                          message={message}
+                          isOwn={!isAdminMessage(message)}
+                        />
+                      ))}
+                      {/* Loader message khi upload file */}
+                      {pendingMessage && (
+                        <ChatMessage
+                          message={pendingMessage}
+                          isOwn={true}
+                          isLoading={true}
+                        />
                       )}
-
-                      {/* ✅ Scroll anchor ở cuối */}
+                      {/* Scroll anchor ở cuối */}
                       <div ref={messagesEndRef} />
                     </>
                   )}
