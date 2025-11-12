@@ -11,6 +11,7 @@ export const useCategory = (lang = "VI") => {
     data: categories,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["categories", "all", lang],
     queryFn: async () => {
@@ -101,6 +102,7 @@ export const useCategory = (lang = "VI") => {
     categories,
     isLoading,
     error,
+    refetch,
 
     // Create category
     create: createCategoryMutation.mutateAsync,

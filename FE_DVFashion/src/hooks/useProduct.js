@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productAPI } from "../services/productAPI";
+import { useMemo } from "react";
 
 export const useProduct = (params = {}) => {
   const queryClient = useQueryClient();
@@ -20,12 +21,14 @@ export const useProduct = (params = {}) => {
     lang = "VI",
   } = params;
 
+  const stableParams = useMemo(() => JSON.stringify(params), [params]);
   const {
     data: productResponse,
     isLoading,
     error,
+    refetch,
   } = useQuery({
-    queryKey: ["products", "all", params],
+    queryKey: ["products", "all", stableParams],
     queryFn: async () => {
       try {
         const res = await productAPI.getAllProducts(params);
@@ -62,6 +65,8 @@ export const useProduct = (params = {}) => {
         };
       }
     },
+    refetchOnWindowFocus: false,
+    staleTime: 0,
     retry: (failureCount, error) => {
       if (error.response?.status === 401) {
         return false;
@@ -119,6 +124,7 @@ export const useProduct = (params = {}) => {
     updateProduct: updateProductMutation.mutateAsync,
     isUpdating: updateProductMutation.isPending,
     updateError: updateProductMutation.error,
+    refetch,
   };
 };
 

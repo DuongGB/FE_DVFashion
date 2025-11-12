@@ -85,6 +85,12 @@ const chatAPI = {
     });
     return response.data;
   },
+
+  // Lấy mã phòng chat theo userId
+  getRoomCodeByUserId: async (userId) => {
+    const response = await api.get(`/chat/rooms/${userId}/room-code`);
+    return response.data;
+  },
 };
 
 export default chatAPI;

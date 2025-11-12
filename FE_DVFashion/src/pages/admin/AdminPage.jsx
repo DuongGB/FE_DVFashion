@@ -1,35 +1,38 @@
 import {
+  IconBulb,
   IconCalendar,
-  IconChartBar,
+  IconClick,
   IconCurrencyDollar,
   IconDiscount,
   IconEye,
   IconPackage,
+  IconShoppingBag,
   IconShoppingCart,
   IconStar,
   IconTrendingUp,
-  IconUserCheck,
   IconUsers,
-  IconBulb,
-  IconClick,
-  IconShoppingBag,
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
-import { Chart } from "react-google-charts";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   useDashboardStats,
-  useRevenueChartData,
-  useTopProducts,
   useRecentActivities,
+  useRevenueChartData,
 } from "../../hooks/useDashboard";
-import {
-  useTopRecommendedProducts,
-  useRecommendationAnalytics,
-} from "../../hooks/useProductRecomendations";
-import { useMonthlyRevenue } from "../../hooks/useStatistics";
 import { useOrderStatistics } from "../../hooks/useOrder";
+import { useAdminReviews } from "../../hooks/useReview";
+import {
+  useRecommendationAnalytics,
+  useTopRecommendedProducts,
+} from "../../hooks/useProductRecomendations";
+import {
+  useLowStockItems,
+  useMonthlyRevenue,
+  useTopBestSellingProducts,
+  useTopPromotionsByRevenue,
+  useTopStockProducts,
+} from "../../hooks/useStatistics";
 import { useUser } from "../../hooks/useUser";
 
 const AdminPage = () => {
@@ -44,8 +47,23 @@ const AdminPage = () => {
     .toString()
     .padStart(2, "0")}`;
 
-  const { data: monthlyRevenueData, isLoading: isMonthlyRevenueLoading } =
-    useMonthlyRevenue({ year: currentYear });
+  const { data: monthlyRevenueData } = useMonthlyRevenue({ year: currentYear });
+  const { data: reviewsData } = useAdminReviews({
+    page: 0,
+    size: 1000,
+    sort: "createdAt,desc",
+  });
+  const allReviews = reviewsData?.data?.reviews || [];
+
+  // Tính điểm trung bình rating
+  const averageRating = useMemo(() => {
+    if (!allReviews.length) return 0;
+    // Có thể lọc chỉ review đã duyệt nếu muốn:
+    // const approvedReviews = allReviews.filter(r => r.status === "APPROVED");
+    // const list = approvedReviews.length ? approvedReviews : allReviews;
+    const total = allReviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+    return allReviews.length ? total / allReviews.length : 0;
+  }, [allReviews]);
 
   const currentMonthRevenue =
     monthlyRevenueData?.find((item) => item.period === currentMonthStr)
@@ -57,11 +75,22 @@ const AdminPage = () => {
 
   // Fetch real data from API
   const { data: dashboardData, isLoading: statsLoading } = useDashboardStats();
-  const { data: revenueData, isLoading: revenueLoading } =
-    useRevenueChartData();
-  const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
+  const { isLoading: revenueLoading } = useRevenueChartData();
+  // Lấy hoạt động gần đây
   const { data: recentActivities, isLoading: activitiesLoading } =
     useRecentActivities();
+  // Lấy top 5 sản phẩm bán chạy nhất
+  const { data: bestSellingProducts, isLoading: isLoadingBestSelling } =
+    useTopBestSellingProducts({ limit: 5 });
+  // Lấy top 5 sản phẩm tồn kho cao nhất
+  const { data: topStockProducts, isLoading: isLoadingTopStock } =
+    useTopStockProducts({ limit: 5 });
+  // Lấy top 5 sản phẩm tồn kho thấp nhất
+  const { data: lowStockProducts, isLoading: isLoadingLowStock } =
+    useLowStockItems({ limit: 5 });
+  // Lấy top 5 khuyến mãi mang lại doanh thu cao nhất
+  const { data: topPromotions, isLoading: isLoadingPromotions } =
+    useTopPromotionsByRevenue({ limit: 5 });
 
   // Lấy danh sách khách hàng
   const { users, isLoadingUsers } = useUser();
@@ -90,29 +119,6 @@ const AdminPage = () => {
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, [i18n]);
-
-  // Chuẩn hóa dữ liệu cho biểu đồ doanh thu tháng (trục X chỉ là số tháng)
-  const revenueChartData = useMemo(() => {
-    if (!monthlyRevenueData) return [];
-
-    // Tạo mảng 12 tháng, mỗi tháng là 0 nếu không có dữ liệu
-    const months = Array.from({ length: 12 }, (_, i) => {
-      const monthStr = `${currentYear}-${(i + 1).toString().padStart(2, "0")}`;
-      const found = monthlyRevenueData.find((item) => item.period === monthStr);
-      return [
-        (i + 1).toString(), // Chỉ hiển thị số tháng
-        found ? found.revenue : 0,
-      ];
-    });
-
-    return [
-      [
-        t("admin.dashboard.charts.month_short") || "Tháng",
-        t("admin.dashboard.charts.revenue_label"),
-      ],
-      ...months,
-    ];
-  }, [monthlyRevenueData, t, currentYear]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -202,101 +208,6 @@ const AdminPage = () => {
     );
   };
 
-  const RevenueChart = () => {
-    const options = {
-      title: t("admin.dashboard.charts.revenue_chart_title"),
-      titleTextStyle: {
-        color: "#374151",
-        fontSize: 18,
-        fontName: "system-ui, -apple-system, sans-serif",
-        bold: true,
-      },
-      backgroundColor: "transparent",
-      hAxis: {
-        title: t("admin.dashboard.charts.month_short") || "Tháng",
-        titleTextStyle: { color: "#6B7280", fontSize: 12 },
-        textStyle: { color: "#6B7280", fontSize: 11 },
-        gridlines: { color: "#F3F4F6" },
-      },
-      vAxes: {
-        0: {
-          title: t("admin.dashboard.charts.revenue_label"),
-          titleTextStyle: { color: "#3B82F6", fontSize: 12 },
-          textStyle: { color: "#6B7280", fontSize: 11 },
-          format: "#,###",
-          gridlines: { color: "#F3F4F6" },
-        },
-        1: {
-          title: t("admin.dashboard.charts.orders_label"),
-          titleTextStyle: { color: "#10B981", fontSize: 12 },
-          textStyle: { color: "#6B7280", fontSize: 11 },
-          gridlines: { color: "transparent" },
-        },
-      },
-      series: {
-        0: {
-          type: "columns",
-          targetAxisIndex: 0,
-          color: "#3B82F6",
-        },
-        1: {
-          type: "line",
-          targetAxisIndex: 1,
-          color: "#10B981",
-          lineWidth: 3,
-          pointSize: 5,
-        },
-      },
-      legend: {
-        position: "top",
-        alignment: "start",
-        textStyle: { color: "#6B7280", fontSize: 12 },
-      },
-      chartArea: {
-        left: 80,
-        top: 80,
-        width: "80%",
-        height: "75%",
-        backgroundColor: "transparent",
-      },
-    };
-
-    if (revenueLoading || revenueChartData.length === 0) {
-      return (
-        <div className="h-80 flex items-center justify-center">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="text-gray-500 text-sm">
-              {t("admin.dashboard.charts.loading")}
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full h-80">
-        <Chart
-          chartType="ColumnChart"
-          width="100%"
-          height="100%"
-          data={revenueChartData}
-          options={options}
-          loader={
-            <div className="h-full flex items-center justify-center">
-              <div className="flex flex-col items-center space-y-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <p className="text-gray-500 text-sm">
-                  {t("admin.dashboard.charts.loading")}
-                </p>
-              </div>
-            </div>
-          }
-        />
-      </div>
-    );
-  };
-
   const RecentActivity = () => {
     const getActivityColor = (type) => {
       const colors = {
@@ -375,143 +286,6 @@ const AdminPage = () => {
           >
             {t("admin.dashboard.recent_activity.view_all")}
           </button>
-        </div>
-      </div>
-    );
-  };
-
-  const QuickActions = () => {
-    const actions = [
-      {
-        label: t("admin.dashboard.quick_actions.manage_products"),
-        icon: IconPackage,
-        color: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-300",
-        route: "/admin/products",
-      },
-      {
-        label: t("admin.dashboard.quick_actions.manage_orders"),
-        icon: IconShoppingCart,
-        color: "bg-green-500 hover:bg-green-600 focus:ring-green-300",
-        route: "/admin/orders",
-      },
-      {
-        label: t("admin.dashboard.quick_actions.manage_customers"),
-        icon: IconUsers,
-        color: "bg-purple-500 hover:bg-purple-600 focus:ring-purple-300",
-        route: "/admin/customers",
-      },
-      {
-        label: t("admin.dashboard.quick_actions.reports_analytics"),
-        icon: IconChartBar,
-        color: "bg-indigo-500 hover:bg-indigo-600 focus:ring-indigo-300",
-        route: "/admin/reports",
-      },
-      {
-        label: t("admin.dashboard.quick_actions.manage_promotions"),
-        icon: IconDiscount,
-        color: "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300",
-        route: "/admin/promotions",
-      },
-    ];
-
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t("admin.dashboard.quick_actions.title")}
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              onClick={() => navigate(action.route)}
-              className={`${action.color} text-white px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center space-x-2`}
-            >
-              <action.icon size={16} />
-              <span>{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const TopProducts = () => {
-    if (topProductsLoading) {
-      return (
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {t("admin.dashboard.top_products.title")}
-            </h3>
-          </div>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 animate-pulse"
-              >
-                <div className="flex items-center space-x-3 flex-1">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div className="h-5 bg-gray-200 rounded w-24"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {t("admin.dashboard.top_products.title")}
-          </h3>
-          <button
-            onClick={() => navigate("/admin/products")}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-          >
-            {t("admin.dashboard.top_products.view_all")}
-          </button>
-        </div>
-        <div className="space-y-4">
-          {topProducts && topProducts.length > 0 ? (
-            topProducts.map((product, index) => (
-              <div
-                key={product.productVariantId}
-                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-semibold text-gray-600">
-                      #{index + 1}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {t("admin.dashboard.top_products.sold", {
-                        count: product.sales,
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-green-600">
-                    {formatCurrency(product.revenue)}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500 py-8">
-              {t("admin.dashboard.top_products.no_products")}
-            </p>
-          )}
         </div>
       </div>
     );
@@ -765,7 +539,7 @@ const AdminPage = () => {
           <StatCard
             icon={IconStar}
             title={t("admin.dashboard.stats.average_rating")}
-            value={dashboardData?.averageRating || 0}
+            value={averageRating}
             color="yellow"
             format="rating"
           />
@@ -777,40 +551,163 @@ const AdminPage = () => {
           <TopRecommendedProducts />
         </div>
 
-        {/* Charts and Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Revenue Chart */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {t("admin.dashboard.charts.revenue_title")}
-              </h3>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                  <span className="text-gray-600">
-                    {t("admin.dashboard.charts.revenue")}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-gray-600">
-                    {t("admin.dashboard.charts.orders")}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <RevenueChart />
-          </div>
-
-          {/* Quick Actions */}
-          <QuickActions />
-        </div>
-
-        {/* Activity and Products */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity and Promotions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          {/* Recent Activity */}
           <RecentActivity />
-          <TopProducts />
+          {/* Top khuyến mãi doanh thu cao */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 flex flex-col min-h-[320px]">
+            <h3 className="text-base font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <IconDiscount size={18} className="text-purple-500" />
+              {t("admin.dashboard.top_promotions_by_revenue")}
+            </h3>
+            {isLoadingPromotions ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-pulse h-20 w-full bg-gray-100 rounded" />
+              </div>
+            ) : topPromotions?.length ? (
+              <ul className="divide-y divide-gray-100">
+                {topPromotions.slice(0, 5).map((item, idx) => (
+                  <li
+                    key={item.promotionId}
+                    className="flex justify-between items-center py-3"
+                  >
+                    <span className="truncate max-w-[200px] text-gray-700 flex items-center gap-1">
+                      <span className="font-bold text-purple-600">
+                        {idx + 1}.
+                      </span>
+                      {item.promotionName}
+                    </span>
+                    <span className="font-semibold text-purple-600 text-sm">
+                      {t("admin.dashboard.revenue", {
+                        amount: formatCurrency(item.totalRevenue),
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-gray-400 py-8">
+                {t("admin.dashboard.no_data")}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Thống kê sản phẩm & tồn kho*/}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+        {/* Top 5 bán chạy */}
+        <div className="bg-white rounded-lg shadow-md p-8 border border-gray-200 flex flex-col min-h-[340px] h-full flex-1">
+          <h3 className="text-base font-semibold mb-6 text-gray-800 flex items-center gap-2">
+            <IconShoppingCart size={20} className="text-green-500" />
+            {t("admin.dashboard.top_best_selling_products")}
+          </h3>
+          {isLoadingBestSelling ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-pulse h-20 w-full bg-gray-100 rounded" />
+            </div>
+          ) : bestSellingProducts?.length ? (
+            <ul className="divide-y divide-gray-100">
+              {bestSellingProducts.slice(0, 5).map((item, idx) => (
+                <li
+                  key={item.productId}
+                  className="flex justify-between items-center py-3"
+                >
+                  <span className="flex items-center gap-2 max-w-[220px] truncate">
+                    <span className="font-bold text-green-600">{idx + 1}.</span>
+                    <span className="truncate">{item.productName}</span>
+                  </span>
+                  <span className="font-semibold text-green-600 text-sm">
+                    {t("admin.dashboard.quantity_sold", {
+                      count: item.totalQuantitySold,
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-center text-gray-400">
+                {t("admin.dashboard.no_data")}
+              </p>
+            </div>
+          )}
+        </div>
+        {/* Top tồn kho cao */}
+        <div className="bg-white rounded-lg shadow-md p-8 border border-gray-200 flex flex-col min-h-[340px] h-full flex-1">
+          <h3 className="text-base font-semibold mb-6 text-gray-800 flex items-center gap-2">
+            <IconPackage size={20} className="text-blue-500" />
+            {t("admin.dashboard.top_stock_products")}
+          </h3>
+          {isLoadingTopStock ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-pulse h-20 w-full bg-gray-100 rounded" />
+            </div>
+          ) : topStockProducts?.length ? (
+            <ul className="divide-y divide-gray-100">
+              {topStockProducts.slice(0, 5).map((item, idx) => (
+                <li
+                  key={item.productId}
+                  className="flex justify-between items-center py-3"
+                >
+                  <span className="flex items-center gap-2 max-w-[220px] truncate">
+                    <span className="font-bold text-blue-600">{idx + 1}.</span>
+                    <span className="truncate">{item.productName}</span>
+                  </span>
+                  <span className="font-semibold text-blue-600 text-sm">
+                    {t("admin.dashboard.available_quantity", {
+                      count: item.totalAvailableQuantity,
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-center text-gray-400">
+                {t("admin.dashboard.no_data")}
+              </p>
+            </div>
+          )}
+        </div>
+        {/* Top tồn kho thấp */}
+        <div className="bg-white rounded-lg shadow-md p-8 border border-gray-200 flex flex-col min-h-[340px] h-full flex-1">
+          <h3 className="text-base font-semibold mb-6 text-gray-800 flex items-center gap-2">
+            <IconPackage size={20} className="text-red-500" />
+            {t("admin.dashboard.low_stock_products")}
+          </h3>
+          {isLoadingLowStock ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-pulse h-20 w-full bg-gray-100 rounded" />
+            </div>
+          ) : lowStockProducts?.length ? (
+            <ul className="divide-y divide-gray-100">
+              {lowStockProducts.slice(0, 5).map((item, idx) => (
+                <li
+                  key={item.id}
+                  className="flex justify-between items-center py-3"
+                >
+                  <span className="flex items-center gap-2 max-w-[220px] truncate">
+                    <span className="font-bold text-red-500">{idx + 1}.</span>
+                    <span className="truncate">
+                      {item.productName} ({item.sizeName})
+                    </span>
+                  </span>
+                  <span className="font-semibold text-red-600 text-sm">
+                    {t("admin.dashboard.available_quantity", {
+                      count: item.availableQuantity,
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-center text-gray-400">
+                {t("admin.dashboard.no_data")}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

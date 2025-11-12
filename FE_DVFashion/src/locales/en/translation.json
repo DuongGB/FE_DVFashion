@@ -1751,6 +1751,14 @@
     },
     "dashboard": {
       "title": "Administration Dashboard",
+      "top_best_selling_products": "Top Best-Selling Products",
+      "top_stock_products": "Top Stock Products",
+      "low_stock_products": "Low Stock Products",
+      "top_promotions_by_revenue": "Top Promotions by Revenue",
+      "no_data": "No product low stock",
+      "quantity_sold": "Sold: {{count}}",
+      "available_quantity": "Available: {{count}}",
+      "revenue": "Revenue: {{amount}}",
       "stats": {
         "total_customers": "Total Customers",
         "total_products": "Total Products",
@@ -1782,20 +1790,17 @@
         "no_data": "No recommended product data"
       },
       "charts": {
+        "title": "Sales & Revenue Charts",
+        "no_data": "No chart data available",
         "revenue_title": "Revenue Chart",
         "revenue_chart_title": "Monthly Revenue and Orders",
         "month": "Month",
+        "month_short": "Month",
         "revenue_label": "Revenue (VND)",
         "orders_label": "Number of Orders",
         "revenue": "Revenue",
         "orders": "Orders",
-        "loading": "Loading chart...",
-        "month_1": "January",
-        "month_2": "February",
-        "month_3": "March",
-        "month_4": "April",
-        "month_5": "May",
-        "month_6": "June"
+        "loading": "Loading chart..."
       },
       "recent_activity": {
         "title": "Recent Activity",
@@ -2096,61 +2101,41 @@
       "year_selector": {
         "label": "Year"
       },
-      "export": {
-        "button": "Export CSV",
-        "success": "File exported successfully!",
-        "error": "Error exporting CSV file"
-      },
       "cards": {
         "revenue": {
-          "title": "Revenue",
-          "daily": "date range",
-          "monthly": "this month",
-          "yearly": "this year",
-          "growth": "vs last month"
-        },
-        "forecast": {
-          "title": "Next 3 months forecast",
-          "note": "Based on linear regression"
-        },
-        "total_items": {
-          "title": "Total Items"
-        },
-        "status": {
-          "title": "Status",
-          "loading": "Loading…",
-          "ready": "Ready"
+          "daily": "Revenue for date range",
+          "monthly": "Monthly Revenue",
+          "yearly": "Yearly Revenue",
+          "growth": "from last month"
         }
       },
       "chart": {
-        "title": {
-          "daily": "Daily Revenue Chart",
-          "monthly": "Monthly Revenue Chart",
-          "yearly": "Yearly Revenue Chart"
-        },
-        "types": {
-          "combo": "Combo",
-          "line": "Line",
-          "area": "Area",
-          "bar": "Bar"
-        },
-        "legend": {
-          "actual": "Actual",
-          "predicted": "Predicted"
-        },
-        "loading": "Loading data...",
+        "title_daily": "Daily Revenue Chart",
+        "title_monthly": "Monthly Revenue Chart",
+        "title_yearly": "Yearly Revenue Chart",
+        "time": "Time",
+        "revenue": "Revenue",
+        "time_axis": "Time",
+        "revenue_axis": "Revenue (₫)",
+        "loading": "Loading chart...",
         "no_data": "No data available"
       },
       "pie_chart": {
         "title": "Monthly Revenue Distribution",
+        "month": "Month",
+        "revenue": "Revenue",
         "top_months": "Top 5 Highest Months"
+      },
+      "pie": {
+        "title": "Revenue Distribution by Month",
+        "month": "Month",
+        "revenue": "Revenue"
       },
       "notes": {
         "title": "Important Notes",
-        "csv_export": "CSV export will use data from the current view mode.",
-        "forecast_note": "Revenue forecast uses linear regression model, for reference only.",
         "realtime": "Data is updated in real-time from the system.",
-        "multiple_views": "Charts support multiple display types for multi-dimensional analysis."
+        "multiple_views": "Charts support multiple display types for multi-dimensional analysis.",
+        "date_range": "Select date range to view daily revenue."
       }
     }
   },

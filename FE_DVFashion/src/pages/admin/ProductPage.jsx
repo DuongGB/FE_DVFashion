@@ -5,6 +5,7 @@ import {
   IconPlus,
   IconSearch,
   IconX,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -85,6 +86,7 @@ export default function ProductPage() {
     totalPages,
     isLoading: isLoadingProducts,
     filterInfo,
+    refetch,
   } = useProduct(apiParams);
 
   const { updateProduct } = useProduct({ lang: language });
@@ -431,180 +433,208 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <IconSearch
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={16}
-              />
-              <input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setSearch(searchInput);
-                    setCurrentPage(0);
-                  }
-                }}
-                placeholder={t("admin.product.search_placeholder")}
-                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
-              />
+      {/* Filters + Refresh */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex-1">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <IconSearch
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
+                  <input
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setSearch(searchInput);
+                        setCurrentPage(0);
+                      }
+                    }}
+                    placeholder={t("admin.product.search_placeholder")}
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+                >
+                  <option value="">{t("admin.product.all_status")}</option>
+                  <option value="active">
+                    {t("admin.product.status.active")}
+                  </option>
+                  <option value="inactive">
+                    {t("admin.product.status.inactive")}
+                  </option>
+                  <option value="out_of_stock">
+                    {t("admin.product.status.out_of_stock")}
+                  </option>
+                  <option value="discontinued">
+                    {t("admin.product.status.discontinued")}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-lg ${
+                    showAdvancedFilters
+                      ? "bg-blue-50 border-blue-300 text-blue-700"
+                      : "border-white/30 hover:bg-white/70"
+                  }`}
+                >
+                  <IconFilter size={16} />
+                  {t("admin.product.filters.filter")}
+                  {getActiveFiltersCount() > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                      {getActiveFiltersCount()}
+                    </span>
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center h-full">
+                <button
+                  type="button"
+                  onClick={() => refetch && refetch()}
+                  className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+                  title={t("common.refresh") || "Làm mới"}
+                >
+                  <IconRefresh size={18} />
+                </button>
+              </div>
             </div>
-          </div>
-          <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
-            >
-              <option value="">{t("admin.product.all_status")}</option>
-              <option value="active">{t("admin.product.status.active")}</option>
-              <option value="inactive">
-                {t("admin.product.status.inactive")}
-              </option>
-              <option value="out_of_stock">
-                {t("admin.product.status.out_of_stock")}
-              </option>
-              <option value="discontinued">
-                {t("admin.product.status.discontinued")}
-              </option>
-            </select>
-          </div>
-          <div>
-            <button
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-lg ${
-                showAdvancedFilters
-                  ? "bg-blue-50 border-blue-300 text-blue-700"
-                  : "border-white/30 hover:bg-white/70"
-              }`}
-            >
-              <IconFilter size={16} />
-              {t("admin.product.filters.filter")}
-              {getActiveFiltersCount() > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
-                  {getActiveFiltersCount()}
-                </span>
-              )}
-            </button>
+
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <div className="mt-4 pt-4 border-t space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-gray-700">
+                    {t("admin.product.filters.advanced_filters")}
+                  </h3>
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
+                  >
+                    {t("admin.product.filters.clear_all")}
+                  </button>
+                </div>
+
+                {/* Price Range Filter */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("admin.product.filters.min_price")}
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={tempMinPrice}
+                      onChange={(e) => setTempMinPrice(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setFilters((prev) => ({
+                            ...prev,
+                            priceRange: {
+                              ...prev.priceRange,
+                              min: tempMinPrice,
+                            },
+                          }));
+                        }
+                      }}
+                      className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("admin.product.filters.max_price")}
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="999999999"
+                      value={tempMaxPrice}
+                      onChange={(e) => setTempMaxPrice(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setFilters((prev) => ({
+                            ...prev,
+                            priceRange: {
+                              ...prev.priceRange,
+                              max: tempMaxPrice,
+                            },
+                          }));
+                        }
+                      }}
+                      className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("admin.product.filters.category")}
+                  </label>
+                  <select
+                    value={filters.categoryIds[0] || ""}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        categoryIds: e.target.value
+                          ? [Number(e.target.value)]
+                          : [],
+                      }))
+                    }
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">
+                      {t("admin.product.filters.all_categories")}
+                    </option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* On Sale Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("admin.product.filters.sale_status")}
+                  </label>
+                  <select
+                    value={
+                      filters.onSale === null ? "" : filters.onSale.toString()
+                    }
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        onSale:
+                          e.target.value === ""
+                            ? null
+                            : e.target.value === "true",
+                      }))
+                    }
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">{t("admin.product.filters.all")}</option>
+                    <option value="true">
+                      {t("admin.product.filters.on_sale")}
+                    </option>
+                    <option value="false">
+                      {t("admin.product.filters.not_on_sale")}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Advanced Filters */}
-        {showAdvancedFilters && (
-          <div className="mt-4 pt-4 border-t space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-gray-700">
-                {t("admin.product.filters.advanced_filters")}
-              </h3>
-              <button
-                onClick={clearAllFilters}
-                className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
-              >
-                {t("admin.product.filters.clear_all")}
-              </button>
-            </div>
-
-            {/* Price Range Filter */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("admin.product.filters.min_price")}
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={tempMinPrice}
-                  onChange={(e) => setTempMinPrice(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setFilters((prev) => ({
-                        ...prev,
-                        priceRange: { ...prev.priceRange, min: tempMinPrice },
-                      }));
-                    }
-                  }}
-                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("admin.product.filters.max_price")}
-                </label>
-                <input
-                  type="number"
-                  placeholder="999999999"
-                  value={tempMaxPrice}
-                  onChange={(e) => setTempMaxPrice(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setFilters((prev) => ({
-                        ...prev,
-                        priceRange: { ...prev.priceRange, max: tempMaxPrice },
-                      }));
-                    }
-                  }}
-                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("admin.product.filters.category")}
-              </label>
-              <select
-                value={filters.categoryIds[0] || ""}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    categoryIds: e.target.value ? [Number(e.target.value)] : [],
-                  }))
-                }
-                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">
-                  {t("admin.product.filters.all_categories")}
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* On Sale Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("admin.product.filters.sale_status")}
-              </label>
-              <select
-                value={filters.onSale === null ? "" : filters.onSale.toString()}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    onSale:
-                      e.target.value === "" ? null : e.target.value === "true",
-                  }))
-                }
-                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">{t("admin.product.filters.all")}</option>
-                <option value="true">
-                  {t("admin.product.filters.on_sale")}
-                </option>
-                <option value="false">
-                  {t("admin.product.filters.not_on_sale")}
-                </option>
-              </select>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Results Summary */}
