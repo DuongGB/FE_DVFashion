@@ -145,3 +145,9 @@ export const cancelOrderByCustomer = async (orderNumber, cancelData) => {
   const response = await api.put(`/orders/${orderNumber}/cancel`, cancelData);
   return response.data;
 };
+
+// Lấy thống kê đơn hàng
+export const getOrderStatistics = async () => {
+  const res = await api.get("/orders/statistics");
+  return res.data;
+};

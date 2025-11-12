@@ -8,13 +8,15 @@
     "account": "Account",
     "search_placeholder": "Search...",
     "cart_items": "items",
+    "days_left": "days left",
     "navigation": {
       "new": "NEW",
       "men": "MEN",
       "women": "WOMEN",
       "unisex": "UNISEX",
       "sale": "SALE",
-      "cs": "C&S"
+      "cs": "C&S",
+      "promotion": "PROMOTION"
     }
   },
   "search": {
@@ -30,6 +32,7 @@
     "price_range": "Price range",
     "min_price": "Min",
     "max_price": "Max",
+    "showing_results": "Showing {{current}} of {{total}} products",
     "price": {
       "under_200k": "Under 200k",
       "200k_500k": "200k - 500k",
@@ -74,6 +77,15 @@
       "subtitle": "Free accessories for orders over 399K | Free shipping",
       "button": "DISCOVER"
     }
+  },
+  "promotion": {
+    "view_products": "View Products",
+    "active_promotions": "Promotion Programs",
+    "from": "From",
+    "to": "To",
+    "not_found": "No promotions found",
+    "no_products": "No products in this promotion",
+    "promotion_products": "Promotion Products"
   },
   "category": {
     "error_loading": "Unable to load categories. Please try again later.",
@@ -350,33 +362,67 @@
     }
   },
   "product": {
-    "loading": "products",
-    "card": {
-      "quick_add": "Quick add to cart",
-      "choose_valid_color": "Please select a valid color.",
-      "choose_valid_size": "Please select a valid size.",
-      "added_to_cart": "Added to cart",
-      "login_to_add": "Please login to add products to cart.",
-      "out_of_stock": "Product is out of stock!"
+    "title": "Product Management",
+    "no_products_available": "No products available to display.",
+    "create_product": "Create Product",
+    "staff_view_only": "View Only Mode - Cannot Edit",
+    "total_products": "Total Products",
+    "active_products": "Active",
+    "inactive_products": "Inactive",
+    "on_sale_products": "On Sale",
+    "all_status": "All Status",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "out_of_stock": "Out of Stock",
+      "discontinued": "Discontinued"
     },
-    "detail": {
-      "cashback": "Earn up to",
-      "color": "Color:",
-      "size": "Size",
-      "size_guide": "Size guide",
-      "price": "Price",
-      "add_to_cart": "Add to cart",
-      "description": "Product description",
-      "no_description": "No product description.",
-      "policy_easy_return": "Easy returns with just a phone number",
-      "policy_hotline": "Hotline 1900.27.27.37 support from 8:30am - 10pm",
-      "policy_60days": "60-day returns (unused and with original tags)",
-      "policy_fast_refund": "Home pickup & refund within 24h",
-      "recommendations": "You may also like",
-      "loading_recommendations": "Loading recommendations..."
-    }
+    "filters": {
+      "filter": "Filter",
+      "advanced_filters": "Advanced Filters",
+      "clear_all": "Clear All",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "category": "Category",
+      "all_categories": "All Categories",
+      "sale_status": "Sale Status",
+      "all": "All",
+      "on_sale": "On Sale",
+      "not_on_sale": "Not On Sale"
+    },
+    "showing_results": "Showing {{current}} of {{total}} products",
+    "columns": {
+      "id": "ID",
+      "image": "Image",
+      "name": "Product Name",
+      "category": "Category",
+      "original_price": "Original Price",
+      "sale_price": "Sale Price",
+      "status": "Status",
+      "variants": "Variants",
+      "stock": "Stock",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view_details": "View Details",
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "confirm_message": "Are you sure you want to change the status of this product?",
+      "error": "An error occurred while updating status!"
+    },
+    "values": {
+      "sale": "SALE"
+    },
+    "no_products": "No products match the filter.",
+    "messages": {
+      "staff_create_denied": "Staff cannot create products!",
+      "staff_edit_denied": "Staff cannot edit products!",
+      "staff_status_denied": "Staff cannot change product status!"
+    },
+    "staff_no_permission": "You don't have permission to edit"
   },
   "cart": {
+    "not_logged_in": "You are not logged in!",
     "voucher_code": "Voucher Code",
     "enter_voucher_code": "Enter voucher code",
     "apply": "Apply",
@@ -384,7 +430,7 @@
     "voucher_removed": "Voucher removed",
     "invalid_voucher": "Invalid voucher code",
     "voucher_min_order_not_met": "Minimum order {{amount}}",
-    "view_available_vouchers": "View available vouchers",
+    "view_available_vouchers": "View vouchers",
     "available_promotions": "Available Promotions",
     "discount": "Discount",
     "title": "Cart",
@@ -691,7 +737,9 @@
     "note": "Note",
     "none": "None",
     "reply": "Reply",
-    "sending": "Sending"
+    "sending": "Sending",
+    "maximize": "Maximize",
+    "minimize": "Minimize"
   },
   "review_reply": {
     "title": "Discussion",
@@ -717,6 +765,39 @@
       "REJECTED": "Rejected",
       "HIDDEN": "Hidden"
     }
+  },
+  "customer_support": {
+    "customer_support": "Customer Support",
+    "conversations_count": "{{count}} conversations",
+    "error_loading_rooms": "Error loading conversations. Please try again.",
+    "no_rooms": "No conversations yet",
+    "unknown_user": "Anonymous user",
+    "no_messages": "No messages yet. Start the conversation!",
+    "start_conversation": "Start the conversation",
+    "select_room_to_chat": "Select a conversation to start",
+    "select_room_description": "Choose a customer from the list on the left",
+    "customer": "Customer",
+    "online": "Online",
+    "offline": "Offline",
+    "page": "Page",
+    "type_message": "Type a message...",
+    "send": "Send",
+    "attach_file": "Attach file",
+    "image": "Image",
+    "video": "Video",
+    "file": "File",
+    "relative_time": "{{time}}",
+    "guest": "Guest",
+    "chat_support": "Chat support",
+    "chat_with_us": "Chat with us",
+    "start_chat": "Start chat",
+    "provide_info": "Please provide your information to start chat",
+    "your_name": "Your name",
+    "enter_name": "Enter your name",
+    "phone_number": "Phone number",
+    "enter_phone": "Enter your phone (optional)",
+    "loading_chat": "Loading chat...",
+    "send_first_message": "Send the first message!"
   },
 
   "admin": {
@@ -1039,6 +1120,7 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "start_date_in_past": "Start date must be today or later",
         "remove": " Remove",
         "already_added": "Already added",
         "already_in_other": "Already included in another promotion",
@@ -1558,8 +1640,6 @@
         "description_placeholder": "Enter product description...",
         "price": "Original Price",
         "sale_price": "Sale Price",
-        "brand": "Brand",
-        "select_brand": "Select Brand",
         "category": "Category",
         "select_category": "Select Category",
         "variant": "Variant",
@@ -1569,7 +1649,6 @@
         "additional_price": "Additional Price",
         "active": "Active",
         "inactive": "Inactive",
-        "out_of_stock": "Out of Stock",
         "discontinued": "Discontinued",
         "sizes": "Sizes",
         "add_size": "Add Size",
@@ -1584,6 +1663,19 @@
         "cancel": "Cancel",
         "submit_create": "Create Product",
         "submit_update": "Update Product"
+      },
+      "validation": {
+        "name_required": "Product name is required",
+        "price_required": "Original price > 0 is required",
+        "material_required": "Material is required",
+        "status_required": "Status is required",
+        "category_required": "Category is required",
+        "variants_required": "At least 1 variant is required",
+        "color_required": "Color is required",
+        "sizes_required": "At least 1 size is required",
+        "images_required": "At least 1 image is required",
+        "size_name_required": "Size name is required",
+        "stock_quantity_required": "Stock quantity >= 0 is required"
       },
       "detail": {
         "title": "Product Details",
@@ -1602,7 +1694,6 @@
         "original_price": "Original Price",
         "sale_price": "Sale Price",
         "on_sale": "ON SALE",
-        "total_stock": "Total Stock",
         "review_count": "Reviews",
         "review_unit": "reviews",
         "variants": "Product Variants ({{count}})",
@@ -1612,8 +1703,7 @@
         "primary_image": "Primary Image",
         "timestamps": "Timestamps",
         "created_at": "Created At",
-        "updated_at": "Last Updated",
-        "close": "Close"
+        "updated_at": "Last Updated"
       },
       "status": {
         "active": "Active",
@@ -1633,6 +1723,7 @@
       }
     },
     "sidebar": {
+      "customer_support": "Customer Support",
       "home": "Home",
       "business_management": "Business Management",
       "orders": "Orders",
@@ -1670,6 +1761,25 @@
         "average_rating": "Average Rating",
         "daily_views": "Daily Views",
         "change_from_last_month": "from last month"
+      },
+      "recommendation_analytics": {
+        "title": "Recommendation Analytics",
+        "days_7": "7 days",
+        "days_30": "30 days",
+        "days_90": "90 days",
+        "days_all": "All time",
+        "total_recommendations": "Total Recommendations",
+        "ctr": "Click-through Rate",
+        "cart_rate": "Add-to-cart Rate",
+        "purchase_rate": "Purchase Rate",
+        "total_clicks": "Total clicks: {{count}}",
+        "total_add_to_carts": "Add to carts: {{count}}",
+        "total_purchases": "Purchases: {{count}}"
+      },
+      "top_recommended_products": {
+        "title": "Top Recommended Products",
+        "count": "{{count}} times",
+        "no_data": "No recommended product data"
       },
       "charts": {
         "revenue_title": "Revenue Chart",
@@ -1726,6 +1836,7 @@
       }
     },
     "inventory": {
+      "id": "Inventory ID",
       "min_stock": "Minimum Stock",
       "title": "Inventory Management",
       "import_stock": "Import Stock",
@@ -1934,6 +2045,8 @@
         "reason_placeholder": "Enter your reason here..."
       },
       "detail": {
+        "images": "Review Images",
+        "review_info": "Review Information",
         "title": "Review Details",
         "description": "View detailed information for {{name}}'s review",
         "rating_summary": "Rating Summary",

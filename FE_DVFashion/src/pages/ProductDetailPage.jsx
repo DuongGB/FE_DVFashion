@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 import ProductRecommendations from "./ProductRecommendations";
 import ProductReviews from "../components/ui/product/ProductReviews";
+import AuthModal from "../components/ui/auth/AuthModal";
 
 export default function ProductDetailPage() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,7 @@ export default function ProductDetailPage() {
   const { id: encodeId } = useParams();
   const id = decodeId(encodeId);
   const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sử dụng useProductById để lấy chi tiết sản phẩm
   const { data: product, isLoading, error } = useProductById(id, lang);
@@ -86,6 +88,10 @@ export default function ProductDetailPage() {
 
   // Hàm xử lý thêm vào giỏ hàng
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     if (!product || !selectedVariant || !selectedSize) return;
     const sizeObj = selectedVariant.sizes?.find(
       (s) => s.sizeName === selectedSize || s.name === selectedSize
@@ -283,6 +289,12 @@ export default function ProductDetailPage() {
       <ProductRecommendations productId={id} />
       {/* Reviews */}
       <ProductReviews productId={id} />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode="login"
+        stayOnPage
+      />
     </div>
   );
 }

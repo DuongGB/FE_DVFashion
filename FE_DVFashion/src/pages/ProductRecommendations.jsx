@@ -4,31 +4,44 @@ import ProductCard from "../components/common/ProductCard";
 import { useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "react-feather";
 
-export default function ProductRecommendations({ productId }) {
+export default function ProductRecommendations({
+  productId,
+  products,
+  isLoading,
+  error,
+}) {
   const { t } = useTranslation();
+  // Nếu truyền products từ ngoài vào thì dùng luôn, không thì fetch bằng hook
+  const shouldFetch = !products;
   const {
     data: recommendations = [],
-    isLoading,
-    error,
+    isLoading: loadingFromHook,
+    error: errorFromHook,
   } = useHybridRecommendations({
     productId,
     limit: 10,
+    enabled: shouldFetch,
   });
+
+  const displayProducts = products || recommendations;
+  const loading = typeof isLoading === "boolean" ? isLoading : loadingFromHook;
+  const fetchError = error || errorFromHook;
 
   const scrollContainerRef = useRef(null);
 
   // Lọc bỏ sản phẩm trùng lặp
   const uniqueRecommendations = useMemo(() => {
     const seen = new Set();
-    return recommendations.filter((product) => {
+    return (displayProducts || []).filter((product) => {
       if (seen.has(product.id)) {
         return false;
       }
       seen.add(product.id);
       return true;
     });
-  }, [recommendations]);
+  }, [displayProducts]);
 
+  // Hàm cuộn ngang khi nhấn nút trái/phải
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
       const scrollAmount = scrollContainerRef.current.offsetWidth * 0.8;
@@ -39,7 +52,7 @@ export default function ProductRecommendations({ productId }) {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="w-full mx-auto py-12">
         <h2 className="text-2xl font-bold text-center mb-6 uppercase">
@@ -52,8 +65,8 @@ export default function ProductRecommendations({ productId }) {
     );
   }
 
-  if (error) {
-    console.error("Error loading recommendations:", error);
+  if (fetchError) {
+    console.error("Error loading recommendations:", fetchError);
     return null;
   }
 

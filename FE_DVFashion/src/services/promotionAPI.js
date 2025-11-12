@@ -1,9 +1,28 @@
 import api from "./api";
 
 export const promotionAPI = {
-  // Fetch all promotions
-  fetchPromotions: (lang = "VI") => {
-    return api.get(`/promotions/all?lang=${lang}`);
+  // paging for admin promotions
+  fetchPromotionsPaging: ({
+    lang = "VI",
+    page = 0,
+    size = 12,
+    sorts = [],
+  } = {}) => {
+    const sortParams = sorts
+      .filter(Boolean)
+      .map((s) => `sort=${encodeURIComponent(s)}`)
+      .join("&");
+    const url = `/promotions?lang=${lang}&page=${page}&size=${size}${
+      sortParams ? `&${sortParams}` : ""
+    }`;
+    return api.get(url);
+  },
+
+  // paging active promotions (public)
+  fetchActivePromotionsPaging: ({ lang = "VI", page = 0, size = 12 } = {}) => {
+    return api.get(
+      `/promotions/active/paging?lang=${lang}&page=${page}&size=${size}`
+    );
   },
 
   // Create a new promotion (multipart/form-data: part 'promotion' + optional 'bannerFile')
@@ -16,14 +35,12 @@ export const promotionAPI = {
     if (promotion.bannerFile) {
       formData.append("bannerFile", promotion.bannerFile);
     }
-    // Let axios set Content-Type multipart boundary automatically
     return api.post(`/promotions?lang=${lang}`, formData);
   },
 
-  // Update an existing promotion (multipart/form-data: part 'promotion' + optional 'bannerFile')
+  // Update an existing promotion
   updatePromotion: (promotionId, promotion, lang = "VI") => {
     const formData = new FormData();
-    // send JSON part as application/json blob so Spring @RequestPart("promotion") can parse it
     formData.append(
       "promotion",
       new Blob([JSON.stringify(promotion)], { type: "application/json" })
@@ -39,14 +56,14 @@ export const promotionAPI = {
     return api.get(`/promotions/${promotionId}?lang=${lang}`);
   },
 
-  // Remove product from promotion (backend endpoint)
+  // Remove product from promotion
   removeProductFromPromotion: (promotionId, productId, lang = "VI") => {
     return api.delete(
       `/promotions/${promotionId}/products/${productId}?lang=${lang}`
     );
   },
 
-  // Xóa khuyến mãi
+  // Delete promotion
   deletePromotion: (promotionId, lang = "VI") => {
     return api.delete(`/promotions/${promotionId}?lang=${lang}`);
   },

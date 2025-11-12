@@ -16,6 +16,7 @@ import {
   updateOrderByUser,
   getAllOrdersPaging,
   cancelOrderByCustomer,
+  getOrderStatistics,
 } from "../services/orderAPI";
 
 export const useCreateOrder = () => {
@@ -240,5 +241,14 @@ export const useCancelOrder = () => {
     onError: (error) => {
       toast.error(error.response?.data?.message || t("order.cancel_error"));
     },
+  });
+};
+
+// Hook để lấy thống kê đơn hàng
+export const useOrderStatistics = () => {
+  return useQuery({
+    queryKey: ["orderStatistics"],
+    queryFn: getOrderStatistics,
+    select: (res) => res.data,
   });
 };

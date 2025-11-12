@@ -2,8 +2,9 @@ import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import { Outlet } from "react-router-dom";
 import { ArrowUp } from "react-feather";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useLocation } from "react-router-dom";
+import FloatingChatButton from "../components/ui/chat/FloatingChatButton";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -26,6 +27,10 @@ export default function MainLayout() {
       {/* Footer */}
       <Footer />
 
+      {/* Nút chat nổi với Suspense */}
+      <Suspense fallback={null}>
+        <FloatingChatButton />
+      </Suspense>
       {/* Scroll to top button */}
       <button
         className="bg-blue-600 text-white rounded-full p-3 mb-2 shadow-lg hover:bg-blue-700 transition cursor-pointer fixed bottom-4 left-4 z-50"

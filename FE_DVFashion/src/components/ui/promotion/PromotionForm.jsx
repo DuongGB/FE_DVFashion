@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   IconX,
   IconCalendar,
@@ -35,6 +35,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
   const [errors, setErrors] = useState({});
   const [removingProductId, setRemovingProductId] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const bannerInputRef = useRef();
 
   // Get language from i18n
   const language = i18n.language || "VI";
@@ -236,10 +238,20 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     }));
   };
 
+  // Xử lý thay đổi input form
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === "file") {
-      setFormData((prev) => ({ ...prev, [name]: files[0] || null }));
+      const file = files[0] || null;
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      // Preview image
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => setBannerPreview(ev.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        setBannerPreview(null);
+      }
       return;
     }
     setFormData((prev) => ({
@@ -252,6 +264,15 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
+  // Preview banner khi edit
+  useEffect(() => {
+    if (promotion && isOpen) {
+      setBannerPreview(promotion.bannerUrl || null);
+    } else if (!promotion && isOpen) {
+      setBannerPreview(null);
+    }
+  }, [promotion, isOpen]);
 
   // helper: round to 2 decimals
   const round2 = (n) => {
@@ -286,6 +307,22 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.endDate = t("admin.promotion.form.end_date_required");
     }
 
+    // Validate startDate >= today
+    if (formData.startDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const start = new Date(formData.startDate);
+      if (start < today) {
+        newErrors.startDate =
+          t("admin.promotion.form.start_date_in_past") ||
+          "Ngày bắt đầu phải từ hôm nay trở đi";
+        toast.error(
+          t("admin.promotion.form.start_date_in_past") ||
+            "Ngày bắt đầu phải từ hôm nay trở đi"
+        );
+      }
+    }
+
     if (
       formData.startDate &&
       formData.endDate &&
@@ -311,7 +348,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       formData.promotionProducts.length === 0
     ) {
       newErrors.promotionProducts = t(
-        "admin.promotion.form.promotion_products_required" // add i18n key or fallback shown below
+        "admin.promotion.form.promotion_products_required"
       );
     }
 
@@ -590,6 +627,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     {t("admin.promotion.form.banner_file")}
                   </label>
                   <input
+                    ref={bannerInputRef}
                     type="file"
                     name="bannerFile"
                     accept="image/*"
@@ -600,6 +638,21 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   <p className="text-xs text-gray-500 mt-1">
                     {t("admin.promotion.form.banner_file_note")}
                   </p>
+                  {/* Banner preview */}
+                  {bannerPreview && (
+                    <div className="mt-2">
+                      <img
+                        src={bannerPreview}
+                        alt="Banner preview"
+                        className="max-h-32 rounded-lg border border-gray-300 shadow"
+                        style={{
+                          objectFit: "cover",
+                          width: "100%",
+                          maxWidth: 400,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="w-full md:w-44">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -900,14 +953,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-6 border-t border-white/30">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="px-6 py-2 text-gray-600 backdrop-blur-sm bg-white/70 border border-white/30 rounded-lg hover:bg-white/90 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {t("admin.promotion.form.cancel")}
-              </button>
               <button
                 type="submit"
                 disabled={isSubmitting}

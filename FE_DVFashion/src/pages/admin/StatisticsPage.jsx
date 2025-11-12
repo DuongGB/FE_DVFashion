@@ -29,20 +29,31 @@ const StatisticsPage = () => {
   const [year, setYear] = useState(today.getFullYear());
 
   // Daily date range
-  const [startDate, setStartDate] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() - 30);
-    return date.toISOString().split("T")[0];
-  });
-  const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  // Standard format "YYYY-MM-DD" without time zone difference
+  const formatLocalDate = (date) => {
+    if (!(date instanceof Date)) return date;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  // Get today's date in "YYYY-MM-DD" format
+  const getToday = () => {
+    const now = new Date();
+    return formatLocalDate(now);
+  };
 
   // Fetch data hooks
   const { data: overallData, isLoading: overallLoading } =
     useRevenueStatistics();
-  const { data: dailyData, isLoading: dailyLoading } = useDailyRevenue(
-    startDate,
-    endDate
-  );
+  const { data: dailyData, isLoading: dailyLoading } = useDailyRevenue({
+    startDate: startDate ?? getToday(),
+    endDate: endDate ?? getToday(),
+  });
   const { data: monthlyData, isLoading: monthlyLoading } =
     useMonthlyRevenue(year);
   const { data: yearlyData, isLoading: yearlyLoading } = useYearlyRevenue();
@@ -76,12 +87,12 @@ const StatisticsPage = () => {
         0
       );
     } else if (chartView === "monthly") {
-      return (
-        monthlyData?.reduce(
-          (sum, item) => sum + Number(item.revenue || 0),
-          0
-        ) || 0
-      );
+      const currentMonth = new Date().getMonth() + 1;
+      const currentMonthData = monthlyData?.find((item) => {
+        const [yearPart, monthPart] = item.period.split("-");
+        return Number(yearPart) === year && Number(monthPart) === currentMonth;
+      });
+      return currentMonthData ? Number(currentMonthData.revenue || 0) : 0;
     } else {
       return (
         yearlyData?.reduce((sum, item) => sum + Number(item.revenue || 0), 0) ||

@@ -4,6 +4,7 @@ import {
   IconFilter,
   IconAdjustments,
   IconPackageExport,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import Pagination from "../../components/common/Pagination";
@@ -16,7 +17,7 @@ import GeneralExportStockModal from "../../components/ui/inventory/GeneralExport
 
 export default function InventoryPage() {
   const { t } = useTranslation();
-  const { inventories, isLoading, error } = useInventory();
+  const { inventories, isLoading, error, refetch } = useInventory();
   const [search, setSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
@@ -53,18 +54,6 @@ export default function InventoryPage() {
     return colorMap[colorName?.toLowerCase()] || "#ccc";
   };
 
-  // Debounce cho việc tìm kiếm
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setSearch(searchTerm);
-      setCurrentPage(1);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
-
   // Lấy danh sách màu và size có trong kho
   const availableColors = Array.from(
     new Set((inventories || []).map((inv) => inv.productColor).filter(Boolean))
@@ -79,9 +68,9 @@ export default function InventoryPage() {
 
   // Lọc inventory
   const filteredInventories = (inventories || []).filter((inventory) => {
-    const matchesSearch =
-      inventory.productName?.toLowerCase().includes(search.toLowerCase()) ||
-      inventory.sizeName?.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = inventory.productName
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
 
     const matchesStockFilter = (() => {
       switch (stockFilter) {
@@ -245,13 +234,19 @@ export default function InventoryPage() {
 
       {/* Filters */}
       <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="md:col-span-2">
             <input
               type="text"
               placeholder={t("admin.inventory.search_placeholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setSearch(searchTerm);
+                  setCurrentPage(1);
+                }
+              }}
               className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -282,6 +277,15 @@ export default function InventoryPage() {
                   {getActiveFiltersCount()}
                 </span>
               )}
+            </button>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => refetch && refetch()}
+              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow justify-center"
+            >
+              <IconRefresh size={18} />
             </button>
           </div>
         </div>
@@ -378,23 +382,12 @@ export default function InventoryPage() {
       )}
 
       {/* Active Filters Display */}
-      {getActiveFiltersCount() > 0 && (
+      {!search && getActiveFiltersCount() > 0 && (
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm text-gray-600">
               {t("admin.inventory.active_filters")}
             </span>
-            {search && (
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                {t("admin.inventory.search", { search })}
-                <button
-                  onClick={() => removeFilter("search")}
-                  className="hover:text-blue-600"
-                >
-                  ×
-                </button>
-              </span>
-            )}
             {stockFilter !== "all" && (
               <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
                 {stockFilter === "low"

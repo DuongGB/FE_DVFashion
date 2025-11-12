@@ -304,8 +304,8 @@ const ProductForm = ({
       newErrors.name = t("admin.product.validation.name_required");
     if (!formData.price || formData.price <= 0)
       newErrors.price = t("admin.product.validation.price_required");
-    if (!formData.material.trim())
-      newErrors.material = t("admin.product.validation.material_required");
+    // if (!formData.material.trim())
+    //   newErrors.material = t("admin.product.validation.material_required");
     if (!formData.status)
       newErrors.status = t("admin.product.validation.status_required");
     if (!formData.categoryId)

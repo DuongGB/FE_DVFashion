@@ -25,8 +25,7 @@ export const useHybridRecommendations = ({
   return useQuery({
     queryKey: ["recommendations", "hybrid", { productId, userId, limit }],
     queryFn: () => getHybridRecommendations({ productId, userId, limit }),
-    // Enable query even if productId is null (for homepage recommendations)
-    enabled: enabled && isAuthenticated,
+    enabled: enabled,
     staleTime: 1000 * 60 * 5,
     // Normalize response data
     select: (data) => {
