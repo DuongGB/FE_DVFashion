@@ -1,19 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
 import {
-  IconEye,
   IconEdit,
-  IconTrash,
+  IconEye,
   IconPlus,
   IconSearch,
+  IconTrash,
+  IconRefresh,
 } from "@tabler/icons-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
-import { showConfirmationToast } from "../../utils/showConfirmationToast";
-import useVoucher from "../../hooks/useVoucher";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import VoucherForm from "../../components/ui/voucher/VoucherForm";
 import VoucherDetailModal from "../../components/ui/voucher/VoucherDetailModal";
+import VoucherForm from "../../components/ui/voucher/VoucherForm";
+import useVoucher from "../../hooks/useVoucher";
+import { showConfirmationToast } from "../../utils/showConfirmationToast";
 
 export default function VoucherPage() {
   const { t, i18n } = useTranslation();
@@ -229,7 +229,7 @@ export default function VoucherPage() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters + Refresh */}
       <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
@@ -272,6 +272,16 @@ export default function VoucherPage() {
                 {t("admin.voucher.status.inactive") || "Inactive"}
               </option>
             </select>
+          </div>
+          <div className="flex items-center h-full">
+            <button
+              type="button"
+              onClick={() => refetchPaged && refetchPaged()}
+              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+              title={t("common.refresh") || "Làm mới"}
+            >
+              <IconRefresh size={18} />
+            </button>
           </div>
         </div>
       </div>

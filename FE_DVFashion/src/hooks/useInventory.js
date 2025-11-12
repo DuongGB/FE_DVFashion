@@ -9,6 +9,7 @@ export const useInventory = () => {
     data: inventories,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["inventories"],
     queryFn: () =>
@@ -73,6 +74,7 @@ export const useInventory = () => {
     inventories,
     isLoading,
     error,
+    refetch,
     importStock: importStockMutation.mutateAsync,
     isImporting: importStockMutation.isPending,
     adjustStock: adjustStockMutation.mutateAsync,

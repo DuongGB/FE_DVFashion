@@ -47,21 +47,38 @@ const ChatBox = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen || authLoading) return;
 
-    const savedRoomCode = localStorage.getItem(CHAT_ROOM_KEY);
-    const savedGuestInfo = localStorage.getItem(CHAT_GUEST_KEY);
-
-    if (savedRoomCode) {
-      setRoomCode(savedRoomCode);
-      setIsRoomReady(true);
-      if (savedGuestInfo && !user) {
-        try {
-          setGuestInfo(JSON.parse(savedGuestInfo));
-        } catch {}
-      }
+    if (
+      user &&
+      Array.isArray(user.roles) &&
+      user.roles.includes("ROLE_CUSTOMER") &&
+      !user.roles.includes("ROLE_ADMIN")
+    ) {
       setShowGuestForm(false);
-    } else {
-      // Chỉ hiện form guest nếu chưa có room và chưa đăng nhập
-      setShowGuestForm(!user);
+      setGuestInfo({ name: "", phone: "" });
+
+      // Lấy roomCode từ user hoặc localStorage, không tự tạo mới ở đây nữa
+      const userRoomCode = user.roomCode || localStorage.getItem(CHAT_ROOM_KEY);
+      if (userRoomCode) {
+        setRoomCode(userRoomCode);
+        setIsRoomReady(true);
+      }
+      // Không gọi createCustomerChatRoom ở đây nữa!
+    } else if (!user) {
+      // Guest logic giữ nguyên
+      const savedRoomCode = localStorage.getItem(CHAT_ROOM_KEY);
+      const savedGuestInfo = localStorage.getItem(CHAT_GUEST_KEY);
+      if (savedRoomCode) {
+        setRoomCode(savedRoomCode);
+        setIsRoomReady(true);
+        if (savedGuestInfo) {
+          try {
+            setGuestInfo(JSON.parse(savedGuestInfo));
+          } catch {}
+        }
+        setShowGuestForm(false);
+      } else {
+        setShowGuestForm(true);
+      }
     }
   }, [isOpen, user, authLoading]);
 

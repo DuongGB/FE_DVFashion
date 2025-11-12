@@ -247,14 +247,14 @@ export default function InventoryPage() {
                   setCurrentPage(1);
                 }
               }}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
             />
           </div>
           <div>
             <select
               value={stockFilter}
               onChange={(e) => setStockFilter(e.target.value)}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
             >
               <option value="all">{t("admin.inventory.all")}</option>
               <option value="low">{t("admin.inventory.filter_low")}</option>
@@ -264,7 +264,7 @@ export default function InventoryPage() {
           <div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm ${
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-xl ${
                 showAdvancedFilters
                   ? "bg-blue-50 border-blue-300 text-blue-700"
                   : "border-white/30 hover:bg-white/70"
@@ -283,7 +283,7 @@ export default function InventoryPage() {
             <button
               type="button"
               onClick={() => refetch && refetch()}
-              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow justify-center"
+              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow justify-center cursor-pointer"
             >
               <IconRefresh size={18} />
             </button>
