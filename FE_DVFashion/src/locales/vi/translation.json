@@ -733,6 +733,32 @@
       "HIDDEN": "Đã ẩn"
     }
   },
+  "customer_support": {
+    "start_chat": "Bắt đầu trò chuyện",
+    "customer_support": "Hỗ trợ khách hàng",
+    "no_rooms": "Chưa có cuộc trò chuyện nào",
+    "conversations": "cuộc trò chuyện",
+    "select_room_to_chat": "Chọn một cuộc trò chuyện để bắt đầu",
+    "select_room_description": "Chọn một khách hàng từ danh sách bên trái",
+    "start_conversation": "Hãy bắt đầu cuộc trò chuyện",
+    "customer": "Khách hàng",
+    "unknown_user": "Người dùng ẩn danh",
+    "your_name": "Tên của bạn",
+    "enter_name": "Nhập tên của bạn",
+    "phone_number": "Số điện thoại",
+    "enter_phone": "Nhập số điện thoại (không bắt buộc)",
+    "loading_chat": "Đang tải cuộc trò chuyện...",
+    "room": "Phòng",
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "no_messages": "Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!",
+    "is_typing": "đang nhập...",
+    "type_message": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "attach_file": "Đính kèm tệp",
+    "file_size_error": "Kích thước tệp không được vượt quá 10MB",
+    "file_type_error": "Chỉ chấp nhận tệp ảnh, video và PDF"
+  },
 
   "admin": {
     "settings": {
@@ -1610,6 +1636,7 @@
       }
     },
     "sidebar": {
+      "customer_support": "Hỗ trợ khách hàng",
       "home": "Trang chủ",
       "business_management": "Quản lý kinh doanh",
       "orders": "Đơn hàng",
@@ -1624,7 +1651,7 @@
       "promotions": "Khuyến mãi",
       "human_resources": "Nhân sự",
       "employees": "Nhân viên",
-      "reports_analytics": "Báo cáo & phân tích",
+      "reports_analytics": "Báo cáo phân tích",
       "reports_management": "Thống kê báo cáo",
       "revenue_forecast": "Dự báo doanh thu",
       "display_pages": "Trang hiển thị",

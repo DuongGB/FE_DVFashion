@@ -19,6 +19,7 @@ import {
   IconWorldWww,
   IconReceipt,
   IconGift,
+  IconMessage,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -251,6 +252,9 @@ export default function Sidebar({ onClose }) {
                 icon={<IconDevicesCheck size={16} />}
               >
                 {t("admin.sidebar.reviews")}
+              </SubMenuItem>
+              <SubMenuItem to="/admin/support" icon={<IconMessage size={16} />}>
+                {t("admin.sidebar.customer_support")}
               </SubMenuItem>
             </MenuWithSubmenu>
 

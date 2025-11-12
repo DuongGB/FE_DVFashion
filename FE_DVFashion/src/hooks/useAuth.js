@@ -37,11 +37,14 @@ export const useAuth = () => {
       console.log("Login response:", data.data);
       // set cookie để các hook dựa vào cookie nhận biết đã đăng nhập
       setCookie("isAuthenticated", "true");
+
       // Invalidate user
       queryClient.invalidateQueries(["auth", "user"]);
       // Invalidate các dữ liệu phụ thuộc trạng thái đăng nhập
       queryClient.invalidateQueries({ queryKey: ["vouchers", "customer"] });
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      localStorage.removeItem("chatRoomCode");
+      localStorage.removeItem("chatGuestInfo");
     },
   });
 
@@ -51,7 +54,10 @@ export const useAuth = () => {
     onSuccess: () => {
       // Clear all caches
       deleteCookie("isAuthenticated");
+      deleteCookie("token");
       queryClient.clear();
+      localStorage.removeItem("chatRoomCode");
+      localStorage.removeItem("chatGuestInfo");
     },
   });
 

@@ -764,6 +764,31 @@
       "HIDDEN": "Hidden"
     }
   },
+  "customer_support": {
+    "start_chat": "Start Chat",
+    "customer_support": "Customer Support",
+    "conversations": "conversations",
+    "no_rooms": "No conversations yet",
+    "select_room_to_chat": "Select a conversation to start",
+    "select_room_description": "Choose a customer from the list on the left",
+    "unknown_user": "Anonymous User",
+    "start_conversation": "Start the conversation",
+    "your_name": "Your Name",
+    "enter_name": "Enter your name",
+    "phone_number": "Phone Number",
+    "enter_phone": "Enter phone number (optional)",
+    "loading_chat": "Loading chat...",
+    "room": "Room",
+    "online": "Online",
+    "offline": "Offline",
+    "no_messages": "No messages yet. Start the conversation!",
+    "is_typing": "is typing...",
+    "type_message": "Type a message...",
+    "send": "Send",
+    "attach_file": "Attach file",
+    "file_size_error": "File size cannot exceed 10MB",
+    "file_type_error": "Only image, video, and PDF files are allowed"
+  },
 
   "admin": {
     "settings": {
@@ -1688,6 +1713,7 @@
       }
     },
     "sidebar": {
+      "customer_support": "Customer Support",
       "home": "Home",
       "business_management": "Business Management",
       "orders": "Orders",
