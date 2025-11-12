@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onRequireLogin }) {
   const { t } = useTranslation();
   const { addToCart, isAdding } = useCart();
   const { isAuthenticated } = useAuth();
@@ -67,6 +67,12 @@ export default function ProductCard({ product }) {
 
   // Hàm xử lý thêm nhanh vào giỏ hàng
   const handleQuickAddToCart = async (sizeName) => {
+    // Nếu chưa đăng nhập thì mở form login, không gọi API
+    if (!isAuthenticated) {
+      if (onRequireLogin) onRequireLogin();
+      return;
+    }
+
     // Tìm variant theo màu đang chọn
     const variant = product.variants?.find((v) => v.color === activeColor);
     if (!variant) {
@@ -89,10 +95,6 @@ export default function ProductCard({ product }) {
       });
       toast.success(t("product.card.added_to_cart"));
     } catch (error) {
-      if (!isAuthenticated) {
-        toast.error(t("product.card.login_to_add"));
-        return;
-      }
       toast.error(t("product.card.out_of_stock"));
     }
   };

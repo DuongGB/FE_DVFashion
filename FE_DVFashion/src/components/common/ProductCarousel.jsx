@@ -1,15 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "react-feather";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import ProductCard from "./ProductCard";
+import AuthModal from "../ui/auth/AuthModal";
 
 export default function ProductCarousel({ products = [] }) {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   // Chỉ lấy sản phẩm ACTIVE
   const activeProducts = products.filter((p) => p.status === "ACTIVE");
 
@@ -50,7 +52,10 @@ export default function ProductCarousel({ products = [] }) {
       >
         {activeProducts.map((product) => (
           <SwiperSlide key={product.id}>
-            <ProductCard product={product} />
+            <ProductCard
+              product={product}
+              onRequireLogin={() => setShowAuthModal(true)}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -68,6 +73,12 @@ export default function ProductCarousel({ products = [] }) {
       >
         <ChevronRight size={18} />
       </button>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode="login"
+        stayOnPage
+      />
     </div>
   );
 }

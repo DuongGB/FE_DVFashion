@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
 import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
+import { useChat } from "./useChat";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
   const isAuthenticated = getCookie("isAuthenticated") === "true";
+  const { createCustomerChatRoom } = useChat();
 
   // Get current user
   const {
@@ -22,6 +25,28 @@ export const useAuth = () => {
     enabled: isAuthenticated, // Only fetch if authenticated
   });
 
+  // Khi user login thành công, tự động lấy chatRoomCode customer
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      user &&
+      Array.isArray(user.roles) &&
+      user.roles.includes("ROLE_CUSTOMER") &&
+      !user.roles.includes("ROLE_ADMIN")
+    ) {
+      const savedRoomCode = localStorage.getItem("chatRoomCode");
+      if (!savedRoomCode) {
+        createCustomerChatRoom.mutate(undefined, {
+          onSuccess: (data) => {
+            if (data?.data?.roomCode) {
+              localStorage.setItem("chatRoomCode", data.data.roomCode);
+            }
+          },
+        });
+      }
+    }
+  }, [isAuthenticated, user]);
+
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: authAPI.register,
@@ -35,7 +60,16 @@ export const useAuth = () => {
     mutationFn: authAPI.login,
     onSuccess: (data) => {
       console.log("Login response:", data.data);
+      // set cookie để các hook dựa vào cookie nhận biết đã đăng nhập
+      setCookie("isAuthenticated", "true");
+
+      // Invalidate user
       queryClient.invalidateQueries(["auth", "user"]);
+      // Invalidate các dữ liệu phụ thuộc trạng thái đăng nhập
+      queryClient.invalidateQueries({ queryKey: ["vouchers", "customer"] });
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      localStorage.removeItem("chatRoomCode");
+      localStorage.removeItem("chatGuestInfo");
     },
   });
 
@@ -45,7 +79,10 @@ export const useAuth = () => {
     onSuccess: () => {
       // Clear all caches
       deleteCookie("isAuthenticated");
+      deleteCookie("token");
       queryClient.clear();
+      localStorage.removeItem("chatRoomCode");
+      localStorage.removeItem("chatGuestInfo");
     },
   });
 
@@ -82,10 +119,10 @@ export const useAuth = () => {
 
   return {
     // User data
-    user,
+    user: isAuthenticated ? user : null,
     isLoading,
     error,
-    isAuthenticated: !!user,
+    isAuthenticated,
 
     // Login
     login: loginMutation.mutateAsync,

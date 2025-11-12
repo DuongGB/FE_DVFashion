@@ -754,6 +754,9 @@ export default function CartPage() {
 
   // Xoá tất cả sản phẩm
   const handleClearCart = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     await clearCart();
     setSelected([]);
   };
@@ -932,8 +935,9 @@ export default function CartPage() {
     return vouchers.filter((voucher) => {
       const start = voucher.startDate ? new Date(voucher.startDate) : null;
       const end = voucher.endDate ? new Date(voucher.endDate) : null;
-      // Ẩn nếu đã hết hạn hoặc hết lượt sử dụng
+      // Ẩn nếu đã hết hạn  hoặc hết lượt sử dụng hoặc bị disable
       if (
+        voucher.disabled ||
         (end && now > end) ||
         (voucher.maxTotalUsage > 0 &&
           voucher.currentUsage >= voucher.maxTotalUsage)
@@ -943,6 +947,8 @@ export default function CartPage() {
       return true;
     });
   }, [vouchers]);
+  console.log("Valid vouchers:", validVouchers);
+  console.log("Ordercart items:", orderedCartItems);
 
   // Loading state
   if (isCartLoading) {
@@ -1345,16 +1351,36 @@ export default function CartPage() {
                         : null;
                       // Disable nếu chưa tới ngày bắt đầu
                       const notYetActive = start && now < start;
+                      // Kiểm tra hết lượt sử dụng với tài khoản
+                      const userUsed =
+                        voucher.maxUsagePerUser > 0 &&
+                        voucher.currentUserUsage >= voucher.maxUsagePerUser;
+
+                      // Nếu là PRODUCT_SPECIFIC, kiểm tra sản phẩm trong giỏ có trùng không
+                      let productNotMatch = false;
+                      if (
+                        voucher.voucherType === "PRODUCT_SPECIFIC" &&
+                        Array.isArray(voucher.products)
+                      ) {
+                        const cartProductIds = orderedCartItems.map(
+                          (item) => item.productId
+                        );
+                        productNotMatch = !voucher.products.some((p) =>
+                          cartProductIds.includes(p.productId)
+                        );
+                      }
+                      const isDisabled =
+                        !canUse || notYetActive || userUsed || productNotMatch;
                       return (
                         <div
                           key={voucher.id}
                           className={`p-2 bg-gray-50 border border-gray-200 rounded transition-colors ${
-                            canUse && !notYetActive
+                            !isDisabled
                               ? "cursor-pointer hover:bg-blue-50 hover:border-blue-300"
                               : "opacity-50 cursor-not-allowed"
                           }`}
                           onClick={() => {
-                            if (canUse && !notYetActive) {
+                            if (!isDisabled) {
                               setVoucherInput(voucher.code);
                             }
                           }}
@@ -1420,6 +1446,13 @@ export default function CartPage() {
                                 <p className="text-xs text-yellow-600 mt-1">
                                   {t("cart.voucher_not_active") ||
                                     "Voucher chưa có hiệu lực"}
+                                </p>
+                              )}
+                              {/* User hết lượt sử dụng */}
+                              {userUsed && (
+                                <p className="text-xs text-red-500 mt-1">
+                                  {t("cart.voucher_user_limit_reached") ||
+                                    "Bạn đã dùng hết lượt voucher này"}
                                 </p>
                               )}
                             </div>

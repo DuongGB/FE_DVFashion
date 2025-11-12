@@ -9,12 +9,13 @@ import {
   IconCash,
   IconBrandPaypal,
   IconBuildingBank,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import OrderDetailModal from "../../components/ui/order/OrderDetailModal";
 import OrderEditModal from "../../components/ui/order/OrderEditModal";
 import Pagination from "../../components/common/Pagination";
-import { useAllOrdersPaging } from "../../hooks/useOrder";
+import { useAllOrdersPaging, useOrderStatistics } from "../../hooks/useOrder";
 
 const statusColors = {
   PENDING: "bg-gray-500",
@@ -71,6 +72,7 @@ const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
 
 export default function OrdersPage() {
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState("Tất cả");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("Tất cả");
@@ -86,7 +88,34 @@ export default function OrdersPage() {
     sort: "orderDate,desc",
   };
 
-  const { data, isLoading, isError } = useAllOrdersPaging(params);
+  const { data: statsApi, isLoading: statsLoading } = useOrderStatistics();
+
+  const stats = useMemo(() => {
+    if (!statsApi)
+      return {
+        all: 0,
+        pending: 0,
+        confirmed: 0,
+        processing: 0,
+        delivered: 0,
+        shipped: 0,
+        returned: 0,
+        canceled: 0,
+      };
+    const byStatus = statsApi.ordersByStatus || {};
+    return {
+      all: statsApi.totalOrders || 0,
+      pending: byStatus.PENDING || 0,
+      confirmed: byStatus.CONFIRMED || 0,
+      processing: byStatus.PROCESSING || 0,
+      delivered: byStatus.DELIVERED || 0,
+      shipped: byStatus.SHIPPED || 0,
+      returned: byStatus.RETURNED || 0,
+      canceled: byStatus.CANCELED || 0,
+    };
+  }, [statsApi]);
+
+  const { data, isLoading, isError, refetch } = useAllOrdersPaging(params);
 
   const orders = data?.values || [];
 
@@ -111,42 +140,6 @@ export default function OrdersPage() {
   const paginatedOrders = filteredOrders;
   const totalPages = data?.totalPages ?? 1;
 
-  const stats = useMemo(() => {
-    const all = data?.totalElements ?? 0;
-
-    let pending = 0,
-      confirmed = 0,
-      processing = 0,
-      delivered = 0,
-      shipped = 0,
-      returned = 0,
-      canceled = 0,
-      totalAmount = 0;
-
-    orders.forEach((o) => {
-      if (o.status === "PENDING") pending++;
-      if (o.status === "CONFIRMED") confirmed++;
-      if (o.status === "PROCESSING") processing++;
-      if (o.status === "DELIVERED") delivered++;
-      if (o.status === "SHIPPED") shipped++;
-      if (o.status === "RETURNED") returned++;
-      if (o.status === "CANCELED") canceled++;
-      totalAmount += Number(o.totalAmount || 0);
-    });
-
-    return {
-      all,
-      pending,
-      confirmed,
-      processing,
-      delivered,
-      shipped,
-      returned,
-      canceled,
-      totalAmount,
-    };
-  }, [orders, data?.totalElements]);
-
   const mapToModalOrder = (order) => {
     if (!order) return null;
     return {
@@ -162,7 +155,7 @@ export default function OrdersPage() {
     };
   };
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return <div>{t("common.loading")}...</div>;
   }
 
@@ -232,14 +225,17 @@ export default function OrdersPage() {
       </div>
 
       {/* Thanh công cụ */}
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
         <input
           type="text"
           placeholder={t("admin.order.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSearch(searchInput);
+              setCurrentPage(1);
+            }
           }}
           className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 flex-1 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
@@ -272,6 +268,13 @@ export default function OrdersPage() {
           <option value="PAYPAL">PayPal</option>
           <option value="BANK_TRANSFER">Chuyển khoản</option>
         </select>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+        >
+          <IconRefresh size={18} />
+        </button>
       </div>
 
       {/* Bảng đơn hàng */}

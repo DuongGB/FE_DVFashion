@@ -303,3 +303,34 @@
   -ms-overflow-style: none; /* IE và Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/*  Smooth scrolling cho chat messages */
+.chat-messages-container {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar cho chat */
+.chat-messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox scrollbar */
+.chat-messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}

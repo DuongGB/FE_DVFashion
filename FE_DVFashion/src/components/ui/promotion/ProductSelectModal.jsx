@@ -13,10 +13,22 @@ export default function ProductSelectModal({
 }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language || lang;
-  const { products, isLoading } = useProduct(language);
-  // Lấy danh sách khuyến mãi (dù không dùng trong UI, nhưng để đảm bảo cache được cập nhật khi có thay đổi)
-  const { promotions } = usePromotion(language);
   const [search, setSearch] = useState("");
+  const [currentPage] = useState(0); // Nếu muốn phân trang thì thêm state này
+
+  // Sử dụng useProduct giống ProductPage
+  const { products, isLoading } = useProduct({
+    page: currentPage,
+    size: 100, // lấy nhiều sản phẩm, hoặc tuỳ chỉnh
+    lang: language,
+    search: search,
+  });
+  // const { t, i18n } = useTranslation();
+  // const language = i18n.language || lang;
+  // const { products, isLoading } = useProduct(language);
+  // // Lấy danh sách khuyến mãi (dù không dùng trong UI, nhưng để đảm bảo cache được cập nhật khi có thay đổi)
+  const { promotions } = usePromotion(language);
+  // const [search, setSearch] = useState("");
 
   // existingIds là tập hợp các productId đã có trong khuyến mãi (preSelected)
   const existingIds = useMemo(
