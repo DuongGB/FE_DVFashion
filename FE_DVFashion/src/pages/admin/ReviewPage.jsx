@@ -399,12 +399,12 @@ export default function ReviewPage() {
                   className="border-b hover:bg-white/80 transition-colors"
                 >
                   <td className="p-3">
-                    <p className="font-semibold">
+                    <p className="font-semibold text-sm">
                       {review.user?.fullName || "N/A"}
                     </p>
                   </td>
                   <td className="p-3">
-                    <p className="font-semibold">
+                    <p className="font-semibold text-sm">
                       {review.productName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -430,7 +430,7 @@ export default function ReviewPage() {
                     </div>
                   </td>
                   <td className="p-3">
-                    <p className="max-w-xs truncate">
+                    <p className="truncate overflow-hidden whitespace-nowrap max-w-xs">
                       {review.comment || (
                         <span className="text-gray-400 italic">
                           {t("admin.review.no_comment")}
