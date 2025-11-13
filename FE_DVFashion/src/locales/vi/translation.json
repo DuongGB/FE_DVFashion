@@ -455,6 +455,7 @@
     "voucher_not_applicable": "Voucher không áp dụng cho đơn hàng này"
   },
   "order": {
+    "preview_invoice": "Xem hóa đơn",
     "update_order": "Cập nhật đơn hàng",
     "update_note": "Chỉ cập nhật đơn hàng trong trạng thái Chờ xác nhận hoặc Đang xử lý.",
     "shipping_not_editable": "Thông tin giao hàng không thể chỉnh sửa cho đơn hàng đã xử lý (Processing/Shipped/Delivered)",
@@ -562,6 +563,40 @@
       "note": "Ghi chú",
       "none": "Không có"
     }
+  },
+  "invoice_preview": {
+    "title": "Hóa đơn #{{orderNumber}}",
+    "view_html": "Xem dạng HTML",
+    "view_pdf": "Xem dạng PDF",
+    "download_pdf": "Tải PDF",
+    "print": "In hóa đơn",
+    "close": "Đóng"
+  },
+  "invoice": {
+    "shop_name": "DVFASHION",
+    "shop_address": "12 Nguyễn Văn Bảo, P.4, Q.Gò Vấp, TP.HCM",
+    "shop_email": "dvfashion@gmail.com",
+    "shop_phone": "0123456789",
+    "invoice": "HÓA ĐƠN",
+    "order": "Đơn hàng",
+    "customer": "Khách hàng",
+    "order_number": "Số đơn hàng",
+    "invoice_number": "Số hóa đơn",
+    "order_date": "Ngày đặt",
+    "invoice_date": "Ngày xuất hóa đơn",
+    "customer_name": "Tên khách hàng",
+    "customer_email": "Email",
+    "customer_address": "Địa chỉ",
+    "product": "Sản phẩm",
+    "quantity": "Số lượng",
+    "unit_price": "Đơn giá",
+    "total_price": "Thành tiền",
+    "subtotal": "Tạm tính",
+    "shipping_fee": "Phí vận chuyển",
+    "voucher_discount": "Giảm giá",
+    "voucher_code": "Mã giảm giá",
+    "grand_total": "TỔNG CỘNG",
+    "thank_you": "Cảm ơn quý khách đã mua sắm tại DVFASHION! / Thank you for shopping with us!"
   },
   "address": {
     "address_book": "Sổ địa chỉ",
@@ -766,7 +801,14 @@
     "phone_number": "Số điện thoại",
     "enter_phone": "Nhập số điện thoại (tùy chọn)",
     "loading_chat": "Đang tải chat...",
-    "send_first_message": "Hãy gửi tin nhắn đầu tiên!"
+    "send_first_message": "Hãy gửi tin nhắn đầu tiên!",
+    "ai_welcome": "Xin chào! Bạn muốn tìm sản phẩm hoặc đặt câu hỏi gì?",
+    "ai_assistant": "Trợ lý AI",
+    "ai_subtitle": "Tư vấn nhanh theo yêu cầu của bạn",
+    "ai_placeholder": "Ví dụ: tìm áo sơ mi nam trắng dưới 500k",
+    "ai_error": "Xin lỗi, hiện AI không phản hồi. Vui lòng thử lại.",
+    "ai_no_reply": "Không có phản hồi.",
+    "ask_ai": "Hỏi AI"
   },
 
   "admin": {

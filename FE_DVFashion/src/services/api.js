@@ -2,6 +2,7 @@ import axios from "axios";
 
 // Base API configuration
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_AI = import.meta.env.VITE_API_AI;
 
 // Hàm kiểm tra đăng nhập
 function isUserAuthenticated() {
@@ -10,6 +11,12 @@ function isUserAuthenticated() {
   // Nếu dùng localStorage:
   // return localStorage.getItem("isAuthenticated") === "true";
 }
+
+// Tạo axios instance với AI base config
+const apiAI = axios.create({
+  baseURL: API_BASE_AI,
+  withCredentials: false, // Không gửi cookie với các request AI
+});
 
 // Create axios instance with base config
 const api = axios.create({
@@ -88,3 +95,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+export { apiAI };
