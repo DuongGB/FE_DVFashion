@@ -5,6 +5,7 @@ import { ArrowUp } from "react-feather";
 import { useEffect, Suspense } from "react";
 import { useLocation } from "react-router-dom";
 import FloatingChatButton from "../components/ui/chat/FloatingChatButton";
+import FloatingAIChatButton from "../components/ui/chat/FloatingAIChatButton";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -30,6 +31,7 @@ export default function MainLayout() {
       {/* Nút chat nổi với Suspense */}
       <Suspense fallback={null}>
         <FloatingChatButton />
+        <FloatingAIChatButton />
       </Suspense>
       {/* Scroll to top button */}
       <button

@@ -488,6 +488,7 @@
     "voucher_not_applicable": "Voucher is not applicable for this order"
   },
   "order": {
+    "preview_invoice": "Preview Invoice",
     "update_order": "Update Order",
     "update_note": "Only orders with 'Pending' or 'Processing' status can be updated.",
     "shipping_not_editable": "Shipping information cannot be edited for processed orders (Processing/Shipped/Delivered)",
@@ -594,6 +595,40 @@
       "note": "Note",
       "none": "None"
     }
+  },
+  "invoice_preview": {
+    "title": "Invoice #{{orderNumber}}",
+    "view_html": "View as HTML",
+    "view_pdf": "View as PDF",
+    "download_pdf": "Download PDF",
+    "print": "Print Invoice",
+    "close": "Close"
+  },
+  "invoice": {
+    "shop_name": "DVFASHION",
+    "shop_address": "12 Nguyen Van Bao, Ward 4, Go Vap District, HCMC",
+    "shop_email": "dvfashion@gmail.com",
+    "shop_phone": "0123456789",
+    "invoice": "INVOICE",
+    "order": "Order",
+    "customer": "Customer",
+    "order_number": "Order Number",
+    "invoice_number": "Invoice Number",
+    "order_date": "Order Date",
+    "invoice_date": "Invoice Date",
+    "customer_name": "Customer Name",
+    "customer_email": "Email",
+    "customer_address": "Address",
+    "product": "Product",
+    "quantity": "Quantity",
+    "unit_price": "Unit Price",
+    "total_price": "Total",
+    "subtotal": "Subtotal",
+    "shipping_fee": "Shipping Fee",
+    "voucher_discount": "Discount",
+    "voucher_code": "Voucher Code",
+    "grand_total": "GRAND TOTAL",
+    "thank_you": "Thank you for shopping with DVFASHION!"
   },
   "address": {
     "address_book": "Address Book",
@@ -797,7 +832,14 @@
     "phone_number": "Phone number",
     "enter_phone": "Enter your phone (optional)",
     "loading_chat": "Loading chat...",
-    "send_first_message": "Send the first message!"
+    "send_first_message": "Send the first message!",
+    "ai_welcome": "Hello! I'm your AI assistant. How can I help you today?",
+    "ai_assistant": "AI Assistant",
+    "ai_subtitle": "Ask me anything about you need.",
+    "ai_placeholder": "Ask me anything...",
+    "ai_error": "An error occurred while processing your request. Please try again.",
+    "ai_no_reply": "I'm sorry, I don't have an answer for that right now.",
+    "ask_ai": "Ask AI"
   },
 
   "admin": {
@@ -1751,6 +1793,14 @@
     },
     "dashboard": {
       "title": "Administration Dashboard",
+      "top_best_selling_products": "Top Best-Selling Products",
+      "top_stock_products": "Top Stock Products",
+      "low_stock_products": "Low Stock Products",
+      "top_promotions_by_revenue": "Top Promotions by Revenue",
+      "no_data": "No product low stock",
+      "quantity_sold": "Sold: {{count}}",
+      "available_quantity": "Available: {{count}}",
+      "revenue": "Revenue: {{amount}}",
       "stats": {
         "total_customers": "Total Customers",
         "total_products": "Total Products",
@@ -1782,20 +1832,17 @@
         "no_data": "No recommended product data"
       },
       "charts": {
+        "title": "Sales & Revenue Charts",
+        "no_data": "No chart data available",
         "revenue_title": "Revenue Chart",
         "revenue_chart_title": "Monthly Revenue and Orders",
         "month": "Month",
+        "month_short": "Month",
         "revenue_label": "Revenue (VND)",
         "orders_label": "Number of Orders",
         "revenue": "Revenue",
         "orders": "Orders",
-        "loading": "Loading chart...",
-        "month_1": "January",
-        "month_2": "February",
-        "month_3": "March",
-        "month_4": "April",
-        "month_5": "May",
-        "month_6": "June"
+        "loading": "Loading chart..."
       },
       "recent_activity": {
         "title": "Recent Activity",
@@ -2096,61 +2143,41 @@
       "year_selector": {
         "label": "Year"
       },
-      "export": {
-        "button": "Export CSV",
-        "success": "File exported successfully!",
-        "error": "Error exporting CSV file"
-      },
       "cards": {
         "revenue": {
-          "title": "Revenue",
-          "daily": "date range",
-          "monthly": "this month",
-          "yearly": "this year",
-          "growth": "vs last month"
-        },
-        "forecast": {
-          "title": "Next 3 months forecast",
-          "note": "Based on linear regression"
-        },
-        "total_items": {
-          "title": "Total Items"
-        },
-        "status": {
-          "title": "Status",
-          "loading": "Loading…",
-          "ready": "Ready"
+          "daily": "Revenue for date range",
+          "monthly": "Monthly Revenue",
+          "yearly": "Yearly Revenue",
+          "growth": "from last month"
         }
       },
       "chart": {
-        "title": {
-          "daily": "Daily Revenue Chart",
-          "monthly": "Monthly Revenue Chart",
-          "yearly": "Yearly Revenue Chart"
-        },
-        "types": {
-          "combo": "Combo",
-          "line": "Line",
-          "area": "Area",
-          "bar": "Bar"
-        },
-        "legend": {
-          "actual": "Actual",
-          "predicted": "Predicted"
-        },
-        "loading": "Loading data...",
+        "title_daily": "Daily Revenue Chart",
+        "title_monthly": "Monthly Revenue Chart",
+        "title_yearly": "Yearly Revenue Chart",
+        "time": "Time",
+        "revenue": "Revenue",
+        "time_axis": "Time",
+        "revenue_axis": "Revenue (₫)",
+        "loading": "Loading chart...",
         "no_data": "No data available"
       },
       "pie_chart": {
         "title": "Monthly Revenue Distribution",
+        "month": "Month",
+        "revenue": "Revenue",
         "top_months": "Top 5 Highest Months"
+      },
+      "pie": {
+        "title": "Revenue Distribution by Month",
+        "month": "Month",
+        "revenue": "Revenue"
       },
       "notes": {
         "title": "Important Notes",
-        "csv_export": "CSV export will use data from the current view mode.",
-        "forecast_note": "Revenue forecast uses linear regression model, for reference only.",
         "realtime": "Data is updated in real-time from the system.",
-        "multiple_views": "Charts support multiple display types for multi-dimensional analysis."
+        "multiple_views": "Charts support multiple display types for multi-dimensional analysis.",
+        "date_range": "Select date range to view daily revenue."
       }
     }
   },

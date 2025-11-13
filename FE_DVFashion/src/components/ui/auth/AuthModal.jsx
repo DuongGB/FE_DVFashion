@@ -41,17 +41,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = "login", stayOnPage }) => {
     setMode("forgot-password");
   };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className="relative w-full max-w-lg max-h-[95vh] overflow-y-auto"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}

@@ -79,3 +79,58 @@ export const useYearlyRevenue = ({ enabled = true } = {}) => {
     },
   });
 };
+
+/**
+ * Hook lấy top 10 sản phẩm bán chạy nhất
+ */
+export const useTopBestSellingProducts = ({ enabled = true } = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "products", "best-selling"],
+    queryFn: () => statisticAPI.getTopBestSellingProducts(),
+    enabled,
+    staleTime: 1000 * 60 * 10,
+    select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook lấy top sản phẩm tồn kho cao nhất
+ */
+export const useTopStockProducts = ({ limit = 10, enabled = true } = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "stock-products", "top-stock", limit],
+    queryFn: () => statisticAPI.getTopStockProducts(limit),
+    enabled,
+    staleTime: 1000 * 60 * 10,
+    select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook lấy top sản phẩm tồn kho thấp nhất
+ */
+export const useLowStockItems = ({ limit = 10, enabled = true } = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "stock-products", "low-stock", limit],
+    queryFn: () => statisticAPI.getLowStockItems(limit),
+    enabled,
+    staleTime: 1000 * 60 * 10,
+    select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook lấy top khuyến mãi doanh thu cao nhất
+ */
+export const useTopPromotionsByRevenue = ({
+  limit = 10,
+  enabled = true,
+} = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "promotions", "top-revenue", limit],
+    queryFn: () => statisticAPI.getTopPromotionsByRevenue(limit),
+    enabled,
+    staleTime: 1000 * 60 * 10,
+    select: (response) => response?.data ?? [],
+  });
+};

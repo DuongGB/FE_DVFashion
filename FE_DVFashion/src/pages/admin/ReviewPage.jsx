@@ -131,33 +131,14 @@ export default function ReviewPage() {
     return filteredReviews.slice(startIndex, endIndex);
   }, [filteredReviews, currentPage, pageSize]);
 
-  // Tính toán lại thống kê dựa trên filteredReviews
-  const filteredStats = useMemo(() => {
-    // Luôn tính lại averageRating từ filteredReviews
-    const statusCounts = filteredReviews.reduce((acc, review) => {
-      acc[review.status] = (acc[review.status] || 0) + 1;
-      return acc;
-    }, {});
-
+  // Tính toán lại averageRating từ filteredReviews (nếu cần filter)
+  const filteredAverageRating = useMemo(() => {
+    if (filteredReviews.length === 0) return 0;
     const totalRating = filteredReviews.reduce(
       (sum, review) => sum + review.rating,
       0
     );
-    const averageRating =
-      filteredReviews.length > 0 ? totalRating / filteredReviews.length : 0;
-
-    return {
-      totalReviews: filteredReviews.length,
-      statusCounts: {
-        PENDING: statusCounts.PENDING || 0,
-        AUTO_APPROVED: statusCounts.AUTO_APPROVED || 0,
-        APPROVED: statusCounts.APPROVED || 0,
-        NEED_REVIEW: statusCounts.NEED_REVIEW || 0,
-        REJECTED: statusCounts.REJECTED || 0,
-        HIDDEN: statusCounts.HIDDEN || 0,
-      },
-      averageRating,
-    };
+    return totalRating / filteredReviews.length;
   }, [filteredReviews]);
 
   // Reset to first page when filters change
@@ -260,49 +241,49 @@ export default function ReviewPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
         <StatCard
           title={t("admin.review.stats.total")}
-          value={filteredStats.totalReviews || 0}
+          value={stats.totalReviews || 0}
           icon={<IconMessage size={24} />}
           color="text-blue-600"
         />
         <StatCard
           title={t("admin.review.stats.pending")}
-          value={filteredStats.statusCounts?.PENDING || 0}
+          value={stats.statusCounts?.PENDING || 0}
           icon={<IconClock size={24} />}
           color="text-yellow-600"
         />
         <StatCard
           title={t("admin.review.status.AUTO_APPROVED")}
-          value={filteredStats.statusCounts?.AUTO_APPROVED || 0}
+          value={stats.statusCounts?.AUTO_APPROVED || 0}
           icon={<IconCheck size={24} />}
           color="text-cyan-600"
         />
         <StatCard
           title={t("admin.review.stats.approved")}
-          value={filteredStats.statusCounts?.APPROVED || 0}
+          value={stats.statusCounts?.APPROVED || 0}
           icon={<IconCheck size={24} />}
           color="text-green-600"
         />
         <StatCard
           title={t("admin.review.status.NEED_REVIEW")}
-          value={filteredStats.statusCounts?.NEED_REVIEW || 0}
+          value={stats.statusCounts?.NEED_REVIEW || 0}
           icon={<IconMessage size={24} />}
           color="text-orange-600"
         />
         <StatCard
           title={t("admin.review.status.REJECTED")}
-          value={filteredStats.statusCounts?.REJECTED || 0}
+          value={stats.statusCounts?.REJECTED || 0}
           icon={<IconX size={24} />}
           color="text-red-600"
         />
         <StatCard
           title={t("admin.review.status.HIDDEN")}
-          value={filteredStats.statusCounts?.HIDDEN || 0}
+          value={stats.statusCounts?.HIDDEN || 0}
           icon={<IconEyeOff size={24} />}
           color="text-gray-600"
         />
         <StatCard
           title={t("admin.review.stats.average_rating")}
-          value={filteredStats.averageRating?.toFixed(1) || "0.0"}
+          value={filteredAverageRating?.toFixed(1) || "0.0"}
           icon={<IconStarFilled size={24} />}
           color="text-yellow-400"
         />
@@ -322,13 +303,13 @@ export default function ReviewPage() {
                   setSearch(searchInput);
                 }
               }}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-xl"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl"
           >
             <option value="">{t("admin.review.all_status")}</option>
             {Object.entries(statusConfig).map(([key, { label }]) => (
@@ -340,7 +321,7 @@ export default function ReviewPage() {
           <select
             value={ratingFilter}
             onChange={(e) => setRatingFilter(e.target.value)}
-            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 md:w-48 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl"
           >
             <option value="">{t("admin.review.all_ratings")}</option>
             {[5, 4, 3, 2, 1].map((star) => (
@@ -399,12 +380,12 @@ export default function ReviewPage() {
                   className="border-b hover:bg-white/80 transition-colors"
                 >
                   <td className="p-3">
-                    <p className="font-semibold">
+                    <p className="font-semibold text-sm">
                       {review.user?.fullName || "N/A"}
                     </p>
                   </td>
                   <td className="p-3">
-                    <p className="font-semibold">
+                    <p className="font-semibold text-sm">
                       {review.productName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -430,7 +411,7 @@ export default function ReviewPage() {
                     </div>
                   </td>
                   <td className="p-3">
-                    <p className="max-w-xs truncate">
+                    <p className="truncate overflow-hidden whitespace-nowrap max-w-xs">
                       {review.comment || (
                         <span className="text-gray-400 italic">
                           {t("admin.review.no_comment")}

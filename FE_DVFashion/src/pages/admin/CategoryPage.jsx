@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { IconEdit, IconPlus, IconSearch, IconEye } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconPlus,
+  IconSearch,
+  IconEye,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import CategoryForm from "../../components/ui/category/CategoryForm";
@@ -33,7 +39,8 @@ export default function CategoryPage() {
   const pageSize = 10;
 
   // Use the category hook with dynamic language
-  const { categories, isLoading, error, update } = useCategory(language);
+  const { categories, isLoading, error, update, refetch } =
+    useCategory(language);
 
   // Đồng bộ localCategories khi categories thay đổi
   useEffect(() => {
@@ -381,43 +388,56 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <IconSearch
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={16}
-              />
-              <input
-                type="text"
-                placeholder={t("admin.category.search_placeholder")}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setSearch(searchInput);
-                  }
-                }}
-                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+      {/* Filters + Refresh */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <IconSearch
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
+                  <input
+                    type="text"
+                    placeholder={t("admin.category.search_placeholder")}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setSearch(searchInput);
+                      }
+                    }}
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+                  />
+                </div>
+              </div>
+              <div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+                >
+                  <option value="">{t("admin.category.all_status")}</option>
+                  <option value="active">
+                    {t("admin.category.active_categories")}
+                  </option>
+                  <option value="inactive">
+                    {t("admin.category.inactive_categories")}
+                  </option>
+                </select>
+              </div>
+              <div className="flex items-center h-full">
+                <button
+                  type="button"
+                  onClick={() => refetch && refetch()}
+                  className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+                >
+                  <IconRefresh size={18} />
+                </button>
+              </div>
             </div>
-          </div>
-          <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">{t("admin.category.all_status")}</option>
-              <option value="active">
-                {t("admin.category.active_categories")}
-              </option>
-              <option value="inactive">
-                {t("admin.category.inactive_categories")}
-              </option>
-            </select>
           </div>
         </div>
       </div>

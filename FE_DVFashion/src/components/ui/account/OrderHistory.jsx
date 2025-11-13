@@ -1,7 +1,7 @@
 import { useMyOrdersPaging } from "../../../hooks/useOrder";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { getOrderStatusLabel } from "../../../utils/getOrderStatusLabel";
 import Pagination from "../../common/Pagination";
 import { getPaymentMethodLabel } from "../../../utils/getPaymentMethodLabel";
@@ -28,8 +28,16 @@ const getStatusColorClass = (status) => {
 
 const OrderCard = ({ order, onReviewClick }) => {
   const { t } = useTranslation();
+  const location = useLocation();
   const orderDate = new Date(order.orderDate).toLocaleDateString("vi-VN");
   const paymentMethod = order?.payment?.paymentMethod;
+
+  const backgroundLocation = {
+    pathname: location.pathname,
+    search: location.search,
+    hash: location.hash,
+    key: location.key,
+  };
 
   return (
     <div className="mb-8 border border-white/30 rounded-2xl bg-white/30 backdrop-blur-md shadow-xl transition hover:shadow-2xl">
@@ -102,6 +110,17 @@ const OrderCard = ({ order, onReviewClick }) => {
           )}
         </div>
         <div className="flex gap-3">
+          {/* Nút xem hóa đơn */}
+          {order.status !== "PENDING" && order.status !== "CANCELED" && (
+            <Link
+              to={`/invoices/${order.orderNumber}/preview?as=pdf&autoprint=1`}
+              state={{ background: backgroundLocation }}
+              className="border border-white/40 bg-white/30 backdrop-blur px-6 py-2 font-bold mt-4 w-fit cursor-pointer hover:bg-white/60 hover:text-blue-700 transition rounded-full shadow flex items-center"
+              title={t("order.preview_invoice")}
+            >
+              {t("order.preview_invoice")}
+            </Link>
+          )}
           {/* Nút đánh giá */}
           {order.status === "DELIVERED" &&
             (order.hasReview ? (
@@ -124,6 +143,7 @@ const OrderCard = ({ order, onReviewClick }) => {
 
 export default function OrderHistory({ onReviewClick, refreshKey = 0 }) {
   const { t } = useTranslation();
+  const location = useLocation();
   const [page, setPage] = useState(0);
 
   const {

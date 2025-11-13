@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { apiAI } from "./api";
 
 const chatAPI = {
   // Create guest chat room
@@ -66,7 +66,7 @@ const chatAPI = {
 
   // AI Chat
   chatWithAI: async (message) => {
-    const response = await api.post("/chat/ai", { message });
+    const response = await apiAI.post("/chat", { message });
     return response.data;
   },
 
@@ -83,6 +83,12 @@ const chatAPI = {
     const response = await api.get(`/chat/rooms/${roomCode}/messages`, {
       params: { page, size },
     });
+    return response.data;
+  },
+
+  // Lấy mã phòng chat theo userId
+  getRoomCodeByUserId: async (userId) => {
+    const response = await api.get(`/chat/rooms/${userId}/room-code`);
     return response.data;
   },
 };

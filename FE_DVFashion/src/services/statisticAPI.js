@@ -51,4 +51,42 @@ export const statisticAPI = {
     console.log("Yearly revenue API response:", response.data);
     return response.data;
   },
+
+  /**
+   * Lấy top 10 sản phẩm bán chạy nhất
+   */
+  getTopBestSellingProducts: async () => {
+    const response = await api.get("/statistics/products/best-selling");
+    return response.data;
+  },
+
+  /**
+   * Lấy top sản phẩm tồn kho cao nhất
+   */
+  getTopStockProducts: async (limit = 10) => {
+    const response = await api.get("/statistics/stock-products/top-stock", {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy top sản phẩm tồn kho thấp nhất
+   */
+  getLowStockItems: async (limit = 10) => {
+    const response = await api.get("/statistics/stock-products/low-stock", {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy top khuyến mãi doanh thu cao nhất
+   */
+  getTopPromotionsByRevenue: async (limit = 10) => {
+    const response = await api.get("/statistics/promotions/top-revenue", {
+      params: { limit },
+    });
+    return response.data;
+  },
 };
