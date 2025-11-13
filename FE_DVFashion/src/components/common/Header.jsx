@@ -331,7 +331,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
             }}
           >
             {/* Thanh search glass */}
-            <div className="relative w-[320px] cursor-pointer">
+            <div className="relative w-[320px] cursor-pointer shadow-xl rounded-full border border-gray-800/40 hover:shadow-2xl transition-shadow duration-300">
               <input
                 type="text"
                 placeholder={t("header.search_placeholder")}
