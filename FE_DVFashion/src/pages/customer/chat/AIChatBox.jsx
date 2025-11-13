@@ -4,28 +4,48 @@ import { useChat } from "../../../hooks/useChat";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { encodeId } from "../../../utils/encodeId";
+import { useAuth } from "../../../hooks/useAuth";
 
 export default function AIChatBox({ isOpen, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { chatWithAI } = useChat();
-  const [messages, setMessages] = useState([
-    {
-      id: "welcome",
-      role: "assistant",
-      text:
-        t("customer_support.ai_welcome") ||
-        "Xin chào! Bạn muốn tìm sản phẩm hoặc đặt câu hỏi gì?",
-    },
-  ]);
+  const { user, isAuthenticated } = useAuth();
+
+  // Đọc lịch sử chat từ localStorage khi mở box
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem("aiChatMessages");
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: "welcome",
+        role: "assistant",
+        text:
+          t("customer_support.ai_welcome") ||
+          "Xin chào! Bạn muốn tìm sản phẩm hoặc đặt câu hỏi gì?",
+      },
+    ];
+  });
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
+
+  // Lưu lịch sử chat vào localStorage mỗi khi thay đổi
+  useEffect(() => {
+    localStorage.setItem("aiChatMessages", JSON.stringify(messages));
+  }, [messages]);
+
+  // Xóa lịch sử chat AI khi login/logout
+  useEffect(() => {
+    localStorage.removeItem("aiChatMessages");
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // Khi đóng box, không reset state, chỉ ẩn UI
   if (!isOpen) return null;
 
   const send = async () => {
@@ -37,10 +57,12 @@ export default function AIChatBox({ isOpen, onClose }) {
     setLoading(true);
     try {
       const res = await chatWithAI.mutateAsync(trimmed);
-      const intent = res.intent;
+      const intent = res.data?.intent;
       const reply =
-        res.reply || t("customer_support.ai_no_reply") || "Không có phản hồi.";
-      const products = res.products || [];
+        res.data?.reply ||
+        t("customer_support.ai_no_reply") ||
+        "Không có phản hồi.";
+      const products = res.data?.products || [];
       setMessages((m) => [
         ...m,
         {
@@ -74,9 +96,10 @@ export default function AIChatBox({ isOpen, onClose }) {
     }
   };
 
+  // Không gọi onClose khi click sản phẩm, chỉ chuyển trang
   const openProduct = (id) => {
     navigate(`/product/${encodeId ? encodeId(id) : id}`);
-    onClose();
+    onclose();
   };
 
   return (
@@ -100,7 +123,7 @@ export default function AIChatBox({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="hover:bg-blue-800 rounded p-1 transition"
+            className="hover:bg-purple-500 rounded p-1 transition cursor-pointer"
             aria-label={t("common.close")}
           >
             <IconX size={16} />
