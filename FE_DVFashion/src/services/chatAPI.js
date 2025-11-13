@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { apiAI } from "./api";
 
 const chatAPI = {
   // Create guest chat room
@@ -66,7 +66,7 @@ const chatAPI = {
 
   // AI Chat
   chatWithAI: async (message) => {
-    const response = await api.post("/chat/ai", { message });
+    const response = await apiAI.post("/chat", { message });
     return response.data;
   },
 
