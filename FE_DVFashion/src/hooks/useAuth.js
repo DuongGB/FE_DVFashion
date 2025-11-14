@@ -19,7 +19,7 @@ export const useAuth = () => {
     queryKey: ["auth", "user"],
     queryFn: async () => {
       const res = await authAPI.getCurrentUser();
-      console.log("Current user:", res.data.data);
+      // console.log("Current user:", res.data.data);
       return res.data.data;
     },
     retry: false,

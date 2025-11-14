@@ -1652,6 +1652,10 @@
       },
       "no_products": "Không có sản phẩm nào phù hợp với bộ lọc.",
       "messages": {
+        "update_success": "Cập nhật sản phẩm thành công!",
+        "update_error": "Có lỗi xảy ra khi cập nhật sản phẩm!",
+        "create_success": "Tạo sản phẩm thành công!",
+        "create_error": "Có lỗi xảy ra khi tạo sản phẩm!",
         "staff_create_denied": "Nhân viên không có quyền tạo sản phẩm!",
         "staff_edit_denied": "Nhân viên không có quyền chỉnh sửa sản phẩm!",
         "staff_status_denied": "Nhân viên không có quyền thay đổi trạng thái sản phẩm!"

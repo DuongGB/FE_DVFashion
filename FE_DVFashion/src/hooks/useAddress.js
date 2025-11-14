@@ -93,3 +93,18 @@ export const useAddress = () => {
     fetchWards,
   };
 };
+
+export const useProvinces = () => {
+  return useQuery({
+    queryKey: ["provinces"],
+    queryFn: async () => {
+      const provinces = await addressAPI.getProvinces();
+      // Chuẩn hóa dữ liệu
+      return (provinces || []).map((p) => ({
+        code: p.provinceId,
+        name: p.provinceName,
+      }));
+    },
+    staleTime: 1000 * 60 * 15,
+  });
+};
