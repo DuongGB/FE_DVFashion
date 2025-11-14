@@ -17,6 +17,7 @@ import { useProduct } from "../../hooks/useProduct";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import { useProductStatistics } from "../../hooks/useProduct";
 
 export default function ProductPage() {
   const { t, i18n } = useTranslation();
@@ -42,6 +43,8 @@ export default function ProductPage() {
   const [searchInput, setSearchInput] = useState("");
   const [tempMinPrice, setTempMinPrice] = useState("");
   const [tempMaxPrice, setTempMaxPrice] = useState("");
+
+  const { data: stats, isLoading: statsLoading } = useProductStatistics();
 
   // Advanced filters
   const [filters, setFilters] = useState({
@@ -263,6 +266,13 @@ export default function ProductPage() {
     setShowForm(true);
   };
 
+  // Callback khi thêm/sửa thành công
+  const handleProductFormSuccess = () => {
+    refetch && refetch();
+    setShowForm(false);
+    setEditingProduct(null);
+  };
+
   // Handle view product
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
@@ -324,16 +334,7 @@ export default function ProductPage() {
     return null;
   };
 
-  // Statistics calculation (from current filtered results)
-  const stats = {
-    total: totalElements,
-    active: products.filter((p) => p.status === "ACTIVE").length,
-    inactive: products.filter((p) => p.status === "INACTIVE").length,
-    outOfStock: products.filter((p) => p.status === "OUT_OF_STOCK").length,
-    onSale: products.filter((p) => p.onSale).length,
-  };
-
-  if (isLoadingProducts || isLoadingCategories) {
+  if (isLoadingProducts || isLoadingCategories || statsLoading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -391,7 +392,9 @@ export default function ProductPage() {
               <p className="text-sm font-medium text-gray-600">
                 {t("admin.product.total_products")}
               </p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats?.totalProducts ?? 0}
+              </p>
             </div>
           </div>
         </div>
@@ -402,7 +405,7 @@ export default function ProductPage() {
                 {t("admin.product.active_products")}
               </p>
               <p className="text-2xl font-bold text-green-600">
-                {stats.active}
+                {stats?.totalActiveProducts ?? 0}
               </p>
             </div>
           </div>
@@ -414,7 +417,7 @@ export default function ProductPage() {
                 {t("admin.product.inactive_products")}
               </p>
               <p className="text-2xl font-bold text-red-600">
-                {stats.inactive}
+                {stats?.totalInactiveProducts ?? 0}
               </p>
             </div>
           </div>
@@ -426,7 +429,7 @@ export default function ProductPage() {
                 {t("admin.product.on_sale_products")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
-                {stats.onSale}
+                {stats?.totalProductsOnPromotion ?? 0}
               </p>
             </div>
           </div>
@@ -827,6 +830,7 @@ export default function ProductPage() {
           onClose={handleCloseForm}
           product={editingProduct}
           categories={categories}
+          onSuccess={handleProductFormSuccess}
         />
       )}
     </div>

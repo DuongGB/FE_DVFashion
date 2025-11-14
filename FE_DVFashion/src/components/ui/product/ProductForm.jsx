@@ -26,6 +26,7 @@ const ProductForm = ({
   product = null,
   // brands = [],
   categories = [],
+  onSuccess,
 }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
@@ -205,49 +206,61 @@ const ProductForm = ({
     });
   };
 
-  // Add images to variant
+  // Thêm ảnh cho variant
   const handleImageAdd = (variantIdx, e) => {
-    console.log("handleImageAdd called", variantIdx, e.target.files);
     const files = Array.from(e.target.files);
     setFormData((prev) => {
       const variants = [...prev.variants];
       const isFirstImage = variants[variantIdx].images.length === 0;
 
-      variants[variantIdx].images.push(
-        ...files.map((file, i) => ({
-          id: null,
-          isPrimary: isFirstImage && i === 0,
-          imageFile: file,
-          preview: URL.createObjectURL(file),
-          existingImageUrl: null,
-          isNew: true,
-          isModified: false,
-        }))
-      );
+      // Tạo mảng mới, không dùng push
+      const newImages = files.map((file, i) => ({
+        id: null,
+        isPrimary: isFirstImage && i === 0,
+        imageFile: file,
+        preview: URL.createObjectURL(file),
+        existingImageUrl: null,
+        isNew: true,
+        isModified: false,
+      }));
+
+      // Gán lại mảng images mới
+      variants[variantIdx] = {
+        ...variants[variantIdx],
+        images: [...variants[variantIdx].images, ...newImages],
+      };
+
       return { ...prev, variants };
     });
     e.target.value = "";
   };
 
-  // Remove image from variant
+  // Xóa ảnh của variant
   const handleImageRemove = (variantIdx, imgIdx) => {
     setFormData((prev) => {
       const variants = [...prev.variants];
-      const removedImage = variants[variantIdx].images[imgIdx];
+      const images = [...variants[variantIdx].images];
+      const removedImage = images[imgIdx];
 
       if (removedImage?.preview && removedImage.imageFile) {
         URL.revokeObjectURL(removedImage.preview);
       }
 
       const wasPrimary = removedImage?.isPrimary;
-      variants[variantIdx].images.splice(imgIdx, 1);
+      images.splice(imgIdx, 1);
 
-      if (wasPrimary && variants[variantIdx].images.length > 0) {
-        variants[variantIdx].images[0].isPrimary = true;
-        if (variants[variantIdx].images[0].id) {
-          variants[variantIdx].images[0].isModified = true;
+      // Nếu ảnh bị xóa là primary, gán ảnh đầu tiên còn lại làm primary
+      if (wasPrimary && images.length > 0) {
+        images[0].isPrimary = true;
+        if (images[0].id) {
+          images[0].isModified = true;
         }
       }
+
+      variants[variantIdx] = {
+        ...variants[variantIdx],
+        images,
+      };
 
       return { ...prev, variants };
     });
@@ -408,27 +421,6 @@ const ProductForm = ({
           await processImagesForVariant(variant, variantIndex);
         }
       }
-
-      // Invalidate cache sau khi cập nhật
-      await Promise.all([
-        queryClient.invalidateQueries(["products", "all"]),
-        queryClient.invalidateQueries(["products", "all", "VI"]),
-        queryClient.invalidateQueries(["products", "all", "EN"]),
-        queryClient.invalidateQueries(["variants", product?.id]),
-        ...formData.variants
-          .map((variant) =>
-            variant.id
-              ? [
-                  queryClient.invalidateQueries(["sizes", variant.id]),
-                  queryClient.invalidateQueries(["variantImages", variant.id]),
-                ]
-              : []
-          )
-          .flat(),
-      ]);
-      queryClient.refetchQueries(["products", "all"]);
-      queryClient.refetchQueries(["products", "all", "VI"]);
-      queryClient.refetchQueries(["products", "all", "EN"]);
     } catch (error) {
       console.error("Error processing variants:", error);
       throw error;
@@ -509,6 +501,7 @@ const ProductForm = ({
         await processVariantUpdates();
         toast.success(t("admin.product.messages.update_success"));
       } else {
+        // Tạo mới sản phẩm cùng các biến thể
         const createProductData = {
           ...productData,
           variants: formData.variants.map((v) => ({
@@ -523,6 +516,8 @@ const ProductForm = ({
             })),
           })),
         };
+
+        // Tập hợp tất cả ảnh từ các biến thể
         const variantImages = [];
         formData.variants.forEach((variant) => {
           variant.images.forEach((img) => {
@@ -535,16 +530,10 @@ const ProductForm = ({
           productData: createProductData,
           variantImages,
         });
-        await Promise.all([
-          queryClient.invalidateQueries(["products", "all"]),
-          queryClient.invalidateQueries(["products", "all", "VI"]),
-          queryClient.invalidateQueries(["products", "all", "EN"]),
-        ]);
-        queryClient.refetchQueries(["products", "all"]);
-        queryClient.refetchQueries(["products", "all", "VI"]);
-        queryClient.refetchQueries(["products", "all", "EN"]);
         toast.success(t("admin.product.messages.create_success"));
       }
+      if (onSuccess) onSuccess();
+      else onClose();
       onClose();
     } catch (error) {
       let errorMessage;

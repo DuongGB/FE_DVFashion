@@ -32,7 +32,7 @@ export const useProduct = (params = {}) => {
     queryFn: async () => {
       try {
         const res = await productAPI.getAllProducts(params);
-        console.log("Products response:", res.data);
+        // console.log("Products response:", res.data);
 
         // Backend trả về ApiResponse<PageResponse<ProductResponse>>
         const pageData = res.data?.data ?? res.data ?? {};
@@ -66,7 +66,7 @@ export const useProduct = (params = {}) => {
       }
     },
     refetchOnWindowFocus: false,
-    staleTime: 0,
+    staleTime: 1000 * 30,
     retry: (failureCount, error) => {
       if (error.response?.status === 401) {
         return false;
@@ -78,11 +78,11 @@ export const useProduct = (params = {}) => {
   // Create product mutation
   const createProductMutation = useMutation({
     mutationFn: ({ productData, variantImages, lang = "VI" }) => {
-      console.log("Creating product with data:", productData);
+      // console.log("Creating product with data:", productData);
       return productAPI.createProduct(productData, variantImages, lang);
     },
     onSuccess: (data) => {
-      console.log("Product created successfully:", data);
+      // console.log("Product created successfully:", data);
       queryClient.invalidateQueries(["products", "all"]);
     },
     onError: (error) => {
@@ -93,11 +93,11 @@ export const useProduct = (params = {}) => {
   // Update product mutation
   const updateProductMutation = useMutation({
     mutationFn: ({ productId, productData, lang = "VI" }) => {
-      console.log(`Updating product ${productId} with data:`, productData);
+      // console.log(`Updating product ${productId} with data:`, productData);
       return productAPI.updateProduct(productId, productData, lang);
     },
     onSuccess: (data) => {
-      console.log("Product updated successfully:", data);
+      // console.log("Product updated successfully:", data);
       queryClient.invalidateQueries(["products", "all"]);
     },
     onError: (error) => {
@@ -207,6 +207,17 @@ export const useProductById = (productId, lang = "VI") => {
       };
     },
     enabled: !!productId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useProductStatistics = () => {
+  return useQuery({
+    queryKey: ["admin", "product", "statistics"],
+    queryFn: async () => {
+      const res = await productAPI.getProductStatistics();
+      return res.data?.data || {};
+    },
     staleTime: 1000 * 60 * 5,
   });
 };

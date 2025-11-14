@@ -14,7 +14,7 @@ export const useUser = () => {
     queryFn: async () => {
       try {
         const res = await userAPI.getAllUsers();
-        console.log("Users response:", res.data);
+        // console.log("Users response:", res.data);
         // Process users data to match frontend structure
         const processedUsers = (res.data.data || res.data || []).map(
           (user) => ({
@@ -110,7 +110,7 @@ export const useUser = () => {
   // Create user mutation (for customer creation)
   const createUserMutation = useMutation({
     mutationFn: (userData) => {
-      console.log("Creating user with data:", userData);
+      // console.log("Creating user with data:", userData);
       // Transform frontend data to backend format
       const backendData = {
         ...userData,
@@ -133,7 +133,7 @@ export const useUser = () => {
   // Update user mutation
   const updateUserMutation = useMutation({
     mutationFn: ({ userId, userData }) => {
-      console.log(`Updating user ${userId} with data:`, userData);
+      // console.log(`Updating user ${userId} with data:`, userData);
       // Transform frontend data to backend format
       const backendData = {
         ...userData,
@@ -148,7 +148,7 @@ export const useUser = () => {
       return userAPI.updateUser(userId, backendData);
     },
     onSuccess: (data, variables) => {
-      console.log("User updated successfully:", data);
+      // console.log("User updated successfully:", data);
       queryClient.invalidateQueries(["users", "all"]);
       queryClient.invalidateQueries(["users", "detail", variables.userId]);
     },
@@ -160,11 +160,11 @@ export const useUser = () => {
   // Verify staff mutation
   const verifyStaffMutation = useMutation({
     mutationFn: (verifyData) => {
-      console.log("Verifying staff with data:", verifyData);
+      // console.log("Verifying staff with data:", verifyData);
       return userAPI.verifyStaff(verifyData);
     },
     onSuccess: (data) => {
-      console.log("Staff verified successfully:", data);
+      // console.log("Staff verified successfully:", data);
       queryClient.invalidateQueries(["users", "all"]);
     },
     onError: (error) => {
@@ -175,11 +175,11 @@ export const useUser = () => {
   // Change password mutation
   const changePasswordMutation = useMutation({
     mutationFn: (passwordData) => {
-      console.log("Changing password");
+      // console.log("Changing password");
       return userAPI.changePassword(passwordData);
     },
     onSuccess: (data) => {
-      console.log("Password changed successfully:", data);
+      // console.log("Password changed successfully:", data);
     },
     onError: (error) => {
       console.error("Error changing password:", error);

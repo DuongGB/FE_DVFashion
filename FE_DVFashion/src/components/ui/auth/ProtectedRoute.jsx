@@ -15,9 +15,9 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
   // Lấy roles từ user
   const userRoles = user?.roles || [];
 
-  console.log("ProtectedRoute - User roles:", userRoles);
-  console.log("ProtectedRoute - Allowed roles:", allowedRoles);
-  console.log("ProtectedRoute - Current path:", location.pathname);
+  // console.log("ProtectedRoute - User roles:", userRoles);
+  // console.log("ProtectedRoute - Allowed roles:", allowedRoles);
+  // console.log("ProtectedRoute - Current path:", location.pathname);
 
   // ADMIN có thể truy cập tất cả các routes (bao gồm cả staff routes)
   const hasAdminRole = userRoles.includes("ROLE_ADMIN");
@@ -27,7 +27,7 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
     hasAdminRole || userRoles.some((role) => allowedRoles?.includes(role));
 
   if (!hasPermission) {
-    console.log("No permission, redirecting to default route");
+    // console.log("No permission, redirecting to default route");
     // Chuyển hướng đến trang mặc định dựa trên roles của user có quyền cao nhất
     const defaultRoute = getDefaultRouteByRoles(userRoles);
     return <Navigate to={defaultRoute} replace />;

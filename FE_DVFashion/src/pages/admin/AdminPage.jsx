@@ -190,20 +190,6 @@ const AdminPage = () => {
         <p className={`text-xl font-bold ${colorClasses[color]} text-center`}>
           {formatValue(value)}
         </p>
-        {change !== undefined && (
-          <p
-            className={`text-xs flex items-center mt-1 ${
-              change >= 0 ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            <IconTrendingUp
-              size={14}
-              className={`mr-1 ${change < 0 ? "rotate-180" : ""}`}
-            />
-            {change >= 0 ? "+" : ""}
-            {change}% {t("admin.dashboard.stats.change_from_last_month")}
-          </p>
-        )}
       </div>
     );
   };
