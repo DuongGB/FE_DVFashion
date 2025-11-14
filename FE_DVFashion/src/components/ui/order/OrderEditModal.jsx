@@ -7,7 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { useAdminUpdateOrder } from "../../../hooks/useOrder";
 import { useTranslation } from "react-i18next";
-import { useAddress } from "../../../hooks/useAddress";
+import { useAddress, useProvinces } from "../../../hooks/useAddress";
 
 const ORDER_STATUS_OPTIONS = [
   "PENDING",
@@ -54,7 +54,9 @@ export default function OrderEditModal({
   const { t } = useTranslation();
   const adminUpdateOrderMutation = useAdminUpdateOrder();
   const [submitting, setSubmitting] = useState(false);
-  const { fetchProvinces, fetchDistricts, fetchWards } = useAddress();
+  const { data: provincesData = [], isLoading: isProvincesLoading } =
+    useProvinces();
+  const { fetchDistricts, fetchWards } = useAddress();
 
   const [locationData, setLocationData] = useState({
     provinces: [],
@@ -62,6 +64,16 @@ export default function OrderEditModal({
     wards: [],
     isLoading: false,
   });
+
+  // Khi provincesData thay đổi, map lại cho locationData
+  useEffect(() => {
+    if (provincesData.length > 0) {
+      setLocationData((prev) => ({
+        ...prev,
+        provinces: provincesData,
+      }));
+    }
+  }, [provincesData]);
 
   if (!open || !order) return null;
 
@@ -84,14 +96,9 @@ export default function OrderEditModal({
 
   const [showCancellationReason, setShowCancellationReason] = useState(false);
 
-  // Load provinces on mount
-  useEffect(() => {
-    loadProvinces();
-  }, []);
-
   // Initialize form data from order
   useEffect(() => {
-    if (!o) return;
+    if (!o || provincesData.length === 0) return;
 
     const initFormData = async () => {
       const initialData = {
@@ -108,12 +115,11 @@ export default function OrderEditModal({
         cancellationReason: "",
       };
 
-      // Load provinces first
-      const provinces = await loadProvinces();
-
       // Find province by name and set code
-      if (o.shippingInfo?.city && provinces.length > 0) {
-        const province = provinces.find((p) => p.name === o.shippingInfo.city);
+      if (o.shippingInfo?.city && provincesData.length > 0) {
+        const province = provincesData.find(
+          (p) => p.name === o.shippingInfo.city
+        );
         if (province) {
           initialData.province = province.code?.toString();
 
@@ -147,30 +153,8 @@ export default function OrderEditModal({
     };
 
     initFormData();
-  }, [o]);
-
-  const loadProvinces = async () => {
-    setLocationData((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const provinces = await fetchProvinces();
-      const mapped = (provinces || []).map((p) => ({
-        code: p.provinceId,
-        name: p.provinceName,
-      }));
-      setLocationData((prev) => ({
-        ...prev,
-        provinces: mapped,
-        districts: [],
-        wards: [],
-        isLoading: false,
-      }));
-      return mapped;
-    } catch (error) {
-      console.error("Error loading provinces:", error);
-      setLocationData((prev) => ({ ...prev, isLoading: false }));
-      return [];
-    }
-  };
+    // eslint-disable-next-line
+  }, [o, provincesData]);
 
   const loadDistrictsByProvince = async (provinceCode) => {
     const provinceId = provinceCode ? parseInt(provinceCode, 10) : null;

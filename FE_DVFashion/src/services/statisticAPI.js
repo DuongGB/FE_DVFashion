@@ -11,7 +11,7 @@ export const statisticAPI = {
     if (endDate) params.endDate = endDate;
 
     const response = await api.get("/statistics/revenue", { params });
-    console.log("Revenue API response:", response.data);
+    // console.log("Revenue API response:", response.data);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const statisticAPI = {
     };
 
     const response = await api.get("/statistics/revenue/daily", { params });
-    console.log("Daily revenue API response:", response.data);
+    // console.log("Daily revenue API response:", response.data);
     return response.data;
   },
 
@@ -39,7 +39,7 @@ export const statisticAPI = {
     if (year) params.year = year;
 
     const response = await api.get("/statistics/revenue/monthly", { params });
-    console.log("Monthly revenue API response:", response.data);
+    // console.log("Monthly revenue API response:", response.data);
     return response.data;
   },
 
@@ -48,7 +48,7 @@ export const statisticAPI = {
    */
   getYearlyRevenue: async () => {
     const response = await api.get("/statistics/revenue/yearly");
-    console.log("Yearly revenue API response:", response.data);
+    // console.log("Yearly revenue API response:", response.data);
     return response.data;
   },
 

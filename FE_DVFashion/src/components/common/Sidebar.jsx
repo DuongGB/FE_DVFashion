@@ -97,14 +97,14 @@ export default function Sidebar({ onClose }) {
     roleDisplay = "STAFF";
   }
 
-  console.log("Sidebar Debug:", {
-    userRoles,
-    hasAdminRole,
-    hasStaffRole,
-    showAdminSidebar,
-    showStaffSidebar,
-    roleDisplay,
-  });
+  // console.log("Sidebar Debug:", {
+  //   userRoles,
+  //   hasAdminRole,
+  //   hasStaffRole,
+  //   showAdminSidebar,
+  //   showStaffSidebar,
+  //   roleDisplay,
+  // });
 
   const handleLogout = async () => {
     try {

@@ -92,4 +92,8 @@ export const productAPI = {
       `/products/category/${categoryId}/paging?page=${page}&size=${size}&lang=${lang}`
     );
   },
+
+  getProductStatistics: () => {
+    return api.get("/products/statistics");
+  },
 };

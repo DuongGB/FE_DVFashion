@@ -15,7 +15,7 @@ export const useRevenueStatistics = ({
       statisticAPI.getRevenueStatistics({ period, startDate, endDate }),
     staleTime: 1000 * 60 * 5,
     select: (response) => {
-      console.log("Revenue response:", response);
+      // console.log("Revenue response:", response);
       // Backend returns: { success: true, data: 841400.00, message: "..." }
       return parseFloat(response?.data ?? 0) || 0;
     },
@@ -36,7 +36,7 @@ export const useDailyRevenue = ({
     enabled,
     staleTime: 1000 * 60 * 5,
     select: (response) => {
-      console.log("Daily revenue response:", response);
+      // console.log("Daily revenue response:", response);
       // Backend returns: { success: true, data: [{period, revenue}] }
       const data = response?.data ?? [];
       return Array.isArray(data) ? data : [];
@@ -54,7 +54,7 @@ export const useMonthlyRevenue = ({ year, enabled = true } = {}) => {
     enabled: enabled,
     staleTime: 1000 * 60 * 10,
     select: (response) => {
-      console.log("Monthly revenue response:", response);
+      // console.log("Monthly revenue response:", response);
       // Backend returns: { success: true, data: [{ period: "2025-11", revenue: 841400.00 }] }
       const data = response?.data ?? [];
       return Array.isArray(data) ? data : [];
@@ -72,7 +72,7 @@ export const useYearlyRevenue = ({ enabled = true } = {}) => {
     enabled: enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => {
-      console.log("Yearly revenue response:", response);
+      // console.log("Yearly revenue response:", response);
       // Backend returns: { success: true, data: [{ period: "2025", revenue: 841400.00 }] }
       const data = response?.data ?? [];
       return Array.isArray(data) ? data : [];
