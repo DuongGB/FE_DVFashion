@@ -183,14 +183,15 @@ export const useAdminUpdateOrder = () => {
     mutationFn: ({ orderNumber, updateData }) =>
       adminUpdateOrder(orderNumber, updateData),
     onSuccess: (data) => {
-      toast.success(data.message || t("order.update_success"));
+      toast.success(t("order.update_success"));
       queryClient.invalidateQueries({
         queryKey: ["order", data.data.orderNumber],
       });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orderStatistics"] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("order.update_fail"));
+      toast.error(t("order.update_fail"));
     },
   });
 };
