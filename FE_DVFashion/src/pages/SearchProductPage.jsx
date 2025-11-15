@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
 import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
-import { usePublicCategories } from "../hooks/useCategory";
+import { useCategory } from "../hooks/useCategory";
 
 export default function SearchProductPage() {
   const { t, i18n } = useTranslation();
@@ -27,6 +27,7 @@ export default function SearchProductPage() {
   const [search, setSearch] = useState(initialKeyword);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const debounceTimeout = useRef(null);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -37,11 +38,31 @@ export default function SearchProductPage() {
     sort: initialSort,
   });
 
+  // Debounce search: khi dừng gõ 1s thì search
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
+      if (searchInput.trim() !== search) {
+        const queryString = buildQueryString(filters, searchInput);
+        navigate(`/search?${queryString}`);
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
   const pageSize = 20;
 
   // Fetch categories for filter
-  const { categories = [], isLoading: isCategoriesLoading } =
-    usePublicCategories(lang);
+  const { categories = [], isLoading: isCategoriesLoading } = useCategory({
+    lang,
+    active: true,
+    size: 100,
+  });
 
   // Fetch products với search query và filters
   const {
@@ -213,7 +234,7 @@ export default function SearchProductPage() {
         <input
           type="text"
           className="border border-gray-200 rounded-full px-6 py-3 w-[300px] text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/70 backdrop-blur-sm"
-          placeholder={t("header.search_placeholder", "Tìm kiếm sản phẩm...")}
+          placeholder={t("header.search_placeholder")}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => {

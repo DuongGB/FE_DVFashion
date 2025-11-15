@@ -46,8 +46,10 @@ export const statisticAPI = {
   /**
    * Lấy doanh thu theo năm
    */
-  getYearlyRevenue: async () => {
-    const response = await api.get("/statistics/revenue/yearly");
+  getYearlyRevenue: async ({ year } = {}) => {
+    const params = {};
+    if (year) params.year = year;
+    const response = await api.get("/statistics/revenue/yearly", { params });
     // console.log("Yearly revenue API response:", response.data);
     return response.data;
   },

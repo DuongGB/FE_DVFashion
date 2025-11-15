@@ -2,9 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../services/categoryAPI";
 import { getCookie } from "../utils/cookies";
 
-export const useCategory = (lang = "VI") => {
+export const useCategory = ({
+  lang = "VI",
+  page = 0,
+  size = 100,
+  sort = null,
+  search = null,
+  active = null,
+  hasProducts = null,
+} = {}) => {
   const queryClient = useQueryClient();
-  const isAuthenticated = getCookie("isAuthenticated") === "true";
 
   // Fetch all categories
   const {
@@ -13,32 +20,38 @@ export const useCategory = (lang = "VI") => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["categories", "all", lang],
+    queryKey: [
+      "categories",
+      "all",
+      lang,
+      page,
+      size,
+      sort,
+      search,
+      active,
+      hasProducts,
+    ],
     queryFn: async () => {
-      try {
-        const res = await categoryAPI.getAllCategories(lang);
-        // console.log("Categories response:", res.data);
-
-        // Process categories to ensure proper image URLs
-        const processedCategories = (res.data.data || res.data || []).map(
-          (category) => ({
-            ...category,
-            image: category.image
-              ? category.image.startsWith("http")
-                ? category.image
-                : `${import.meta.env.VITE_API_BASE_URL}${category.image}`
-              : null,
-          })
-        );
-
-        return processedCategories;
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        if (error.response?.status === 401) {
-          throw new Error("Bạn cần đăng nhập để xem danh sách danh mục");
-        }
-        throw error;
-      }
+      const res = await categoryAPI.getAllCategories({
+        lang,
+        page,
+        size,
+        sort,
+        search,
+        active,
+        hasProducts,
+      });
+      // Dữ liệu thực nằm ở res.data.data.content
+      const content = res.data?.data?.values || [];
+      // Xử lý image URL nếu cần
+      return content.map((category) => ({
+        ...category,
+        image: category.image
+          ? category.image.startsWith("http")
+            ? category.image
+            : `${import.meta.env.VITE_API_BASE_URL}${category.image}`
+          : null,
+      }));
     },
     retry: (failureCount, error) => {
       if (error.response?.status === 401) {
@@ -46,7 +59,8 @@ export const useCategory = (lang = "VI") => {
       }
       return failureCount < 2;
     },
-    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
   });
 
   // Create category mutation
@@ -118,49 +132,5 @@ export const useCategory = (lang = "VI") => {
     deleteCategory: deleteCategoryMutation.mutateAsync,
     isDeleting: deleteCategoryMutation.isPending,
     deleteError: deleteCategoryMutation.error,
-  };
-};
-
-// Hook for public category access (no authentication required)
-export const usePublicCategories = (lang = "VI") => {
-  const {
-    data: categories,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["categories", "public", lang],
-    queryFn: async () => {
-      try {
-        const res = await categoryAPI.getAllCategories(lang);
-        console.log("Public categories response:", res.data);
-
-        // Process categories to ensure proper image URLs
-        const processedCategories = (res.data.data || res.data || []).map(
-          (category) => ({
-            ...category,
-            image: category.image
-              ? category.image.startsWith("http")
-                ? category.image
-                : `${import.meta.env.VITE_API_BASE_URL}${category.image}`
-              : null,
-          })
-        );
-
-        return processedCategories;
-      } catch (error) {
-        console.error("Error fetching public categories:", error);
-        throw error;
-      }
-    },
-    retry: 1,
-    enabled: true,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-  });
-
-  return {
-    categories,
-    isLoading,
-    error,
   };
 };

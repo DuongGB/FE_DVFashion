@@ -65,15 +65,13 @@ export const useMonthlyRevenue = ({ year, enabled = true } = {}) => {
 /**
  * Hook lấy thống kê doanh thu theo năm
  */
-export const useYearlyRevenue = ({ enabled = true } = {}) => {
+export const useYearlyRevenue = ({ year, enabled = true } = {}) => {
   return useQuery({
-    queryKey: ["statistics", "revenue", "yearly"],
-    queryFn: () => statisticAPI.getYearlyRevenue(),
-    enabled: enabled,
+    queryKey: ["statistics", "revenue", "yearly", year],
+    queryFn: () => statisticAPI.getYearlyRevenue({ year }),
+    enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => {
-      // console.log("Yearly revenue response:", response);
-      // Backend returns: { success: true, data: [{ period: "2025", revenue: 841400.00 }] }
       const data = response?.data ?? [];
       return Array.isArray(data) ? data : [];
     },

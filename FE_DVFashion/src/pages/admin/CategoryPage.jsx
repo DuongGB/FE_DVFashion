@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   IconEdit,
   IconPlus,
@@ -38,17 +38,25 @@ export default function CategoryPage() {
   const [localCategories, setLocalCategories] = useState([]);
   const pageSize = 10;
 
-  // Use the category hook with dynamic language
-  const { categories, isLoading, error, update, refetch } =
-    useCategory(language);
+  const { categories, isLoading, error, update, refetch } = useCategory({
+    lang: language,
+    size: 20,
+  });
 
-  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  const debounceTimeout = useRef(null);
+
+  // Debounce search: khi dừng gõ 1s thì mới search
   useEffect(() => {
-    const handler = setTimeout(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
       setSearch(searchInput);
-      setCurrentPage(0);
     }, 1000);
-    return () => clearTimeout(handler);
+
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+    // eslint-disable-ne
   }, [searchInput]);
 
   // Đồng bộ localCategories khi categories thay đổi

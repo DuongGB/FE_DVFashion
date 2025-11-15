@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
 import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
-import { usePublicCategories } from "../hooks/useCategory";
+import { useCategory } from "../hooks/useCategory";
 import { decodeId, encodeId } from "../utils/encodeId";
 
 export default function CategoryProductPage() {
@@ -13,6 +13,11 @@ export default function CategoryProductPage() {
   const lang = i18n.language || "VI";
   const navigate = useNavigate();
   const location = useLocation();
+  const { categories = [], isLoading: isCategoryLoading } = useCategory({
+    lang,
+    active: true,
+    size: 20,
+  });
 
   // Parse query params
   const params = new URLSearchParams(location.search);
@@ -32,6 +37,24 @@ export default function CategoryProductPage() {
   const [search, setSearch] = useState(initialKeyword);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const debounceTimeout = useRef(null);
+
+  // Debounce search: khi dừng gõ 1s thì search
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
+      if (searchInput.trim() !== search) {
+        const queryString = buildQueryString(filters, searchInput);
+        navigate(`/products?${queryString}`);
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   // Filter states (categoryId luôn cố định)
   const [filters, setFilters] = useState({
@@ -42,10 +65,6 @@ export default function CategoryProductPage() {
   });
 
   const pageSize = 20;
-
-  // Fetch categories (để lấy tên danh mục)
-  const { categories = [], isLoading: isCategoriesLoading } =
-    usePublicCategories(lang);
 
   // Fetch products với search query và filters
   const {

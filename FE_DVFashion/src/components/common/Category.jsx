@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { usePublicCategories } from "../../hooks/useCategory";
+import { useCategory } from "../../hooks/useCategory";
 import { useNavigate } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,15 @@ import { encodeId } from "../../utils/encodeId";
 export default function Category() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { categories, isLoading, error } = usePublicCategories(i18n.language);
+  const {
+    categories = [],
+    isLoading,
+    error,
+  } = useCategory({
+    lang: i18n.language || "VI",
+    active: true,
+    size: 20,
+  });
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 6;
