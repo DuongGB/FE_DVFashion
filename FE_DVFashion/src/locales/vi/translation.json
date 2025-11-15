@@ -2077,7 +2077,7 @@
         "revenue": {
           "daily": "Doanh thu khoảng ngày",
           "monthly": "Doanh thu tháng này",
-          "quarterly": "Doanh thu quý này",
+          "quarterly": "Tổng doanh thu các quý",
           "yearly": "Doanh thu năm nay",
           "growth": "so với tháng trước"
         }

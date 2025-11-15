@@ -2151,9 +2151,8 @@
         "revenue": {
           "daily": "Revenue for date range",
           "monthly": "Monthly Revenue",
-          "title_quarterly": "Quarterly Revenue",
           "yearly": "Yearly Revenue",
-          "quarterly": "Quarterly Revenue",
+          "quarterly": "Revenue for all quarters in this year",
           "growth": "from last month"
         }
       },
