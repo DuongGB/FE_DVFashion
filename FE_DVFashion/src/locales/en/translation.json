@@ -364,6 +364,7 @@
   "product": {
     "title": "Product Management",
     "no_products_available": "No products available to display.",
+    "featured_products": "Featured Products",
     "create_product": "Create Product",
     "staff_view_only": "View Only Mode - Cannot Edit",
     "total_products": "Total Products",
@@ -1358,7 +1359,8 @@
         "min_order_amount": "Min order",
         "min_order_amount_label": "Min Order (VND)",
         "max_total_usage_label": "Max Total Usage",
-        "max_usage_per_user_label": "Max Usage / User"
+        "max_usage_per_user_label": "Max Usage / User",
+        "end_date_in_past": "End date must be today or later"
       },
       "actions": {
         "confirm_delete": "Confirm delete voucher",
@@ -2134,11 +2136,13 @@
       "tabs": {
         "daily": "Daily",
         "monthly": "Monthly",
+        "quarterly": "Quarterly",
         "yearly": "Yearly"
       },
       "date_range": {
         "from": "From",
-        "to": "To"
+        "to": "To",
+        "selected": "Selected Date Range"
       },
       "year_selector": {
         "label": "Year"
@@ -2147,10 +2151,15 @@
         "revenue": {
           "daily": "Revenue for date range",
           "monthly": "Monthly Revenue",
+          "title_quarterly": "Quarterly Revenue",
           "yearly": "Yearly Revenue",
+          "quarterly": "Quarterly Revenue",
           "growth": "from last month"
         }
       },
+      "export": "Export Report",
+      "export.success": "Report exported successfully!",
+      "export.error": "Failed to export report!",
       "chart": {
         "title_daily": "Daily Revenue Chart",
         "title_monthly": "Monthly Revenue Chart",
@@ -2172,6 +2181,14 @@
         "title": "Revenue Distribution by Month",
         "month": "Month",
         "revenue": "Revenue"
+      },
+      "forecast": {
+        "title": "Revenue Forecast",
+        "days": "Forecast days",
+        "date": "Date",
+        "revenue": "Forecasted Revenue",
+        "chart_title": "Revenue Forecast",
+        "no_data": "No forecast data"
       },
       "notes": {
         "title": "Important Notes",

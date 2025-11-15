@@ -1,195 +1,450 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { useProduct, useProductsByCategoryPaging } from "../hooks/useProduct";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
-import { usePublicCategories } from "../hooks/useCategory";
 import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
+import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
+import { usePublicCategories } from "../hooks/useCategory";
 import { decodeId, encodeId } from "../utils/encodeId";
 
 export default function CategoryProductPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "VI";
-
-  const { products = [], isLoading: loadingProducts } = useProduct(lang);
-  const { categories = [], isLoading: loadingCategories } =
-    usePublicCategories(lang);
-
+  const navigate = useNavigate();
   const location = useLocation();
+
+  // Parse query params
   const params = new URLSearchParams(location.search);
+  const initialKeyword = params.get("q") || "";
   const initialCategoryRaw = params.get("category") || "";
-  const initialCategory = (() => {
+  const initialCategoryId = (() => {
     const decoded = decodeId(initialCategoryRaw);
     return decoded === null ? initialCategoryRaw : decoded;
   })();
+  const initialOnSale = params.get("onSale") === "true" ? true : null;
+  const initialMinPrice = params.get("minPrice") || "";
+  const initialMaxPrice = params.get("maxPrice") || "";
+  const initialSort = params.get("sort") || "";
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  // States for search and filters
+  const [searchInput, setSearchInput] = useState(initialKeyword);
+  const [search, setSearch] = useState(initialKeyword);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
-  const prevCategoryIdRef = useRef(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Sync selectedCategory từ URL
+  // Filter states (categoryId luôn cố định)
+  const [filters, setFilters] = useState({
+    onSale: initialOnSale,
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
+    sort: initialSort,
+  });
+
+  const pageSize = 20;
+
+  // Fetch categories (để lấy tên danh mục)
+  const { categories = [], isLoading: isCategoriesLoading } =
+    usePublicCategories(lang);
+
+  // Fetch products với search query và filters
+  const {
+    products: rawProducts = [],
+    totalElements = 0,
+    totalPages = 0,
+    isLoading,
+    filterInfo,
+  } = useProduct({
+    lang,
+    search: search.trim() || null,
+    status: "ACTIVE",
+    page: currentPage - 1,
+    size: pageSize,
+    categoryId: initialCategoryId,
+    onSale: filters.onSale,
+    minPrice: filters.minPrice ? parseFloat(filters.minPrice) : null,
+    maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : null,
+    sort: filters.sort || null,
+  });
+
+  // Client-side filtering cho onSale nếu backend chưa hỗ trợ đầy đủ
+  const products =
+    filters.onSale === true
+      ? rawProducts.filter((p) => {
+          const hasDiscount =
+            p.currentPrice && p.price && p.currentPrice < p.price;
+          return hasDiscount;
+        })
+      : rawProducts;
+
+  // Cập nhật khi query param thay đổi
   useEffect(() => {
-    const p = new URLSearchParams(location.search);
-    const raw = p.get("category") || "";
-    const decoded = decodeId(raw);
-    const next = decoded === null ? raw : decoded;
-    setSelectedCategory(next);
+    const params = new URLSearchParams(location.search);
+    const keyword = params.get("q") || "";
+    const onSale = params.get("onSale") === "true" ? true : null;
+    const minPrice = params.get("minPrice") || "";
+    const maxPrice = params.get("maxPrice") || "";
+    const sort = params.get("sort") || "";
+
+    setSearchInput(keyword);
+    setSearch(keyword);
+    setFilters({
+      onSale,
+      minPrice,
+      maxPrice,
+      sort,
+    });
+    setCurrentPage(1);
   }, [location.search]);
 
-  // Resolve numeric id
-  const selectedCategoryId = useMemo(() => {
-    if (!selectedCategory) return null;
-    const byId = categories.find(
-      (c) => String(c.id) === String(selectedCategory)
-    );
-    if (byId) return byId.id;
-    const byEncoded = categories.find(
-      (c) => initialCategoryRaw && encodeId(c.id) === initialCategoryRaw
-    );
-    if (byEncoded) return byEncoded.id;
-    if (/^\d+$/.test(String(selectedCategory))) return Number(selectedCategory);
-    return null;
-  }, [selectedCategory, categories, initialCategoryRaw]);
+  // Build query string từ filters
+  const buildQueryString = (newFilters = filters, newSearch = search) => {
+    const params = new URLSearchParams();
+    if (initialCategoryRaw) params.set("category", initialCategoryRaw);
+    if (newSearch.trim()) params.set("q", newSearch.trim());
+    if (newFilters.onSale === true) params.set("onSale", "true");
+    if (newFilters.minPrice) params.set("minPrice", newFilters.minPrice);
+    if (newFilters.maxPrice) params.set("maxPrice", newFilters.maxPrice);
+    if (newFilters.sort) params.set("sort", newFilters.sort);
+    return params.toString();
+  };
 
-  // Fetch theo category (server paging)
-  const {
-    data: categoryPage = { content: [], totalElements: 0 },
-    isLoading: loadingCategoryProducts,
-  } = useProductsByCategoryPaging(
-    selectedCategoryId,
-    Math.max(0, currentPage - 1),
-    pageSize,
-    lang
-  );
+  const handleSearch = () => {
+    const queryString = buildQueryString(filters, searchInput);
+    navigate(`/products?${queryString}`);
+  };
 
-  // Reset page chỉ khi categoryId thực sự đổi
-  useEffect(() => {
-    if (prevCategoryIdRef.current !== selectedCategoryId) {
-      setCurrentPage(1);
-      prevCategoryIdRef.current = selectedCategoryId;
-    }
-  }, [selectedCategoryId]);
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+  };
 
-  // Tính filteredProducts với useMemo (không setState)
-  const filteredProducts = useMemo(() => {
-    const source = selectedCategoryId
-      ? categoryPage.content || []
-      : products || [];
+  //cập nhật cả state và apply ngay
+  const handlePriceRangeClick = (range) => {
+    const newFilters = {
+      ...filters,
+      minPrice: range.min,
+      maxPrice: range.max,
+    };
+    setFilters(newFilters);
+  };
 
-    const onlyActive = source.filter((p) => !p.status || p.status === "ACTIVE");
+  const applyFilters = () => {
+    const queryString = buildQueryString(filters, search);
+    navigate(`/products?${queryString}`);
+    setShowFilters(false);
+  };
 
-    if (!selectedCategory) return onlyActive;
+  const clearFilters = () => {
+    const newFilters = {
+      onSale: null,
+      minPrice: "",
+      maxPrice: "",
+      sort: "",
+    };
+    setFilters(newFilters);
+    const queryString = buildQueryString(newFilters, search);
+    navigate(`/products?${queryString}`);
+  };
 
-    if (selectedCategoryId) return onlyActive;
+  const hasActiveFilters =
+    filters.onSale === true || filters.minPrice || filters.maxPrice;
 
-    const catById = categories.find(
-      (c) => String(c.id) === String(selectedCategory)
-    );
-    const targetCategoryName = catById?.name || selectedCategory;
+  // Sort options
+  const sortOptions = [
+    { value: "", label: t("search.sort.default", "Mặc định") },
+    { value: "price,asc", label: t("search.sort.price_asc", "Giá tăng dần") },
+    { value: "price,desc", label: t("search.sort.price_desc", "Giá giảm dần") },
+    { value: "name,asc", label: t("search.sort.name_asc", "Tên A-Z") },
+    { value: "name,desc", label: t("search.sort.name_desc", "Tên Z-A") },
+    { value: "createdDate,desc", label: t("search.sort.newest", "Mới nhất") },
+  ];
 
-    return onlyActive.filter((prod) => {
-      if (
-        prod.categoryId &&
-        String(prod.categoryId) === String(selectedCategory)
-      )
-        return true;
-      if (
-        prod.categoryName &&
-        String(prod.categoryName).toLowerCase() ===
-          String(targetCategoryName).toLowerCase()
-      )
-        return true;
-      return false;
-    });
-  }, [
-    products,
-    categoryPage.content, // chỉ mảng content
-    selectedCategory,
-    selectedCategoryId,
-    categories,
-  ]);
+  // Price range presets
+  const priceRanges = [
+    {
+      label: t("search.price.under_200k", "Dưới 200k"),
+      min: "",
+      max: "200000",
+    },
+    {
+      label: t("search.price.200k_500k", "200k - 500k"),
+      min: "200000",
+      max: "500000",
+    },
+    {
+      label: t("search.price.500k_1m", "500k - 1tr"),
+      min: "500000",
+      max: "1000000",
+    },
+    { label: t("search.price.over_1m", "Trên 1tr"), min: "1000000", max: "" },
+  ];
 
-  // Giữ currentPage hợp lệ với server paging
-  useEffect(() => {
-    if (!selectedCategoryId) return;
-    const totalPagesCalc = Math.max(
-      1,
-      Math.ceil((categoryPage.totalElements || 0) / pageSize)
-    );
-    if (currentPage > totalPagesCalc) {
-      setCurrentPage(totalPagesCalc);
-    }
-  }, [selectedCategoryId, categoryPage.totalElements, pageSize, currentPage]);
-
-  const totalPages = selectedCategoryId
-    ? Math.max(1, Math.ceil((categoryPage.totalElements || 0) / pageSize))
-    : Math.max(1, Math.ceil(filteredProducts.length / pageSize));
-
-  const paginatedProducts = selectedCategoryId
-    ? filteredProducts
-    : filteredProducts.slice(
-        (currentPage - 1) * pageSize,
-        currentPage * pageSize
-      );
-
-  const currentCategoryName = useMemo(() => {
-    if (!selectedCategory) return "";
-    if (selectedCategoryId) {
-      const c = categories.find(
-        (cat) => String(cat.id) === String(selectedCategoryId)
-      );
-      if (c?.name) return c.name;
-    }
-    if (initialCategoryRaw) {
-      const cEnc = categories.find(
-        (cat) => encodeId(cat.id) === String(initialCategoryRaw)
-      );
-      if (cEnc?.name) return cEnc.name;
-    }
-    const cByIdString = categories.find(
-      (cat) => String(cat.id) === String(selectedCategory)
-    );
-    if (cByIdString?.name) return cByIdString.name;
-    const cByName = categories.find(
-      (cat) =>
-        cat.name &&
-        String(cat.name).toLowerCase() ===
-          String(selectedCategory).toLowerCase()
-    );
-    if (cByName?.name) return cByName.name;
-    return String(selectedCategory);
-  }, [selectedCategory, selectedCategoryId, categories, initialCategoryRaw]);
+  // Lấy tên danh mục hiện tại
+  const currentCategoryName =
+    categories.find((c) => String(c.id) === String(initialCategoryId))?.name ||
+    initialCategoryId;
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
-      <h1 className="text-2xl font-bold mb-4">{t(currentCategoryName)}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t(currentCategoryName)}</h1>
 
-      {(loadingProducts || loadingCategories || loadingCategoryProducts) && (
-        <div className="text-gray-500 mb-4">
-          {t("common.loading", "Đang tải...")}
+      {/* Search Input */}
+      <div className="flex gap-4 mb-6">
+        <input
+          type="text"
+          className="border border-gray-200 rounded-full px-6 py-3 w-[300px] text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/70 backdrop-blur-sm"
+          placeholder={t("header.search_placeholder", "Tìm kiếm sản phẩm...")}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
+        >
+          {t("search.search_button", "Tìm kiếm")}
+        </button>
+
+        {/* Toggle Filter Button */}
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 border border-gray-200 px-4 py-3 rounded-full hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 bg-white/70"
+        >
+          <Filter size={18} />
+          {t("search.filters", "Bộ lọc")}
+          {hasActiveFilters && (
+            <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+              {
+                [
+                  filters.onSale === true,
+                  filters.minPrice,
+                  filters.maxPrice,
+                ].filter(Boolean).length
+              }
+            </span>
+          )}
+          {showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+      </div>
+
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 mb-6 shadow-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:to-transparent before:rounded-2xl before:pointer-events-none">
+          <div className="relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Price Range Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.price_range", "Khoảng giá")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder={t("search.min_price", "Từ")}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    value={filters.minPrice}
+                    onChange={(e) =>
+                      handleFilterChange("minPrice", e.target.value)
+                    }
+                  />
+                  <input
+                    type="number"
+                    placeholder={t("search.max_price", "Đến")}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    value={filters.maxPrice}
+                    onChange={(e) =>
+                      handleFilterChange("maxPrice", e.target.value)
+                    }
+                  />
+                </div>
+                {/* Price range presets */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {priceRanges.map((range, idx) => {
+                    const isActive =
+                      filters.minPrice === range.min &&
+                      filters.maxPrice === range.max;
+                    return (
+                      <button
+                        key={idx}
+                        className={`text-xs border rounded-full px-3 py-1.5 transition-all duration-200 ${
+                          isActive
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                            : "border-gray-300 bg-white/60 backdrop-blur-sm hover:bg-white/90 hover:border-blue-400"
+                        }`}
+                        onClick={() => handlePriceRangeClick(range)}
+                      >
+                        {range.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sale Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.promotion", "Khuyến mãi")}
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={filters.onSale === true}
+                    onChange={(e) => {
+                      const newValue = e.target.checked ? true : null;
+                      handleFilterChange("onSale", newValue);
+                    }}
+                    className="w-4 h-4 rounded accent-blue-600"
+                  />
+                  <span className="text-sm">
+                    {t("search.on_sale_only", "Chỉ sản phẩm giảm giá")}
+                  </span>
+                </label>
+              </div>
+
+              {/* Sort Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.sort_by", "Sắp xếp")}
+                </label>
+                <select
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  value={filters.sort || ""}
+                  onChange={(e) =>
+                    handleFilterChange("sort", e.target.value || "")
+                  }
+                >
+                  {sortOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Filter Actions */}
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={applyFilters}
+                className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
+              >
+                {t("search.apply_filters", "Áp dụng")}
+              </button>
+              <button
+                onClick={clearFilters}
+                className="border border-gray-300 bg-white/60 backdrop-blur-sm px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 hover:border-gray-400 transition-all duration-200"
+              >
+                {t("search.clear_filters", "Xóa bộ lọc")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {paginatedProducts.length > 0 ? (
-        <div className="grid grid-cols-5 gap-6">
-          {paginatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+      {/* Active Filters Tags */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {filters.onSale === true && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
+              {t("search.on_sale", "Đang giảm giá")}
+              <button
+                onClick={() => {
+                  const newFilters = { ...filters, onSale: null };
+                  setFilters(newFilters);
+                  const queryString = buildQueryString(newFilters, search);
+                  navigate(`/products?${queryString}`);
+                }}
+                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
+          {(filters.minPrice || filters.maxPrice) && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
+              {filters.minPrice &&
+                `${parseInt(filters.minPrice).toLocaleString()}đ`}
+              {filters.minPrice && filters.maxPrice && " - "}
+              {filters.maxPrice &&
+                `${parseInt(filters.maxPrice).toLocaleString()}đ`}
+              <button
+                onClick={() => {
+                  const newFilters = {
+                    ...filters,
+                    minPrice: "",
+                    maxPrice: "",
+                  };
+                  setFilters(newFilters);
+                  const queryString = buildQueryString(newFilters, search);
+                  navigate(`/products?${queryString}`);
+                }}
+                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
         </div>
+      )}
+
+      {/* Results Header */}
+      {search.trim() && (
+        <div className="font-bold text-lg mb-4">
+          {t("search.result_for", "Kết quả cho")} "{search}"
+          {totalElements > 0 && (
+            <span className="text-gray-500 font-normal ml-2">
+              ({products.length} {t("search.products_found", "sản phẩm")})
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Products Grid */}
+      {isLoading ? (
+        <div className="text-center py-10 text-gray-500">
+          {t("common.loading", "Đang tải")}...
+        </div>
+      ) : products.length > 0 ? (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+        </>
       ) : (
-        <div className="text-gray-500 mt-8">
-          {t("category.no_products", "Không có sản phẩm trong danh mục này")}
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
-          />
+        <div className="text-center py-10 text-gray-500">
+          {search.trim() || hasActiveFilters ? (
+            <>
+              {t("search.no_result", "Không tìm thấy sản phẩm phù hợp")}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="block mx-auto mt-4 text-blue-600 underline hover:text-blue-700 transition-colors"
+                >
+                  {t("search.clear_filters", "Xóa bộ lọc")}
+                </button>
+              )}
+            </>
+          ) : (
+            t("search.enter_keyword", "Nhập từ khóa để tìm kiếm sản phẩm")
+          )}
         </div>
       )}
     </div>

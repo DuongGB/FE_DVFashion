@@ -26,7 +26,7 @@ export const useHybridRecommendations = ({
     queryKey: ["recommendations", "hybrid", { productId, userId, limit }],
     queryFn: () => getHybridRecommendations({ productId, userId, limit }),
     enabled: enabled,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
     // Normalize response data
     select: (data) => {
       // Dữ liệu returns ApiResponse<List<ProductResponse>>
