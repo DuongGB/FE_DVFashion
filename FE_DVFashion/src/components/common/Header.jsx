@@ -6,7 +6,7 @@ import logo from "../../assets/logo_DVF.png";
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
-import { usePublicCategories } from "../../hooks/useCategory";
+import { useCategory } from "../../hooks/useCategory";
 import { usePromotion } from "../../hooks/usePromotion";
 import { getLastName } from "../../utils/getLastName";
 import ModalAccount from "../ui/account/ModalAccount";
@@ -105,7 +105,15 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
   const cartRef = useRef();
   const navigate = useNavigate();
 
-  const { categories, isLoading, error } = usePublicCategories(i18n.language);
+  const {
+    categories = [],
+    isLoading,
+    error,
+  } = useCategory({
+    lang: i18n.language || "VI",
+    active: true,
+    size: 20,
+  });
   // console.log("Fetched categories in MainMenu:", categories);
   const { useActivePromotionsPaging } = usePromotion(i18n.language || "VI");
   const {

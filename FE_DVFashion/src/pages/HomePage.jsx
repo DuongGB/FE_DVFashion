@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useProduct } from "../hooks/useProduct";
 import { encodeId } from "../utils/encodeId";
 import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
-import { usePublicCategories } from "../hooks/useCategory";
+import { useCategory } from "../hooks/useCategory";
 import { useProductsByCategoryPaging } from "../hooks/useProduct";
 
 export default function HomePage() {
@@ -18,8 +18,11 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
 
   const currentLanguage = i18n.language || "VI";
-  const { categories = [], isLoading: isLoadingCategories } =
-    usePublicCategories(currentLanguage);
+  const { categories = [], isLoading: isLoadingCategories } = useCategory({
+    lang: currentLanguage,
+    active: true,
+    size: 20,
+  });
   // Lấy 4 danh mục đầu
   const topCategories = useMemo(() => categories.slice(0, 4), [categories]);
 

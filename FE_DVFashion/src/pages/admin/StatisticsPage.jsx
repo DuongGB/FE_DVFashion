@@ -51,7 +51,7 @@ export default function StatisticsPage() {
   });
 
   const monthly = useMonthlyRevenue({ year, enabled: mode === "month" });
-  const yearly = useYearlyRevenue({ enabled: mode === "year" });
+  const yearly = useYearlyRevenue({ year, enabled: mode === "year" });
   const total = useRevenueStatistics({ period: mode });
   const exportReport = useExportRevenueReport();
 
@@ -384,16 +384,12 @@ export default function StatisticsPage() {
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-500 mb-0.5">
               {mode === "day"
-                ? t("admin.statistics.cards.revenue.daily") ||
-                  "Doanh thu khoảng ngày"
+                ? t("admin.statistics.cards.revenue.daily")
                 : mode === "month"
-                ? t("admin.statistics.cards.revenue.monthly") ||
-                  "Doanh thu tháng này"
+                ? t("admin.statistics.cards.revenue.monthly")
                 : mode === "quarter"
-                ? t("admin.statistics.cards.revenue.quarterly") ||
-                  "Doanh thu theo quý"
-                : t("admin.statistics.cards.revenue.yearly") ||
-                  "Doanh thu năm nay"}
+                ? t("admin.statistics.cards.revenue.quarterly")
+                : t("admin.statistics.cards.revenue.yearly")}
             </p>
             <h3 className="text-2xl font-bold text-blue-600 leading-tight">
               {mode === "quarter"
@@ -419,20 +415,18 @@ export default function StatisticsPage() {
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <IconChartBar size={20} className="text-blue-500" />
               {mode === "day"
-                ? t("admin.statistics.chart.title_daily") ||
-                  "Biểu đồ doanh thu theo ngày"
+                ? t("admin.statistics.chart.title_daily")
                 : mode === "month"
-                ? t("admin.statistics.chart.title_monthly") ||
-                  "Biểu đồ doanh thu theo tháng"
+                ? t("admin.statistics.chart.title_monthly")
                 : mode === "quarter"
-                ? t("admin.statistics.chart.title_quarterly") ||
-                  "Biểu đồ doanh thu theo quý"
-                : t("admin.statistics.chart.title_yearly") ||
-                  "Biểu đồ doanh thu theo năm"}
+                ? t("admin.statistics.chart.title_quarterly")
+                : t("admin.statistics.chart.title_yearly")}
             </h3>
           </div>
 
-          {chartData.length > 1 ? (
+          {chartData.length > 1 &&
+          (mode !== "year" ||
+            (mode === "year" && yearly.data && yearly.data.length > 0)) ? (
             <Chart
               chartType="ColumnChart"
               width="100%"
@@ -444,8 +438,7 @@ export default function StatisticsPage() {
                   <div className="flex flex-col items-center space-y-3">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     <p className="text-gray-500 text-sm">
-                      {t("admin.statistics.chart.loading") ||
-                        "Đang tải biểu đồ..."}
+                      {t("admin.statistics.chart.loading")}
                     </p>
                   </div>
                 </div>
@@ -454,7 +447,7 @@ export default function StatisticsPage() {
           ) : (
             <div className="h-96 flex items-center justify-center">
               <p className="text-gray-500">
-                {t("admin.statistics.chart.no_data") || "Không có dữ liệu"}
+                {t("admin.statistics.chart.no_data")}
               </p>
             </div>
           )}
@@ -467,8 +460,7 @@ export default function StatisticsPage() {
             <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <IconChartPie size={20} className="text-purple-500" />
-                {t("admin.statistics.pie_chart.title") ||
-                  "Phân bổ doanh thu theo tháng"}
+                {t("admin.statistics.pie_chart.title")}
               </h3>
               {pieData.length > 1 ? (
                 <Chart
@@ -486,7 +478,7 @@ export default function StatisticsPage() {
               ) : (
                 <div className="h-80 flex items-center justify-center">
                   <p className="text-gray-500">
-                    {t("admin.statistics.chart.no_data") || "Không có dữ liệu"}
+                    {t("admin.statistics.chart.no_data")}
                   </p>
                 </div>
               )}
