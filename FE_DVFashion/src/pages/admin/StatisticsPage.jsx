@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Chart } from "react-google-charts";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
 import {
   IconCalendar,
   IconChartBar,
@@ -16,7 +15,11 @@ import {
   useDailyRevenue,
   useMonthlyRevenue,
   useYearlyRevenue,
+  useRevenueForecast,
 } from "../../hooks/useStatistics";
+import { useExportRevenueReport } from "../../hooks/useReport";
+import { useQuarterlyRevenue } from "../../services/reportAPI";
+import { toast } from "react-toastify";
 
 const vnd = (n) =>
   new Intl.NumberFormat("vi-VN").format(Math.round(Number(n || 0))) + " ₫";
@@ -26,54 +29,118 @@ export default function StatisticsPage() {
   const [mode, setMode] = useState("month");
   const [year, setYear] = useState(2025);
 
-  // State cho range date filter
   const today = new Date();
-  const lastWeek = new Date(today);
-  lastWeek.setDate(lastWeek.getDate() - 7);
+  const todayStr = today.toISOString().split("T")[0];
 
-  const [startDate, setStartDate] = useState(
-    lastWeek.toISOString().split("T")[0]
-  );
-  const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
+  const [startDate, setStartDate] = useState(todayStr);
+  const [endDate, setEndDate] = useState(todayStr);
+
+  //  state cho số ngày dự báo
+  const [forecastDays, setForecastDays] = useState(30);
 
   const daily = useDailyRevenue({
     startDate,
     endDate,
     enabled: mode === "day",
   });
+
+  const quarterly = useQuarterlyRevenue({
+    startYear: year,
+    endYear: year,
+    enabled: mode === "quarter",
+  });
+
   const monthly = useMonthlyRevenue({ year, enabled: mode === "month" });
   const yearly = useYearlyRevenue({ enabled: mode === "year" });
   const total = useRevenueStatistics({ period: mode });
+  const exportReport = useExportRevenueReport();
+
+  // Hàm xử lý xuất báo cáo
+  const handleExportReport = async () => {
+    try {
+      const { blob, filename } = await exportReport({
+        mode,
+        year,
+        startDate,
+        endDate,
+        yearlyData: yearly.data,
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }, 100);
+    } catch (e) {
+      toast(t("admin.statistics.export.error"));
+    }
+  };
+
+  // Hook lấy dự báo doanh thu
+  const forecast = useRevenueForecast({ days: forecastDays, enabled: true });
+
+  // Chuẩn bị dữ liệu cho biểu đồ dự báo
+  const forecastChartData = useMemo(() => {
+    const header = [
+      t("admin.statistics.forecast.date"),
+      t("admin.statistics.forecast.revenue"),
+    ];
+    const rows = Array.isArray(forecast.data)
+      ? forecast.data.map((x) => [x.period, x.revenue])
+      : [];
+    return [header, ...rows];
+  }, [forecast.data, t]);
 
   const chartData = useMemo(() => {
     const header = [
-      t("admin.statistics.chart.time") || "Thời gian",
-      t("admin.statistics.chart.revenue") || "Doanh thu",
+      t("admin.statistics.chart.time"),
+      t("admin.statistics.chart.revenue"),
       { type: "string", role: "tooltip" },
     ];
     if (mode === "day") {
-      const rows = (daily.data ?? []).map((x) => [
-        x.period,
-        x.revenue,
-        `${x.period}: ${vnd(x.revenue)}`,
-      ]);
+      const rows = Array.isArray(daily.data)
+        ? daily.data.map((x) => [
+            formatDateDMY(x.period), // <-- format ngày ở đây
+            x.revenue,
+            `${formatDateDMY(x.period)}: ${vnd(x.revenue)}`,
+          ])
+        : [];
       return [header, ...rows];
     }
     if (mode === "month") {
-      const rows = (monthly.data ?? []).map((x) => [
-        x.period.split("-")[1], // Chỉ hiển thị số tháng
-        x.revenue,
-        `${x.period}: ${vnd(x.revenue)}`,
+      const rows = Array.isArray(monthly.data)
+        ? monthly.data.map((x) => [
+            x.period.split("-")[1],
+            x.revenue,
+            `${x.period}: ${vnd(x.revenue)}`,
+          ])
+        : [];
+      return [header, ...rows];
+    }
+    if (mode === "quarter") {
+      const details = Array.isArray(quarterly.data?.details)
+        ? quarterly.data.details
+        : [];
+      const rows = details.map((x) => [
+        x.period,
+        x.totalRevenue,
+        `${x.period}: ${vnd(x.totalRevenue)}`,
       ]);
       return [header, ...rows];
     }
-    const rows = (yearly.data ?? []).map((x) => [
-      x.period,
-      x.revenue,
-      `${x.period}: ${vnd(x.revenue)}`,
-    ]);
+    const rows = Array.isArray(yearly.data)
+      ? yearly.data.map((x) => [
+          x.period,
+          x.revenue,
+          `${x.period}: ${vnd(x.revenue)}`,
+        ])
+      : [];
     return [header, ...rows];
-  }, [mode, daily.data, monthly.data, yearly.data, t]);
+  }, [mode, daily.data, monthly.data, quarterly.data, yearly.data, t]);
 
   const columnOptions = useMemo(
     () => ({
@@ -84,6 +151,11 @@ export default function StatisticsPage() {
           ? `${
               t("admin.statistics.chart.title_monthly") ||
               "Doanh thu theo tháng"
+            } (${year})`
+          : mode === "quarter"
+          ? `${
+              t("admin.statistics.chart.title_quarterly") ||
+              "Doanh thu theo quý"
             } (${year})`
           : t("admin.statistics.chart.title_yearly") || "Doanh thu theo năm",
       titleTextStyle: {
@@ -114,20 +186,41 @@ export default function StatisticsPage() {
     [mode, year, t]
   );
 
+  function formatDateDMY(dateStr) {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  const sortedQuarters = useMemo(() => {
+    const data = Array.isArray(quarterly.data) ? quarterly.data : [];
+    return [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  }, [quarterly.data]);
+
   const sortedMonths = useMemo(() => {
-    const data = monthly.data ?? [];
+    const data = Array.isArray(monthly.data) ? monthly.data : [];
     return [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   }, [monthly.data]);
+
+  // Tính tổng doanh thu dựa trên chế độ hiện tại
+  const totalQuarterRevenue =
+    mode === "quarter"
+      ? quarterly.data?.totalRevenue ?? 0
+      : mode === "day"
+      ? (Array.isArray(daily.data) ? daily.data : []).reduce(
+          (sum, x) => sum + (x.revenue || 0),
+          0
+        )
+      : total.data ?? 0;
 
   const pieData = useMemo(() => {
     const header = [
       t("admin.statistics.pie.month") || "Tháng",
       t("admin.statistics.pie.revenue") || "Doanh thu",
     ];
-    const rows = (monthly.data ?? []).map((x) => [
-      `T${x.period.split("-")[1]}`,
-      x.revenue,
-    ]);
+    const rows = Array.isArray(monthly.data)
+      ? monthly.data.map((x) => [`T${x.period.split("-")[1]}`, x.revenue])
+      : [];
     return [header, ...rows];
   }, [monthly.data, t]);
 
@@ -170,10 +263,21 @@ export default function StatisticsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-gray-800">
-          {t("admin.statistics.title") || "Thống kê doanh thu"}
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          {/* Header */}
+          <h1 className="text-2xl font-bold text-gray-800">
+            {t("admin.statistics.title") || "Thống kê doanh thu"}
+          </h1>
+          {/* Nút xuất báo cáo */}
+          <button
+            onClick={handleExportReport}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md"
+            title={t("admin.statistics.export")}
+          >
+            <IconDownload size={18} />
+            {t("admin.statistics.export")}
+          </button>
+        </div>
 
         {/* Mode Selector và Date Range */}
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
@@ -200,7 +304,18 @@ export default function StatisticsPage() {
                 }`}
               >
                 <IconChartBar size={18} className="inline mr-2" />
-                {t("admin.statistics.tabs.monthly") || "Theo tháng"}
+                {t("admin.statistics.tabs.monthly")}
+              </button>
+              <button
+                onClick={() => setMode("quarter")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  mode === "quarter"
+                    ? "bg-blue-500 text-white shadow-md"
+                    : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <IconChartPie size={18} className="inline mr-2" />
+                {t("admin.statistics.tabs.quarterly")}
               </button>
               <button
                 onClick={() => setMode("year")}
@@ -211,7 +326,7 @@ export default function StatisticsPage() {
                 }`}
               >
                 <IconChartLine size={18} className="inline mr-2" />
-                {t("admin.statistics.tabs.yearly") || "Theo năm"}
+                {t("admin.statistics.tabs.yearly")}
               </button>
             </div>
 
@@ -243,26 +358,24 @@ export default function StatisticsPage() {
               </div>
             )}
 
-            {/* Year selector (only for monthly mode) */}
-            {mode === "month" && (
-              <div className="flex items-center gap-2 ml-auto">
-                <button
-                  onClick={() => setYear(year - 1)}
-                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  ⏴
-                </button>
-                <span className="font-semibold text-gray-900 min-w-[60px] text-center">
-                  {t("admin.statistics.year_selector.label") || "Năm"} {year}
-                </span>
-                <button
-                  onClick={() => setYear(year + 1)}
-                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  ⏵
-                </button>
-              </div>
-            )}
+            {/* Nút chọn năm */}
+            <div className="flex items-center gap-2 ml-auto">
+              <button
+                onClick={() => setYear(year - 1)}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                ⏴
+              </button>
+              <span className="font-semibold text-gray-900 min-w-[60px] text-center">
+                {t("admin.statistics.year_selector.label") || "Năm"} {year}
+              </span>
+              <button
+                onClick={() => setYear(year + 1)}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                ⏵
+              </button>
+            </div>
           </div>
         </div>
 
@@ -276,11 +389,23 @@ export default function StatisticsPage() {
                 : mode === "month"
                 ? t("admin.statistics.cards.revenue.monthly") ||
                   "Doanh thu tháng này"
+                : mode === "quarter"
+                ? t("admin.statistics.cards.revenue.quarterly") ||
+                  "Doanh thu theo quý"
                 : t("admin.statistics.cards.revenue.yearly") ||
                   "Doanh thu năm nay"}
             </p>
             <h3 className="text-2xl font-bold text-blue-600 leading-tight">
-              {vnd(total.data ?? 0)}
+              {mode === "quarter"
+                ? vnd(totalQuarterRevenue)
+                : mode === "day"
+                ? vnd(
+                    (Array.isArray(daily.data) ? daily.data : []).reduce(
+                      (sum, x) => sum + (x.revenue || 0),
+                      0
+                    )
+                  )
+                : vnd(total.data ?? 0)}
             </h3>
           </div>
           <div className="p-2 bg-blue-50 rounded-full">
@@ -299,6 +424,9 @@ export default function StatisticsPage() {
                 : mode === "month"
                 ? t("admin.statistics.chart.title_monthly") ||
                   "Biểu đồ doanh thu theo tháng"
+                : mode === "quarter"
+                ? t("admin.statistics.chart.title_quarterly") ||
+                  "Biểu đồ doanh thu theo quý"
                 : t("admin.statistics.chart.title_yearly") ||
                   "Biểu đồ doanh thu theo năm"}
             </h3>
@@ -405,35 +533,79 @@ export default function StatisticsPage() {
           </div>
         )}
 
+        {/* Dự báo doanh thu */}
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <IconChartLine size={20} className="text-blue-500" />
+              {t("admin.statistics.forecast.title") || "Dự báo doanh thu"}
+            </h3>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">
+                {t("admin.statistics.forecast.days") || "Số ngày dự báo"}:
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={90}
+                value={forecastDays}
+                onChange={(e) => setForecastDays(Number(e.target.value))}
+                className="w-20 px-2 py-1 border rounded"
+              />
+            </div>
+          </div>
+          {forecast.isLoading ? (
+            <div className="h-64 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          ) : forecastChartData.length > 1 ? (
+            <Chart
+              chartType="LineChart"
+              width="100%"
+              height="350px"
+              data={forecastChartData}
+              options={{
+                title: t("admin.statistics.forecast.chart_title"),
+                backgroundColor: "transparent",
+                legend: { position: "bottom" },
+                hAxis: { title: t("admin.statistics.forecast.date") },
+                vAxis: {
+                  title: t("admin.statistics.forecast.revenue"),
+                },
+                colors: ["#06b6d4"],
+              }}
+            />
+          ) : (
+            <div className="h-64 flex items-center justify-center">
+              <p className="text-gray-500">
+                {t("admin.statistics.forecast.no_data")}
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Notes */}
         <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
           <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <IconRefresh size={18} />
-            {t("admin.statistics.notes.title") || "Ghi chú quan trọng"}
+            {t("admin.statistics.notes.title")}
           </h4>
           <ul className="space-y-2 text-sm text-blue-800">
             <li className="flex items-start gap-2">
               <span>•</span>
-              <span>
-                {t("admin.statistics.notes.realtime") ||
-                  "Dữ liệu được cập nhật real-time từ hệ thống."}
-              </span>
+              <span>{t("admin.statistics.notes.realtime")}</span>
             </li>
             <li className="flex items-start gap-2">
               <span>•</span>
-              <span>
-                {t("admin.statistics.notes.multiple_views") ||
-                  "Biểu đồ hỗ trợ nhiều dạng hiển thị để phân tích đa chiều."}
-              </span>
+              <span>{t("admin.statistics.notes.multiple_views")}</span>
             </li>
             {mode === "day" && (
-              <li className="flex items-start gap-2">
-                <span>•</span>
-                <span>
-                  {t("admin.statistics.notes.date_range") ||
-                    "Chọn khoảng thời gian để xem doanh thu theo ngày."}
+              <div className="mt-2 text-sm text-gray-500">
+                {t("admin.statistics.date_range.selected") || "Khoảng ngày"}:{" "}
+                <span className="font-semibold text-blue-600">
+                  {formatDateDMY(startDate)} - {formatDateDMY(endDate)}
                 </span>
-              </li>
+              </div>
             )}
           </ul>
         </div>

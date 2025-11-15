@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { statisticAPI } from "../services/statisticAPI";
 
 /**
@@ -132,5 +132,42 @@ export const useTopPromotionsByRevenue = ({
     enabled,
     staleTime: 1000 * 60 * 10,
     select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook lấy toàn bộ chuỗi thời gian doanh thu (time series) cho ML/training
+ */
+export const useRevenueTimeSeries = ({
+  period = "DAILY",
+  enabled = true,
+} = {}) =>
+  useQuery({
+    queryKey: ["statistics", "revenue", "timeseries", period],
+    queryFn: () => statisticAPI.getRevenueTimeSeries(period),
+    enabled,
+    select: (response) => response?.data ?? [],
+    staleTime: 1000 * 60 * 10,
+  });
+
+/**
+ * Hook lấy dự báo doanh thu
+ */
+export const useRevenueForecast = ({ days = 30, enabled = true } = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "revenue", "forecast", days],
+    queryFn: () => statisticAPI.getRevenueForecast(days),
+    enabled,
+    staleTime: 1000 * 60 * 10,
+    select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook retrain model dự báo doanh thu
+ */
+export const useRetrainRevenueForecastModel = () => {
+  return useMutation({
+    mutationFn: () => statisticAPI.retrainRevenueForecastModel(),
   });
 };

@@ -2135,11 +2135,13 @@
       "tabs": {
         "daily": "Daily",
         "monthly": "Monthly",
+        "quarterly": "Quarterly",
         "yearly": "Yearly"
       },
       "date_range": {
         "from": "From",
-        "to": "To"
+        "to": "To",
+        "selected": "Selected Date Range"
       },
       "year_selector": {
         "label": "Year"
@@ -2148,10 +2150,15 @@
         "revenue": {
           "daily": "Revenue for date range",
           "monthly": "Monthly Revenue",
+          "title_quarterly": "Quarterly Revenue",
           "yearly": "Yearly Revenue",
+          "quarterly": "Quarterly Revenue",
           "growth": "from last month"
         }
       },
+      "export": "Export Report",
+      "export.success": "Report exported successfully!",
+      "export.error": "Failed to export report!",
       "chart": {
         "title_daily": "Daily Revenue Chart",
         "title_monthly": "Monthly Revenue Chart",
@@ -2173,6 +2180,14 @@
         "title": "Revenue Distribution by Month",
         "month": "Month",
         "revenue": "Revenue"
+      },
+      "forecast": {
+        "title": "Revenue Forecast",
+        "days": "Forecast days",
+        "date": "Date",
+        "revenue": "Forecasted Revenue",
+        "chart_title": "Revenue Forecast",
+        "no_data": "No forecast data"
       },
       "notes": {
         "title": "Important Notes",

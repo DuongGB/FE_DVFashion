@@ -2061,11 +2061,13 @@
       "tabs": {
         "daily": "Theo ngày",
         "monthly": "Theo tháng",
+        "quarterly": "Theo quý",
         "yearly": "Theo năm"
       },
       "date_range": {
         "from": "Từ",
-        "to": "Đến"
+        "to": "Đến",
+        "selected": "Khoảng thời gian đã chọn"
       },
       "year_selector": {
         "label": "Năm"
@@ -2074,13 +2076,18 @@
         "revenue": {
           "daily": "Doanh thu khoảng ngày",
           "monthly": "Doanh thu tháng này",
+          "quarterly": "Doanh thu quý này",
           "yearly": "Doanh thu năm nay",
           "growth": "so với tháng trước"
         }
       },
+      "export": "Xuất báo cáo",
+      "export.success": "Xuất báo cáo thành công!",
+      "export.error": "Xuất báo cáo thất bại!",
       "chart": {
         "title_daily": "Biểu đồ doanh thu theo ngày",
         "title_monthly": "Biểu đồ doanh thu theo tháng",
+        "title_quarterly": "Biểu đồ doanh thu theo quý",
         "title_yearly": "Biểu đồ doanh thu theo năm",
         "time": "Thời gian",
         "revenue": "Doanh thu",
@@ -2096,9 +2103,17 @@
         "top_months": "Top 5 tháng cao nhất"
       },
       "pie": {
-        "title": "Tỷ lệ doanh thu theo tháng",
+        "title": "Phân bổ doanh thu theo tháng",
         "month": "Tháng",
         "revenue": "Doanh thu"
+      },
+      "forecast": {
+        "title": "Dự báo doanh thu",
+        "days": "Số ngày dự báo",
+        "date": "Ngày",
+        "revenue": "Dự báo doanh thu",
+        "chart_title": "Dự báo doanh thu",
+        "no_data": "Không có dữ liệu dự báo"
       },
       "notes": {
         "title": "Ghi chú quan trọng",

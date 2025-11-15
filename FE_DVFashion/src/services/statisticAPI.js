@@ -89,4 +89,32 @@ export const statisticAPI = {
     });
     return response.data;
   },
+
+  /**
+   * Lấy toàn bộ chuỗi thời gian doanh thu (time series) cho ML/training
+   */
+  getRevenueTimeSeries: async (period = "DAILY") => {
+    const response = await api.get("/internal/revenue-timeseries", {
+      params: { period },
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy dự báo doanh thu
+   */
+  getRevenueForecast: async (days = 30) => {
+    const response = await api.get("/statistics/revenue/forecast", {
+      params: { days },
+    });
+    return response.data;
+  },
+
+  /**
+   * Gửi yêu cầu retrain model dự báo doanh thu
+   */
+  retrainRevenueForecastModel: async () => {
+    const response = await api.post("/statistics/revenue/forecast/retrain");
+    return response.data;
+  },
 };
