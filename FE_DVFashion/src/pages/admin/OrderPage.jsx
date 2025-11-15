@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   IconEye,
   IconEdit,
@@ -87,6 +87,15 @@ export default function OrdersPage() {
     size: pageSize,
     sort: "orderDate,desc",
   };
+
+  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setCurrentPage(1);
+    }, 1500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   const { data: statsApi, isLoading: statsLoading } = useOrderStatistics();
 
@@ -277,6 +286,13 @@ export default function OrdersPage() {
         </button>
       </div>
 
+      {/* Results Summary */}
+      <div className="text-sm text-gray-600 mb-2">
+        {t("admin.inventory.showing_results", {
+          current: paginatedOrders.length,
+          total: filteredOrders.length,
+        })}
+      </div>
       {/* Bảng đơn hàng */}
       <div className="backdrop-blur-xl bg-white/60 shadow-lg rounded-lg overflow-hidden border border-white/30">
         <div className="overflow-x-auto">

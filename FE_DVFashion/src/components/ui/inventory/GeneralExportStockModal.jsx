@@ -190,7 +190,7 @@ export default function GeneralExportStockModal({ open, onClose }) {
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="flex-1 overflow-y-auto p-3 min-h-0">
           {/* Search Product Section */}
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">

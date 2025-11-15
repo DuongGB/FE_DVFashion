@@ -21,6 +21,7 @@ export default function PromotionPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
 
   const { user } = useAuth();
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
@@ -36,6 +37,15 @@ export default function PromotionPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loadingItems, setLoadingItems] = useState({ status: null });
   const pageSize = 10;
+
+  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setCurrentPage(1);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   const {
     usePromotionsPaging,
@@ -346,8 +356,14 @@ export default function PromotionPage() {
                   <input
                     type="text"
                     placeholder={t("admin.promotion.search_placeholder")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setSearch(searchInput);
+                        setCurrentPage(1);
+                      }
+                    }}
                     className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
                   />
                 </div>

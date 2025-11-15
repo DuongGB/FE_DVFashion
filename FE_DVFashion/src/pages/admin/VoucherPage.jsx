@@ -20,9 +20,19 @@ export default function VoucherPage() {
   const language = i18n.language || "VI";
 
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const size = 12;
+
+  // Debounce searchInput -> setSearch sau 1s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   const {
     pagedVouchers,
@@ -244,10 +254,13 @@ export default function VoucherPage() {
                   t("admin.voucher.search_placeholder") ||
                   "Search by id, code or name"
                 }
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearch(searchInput);
+                    setPage(1);
+                  }
                 }}
                 className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

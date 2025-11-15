@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { statisticAPI } from "../services/statisticAPI";
 
 /**
@@ -13,7 +13,7 @@ export const useRevenueStatistics = ({
     queryKey: ["statistics", "revenue", { period, startDate, endDate }],
     queryFn: () =>
       statisticAPI.getRevenueStatistics({ period, startDate, endDate }),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
     select: (response) => {
       // console.log("Revenue response:", response);
       // Backend returns: { success: true, data: 841400.00, message: "..." }
@@ -34,7 +34,7 @@ export const useDailyRevenue = ({
     queryKey: ["statistics", "revenue", "daily", { startDate, endDate }],
     queryFn: () => statisticAPI.getDailyRevenue({ startDate, endDate }),
     enabled,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
     select: (response) => {
       // console.log("Daily revenue response:", response);
       // Backend returns: { success: true, data: [{period, revenue}] }
@@ -52,7 +52,7 @@ export const useMonthlyRevenue = ({ year, enabled = true } = {}) => {
     queryKey: ["statistics", "revenue", "monthly", { year }],
     queryFn: () => statisticAPI.getMonthlyRevenue({ year }),
     enabled: enabled,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 15,
     select: (response) => {
       // console.log("Monthly revenue response:", response);
       // Backend returns: { success: true, data: [{ period: "2025-11", revenue: 841400.00 }] }
@@ -88,7 +88,7 @@ export const useTopBestSellingProducts = ({ enabled = true } = {}) => {
     queryKey: ["statistics", "products", "best-selling"],
     queryFn: () => statisticAPI.getTopBestSellingProducts(),
     enabled,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
   });
 };
@@ -101,7 +101,7 @@ export const useTopStockProducts = ({ limit = 10, enabled = true } = {}) => {
     queryKey: ["statistics", "stock-products", "top-stock", limit],
     queryFn: () => statisticAPI.getTopStockProducts(limit),
     enabled,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
   });
 };
@@ -114,7 +114,7 @@ export const useLowStockItems = ({ limit = 10, enabled = true } = {}) => {
     queryKey: ["statistics", "stock-products", "low-stock", limit],
     queryFn: () => statisticAPI.getLowStockItems(limit),
     enabled,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
   });
 };
@@ -130,7 +130,44 @@ export const useTopPromotionsByRevenue = ({
     queryKey: ["statistics", "promotions", "top-revenue", limit],
     queryFn: () => statisticAPI.getTopPromotionsByRevenue(limit),
     enabled,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook lấy toàn bộ chuỗi thời gian doanh thu (time series) cho ML/training
+ */
+export const useRevenueTimeSeries = ({
+  period = "DAILY",
+  enabled = true,
+} = {}) =>
+  useQuery({
+    queryKey: ["statistics", "revenue", "timeseries", period],
+    queryFn: () => statisticAPI.getRevenueTimeSeries(period),
+    enabled,
+    select: (response) => response?.data ?? [],
+    staleTime: 1000 * 60 * 15,
+  });
+
+/**
+ * Hook lấy dự báo doanh thu
+ */
+export const useRevenueForecast = ({ days = 30, enabled = true } = {}) => {
+  return useQuery({
+    queryKey: ["statistics", "revenue", "forecast", days],
+    queryFn: () => statisticAPI.getRevenueForecast(days),
+    enabled,
+    staleTime: 1000 * 60 * 15,
+    select: (response) => response?.data ?? [],
+  });
+};
+
+/**
+ * Hook retrain model dự báo doanh thu
+ */
+export const useRetrainRevenueForecastModel = () => {
+  return useMutation({
+    mutationFn: () => statisticAPI.retrainRevenueForecastModel(),
   });
 };

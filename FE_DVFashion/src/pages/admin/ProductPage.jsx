@@ -32,6 +32,7 @@ export default function ProductPage() {
 
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -40,11 +41,19 @@ export default function ProductPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loadingStatusId, setLoadingStatusId] = useState(null);
-  const [searchInput, setSearchInput] = useState("");
   const [tempMinPrice, setTempMinPrice] = useState("");
   const [tempMaxPrice, setTempMaxPrice] = useState("");
 
   const { data: stats, isLoading: statsLoading } = useProductStatistics();
+
+  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setCurrentPage(0);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   // Advanced filters
   const [filters, setFilters] = useState({

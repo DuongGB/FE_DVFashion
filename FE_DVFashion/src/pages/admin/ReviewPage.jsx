@@ -75,6 +75,15 @@ export default function ReviewPage() {
   const { user } = useAuth();
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
+  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setCurrentPage(0);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
   // Extract data from API response
   const allReviews = data?.data?.reviews || [];
   const stats = data?.data?.statistics || {};
@@ -168,7 +177,6 @@ export default function ReviewPage() {
               newStatus: "",
               actionText: "",
             });
-            refetch();
           },
         }
       );
@@ -204,7 +212,6 @@ export default function ReviewPage() {
             newStatus: "",
             actionText: "",
           });
-          refetch();
         },
       }
     );

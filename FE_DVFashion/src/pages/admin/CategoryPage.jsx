@@ -42,6 +42,15 @@ export default function CategoryPage() {
   const { categories, isLoading, error, update, refetch } =
     useCategory(language);
 
+  // Debounce searchInput -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setCurrentPage(0);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
   // Đồng bộ localCategories khi categories thay đổi
   useEffect(() => {
     if (categories) {
