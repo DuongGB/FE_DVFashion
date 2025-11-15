@@ -11,15 +11,24 @@ export default function SearchPopup({ show, onClose }) {
   const lang = i18n.language || "VI";
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const popupRef = useRef(null);
+
+  // Debounce search input (1 giây)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   // Fetch products with search query
   const { products = [], isLoading } = useProduct({
     lang,
-    search: search.trim() || null,
+    search: debouncedSearch || null,
     status: "ACTIVE",
     page: 0,
-    size: 4, // Only show 4 products in popup
+    size: 4,
   });
 
   // Đóng popup khi click ngoài

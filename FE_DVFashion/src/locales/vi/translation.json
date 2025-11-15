@@ -363,6 +363,7 @@
   "product": {
     "loading": "sản phẩm",
     "no_products_available": "Không có sản phẩm nào để hiển thị.",
+    "featured_products": "Sản phẩm nổi bật",
     "card": {
       "quick_add": "Thêm nhanh vào giỏ hàng",
       "choose_valid_color": "Vui lòng chọn màu sắc hợp lệ.",

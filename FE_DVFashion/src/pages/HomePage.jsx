@@ -1,14 +1,15 @@
 import { useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import Banner from "../components/common/Banner";
 import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
-import { useTranslation } from "react-i18next";
+import { useAuth } from "../hooks/useAuth";
 import { useProduct } from "../hooks/useProduct";
-import { usePromotion } from "../hooks/usePromotion";
 import { encodeId } from "../utils/encodeId";
+import { getDefaultRouteByRoles } from "../utils/getDefaultRouteByRoles";
+import { usePublicCategories } from "../hooks/useCategory";
+import { useProductsByCategoryPaging } from "../hooks/useProduct";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -17,16 +18,18 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
 
   const currentLanguage = i18n.language || "VI";
+  const { categories = [], isLoading: isLoadingCategories } =
+    usePublicCategories(currentLanguage);
+  // Lấy 4 danh mục đầu
+  const topCategories = useMemo(() => categories.slice(0, 4), [categories]);
 
-  // Public: fetch active promotions (first page)
-  const { useActivePromotionsPaging } = usePromotion(currentLanguage);
-  const {
-    data: activePromosPage,
-    isLoading: isLoadingPromotions,
-    error: promotionsError,
-  } = useActivePromotionsPaging({ page: 0, size: 8 });
-
-  const activePromotions = activePromosPage?.values ?? [];
+  // Gọi hook cho từng danh mục ở cấp component (KHÔNG trong map)
+  const catPagingResults = [
+    useProductsByCategoryPaging(topCategories[0]?.id, 0, 12, currentLanguage),
+    useProductsByCategoryPaging(topCategories[1]?.id, 0, 12, currentLanguage),
+    useProductsByCategoryPaging(topCategories[2]?.id, 0, 12, currentLanguage),
+    useProductsByCategoryPaging(topCategories[3]?.id, 0, 12, currentLanguage),
+  ];
 
   // Products (existing)
   const productParams = useMemo(
@@ -106,10 +109,6 @@ export default function HomePage() {
     );
   }
 
-  const openPromotion = (promoId) => {
-    navigate(`/promotion/${encodeId(promoId)}`);
-  };
-
   return (
     <div className="font-sans">
       {/* Banner */}
@@ -143,8 +142,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Product Carousel */}
-      {isLoading ? (
+      {/* ProductCarousel tổng hợp */}
+      {/* {isLoading ? (
         <div className="w-full max-w-7xl mx-auto px-10 py-10">
           <div className="text-center py-10 text-gray-500">
             {t("common.loading")} {t("product.loading")}...
@@ -165,6 +164,34 @@ export default function HomePage() {
             {t("product.no_products_available")}
           </div>
         </div>
+      )} */}
+
+      {/* ProductCarousel theo danh mục */}
+      {isLoadingCategories ? (
+        <div className="w-full max-w-7xl mx-auto px-10 py-10">
+          <div className="text-center py-10 text-gray-500">
+            {t("common.loading", "Đang tải danh mục...")}
+          </div>
+        </div>
+      ) : (
+        topCategories.map((cat, idx) => {
+          const { data: catPage = { content: [] }, isLoading: loadingCat } =
+            catPagingResults[idx] || {};
+          return (
+            <div key={cat?.id || idx} className="my-8">
+              <ProductCarousel
+                products={catPage.content}
+                title={cat?.name}
+                loading={loadingCat}
+                onViewAll={(e) => {
+                  e.preventDefault();
+                  navigate(`/products?category=${encodeId(cat?.id)}`);
+                }}
+                viewAllLink={`/products?category=${encodeId(cat?.id)}`}
+              />
+            </div>
+          );
+        })
       )}
     </div>
   );
