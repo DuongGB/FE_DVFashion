@@ -100,7 +100,7 @@ export const useDashboardStats = () => {
       !usersLoading &&
       !!ordersData &&
       !!reviewsData,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
   });
 };
 
@@ -143,7 +143,7 @@ export const useRevenueChartData = () => {
       return monthsData;
     },
     enabled: !!ordersData,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
   });
 };
 
@@ -185,7 +185,7 @@ export const useTopProducts = () => {
       return topProducts;
     },
     enabled: !!ordersData,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
   });
 };
 
@@ -264,7 +264,7 @@ export const useRecentActivities = () => {
       return sortedActivities;
     },
     enabled: !!ordersData && !!reviewsData,
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 15,
   });
 };
 
