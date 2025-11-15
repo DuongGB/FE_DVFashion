@@ -1358,7 +1358,8 @@
         "min_order_amount": "Min order",
         "min_order_amount_label": "Min Order (VND)",
         "max_total_usage_label": "Max Total Usage",
-        "max_usage_per_user_label": "Max Usage / User"
+        "max_usage_per_user_label": "Max Usage / User",
+        "end_date_in_past": "End date must be today or later"
       },
       "actions": {
         "confirm_delete": "Confirm delete voucher",

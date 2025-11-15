@@ -1328,7 +1328,8 @@
         "min_order_amount": "Đơn hàng tối thiểu",
         "min_order_amount_label": "Đơn hàng tối thiểu (VND)",
         "max_total_usage_label": "Số lần sử dụng tối đa",
-        "max_usage_per_user_label": "Số lần sử dụng tối đa / người"
+        "max_usage_per_user_label": "Số lần sử dụng tối đa / người",
+        "end_date_in_past": "Ngày kết thúc phải từ hôm nay trở đi"
       },
       "actions": {
         "confirm_delete": "Xác nhận xóa voucher",

@@ -28,6 +28,15 @@ export default function InventoryPage() {
   const [showGeneralImportModal, setShowGeneralImportModal] = useState(false);
   const [showGeneralExportModal, setShowGeneralExportModal] = useState(false);
 
+  // Debounce searchTerm -> setSearch sau 1.5s không gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchTerm);
+      setCurrentPage(1);
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   // Thêm state cho bộ lọc nâng cao
   const [filters, setFilters] = useState({
     colors: [],
@@ -567,7 +576,7 @@ export default function InventoryPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2">
                       <div className="flex justify-center">
                         {inventory.quantityInStock === 0 ? (
                           <span className="inline-flex items-center gap-1 bg-red-100 text-red-800 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm">

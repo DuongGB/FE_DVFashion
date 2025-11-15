@@ -22,7 +22,7 @@ export const useInventory = () => {
     mutationFn: (importData) => inventoryAPI.importStock(importData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
-      queryClient.invalidateQueries(["inventoryDetails"]);
+      // queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
 
@@ -31,7 +31,7 @@ export const useInventory = () => {
     mutationFn: (adjustData) => inventoryAPI.adjustStock(adjustData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
-      queryClient.invalidateQueries(["inventoryDetails"]);
+      // queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
 
@@ -40,7 +40,7 @@ export const useInventory = () => {
     mutationFn: (exportData) => inventoryAPI.exportStock(exportData),
     onSuccess: () => {
       queryClient.invalidateQueries(["inventories"]);
-      queryClient.invalidateQueries(["inventoryDetails"]);
+      // queryClient.invalidateQueries(["inventoryDetails"]);
     },
   });
 

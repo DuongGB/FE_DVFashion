@@ -140,6 +140,17 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(values.endDate)) {
       newErrors.endDate = t("admin.voucher.form.end_date_required");
     }
+
+    // Ngày kết thúc phải >= hôm nay
+    if (values.endDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const end = new Date(values.endDate);
+      if (end < today) {
+        newErrors.endDate = t("admin.voucher.form.end_date_in_past");
+      }
+    }
+
     if (
       values.startDate &&
       values.endDate &&
@@ -233,12 +244,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
       if (onClose) onClose();
       else navigate("/admin/vouchers");
     } catch (err) {
-      console.error("Voucher save error:", err);
-      const msg =
-        err?.response?.data?.message ||
-        err.message ||
-        t("admin.voucher.actions.save_error") ||
-        "Save failed";
+      const msg = t("admin.voucher.actions.save_error");
       toast.error(msg);
     } finally {
       setFormSubmitting(false);

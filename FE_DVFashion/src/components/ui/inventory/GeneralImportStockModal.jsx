@@ -29,7 +29,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
     language
   );
 
-  // ✅ Sử dụng useEffect để xử lý khi productData thay đổi
+  // Sử dụng useEffect để xử lý khi productData thay đổi
   useEffect(() => {
     if (!selectedProductId || !isFinding) return;
 
@@ -162,7 +162,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 min-h-screen">
       <div
-        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transition-all duration-300 animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -181,7 +181,7 @@ export default function GeneralImportStockModal({ open, onClose }) {
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="flex-1 overflow-y-auto p-3 min-h-0">
           {/* Search Product Section */}
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
