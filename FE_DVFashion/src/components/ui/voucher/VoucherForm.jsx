@@ -13,8 +13,51 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useVoucher from "../../../hooks/useVoucher";
-import { useProduct } from "../../../hooks/useProduct";
+import { useProduct, useProductById } from "../../../hooks/useProduct";
 import ProductSelectModal from "../promotion/ProductSelectModal";
+
+function SelectedProductChip({ p, language, onRemove, isSubmitting }) {
+  const { data: prod } = useProductById(p.productId, language);
+  const allImages = prod?.variants?.flatMap((v) => v?.images || []) || [];
+  const primaryImg = allImages.find((img) => img?.isPrimary);
+  const imageUrl =
+    primaryImg?.imageUrl ||
+    prod?.variants?.[0]?.images?.[0]?.imageUrl ||
+    allImages[0]?.imageUrl ||
+    null;
+
+  return (
+    <span className="flex items-center gap-2 bg-white/80 border border-white/30 text-sm px-2 py-1 rounded max-w-xs">
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={prod?.name || p.name}
+          className="w-8 h-8 object-cover rounded border border-white/30"
+        />
+      ) : (
+        <div className="w-8 h-8 bg-gray-100 rounded border border-white/30" />
+      )}
+      <div className="min-w-0">
+        <div
+          className="text-xs font-medium text-ellipsis overflow-hidden whitespace-nowrap max-w-[120px]"
+          title={prod?.name || p.name}
+        >
+          {prod?.name || p.name || p.productId}
+        </div>
+        <div className="text-xs text-gray-500 font-mono">ID: {p.productId}</div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onRemove(p.productId)}
+        disabled={isSubmitting}
+        className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
+        title="Remove"
+      >
+        ×
+      </button>
+    </span>
+  );
+}
 
 export default function VoucherForm({ voucher = null, onClose = null }) {
   const { t, i18n } = useTranslation();
@@ -241,7 +284,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
         await createVoucher({ payload, lang: language });
         toast.success(t("admin.voucher.actions.create_success"));
       }
-      if (onClose) onClose();
+      if (onClose) onClose(true);
       else navigate("/admin/vouchers");
     } catch (err) {
       const msg = t("admin.voucher.actions.save_error");
@@ -333,7 +376,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-2xl">
           <button
-            onClick={() => onClose && onClose()}
+            onClick={() => onClose && onClose(false)}
             disabled={isSubmitting}
             className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
           >
@@ -345,9 +388,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-1">
-                {voucher
-                  ? t("admin.voucher.edit") || "Edit Voucher"
-                  : t("admin.voucher.create") || "Create Voucher"}
+                {voucher ? t("admin.voucher.edit") : t("admin.voucher.create")}
               </h2>
               <p className="text-blue-100 opacity-90">
                 {voucher
@@ -365,7 +406,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconTag size={18} className="text-blue-600" />
-                {t("admin.voucher.form.basic_info") || "Basic information"}
+                {t("admin.voucher.form.basic_info")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Name */}
@@ -413,7 +454,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                 {/* Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("admin.voucher.columns.type") || "Type"}
+                    {t("admin.voucher.columns.type")}
                   </label>
                   <select
                     value={values.voucherType}
@@ -434,13 +475,13 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconCalendar size={18} className="text-purple-600" />
-                {t("admin.voucher.form.time_limits") || "Time & options"}
+                {t("admin.voucher.form.time_limits")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Start Date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("admin.voucher.form.start_date") || "Start Date"}
+                    {t("admin.voucher.form.start_date")}
                   </label>
                   <input
                     type="date"
@@ -494,8 +535,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                     className="w-5 h-5 rounded border-white/30 text-blue-600 focus:ring-blue-500"
                   />
                   <label htmlFor="allowSave" className="text-sm text-gray-700">
-                    {t("admin.voucher.form.allow_save_before_active") ||
-                      "Allow save before active"}
+                    {t("admin.voucher.form.allow_save_before_active")}
                   </label>
                 </div>
               </div>
@@ -505,13 +545,13 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                 <IconPercentage size={18} className="text-green-600" />
-                {t("admin.voucher.form.discount_section") || "Discount"}
+                {t("admin.voucher.form.discount_section")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Discount Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("admin.voucher.form.discount_type") || "Discount Type"}
+                    {t("admin.voucher.form.discount_type")}
                   </label>
                   <select
                     value={values.discountType}
@@ -520,10 +560,10 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                     className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
                   >
                     <option value="PERCENTAGE">
-                      {t("admin.promotion.type.PERCENTAGE") || "Percentage"}
+                      {t("admin.promotion.type.PERCENTAGE")}
                     </option>
                     <option value="FIXED_AMOUNT">
-                      {t("admin.promotion.type.FIXED_AMOUNT") || "Fixed amount"}
+                      {t("admin.promotion.type.FIXED_AMOUNT")}
                     </option>
                   </select>
                 </div>
@@ -556,8 +596,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t("admin.voucher.form.has_max_discount") ||
-                          "Has Max Discount"}
+                        {t("admin.voucher.form.has_max_discount")}
                       </label>
                       <select
                         value={values.hasMaxDiscount ? "yes" : "no"}
@@ -574,8 +613,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                     {values.hasMaxDiscount && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t("admin.voucher.form.max_discount_amount") ||
-                            "Max Discount Amount"}
+                          {t("admin.voucher.form.max_discount_amount")}
                         </label>
                         <input
                           type="number"
@@ -662,86 +700,69 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
                     </p>
                   )}
                 </div>
+                <div className="flex items-center gap-2 mt-6">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={values.isActive}
+                    onChange={(e) => setField("isActive", e.target.checked)}
+                    disabled={isSubmitting}
+                    className="w-5 h-5 rounded border-white/30 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="isActive" className="text-sm text-gray-700">
+                    {t("admin.voucher.form.active_label")}
+                  </label>
+                </div>
               </div>
+
               {/* Product-specific voucher: select products */}
               {values.voucherType === "PRODUCT_SPECIFIC" && (
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("admin.voucher.form.product_ids")}
                   </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(selectedProducts || []).length > 0 ? (
-                      (selectedProducts || []).map((p) => (
-                        <span
-                          key={p.productId}
-                          className="flex items-center gap-2 bg-white/80 border border-white/30 text-sm px-2 py-1 rounded"
-                        >
-                          <div className="min-w-0">
-                            <div className="text-xs text-gray-500">
-                              <span className="font-mono">{p.productId}</span>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeProductId(p.productId)}
-                            disabled={isSubmitting}
-                            className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
-                            title="Remove"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <div className="text-sm text-gray-500">
-                        {t("admin.voucher.form.no_products_added")}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      value={values.productIdsText}
-                      onChange={(e) =>
-                        setField("productIdsText", e.target.value)
-                      }
-                      onKeyDown={onProductInputKeyDown}
-                      placeholder={t(
-                        "admin.voucher.form.product_ids_placeholder"
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto pr-2">
+                      {(selectedProducts || []).length > 0 ? (
+                        (selectedProducts || []).map((p) => (
+                          <SelectedProductChip
+                            key={p.productId}
+                            p={p}
+                            language={language}
+                            onRemove={removeProductId}
+                            isSubmitting={isSubmitting}
+                          />
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500">
+                          {t("admin.voucher.form.no_products_added")}
+                        </div>
                       )}
-                      disabled={isSubmitting}
-                      className={`flex-1 px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg ${
-                        errors.productIdsText
-                          ? "border-red-500 bg-red-50"
-                          : "hover:border-gray-400"
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setProductModalOpen(true)}
-                      disabled={isSubmitting}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
-                      title="Select products"
-                    >
-                      {t("admin.promotion.select_products") ||
-                        "Select products"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearAllSelectedProducts}
-                      disabled={
-                        isSubmitting || (selectedProducts || []).length === 0
-                      }
-                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all flex items-center gap-2 cursor-pointer"
-                      title="Clear all selected products"
-                    >
-                      {t("admin.promotion.clear_selection") || "Clear all"}
-                    </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setProductModalOpen(true)}
+                        disabled={isSubmitting}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
+                        title="Select products"
+                      >
+                        {t("admin.promotion.select_products") ||
+                          "Select products"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearAllSelectedProducts}
+                        disabled={
+                          isSubmitting || (selectedProducts || []).length === 0
+                        }
+                        className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all flex items-center gap-2 cursor-pointer"
+                        title="Clear all selected products"
+                      >
+                        {t("admin.promotion.clear_selection")}
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                    <IconInfoCircle size={14} />
-                    {t("admin.voucher.form.product_ids_note") ||
-                      "Only active products accepted by server."}
-                  </p>
                   {errors.productIdsText && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.productIdsText}
@@ -784,6 +805,7 @@ export default function VoucherForm({ voucher = null, onClose = null }) {
             productId: p.productId,
           }))}
           lang={language}
+          fromVoucherPage={true}
           onConfirm={(items) => {
             const merged = [...(selectedProducts || [])];
             items.forEach((it) => {

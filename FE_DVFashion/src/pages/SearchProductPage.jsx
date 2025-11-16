@@ -243,9 +243,7 @@ export default function SearchProductPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
-      <h1 className="text-2xl font-bold mb-6">
-        {t("search.result_title", "Kết quả tìm kiếm")}
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">{t("search.result_title")}</h1>
 
       {/* Search Input */}
       <div className="flex gap-4 mb-6">
@@ -265,7 +263,7 @@ export default function SearchProductPage() {
           onClick={handleSearch}
           className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
-          {t("search.search_button", "Tìm kiếm")}
+          {t("search.search_button")}
         </button>
 
         {/* Toggle Filter Button */}
@@ -274,7 +272,7 @@ export default function SearchProductPage() {
           className="flex items-center gap-2 border border-gray-200 px-4 py-3 rounded-full hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 bg-white/70"
         >
           <Filter size={18} />
-          {t("search.filters", "Bộ lọc")}
+          {t("search.filters")}
           {hasActiveFilters && (
             <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
               {
@@ -300,7 +298,7 @@ export default function SearchProductPage() {
               {/* Category Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  {t("search.category", "Danh mục")}
+                  {t("search.category")}
                 </label>
                 <select
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
@@ -312,8 +310,8 @@ export default function SearchProductPage() {
                 >
                   <option value="">
                     {isCategoriesLoading
-                      ? t("common.loading", "Đang tải") + "..."
-                      : t("search.all_categories", "Tất cả danh mục")}
+                      ? t("common.loading") + "..."
+                      : t("search.all_categories")}
                   </option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -326,12 +324,12 @@ export default function SearchProductPage() {
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  {t("search.price_range", "Khoảng giá")}
+                  {t("search.price_range")}
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    placeholder={t("search.min_price", "Từ")}
+                    placeholder={t("search.min_price")}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
                     value={filters.minPrice}
                     onChange={(e) =>
@@ -340,7 +338,7 @@ export default function SearchProductPage() {
                   />
                   <input
                     type="number"
-                    placeholder={t("search.max_price", "Đến")}
+                    placeholder={t("search.max_price")}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
                     value={filters.maxPrice}
                     onChange={(e) =>
@@ -374,7 +372,7 @@ export default function SearchProductPage() {
               {/* Discounted Price Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  {t("search.promotion", "Khuyến mãi")}
+                  {t("search.promotion")}
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all border border-gray-200">
                   <input
@@ -383,16 +381,14 @@ export default function SearchProductPage() {
                     onChange={(e) => setOnlyDiscounted(e.target.checked)}
                     className="w-4 h-4 rounded accent-blue-600"
                   />
-                  <span className="text-sm">
-                    {t("search.on_sale_only", "Chỉ sản phẩm có giá ưu đãi")}
-                  </span>
+                  <span className="text-sm">{t("search.on_sale_only")}</span>
                 </label>
               </div>
 
               {/* Sort Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  {t("search.sort_by", "Sắp xếp")}
+                  {t("search.sort_by")}
                 </label>
                 <select
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
@@ -412,16 +408,14 @@ export default function SearchProductPage() {
               {/* Color Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  {t("search.color", "Màu sắc")}
+                  {t("search.color")}
                 </label>
                 <select
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
                   value={filters.color || ""}
                   onChange={(e) => handleFilterChange("color", e.target.value)}
                 >
-                  <option value="">
-                    {t("search.all_colors", "Tất cả màu")}
-                  </option>
+                  <option value="">{t("search.all_colors")}</option>
                   {colorOptions.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -459,13 +453,13 @@ export default function SearchProductPage() {
                 onClick={applyFilters}
                 className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
               >
-                {t("search.apply_filters", "Áp dụng")}
+                {t("search.apply_filters")}
               </button>
               <button
                 onClick={clearFilters}
                 className="border border-gray-300 bg-white/60 backdrop-blur-sm px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 hover:border-gray-400 transition-all duration-200"
               >
-                {t("search.clear_filters", "Xóa bộ lọc")}
+                {t("search.clear_filters")}
               </button>
             </div>
           </div>
@@ -497,7 +491,7 @@ export default function SearchProductPage() {
           )}
           {onlyDiscounted && (
             <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
-              {t("search.on_sale", "Đang giảm giá")}
+              {t("search.on_sale")}
               <button
                 onClick={() => {
                   setOnlyDiscounted(false);
@@ -569,10 +563,10 @@ export default function SearchProductPage() {
       {/* Results Header */}
       {search.trim() && (
         <div className="font-bold text-lg mb-4">
-          {t("search.result_for", "Kết quả cho")} "{search}"
+          {t("search.result_for")} "{search}"
           {totalElements > 0 && (
             <span className="text-gray-500 font-normal ml-2">
-              ({products.length} {t("search.products_found", "sản phẩm")})
+              ({products.length} {t("search.products_found")})
             </span>
           )}
         </div>
@@ -581,7 +575,7 @@ export default function SearchProductPage() {
       {/* Products Grid */}
       {isLoading ? (
         <div className="text-center py-10 text-gray-500">
-          {t("common.loading", "Đang tải")}...
+          {t("common.loading")}...
         </div>
       ) : products.length > 0 ? (
         <>
@@ -606,18 +600,18 @@ export default function SearchProductPage() {
         <div className="text-center py-10 text-gray-500">
           {search.trim() || hasActiveFilters ? (
             <>
-              {t("search.no_result", "Không tìm thấy sản phẩm phù hợp")}
+              {t("search.no_result")}
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
                   className="block mx-auto mt-4 text-blue-600 underline hover:text-blue-700 transition-colors"
                 >
-                  {t("search.clear_filters", "Xóa bộ lọc")}
+                  {t("search.clear_filters")}
                 </button>
               )}
             </>
           ) : (
-            t("search.enter_keyword", "Nhập từ khóa để tìm kiếm sản phẩm")
+            t("search.enter_keyword")
           )}
         </div>
       )}

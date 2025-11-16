@@ -1113,15 +1113,16 @@
         "confirm_delete": "Xác nhận xóa khuyến mãi",
         "confirm_delete_message": "Bạn có chắc muốn xóa khuyến mãi \"{{name}}\" không?",
         "delete_success": "Xóa khuyến mãi thành công!",
-        "delete_error": "Có lỗi khi xóa khuyến mãi!",
+        "delete_error": "Không thể xóa khuyến mãi đang hoạt động!",
         "cancel": "Hủy"
       },
       "columns": {
+        "product": "Sản phẩm",
         "id": "ID",
         "name": "Tên",
         "description": "Mô tả",
         "type": "Loại",
-        "value": "Giá trị",
+        "value": "Giá gốc",
         "min_order": "Min Đơn",
         "max_usage": "Max Lượt",
         "start_date": "Bắt đầu",
@@ -1132,6 +1133,7 @@
       "showing_results": "Hiển thị {{current}} trên tổng số {{total}} khuyến mãi",
       "no_description": "Không có mô tả",
       "form": {
+        "apply_to_all": "Áp dụng",
         "start_date_in_past": "Ngày bắt đầu phải từ hôm nay trở đi",
         "remove": " Xóa",
         "already_added": "Đã thêm",
@@ -1297,7 +1299,7 @@
         "max_usage_user_invalid": " Số lượt sử dụng tối đa cho mỗi người < số lần sử dụng tối đa",
         "no_max_discount": "Không giới hạn",
         "no_products_added": "Chưa có sản phẩm nào được thêm",
-        "product_ids": " IDs sản phẩm",
+        "product_ids": " Danh sách sản phẩm",
         "form_title_create": "Tạo voucher mới",
         "basic_info": "Thông tin cơ bản",
         "name_required": "Tên voucher là bắt buộc (>= 3 ký tự)",
@@ -1330,7 +1332,8 @@
         "min_order_amount_label": "Đơn hàng tối thiểu (VND)",
         "max_total_usage_label": "Số lần sử dụng tối đa",
         "max_usage_per_user_label": "Số lần sử dụng tối đa / người",
-        "end_date_in_past": "Ngày kết thúc phải từ hôm nay trở đi"
+        "end_date_in_past": "Ngày kết thúc phải từ hôm nay trở đi",
+        "active_label": "Kích hoạt voucher ngay lập tức"
       },
       "actions": {
         "confirm_delete": "Xác nhận xóa voucher",
@@ -1338,7 +1341,7 @@
         "delete": "Xóa",
         "cancel": "Hủy",
         "delete_success": "Xóa voucher thành công!",
-        "delete_error": "Xóa voucher thất bại!",
+        "delete_error": "Không thể xóa voucher khi đã có người sử dụng!",
         "create_button": "Tạo",
         "update_button": "Cập nhật",
         "creating": "Đang tạo...",

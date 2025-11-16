@@ -1,8 +1,9 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { IconX, IconSearch } from "@tabler/icons-react";
 import { useProduct } from "../../../hooks/useProduct";
 import { useTranslation } from "react-i18next";
 import { usePromotion } from "../../../hooks/usePromotion";
+import Pagination from "../../common/Pagination";
 
 export default function ProductSelectModal({
   open,
@@ -10,25 +11,45 @@ export default function ProductSelectModal({
   onConfirm,
   preSelected = [],
   lang = "VI",
+  fromPromotionPage = false,
+  fromVoucherPage = false,
 }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language || lang;
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [currentPage] = useState(0); // Nếu muốn phân trang thì thêm state này
+  const debounceTimeout = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [open]);
+
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setCurrentPage(1);
+    }, 1000);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [searchInput]);
 
   // Sử dụng useProduct giống ProductPage
-  const { products, isLoading } = useProduct({
-    page: currentPage,
-    size: 100, // lấy nhiều sản phẩm, hoặc tuỳ chỉnh
+  const {
+    products,
+    isLoading,
+    totalPages = 1,
+    totalElements = 0,
+  } = useProduct({
+    page: currentPage - 1,
+    size: 10,
     lang: language,
     search: search,
   });
-  // const { t, i18n } = useTranslation();
-  // const language = i18n.language || lang;
-  // const { products, isLoading } = useProduct(language);
-  // // Lấy danh sách khuyến mãi (dù không dùng trong UI, nhưng để đảm bảo cache được cập nhật khi có thay đổi)
+
   const { promotions } = usePromotion(language);
-  // const [search, setSearch] = useState("");
 
   // existingIds là tập hợp các productId đã có trong khuyến mãi (preSelected)
   const existingIds = useMemo(
@@ -40,30 +61,46 @@ export default function ProductSelectModal({
   const promotedIds = useMemo(() => {
     if (!Array.isArray(promotions)) return new Set();
     const ids = [];
-    promotions.forEach((promo) => {
-      (promo.promotionProducts || []).forEach((pp) => {
-        const id = pp.productId ?? pp.product?.id ?? pp.productId;
-        if (id != null) ids.push(id);
+    promotions
+      .filter((promo) => promo.active === true)
+      .forEach((promo) => {
+        (promo.promotionProducts || []).forEach((pp) => {
+          const id = pp.productId ?? pp.product?.id ?? pp.productId;
+          if (id != null) ids.push(id);
+        });
       });
-    });
     return new Set(ids);
   }, [promotions]);
 
-  // disabledIds là tập hợp các productId đã có trong khuyến mãi khác (không tính preSelected)
+  // disabledIds là tập hợp các productId đã bị khóa do đã nằm trong chương trình khác
   const disabledIds = useMemo(() => {
-    const s = new Set(promotedIds);
-    // Xóa các id đã có trong preSelected để chỉ còn lại các id của khuyến mãi khác
-    existingIds.forEach((id) => s.delete(id));
-    return s;
-  }, [promotedIds, existingIds]);
+    const ids = new Set();
+    if (fromPromotionPage) {
+      // Disable sản phẩm đã nằm trong khuyến mãi khác
+      (products || []).forEach((p) => {
+        if (p.promotionName && !existingIds.has(p.id)) {
+          ids.add(p.id);
+        }
+      });
+    } else if (fromVoucherPage) {
+      // Disable sản phẩm đã nằm trong voucher khác
+      (products || []).forEach((p) => {
+        // Tùy backend, có thể là voucherName hoặc voucherId hoặc trường khác
+        if ((p.voucherName || p.voucherId) && !existingIds.has(p.id)) {
+          ids.add(p.id);
+        }
+      });
+    }
+    return ids;
+  }, [products, existingIds, fromPromotionPage, fromVoucherPage]);
 
   // selectedIds holds only newly selected product ids (not the existing ones)
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   useEffect(() => {
     if (open) {
-      // reset selection when opening (existing items remain disabled via existingIds)
       setSelectedIds(new Set());
+      setCurrentPage(1);
     } else {
       setSearch("");
     }
@@ -99,7 +136,6 @@ export default function ProductSelectModal({
   const clearSelection = () => setSelectedIds(new Set());
 
   const toggle = (id) => {
-    // Tránh chọn những sản phẩm đã tồn tại hoặc bị vô hiệu hóa
     if (existingIds.has(id) || disabledIds.has(id)) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -137,10 +173,10 @@ export default function ProductSelectModal({
         <div className="sticky top-0 z-20 bg-white border border-gray-200 rounded-md shadow-sm px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <h3 className="text-lg font-semibold text-gray-800">
-              {t("admin.promotion.select_products") || "Select products"}
+              {t("admin.promotion.select_products") || "Chọn sản phẩm"}
             </h3>
             <span className="text-sm text-gray-500">
-              {filtered.length} / {list.length}
+              {existingIds.size + selectedIds.size} / {totalElements}
             </span>
           </div>
 
@@ -159,8 +195,14 @@ export default function ProductSelectModal({
                   t("admin.promotion.search_placeholder") ||
                   "Search by name, description, ID..."
                 }
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearch(searchInput.trim());
+                    setCurrentPage(1);
+                  }
+                }}
               />
             </div>
 
@@ -209,74 +251,100 @@ export default function ProductSelectModal({
               {t("admin.promotion.no_products") || "No products"}
             </div>
           ) : (
-            <ul className="space-y-2">
-              {filtered.map((p) => {
-                const imageUrl =
-                  p?.variants
-                    ?.flatMap((v) => v?.images || [])
-                    ?.find((img) => img?.isPrimary)?.imageUrl ||
-                  p?.variants?.[0]?.images?.[0]?.imageUrl ||
-                  null;
-                const isExisting = existingIds.has(p.id);
-                const isDisabled = disabledIds.has(p.id);
-                const isChecked = isExisting || selectedIds.has(p.id);
-                return (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between gap-4 py-3 px-3 hover:bg-gray-100 rounded-md"
-                  >
-                    <label className="flex items-center gap-3 cursor-pointer w-full min-w-0">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggle(p.id)}
-                        disabled={isExisting || isDisabled}
-                        className="h-5 w-5 text-blue-600 border-gray-300 rounded"
-                      />
-
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-14 h-14 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {
-                            <img
-                              src={imageUrl}
-                              alt={p.name}
-                              className="w-full h-full object-cover"
-                            />
+            <>
+              <ul className="space-y-2">
+                {filtered.map((p) => {
+                  const imageUrl =
+                    p?.variants
+                      ?.flatMap((v) => v?.images || [])
+                      ?.find((img) => img?.isPrimary)?.imageUrl ||
+                    p?.variants?.[0]?.images?.[0]?.imageUrl ||
+                    null;
+                  const isExisting = existingIds.has(p.id);
+                  const isDisabled = disabledIds.has(p.id); // Đã có trong khuyến mãi khác
+                  const isChecked = isExisting || selectedIds.has(p.id);
+                  return (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between gap-4 py-3 px-3 hover:bg-gray-100 rounded-md"
+                    >
+                      <label className="flex items-center gap-3 cursor-pointer w-full min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggle(p.id)}
+                          disabled={isExisting || isDisabled}
+                          className={`h-5 w-5 text-blue-600 border-gray-300 rounded ${
+                            isDisabled ? "cursor-not-allowed opacity-60" : ""
+                          }`}
+                          title={
+                            isExisting
+                              ? t("admin.promotion.form.already_added")
+                              : isDisabled
+                              ? t("admin.promotion.form.already_in_other")
+                              : ""
                           }
-                        </div>
+                        />
 
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm text-gray-800 truncate">
-                            {p.name}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-14 h-14 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {
+                              <img
+                                src={imageUrl}
+                                alt={p.name}
+                                className="w-full h-full object-cover"
+                              />
+                            }
                           </div>
-                          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                            <span>{p.currentPrice.toLocaleString()} VND</span>
-                            {isExisting && (
-                              <span className="text-xs text-white bg-gray-400 px-2 py-0.5 rounded">
-                                {t("admin.promotion.form.already_added") ||
-                                  "Added"}
+
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm text-gray-800 truncate">
+                              {p.name}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                              <span>
+                                {p.currentPrice?.toLocaleString() ||
+                                  p.price?.toLocaleString() ||
+                                  0}{" "}
+                                VND
                               </span>
-                            )}
-                            {isDisabled && !isExisting && (
-                              <span className="text-xs text-white bg-red-400 px-2 py-0.5 rounded">
-                                {t("admin.promotion.form.already_in_other") ||
-                                  "In other promotion"}
-                              </span>
-                            )}
+                              {isExisting && (
+                                <span className="text-xs text-white bg-gray-400 px-2 py-0.5 rounded">
+                                  {t("admin.promotion.form.already_added")}
+                                </span>
+                              )}
+                              {isDisabled && !isExisting && (
+                                <span className="text-xs text-white bg-red-400 px-2 py-0.5 rounded">
+                                  {t("admin.promotion.form.already_in_other")}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
 
         {/* Footer */}
         <div className="sticky bottom-0 z-20 bg-white border border-gray-200 rounded-md shadow-sm px-6 py-3 flex items-center justify-end gap-3">
           <div className="flex items-center gap-3">
+            {/* Hiển thị số sản phẩm đã chọn */}
+            <span className="text-sm text-gray-700">
+              {t("admin.promotion.selected_products")}:{" "}
+              <span className="font-semibold text-blue-700">
+                {selectedIds.size}
+              </span>
+            </span>
             <button
               onClick={handleConfirm}
               className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-all"

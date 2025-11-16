@@ -18,26 +18,31 @@ export const useVoucher = (opts = { page: 0, size: 12 }) => {
 
   // All vouchers for admin (non-paged cache)
   const { data: allVouchersAdmin, isLoading: isLoadingAllVouchers } = useQuery({
-    queryKey: ["vouchers", "admin", "all"],
+    queryKey: ["vouchers", "admin"],
     queryFn: () => voucherAPI.getVouchersForAdminAll(),
-    enabled: false, // lazy by default, call refetch when needed
+    enabled: false,
   });
 
-  // Create
   const createVoucherMutation = useMutation({
     mutationFn: ({ payload, lang = "VI" }) =>
       voucherAPI.createVoucher(payload, lang),
     onSuccess: () => {
-      queryClient.invalidateQueries(["vouchers"]);
+      queryClient.invalidateQueries({
+        queryKey: ["vouchers", "admin"],
+        exact: false, // vẫn sẽ refetch tất cả ["vouchers", "admin", ...]
+      });
     },
   });
 
-  // Update
   const updateVoucherMutation = useMutation({
     mutationFn: ({ id, payload, lang = "VI" }) =>
       voucherAPI.updateVoucher(id, payload, lang),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["vouchers"]);
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["vouchers", "admin"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({ queryKey: ["voucher", id] });
     },
   });
 
@@ -46,7 +51,6 @@ export const useVoucher = (opts = { page: 0, size: 12 }) => {
     mutationFn: ({ id, lang = "VI" }) => voucherAPI.deleteVoucher(id, lang),
     onSuccess: () => {
       queryClient.invalidateQueries(["vouchers", "admin"]);
-      queryClient.invalidateQueries(["vouchers", "admin", "all"]);
     },
   });
 
@@ -77,8 +81,7 @@ export const useVoucher = (opts = { page: 0, size: 12 }) => {
     // utilities
     refetchPaged: () =>
       queryClient.refetchQueries(["vouchers", "admin", page, size]),
-    refetchAllAdmin: () =>
-      queryClient.refetchQueries(["vouchers", "admin", "all"]),
+    refetchAllAdmin: () => queryClient.refetchQueries(["vouchers", "admin"]),
   };
 };
 
@@ -99,7 +102,7 @@ export const useCustomerVoucher = (opts = { page: 0, size: 12 }) => {
 
   // All vouchers for customer (non-paged)
   const { data: allAvailableVouchers, isLoading: isLoadingAll } = useQuery({
-    queryKey: ["vouchers", "customer", "all"],
+    queryKey: ["vouchers", "customer"],
     queryFn: () => voucherAPI.getAvailableVouchersForCustomerAll(),
     enabled: false,
   });

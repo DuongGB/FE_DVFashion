@@ -1,6 +1,31 @@
 import React, { useMemo } from "react";
 import { IconX, IconExternalLink } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { useProductById } from "../../../hooks/useProduct";
+
+function ProductImageCell({ productId, alt }) {
+  const { data: product, isLoading } = useProductById(productId);
+  if (isLoading) {
+    return <div className="w-12 h-12 bg-gray-100 animate-pulse rounded-md" />;
+  }
+  // Lấy ảnh như logic voucher
+  const allImages = product?.variants?.flatMap((v) => v?.images || []) || [];
+  const primaryImg = allImages.find((img) => img?.isPrimary);
+  const imageUrl =
+    primaryImg?.imageUrl ||
+    product?.variants?.[0]?.images?.[0]?.imageUrl ||
+    allImages[0]?.imageUrl ||
+    null;
+  return imageUrl ? (
+    <img
+      src={imageUrl}
+      alt={alt}
+      className="w-12 h-12 object-cover rounded-md border border-white/30 shadow"
+    />
+  ) : (
+    <div className="w-12 h-12 bg-white/60 rounded-md border border-white/30" />
+  );
+}
 
 const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
   const { t, i18n } = useTranslation();
@@ -51,17 +76,16 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
     return { total, active, inactive, avgDiscount };
   }, [products]);
 
-  const productImage = (pp) => {
+  // hàm lấy ảnh sản phẩm
+  const getProductImage = (pp) => {
     const p = pp.product || pp;
-    const imageUrl =
+    return (
       p?.variants
         ?.flatMap((v) => v?.images || [])
         ?.find((img) => img?.isPrimary)?.imageUrl ||
       p?.variants?.[0]?.images?.[0]?.imageUrl ||
-      p?.image ||
-      pp?.imageUrl ||
-      null;
-    return imageUrl;
+      null
+    );
   };
 
   return (
@@ -177,31 +201,29 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                 </a>
               ) : (
                 <div className="w-full h-36 bg-white/60 rounded-md border border-white/30 flex items-center justify-center text-gray-400">
-                  {t("admin.promotion.no_banner") || "No banner"}
+                  {t("admin.promotion.no_banner")}
                 </div>
               )}
 
               <div className="w-full backdrop-blur-xl bg-white/60 rounded-md p-3 text-sm text-gray-700 border border-white/30 shadow">
                 <div className="flex justify-between">
-                  <div>{t("admin.promotion.stats.total") || "Products"}</div>
+                  <div>{t("admin.promotion.stats.total")}</div>
                   <div className="font-medium">{stats.total}</div>
                 </div>
                 <div className="flex justify-between mt-1">
-                  <div>{t("admin.promotion.stats.active") || "Active"}</div>
+                  <div>{t("admin.promotion.stats.active")}</div>
                   <div className="text-green-600 font-medium">
                     {stats.active}
                   </div>
                 </div>
                 <div className="flex justify-between mt-1">
-                  <div>{t("admin.promotion.stats.inactive") || "Inactive"}</div>
+                  <div>{t("admin.promotion.stats.inactive")}</div>
                   <div className="text-red-600 font-medium">
                     {stats.inactive}
                   </div>
                 </div>
                 <div className="flex justify-between mt-1">
-                  <div>
-                    {t("admin.promotion.stats.avg_discount") || "Avg discount"}
-                  </div>
+                  <div>{t("admin.promotion.stats.avg_discount")}</div>
                   <div className="font-medium">{stats.avgDiscount}%</div>
                 </div>
               </div>
@@ -210,7 +232,7 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
 
           <div>
             <h4 className="text-sm font-semibold text-gray-800 mb-2">
-              {t("admin.promotion.selected_products") || "Applied products"}
+              {t("admin.promotion.selected_products")}
             </h4>
 
             {products.length === 0 ? (
@@ -223,8 +245,9 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                   <thead>
                     <tr className="bg-white/60 text-xs text-gray-600 border-b border-white/30">
                       <th className="p-2">#</th>
+
                       <th className="p-2">
-                        {t("admin.promotion.columns.name")}
+                        {t("admin.promotion.columns.product")}
                       </th>
                       <th className="p-2">
                         {t("admin.promotion.columns.value")}
@@ -248,14 +271,21 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                           <td className="p-2 text-sm text-gray-600">
                             {idx + 1}
                           </td>
+
                           <td className="p-2">
                             <div className="flex items-center gap-3 min-w-0">
-                              <span
-                                className="w-32 block text-sm font-medium text-ellipsis overflow-hidden whitespace-nowrap"
-                                title={pp.productName}
-                              >
-                                {pp.productName}
-                              </span>
+                              <ProductImageCell
+                                productId={pp.productId}
+                                alt={pp.productName}
+                              />
+                              <div className="max-w-50 min-w-0">
+                                <div
+                                  className="text-sm font-medium text-ellipsis overflow-hidden whitespace-wrap"
+                                  title={pp.productName}
+                                >
+                                  {pp.productName}
+                                </div>
+                              </div>
                             </div>
                           </td>
                           <td className="p-2 text-sm">
