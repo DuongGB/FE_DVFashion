@@ -38,6 +38,49 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const [bannerPreview, setBannerPreview] = useState(null);
   const bannerInputRef = useRef();
 
+  // state cho input chung
+  const [bulkInput, setBulkInput] = useState({
+    promotionPrice: "",
+    discountPercentage: "",
+    stockQuantity: "",
+    maxQuantityPerUser: "",
+  });
+
+  // Hàm xử lý khi thay đổi input chung
+  const handleBulkInputChange = (e) => {
+    const { name, value } = e.target;
+    setBulkInput((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Hàm áp dụng cho tất cả sản phẩm
+  const handleApplyBulkInput = () => {
+    setFormData((prev) => ({
+      ...prev,
+      promotionProducts: prev.promotionProducts.map((p) => ({
+        ...p,
+        promotionPrice:
+          bulkInput.promotionPrice !== ""
+            ? Number(bulkInput.promotionPrice)
+            : p.promotionPrice,
+        discountPercentage:
+          bulkInput.discountPercentage !== ""
+            ? Number(bulkInput.discountPercentage)
+            : p.discountPercentage,
+        stockQuantity:
+          bulkInput.stockQuantity !== ""
+            ? Number(bulkInput.stockQuantity)
+            : p.stockQuantity,
+        maxQuantityPerUser:
+          bulkInput.maxQuantityPerUser !== ""
+            ? Number(bulkInput.maxQuantityPerUser)
+            : p.maxQuantityPerUser,
+      })),
+    }));
+  };
+
   // Get language from i18n
   const language = i18n.language || "VI";
 
@@ -421,7 +464,20 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       }
 
       // Validate promotionPrice < original (if original > 0)
-      if (original > 0 && promotionPrice >= original) {
+      if (p.id == null && original > 0 && promotionPrice >= original) {
+        productErrors.push(
+          `product ${p.productId}: promotionPrice must be less than original price`
+        );
+        continue;
+      }
+
+      // Validate promotionPrice < original (if original > 0)
+      if (
+        !promotion &&
+        p.id == null &&
+        original > 0 &&
+        promotionPrice >= original
+      ) {
         productErrors.push(
           `product ${p.productId}: promotionPrice must be less than original price`
         );
@@ -572,8 +628,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                 <IconTag size={20} className="text-blue-600" />
                 {t("admin.promotion.form.basic_info")}
               </h3>
-              {/* ...Tên khuyến mãi, mô tả, banner, chọn sản phẩm... */}
-              {/* ...giữ nguyên logic, chỉ đổi className các input, textarea, button... */}
               {/* Tên khuyến mãi */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -679,6 +733,81 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </p>
                 </div>
               )}
+              {/* Bulk vào input danh sách sản phẩm đã chọn */}
+              {!promotion &&
+                formData.promotionProducts &&
+                formData.promotionProducts.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-3 items-end">
+                    <div>
+                      <label className="text-xs text-gray-600">
+                        Promotion Price
+                      </label>
+                      <input
+                        type="number"
+                        name="promotionPrice"
+                        value={bulkInput.promotionPrice}
+                        min="0"
+                        step="10000"
+                        onChange={handleBulkInputChange}
+                        className="w-32 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                        disabled={
+                          bulkInput.discountPercentage !== "" &&
+                          bulkInput.discountPercentage !== null
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">
+                        Discount %
+                      </label>
+                      <input
+                        type="number"
+                        name="discountPercentage"
+                        value={bulkInput.discountPercentage}
+                        min="0"
+                        max="100"
+                        step="1"
+                        onChange={handleBulkInputChange}
+                        className="w-24 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                        disabled={
+                          bulkInput.promotionPrice !== "" &&
+                          bulkInput.promotionPrice !== null
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Stock</label>
+                      <input
+                        type="number"
+                        name="stockQuantity"
+                        value={bulkInput.stockQuantity}
+                        min="0"
+                        step="1"
+                        onChange={handleBulkInputChange}
+                        className="w-20 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Max/User</label>
+                      <input
+                        type="number"
+                        name="maxQuantityPerUser"
+                        value={bulkInput.maxQuantityPerUser}
+                        min="1"
+                        step="1"
+                        onChange={handleBulkInputChange}
+                        className="w-20 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleApplyBulkInput}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
+                    >
+                      {t("admin.promotion.form.apply_to_all")}
+                    </button>
+                  </div>
+                )}
               {/* Selected products list */}
               {formData.promotionProducts &&
                 formData.promotionProducts.length > 0 && (
@@ -700,7 +829,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                               {(p.originalPrice ?? 0).toLocaleString()} VND
                             </div>
                           </div>
-                          {/* ...inputs giữ nguyên logic, chỉ đổi className... */}
                           <div className="w-36">
                             <label className="text-xs text-gray-600">
                               Promotion Price
@@ -986,6 +1114,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         onConfirm={handleAddProducts}
         preSelected={formData.promotionProducts}
         lang={language}
+        fromPromotionPage={true}
       />
     </div>
   );

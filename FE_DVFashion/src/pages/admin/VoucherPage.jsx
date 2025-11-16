@@ -116,13 +116,13 @@ export default function VoucherPage() {
   }, [filtered, page, size]);
 
   const handleDelete = (voucher) => {
-    const title = t("admin.voucher.actions.confirm_delete") || "Xóa voucher";
+    const title = t("admin.voucher.actions.confirm_delete");
     const message =
       t("admin.voucher.actions.confirm_delete_message", {
         name: voucher.name || voucher.code,
       }) || `Bạn có chắc muốn xóa voucher "${voucher.name ?? voucher.code}"?`;
-    const confirmText = t("admin.voucher.actions.delete") || "Delete";
-    const cancelText = t("admin.voucher.actions.cancel") || "Cancel";
+    const confirmText = t("admin.voucher.actions.delete");
+    const cancelText = t("admin.voucher.actions.cancel");
 
     showConfirmationToast({
       title,
@@ -134,17 +134,11 @@ export default function VoucherPage() {
       onConfirm: async () => {
         try {
           await deleteVoucher({ id: voucher.id, lang: language });
-          toast.success(
-            t("admin.voucher.actions.delete_success") || "Voucher deleted"
-          );
+          toast.success(t("admin.voucher.actions.delete_success"));
           await refetchPaged();
         } catch (err) {
           console.error("Delete voucher error:", err);
-          const msg =
-            err?.response?.data?.message ||
-            err.message ||
-            t("admin.voucher.actions.delete_error") ||
-            "Delete failed";
+          const msg = t("admin.voucher.actions.delete_error");
           toast.error(msg);
         }
       },
@@ -161,13 +155,13 @@ export default function VoucherPage() {
     setShowForm(true);
   };
 
-  const handleCloseForm = async () => {
+  const handleCloseForm = async (shouldRefetch = false) => {
     setShowForm(false);
     setSelectedVoucher(null);
-    try {
-      await refetchPaged();
-    } catch {
-      // ignore
+    if (shouldRefetch) {
+      try {
+        await refetchPaged();
+      } catch {}
     }
   };
 
@@ -175,16 +169,14 @@ export default function VoucherPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          {t("admin.voucher.title") || "Voucher Management"}
-        </h1>
+        <h1 className="text-2xl font-bold">{t("admin.voucher.title")}</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={handleCreate}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 cursor-pointer"
           >
             <IconPlus size={16} />
-            {t("admin.voucher.create") || "Create Voucher"}
+            {t("admin.voucher.create")}
           </button>
         </div>
       </div>
@@ -195,7 +187,7 @@ export default function VoucherPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {t("admin.voucher.stats.total") || "Total"}
+                {t("admin.voucher.stats.total")}
               </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
@@ -205,7 +197,7 @@ export default function VoucherPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {t("admin.voucher.stats.active") || "Active"}
+                {t("admin.voucher.stats.active")}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.active}
@@ -217,7 +209,7 @@ export default function VoucherPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {t("admin.voucher.stats.inactive") || "Inactive"}
+                {t("admin.voucher.stats.inactive")}
               </p>
               <p className="text-2xl font-bold text-red-600">
                 {stats.inactive}
@@ -229,7 +221,7 @@ export default function VoucherPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {t("admin.voucher.stats.expired") || "Expired"}
+                {t("admin.voucher.stats.expired")}
               </p>
               <p className="text-2xl font-bold text-orange-600">
                 {stats.expired}
@@ -398,14 +390,14 @@ export default function VoucherPage() {
                       </button>
                       <button
                         onClick={() => handleEdit(v)}
-                        title={t("admin.voucher.actions.edit") || "Edit"}
+                        title={t("admin.voucher.actions.edit")}
                         className="text-yellow-600 p-1 rounded hover:bg-yellow-50 cursor-pointer"
                       >
                         <IconEdit size={18} />
                       </button>
                       <button
                         onClick={() => handleDelete(v)}
-                        title={t("admin.voucher.actions.delete") || "Delete"}
+                        title={t("admin.voucher.actions.delete")}
                         className="text-red-600 p-1 rounded hover:bg-red-50 cursor-pointer"
                       >
                         {isDeleting ? (

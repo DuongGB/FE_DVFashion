@@ -1144,15 +1144,16 @@
         "confirm_delete": "Confirm delete promotion",
         "confirm_delete_message": "Are you sure you want to delete promotion \"{{name}}\"?",
         "delete_success": "Promotion deleted successfully!",
-        "delete_error": "Error deleting promotion!",
+        "delete_error": "Can't delete promotion is active!",
         "cancel": "Cancel"
       },
       "columns": {
+        "product": "Product",
         "id": "ID",
         "name": "Name",
         "description": "Description",
         "type": "Type",
-        "value": "Value",
+        "value": "Original price",
         "min_order": "Min Order",
         "max_usage": "Max Usage",
         "start_date": "Start Date",
@@ -1163,6 +1164,7 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "apply_to_all": "Apply",
         "start_date_in_past": "Start date must be today or later",
         "remove": " Remove",
         "already_added": "Already added",
@@ -1329,7 +1331,7 @@
         "no_max_discount": "No max discount",
         "no_products_added": "No products added",
         "basic_info": "Basic information",
-        "product_ids": "Product IDs",
+        "product_ids": "Products",
         "name_required": "Voucher name is required (>= 3 chars)",
         "name_placeholder": "Enter voucher name...",
         "code_invalid": "Voucher code must be 3-20 chars (A-Z, 0-9, _ or -)",
@@ -1360,7 +1362,8 @@
         "min_order_amount_label": "Min Order (VND)",
         "max_total_usage_label": "Max Total Usage",
         "max_usage_per_user_label": "Max Usage / User",
-        "end_date_in_past": "End date must be today or later"
+        "end_date_in_past": "End date must be today or later",
+        "active_label": "Activate voucher immediately"
       },
       "actions": {
         "confirm_delete": "Confirm delete voucher",
@@ -1368,7 +1371,7 @@
         "delete": "Delete",
         "cancel": "Cancel",
         "delete_success": "Voucher deleted successfully!",
-        "delete_error": "Error deleting voucher!",
+        "delete_error": "Can't delete voucher that has been used!",
         "create_button": "Create",
         "update_button": "Update",
         "creating": "Creating...",

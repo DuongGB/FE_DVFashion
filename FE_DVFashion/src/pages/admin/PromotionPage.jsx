@@ -90,11 +90,10 @@ export default function PromotionPage() {
 
   const handleDeletePromotion = (promotion) => {
     if (isStaff) {
-      toast.error(
-        t("admin.promotion.messages.staff_delete_denied") ||
-          "Nhân viên không có quyền xóa khuyến mãi!",
-        { autoClose: 2000, position: "top-center" }
-      );
+      toast.error(t("admin.promotion.messages.staff_delete_denied"), {
+        autoClose: 2000,
+        position: "top-center",
+      });
       return;
     }
 
@@ -118,16 +117,10 @@ export default function PromotionPage() {
         setLoadingItems((prev) => ({ ...prev, status: promotion.id }));
         try {
           await deletePromotion({ promotionId: promotion.id, lang: language });
-          toast.success(
-            t("admin.promotion.actions.delete_success") || "Promotion deleted"
-          );
+          toast.success(t("admin.promotion.actions.delete_success"));
         } catch (err) {
           console.error("Error deleting promotion:", err);
-          const msg =
-            err?.response?.data?.message ||
-            err.message ||
-            t("admin.promotion.actions.delete_error") ||
-            "Delete failed";
+          const msg = t("admin.promotion.actions.delete_error");
           toast.error(msg);
         } finally {
           setLoadingItems((prev) => ({ ...prev, status: null }));
