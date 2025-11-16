@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
@@ -6,7 +6,8 @@ import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
 import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
 import { useCategory } from "../hooks/useCategory";
-import { decodeId, encodeId } from "../utils/encodeId";
+import { decodeId } from "../utils/encodeId";
+import getColorHex from "../utils/getColorHex";
 
 export default function CategoryProductPage() {
   const { t, i18n } = useTranslation();
@@ -27,10 +28,11 @@ export default function CategoryProductPage() {
     const decoded = decodeId(initialCategoryRaw);
     return decoded === null ? initialCategoryRaw : decoded;
   })();
-  const initialOnSale = params.get("onSale") === "true" ? true : null;
   const initialMinPrice = params.get("minPrice") || "";
   const initialMaxPrice = params.get("maxPrice") || "";
   const initialSort = params.get("sort") || "";
+  const initialColor = params.get("color") || "";
+  const initialOnlyDiscounted = params.get("onlyDiscounted") === "true";
 
   // States for search and filters
   const [searchInput, setSearchInput] = useState(initialKeyword);
@@ -39,13 +41,27 @@ export default function CategoryProductPage() {
   const [showFilters, setShowFilters] = useState(false);
   const debounceTimeout = useRef(null);
 
+  // Filter states (categoryId luôn cố định)
+  const [filters, setFilters] = useState({
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
+    sort: initialSort,
+    color: initialColor,
+  });
+  // State riêng cho lọc giá ưu đãi
+  const [onlyDiscounted, setOnlyDiscounted] = useState(initialOnlyDiscounted);
+
   // Debounce search: khi dừng gõ 1s thì search
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
     debounceTimeout.current = setTimeout(() => {
       if (searchInput.trim() !== search) {
-        const queryString = buildQueryString(filters, searchInput);
+        const queryString = buildQueryString(
+          filters,
+          searchInput,
+          onlyDiscounted
+        );
         navigate(`/products?${queryString}`);
       }
     }, 1000);
@@ -55,14 +71,6 @@ export default function CategoryProductPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
-
-  // Filter states (categoryId luôn cố định)
-  const [filters, setFilters] = useState({
-    onSale: initialOnSale,
-    minPrice: initialMinPrice,
-    maxPrice: initialMaxPrice,
-    sort: initialSort,
-  });
 
   const pageSize = 20;
 
@@ -80,19 +88,34 @@ export default function CategoryProductPage() {
     page: currentPage - 1,
     size: pageSize,
     categoryId: initialCategoryId,
-    onSale: filters.onSale,
     minPrice: filters.minPrice ? parseFloat(filters.minPrice) : null,
     maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : null,
     sort: filters.sort || null,
   });
 
-  // Client-side filtering cho onSale nếu backend chưa hỗ trợ đầy đủ
+  // Lấy danh sách màu từ products
+  const colorOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        rawProducts
+          .flatMap((p) => p.variants?.map((v) => v.color))
+          .filter(Boolean)
+      )
+    );
+  }, [rawProducts]);
+
+  // Lọc sản phẩm theo màu và chỉ sản phẩm có giá ưu đãi (client-side)
   const products =
-    filters.onSale === true
+    onlyDiscounted || filters.color
       ? rawProducts.filter((p) => {
-          const hasDiscount =
-            p.currentPrice && p.price && p.currentPrice < p.price;
-          return hasDiscount;
+          let match = true;
+          if (onlyDiscounted) {
+            match = p.currentPrice && p.price && p.currentPrice < p.price;
+          }
+          if (filters.color) {
+            match = match && p.variants?.some((v) => v.color === filters.color);
+          }
+          return match;
         })
       : rawProducts;
 
@@ -100,36 +123,43 @@ export default function CategoryProductPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const keyword = params.get("q") || "";
-    const onSale = params.get("onSale") === "true" ? true : null;
     const minPrice = params.get("minPrice") || "";
     const maxPrice = params.get("maxPrice") || "";
     const sort = params.get("sort") || "";
+    const color = params.get("color") || "";
+    const onlyDiscountedParam = params.get("onlyDiscounted") === "true";
 
     setSearchInput(keyword);
     setSearch(keyword);
     setFilters({
-      onSale,
       minPrice,
       maxPrice,
       sort,
+      color,
     });
+    setOnlyDiscounted(onlyDiscountedParam);
     setCurrentPage(1);
   }, [location.search]);
 
   // Build query string từ filters
-  const buildQueryString = (newFilters = filters, newSearch = search) => {
+  const buildQueryString = (
+    newFilters = filters,
+    newSearch = search,
+    onlyDiscountedValue = onlyDiscounted
+  ) => {
     const params = new URLSearchParams();
     if (initialCategoryRaw) params.set("category", initialCategoryRaw);
     if (newSearch.trim()) params.set("q", newSearch.trim());
-    if (newFilters.onSale === true) params.set("onSale", "true");
     if (newFilters.minPrice) params.set("minPrice", newFilters.minPrice);
     if (newFilters.maxPrice) params.set("maxPrice", newFilters.maxPrice);
     if (newFilters.sort) params.set("sort", newFilters.sort);
+    if (newFilters.color) params.set("color", newFilters.color);
+    if (onlyDiscountedValue) params.set("onlyDiscounted", "true");
     return params.toString();
   };
 
   const handleSearch = () => {
-    const queryString = buildQueryString(filters, searchInput);
+    const queryString = buildQueryString(filters, searchInput, onlyDiscounted);
     navigate(`/products?${queryString}`);
   };
 
@@ -149,25 +179,26 @@ export default function CategoryProductPage() {
   };
 
   const applyFilters = () => {
-    const queryString = buildQueryString(filters, search);
+    const queryString = buildQueryString(filters, search, onlyDiscounted);
     navigate(`/products?${queryString}`);
     setShowFilters(false);
   };
 
   const clearFilters = () => {
     const newFilters = {
-      onSale: null,
       minPrice: "",
       maxPrice: "",
       sort: "",
+      color: "",
     };
     setFilters(newFilters);
-    const queryString = buildQueryString(newFilters, search);
+    setOnlyDiscounted(false);
+    const queryString = buildQueryString(newFilters, search, false);
     navigate(`/products?${queryString}`);
   };
 
   const hasActiveFilters =
-    filters.onSale === true || filters.minPrice || filters.maxPrice;
+    filters.minPrice || filters.maxPrice || filters.color || onlyDiscounted;
 
   // Sort options
   const sortOptions = [
@@ -240,9 +271,10 @@ export default function CategoryProductPage() {
             <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
               {
                 [
-                  filters.onSale === true,
                   filters.minPrice,
                   filters.maxPrice,
+                  filters.color,
+                  onlyDiscounted,
                 ].filter(Boolean).length
               }
             </span>
@@ -255,7 +287,7 @@ export default function CategoryProductPage() {
       {showFilters && (
         <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 mb-6 shadow-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:to-transparent before:rounded-2xl before:pointer-events-none">
           <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -304,7 +336,7 @@ export default function CategoryProductPage() {
                 </div>
               </div>
 
-              {/* Sale Filter */}
+              {/* Discounted Price Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
                   {t("search.promotion", "Khuyến mãi")}
@@ -312,15 +344,12 @@ export default function CategoryProductPage() {
                 <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all border border-gray-200">
                   <input
                     type="checkbox"
-                    checked={filters.onSale === true}
-                    onChange={(e) => {
-                      const newValue = e.target.checked ? true : null;
-                      handleFilterChange("onSale", newValue);
-                    }}
+                    checked={onlyDiscounted}
+                    onChange={(e) => setOnlyDiscounted(e.target.checked)}
                     className="w-4 h-4 rounded accent-blue-600"
                   />
                   <span className="text-sm">
-                    {t("search.on_sale_only", "Chỉ sản phẩm giảm giá")}
+                    {t("search.on_sale_only", "Chỉ sản phẩm có giá ưu đãi")}
                   </span>
                 </label>
               </div>
@@ -343,6 +372,49 @@ export default function CategoryProductPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Color Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.color", "Màu sắc")}
+                </label>
+                <select
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  value={filters.color || ""}
+                  onChange={(e) => handleFilterChange("color", e.target.value)}
+                >
+                  <option value="">
+                    {t("search.all_colors", "Tất cả màu")}
+                  </option>
+                  {colorOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {/* Nút chọn màu đẹp hơn */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {colorOptions.map((c) => (
+                    <button
+                      key={c}
+                      className={`w-8 h-8 rounded-full border-2 ${
+                        filters.color === c
+                          ? "border-blue-600"
+                          : "border-gray-300"
+                      }`}
+                      style={{ background: getColorHex(c) }}
+                      title={c}
+                      onClick={() =>
+                        handleFilterChange(
+                          "color",
+                          filters.color === c ? "" : c
+                        )
+                      }
+                      type="button"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -368,16 +440,11 @@ export default function CategoryProductPage() {
       {/* Active Filters Tags */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {filters.onSale === true && (
+          {onlyDiscounted && (
             <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
               {t("search.on_sale", "Đang giảm giá")}
               <button
-                onClick={() => {
-                  const newFilters = { ...filters, onSale: null };
-                  setFilters(newFilters);
-                  const queryString = buildQueryString(newFilters, search);
-                  navigate(`/products?${queryString}`);
-                }}
+                onClick={() => setOnlyDiscounted(false)}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
               >
                 <X size={14} />
@@ -399,10 +466,39 @@ export default function CategoryProductPage() {
                     maxPrice: "",
                   };
                   setFilters(newFilters);
-                  const queryString = buildQueryString(newFilters, search);
+                  const queryString = buildQueryString(
+                    newFilters,
+                    search,
+                    onlyDiscounted
+                  );
                   navigate(`/products?${queryString}`);
                 }}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
+          {filters.color && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-pink-50 text-pink-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-pink-200">
+              <span
+                className="inline-block w-4 h-4 rounded-full border mr-1"
+                style={{ background: getColorHex(filters.color) }}
+              ></span>
+              {filters.color}
+              <button
+                onClick={() => {
+                  const newFilters = { ...filters, color: "" };
+                  setFilters(newFilters);
+                  const queryString = buildQueryString(
+                    newFilters,
+                    search,
+                    onlyDiscounted
+                  );
+                  navigate(`/products?${queryString}`);
+                }}
+                className="hover:bg-pink-200 rounded-full p-0.5 transition-colors"
+                aria-label="Remove color filter"
               >
                 <X size={14} />
               </button>

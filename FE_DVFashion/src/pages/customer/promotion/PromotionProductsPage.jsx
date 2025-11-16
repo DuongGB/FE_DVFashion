@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
@@ -8,6 +8,7 @@ import { productAPI } from "../../../services/productAPI";
 import ProductCard from "../../../components/common/ProductCard";
 import Pagination from "../../../components/common/Pagination";
 import { usePromotion } from "../../../hooks/usePromotion";
+import getColorHex from "../../../utils/getColorHex"; // Thêm dòng này
 
 export default function PromotionProductsPage() {
   const { promotionId } = useParams();
@@ -34,8 +35,119 @@ export default function PromotionProductsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [color, setColor] = useState(""); // Thêm state cho màu sắc
   const pageSize = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const debounceTimeout = useRef(null);
+
+  // Price range presets
+  const priceRanges = [
+    {
+      label: t("search.price.under_200k", "Dưới 200k"),
+      min: "",
+      max: "200000",
+    },
+    {
+      label: t("search.price.200k_500k", "200k - 500k"),
+      min: "200000",
+      max: "500000",
+    },
+    {
+      label: t("search.price.500k_1m", "500k - 1tr"),
+      min: "500000",
+      max: "1000000",
+    },
+    { label: t("search.price.over_1m", "Trên 1tr"), min: "1000000", max: "" },
+  ];
+
+  // Lấy danh sách màu sắc từ products
+  const colorOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        products.flatMap((p) => p.variants?.map((v) => v.color)).filter(Boolean)
+      )
+    );
+  }, [products]);
+
+  // Debounce search input
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
+      if (searchInput.trim() !== search) {
+        setSearch(searchInput);
+        setCurrentPage(1);
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // Apply filters and search
+  useEffect(() => {
+    let result = [...products];
+
+    // Search
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(query) ||
+          p.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Price filter
+    if (minPrice) {
+      result = result.filter(
+        (p) =>
+          (p.promotionPrice || p.currentPrice || p.price) >=
+          parseFloat(minPrice)
+      );
+    }
+    if (maxPrice) {
+      result = result.filter(
+        (p) =>
+          (p.promotionPrice || p.currentPrice || p.price) <=
+          parseFloat(maxPrice)
+      );
+    }
+
+    // Color filter
+    if (color) {
+      result = result.filter((p) => p.variants?.some((v) => v.color === color));
+    }
+
+    // Sort
+    if (sortBy) {
+      const [field, direction] = sortBy.split(",");
+      result.sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+
+        if (field === "price") {
+          aVal = a.promotionPrice || a.currentPrice || a.price;
+          bVal = b.promotionPrice || b.currentPrice || b.price;
+        }
+
+        if (typeof aVal === "string") {
+          return direction === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        return direction === "asc" ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    setFilteredProducts(result);
+    setCurrentPage(1);
+  }, [search, sortBy, minPrice, maxPrice, color, products]);
 
   // Fetch full product details after promotion is loaded
   useEffect(() => {
@@ -80,44 +192,6 @@ export default function PromotionProductsPage() {
     loadProducts();
   }, [promotion, i18n.language]);
 
-  // Apply filters and search
-  useEffect(() => {
-    let result = [...products];
-
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query)
-      );
-    }
-
-    if (sortBy) {
-      const [field, direction] = sortBy.split(",");
-      result.sort((a, b) => {
-        let aVal = a[field];
-        let bVal = b[field];
-
-        if (field === "price") {
-          aVal = a.promotionPrice || a.currentPrice || a.price;
-          bVal = b.promotionPrice || b.currentPrice || b.price;
-        }
-
-        if (typeof aVal === "string") {
-          return direction === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
-
-        return direction === "asc" ? aVal - bVal : bVal - aVal;
-      });
-    }
-
-    setFilteredProducts(result);
-    setCurrentPage(1);
-  }, [search, sortBy, products]);
-
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const paginatedProducts = filteredProducts.slice(
@@ -141,20 +215,19 @@ export default function PromotionProductsPage() {
     setSearchInput("");
     setSearch("");
     setSortBy("");
+    setMinPrice("");
+    setMaxPrice("");
+    setColor(""); // Xóa filter màu
     setFilteredProducts(products);
   };
 
-  const hasActiveFilters = search.trim() || sortBy;
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setCurrentPage(1);
-  };
+  const hasActiveFilters =
+    search.trim() || sortBy || minPrice || maxPrice || color;
 
   const activeFiltersCount = useMemo(() => {
-    return [search.trim(), sortBy].filter(Boolean).length;
-  }, [search, sortBy]);
+    return [search.trim(), sortBy, minPrice, maxPrice, color].filter(Boolean)
+      .length;
+  }, [search, sortBy, minPrice, maxPrice, color]);
 
   // Combined loading/error state
   const isLoading = isLoadingPromotion || isLoadingProducts;
@@ -244,7 +317,10 @@ export default function PromotionProductsPage() {
           }}
         />
         <button
-          onClick={handleSearch}
+          onClick={() => {
+            setSearch(searchInput);
+            setCurrentPage(1);
+          }}
           className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           {t("search.search_button", "Tìm kiếm")}
@@ -269,7 +345,54 @@ export default function PromotionProductsPage() {
       {showFilters && (
         <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 mb-6 shadow-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:to-transparent before:rounded-2xl before:pointer-events-none">
           <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Price Range Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.price_range", "Khoảng giá")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder={t("search.min_price", "Từ")}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder={t("search.max_price", "Đến")}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </div>
+                {/* Price range presets */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {priceRanges.map((range, idx) => {
+                    const isActive =
+                      minPrice === range.min && maxPrice === range.max;
+                    return (
+                      <button
+                        key={idx}
+                        className={`text-xs border rounded-full px-3 py-1.5 transition-all duration-200 ${
+                          isActive
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                            : "border-gray-300 bg-white/60 backdrop-blur-sm hover:bg-white/90 hover:border-blue-400"
+                        }`}
+                        onClick={() => {
+                          setMinPrice(range.min);
+                          setMaxPrice(range.max);
+                        }}
+                      >
+                        {range.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sort Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
                   {t("search.sort_by", "Sắp xếp")}
@@ -286,6 +409,42 @@ export default function PromotionProductsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Color Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.color", "Màu sắc")}
+                </label>
+                <select
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                >
+                  <option value="">
+                    {t("search.all_colors", "Tất cả màu")}
+                  </option>
+                  {colorOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {/* Hoặc nút chọn màu đẹp hơn */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {colorOptions.map((c) => (
+                    <button
+                      key={c}
+                      className={`w-8 h-8 rounded-full border-2 ${
+                        color === c ? "border-blue-600" : "border-gray-300"
+                      }`}
+                      style={{ background: getColorHex(c) }}
+                      title={c}
+                      onClick={() => setColor(c === color ? "" : c)}
+                      type="button"
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="flex gap-4 mt-6">
               <button
@@ -300,7 +459,7 @@ export default function PromotionProductsPage() {
       )}
 
       {/* Active Filters Tags */}
-      {(search.trim() || sortBy) && (
+      {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 mb-4">
           {search.trim() && (
             <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
@@ -317,6 +476,22 @@ export default function PromotionProductsPage() {
               </button>
             </span>
           )}
+          {(minPrice || maxPrice) && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
+              {minPrice && `${parseInt(minPrice).toLocaleString()}đ`}
+              {minPrice && maxPrice && " - "}
+              {maxPrice && `${parseInt(maxPrice).toLocaleString()}đ`}
+              <button
+                onClick={() => {
+                  setMinPrice("");
+                  setMaxPrice("");
+                }}
+                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
           {sortBy && (
             <span className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-purple-200">
               {sortOptions.find((o) => o.value === sortBy)?.label}
@@ -324,6 +499,22 @@ export default function PromotionProductsPage() {
                 onClick={() => setSortBy("")}
                 className="hover:bg-purple-200 rounded-full p-0.5 transition-colors"
                 aria-label="Remove sort filter"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
+          {color && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-pink-50 text-pink-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-pink-200">
+              <span
+                className="inline-block w-4 h-4 rounded-full border mr-1"
+                style={{ background: getColorHex(color) }}
+              ></span>
+              {color}
+              <button
+                onClick={() => setColor("")}
+                className="hover:bg-pink-200 rounded-full p-0.5 transition-colors"
+                aria-label="Remove color filter"
               >
                 <X size={14} />
               </button>
@@ -380,7 +571,7 @@ export default function PromotionProductsPage() {
         </>
       ) : (
         <div className="text-center py-10 text-gray-500">
-          {search.trim() || sortBy ? (
+          {search.trim() || sortBy || color ? (
             <>
               {t("search.no_result", "Không tìm thấy sản phẩm phù hợp")}
               <button
