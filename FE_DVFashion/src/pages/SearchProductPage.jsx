@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import ProductCard from "../components/common/ProductCard";
 import Pagination from "../components/common/Pagination";
 import { ChevronDown, ChevronUp, X, Filter } from "react-feather";
 import { useCategory } from "../hooks/useCategory";
+import getColorHex from "../utils/getColorHex";
 
 export default function SearchProductPage() {
   const { t, i18n } = useTranslation();
@@ -17,10 +18,11 @@ export default function SearchProductPage() {
   const params = new URLSearchParams(location.search);
   const initialKeyword = params.get("q") || "";
   const initialCategoryId = params.get("categoryId") || null;
-  const initialOnSale = params.get("onSale") === "true" ? true : null;
   const initialMinPrice = params.get("minPrice") || "";
   const initialMaxPrice = params.get("maxPrice") || "";
   const initialSort = params.get("sort") || "";
+  const initialColor = params.get("color") || "";
+  const initialOnlyDiscounted = params.get("onlyDiscounted") === "true";
 
   // States for search and filters
   const [searchInput, setSearchInput] = useState(initialKeyword);
@@ -32,11 +34,13 @@ export default function SearchProductPage() {
   // Filter states
   const [filters, setFilters] = useState({
     categoryId: initialCategoryId,
-    onSale: initialOnSale,
     minPrice: initialMinPrice,
     maxPrice: initialMaxPrice,
     sort: initialSort,
+    color: initialColor,
   });
+  // State riêng cho lọc giá ưu đãi
+  const [onlyDiscounted, setOnlyDiscounted] = useState(initialOnlyDiscounted);
 
   // Debounce search: khi dừng gõ 1s thì search
   useEffect(() => {
@@ -44,7 +48,11 @@ export default function SearchProductPage() {
 
     debounceTimeout.current = setTimeout(() => {
       if (searchInput.trim() !== search) {
-        const queryString = buildQueryString(filters, searchInput);
+        const queryString = buildQueryString(
+          filters,
+          searchInput,
+          onlyDiscounted
+        );
         navigate(`/search?${queryString}`);
       }
     }, 1000);
@@ -78,76 +86,85 @@ export default function SearchProductPage() {
     page: currentPage - 1,
     size: pageSize,
     categoryId: filters.categoryId,
-    onSale: filters.onSale,
     minPrice: filters.minPrice ? parseFloat(filters.minPrice) : null,
     maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : null,
     sort: filters.sort || null,
   });
 
-  // Client-side filtering cho onSale nếu backend chưa hỗ trợ đầy đủ
+  // Lấy danh sách màu từ products
+  const colorOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        rawProducts
+          .flatMap((p) => p.variants?.map((v) => v.color))
+          .filter(Boolean)
+      )
+    );
+  }, [rawProducts]);
+
+  // Lọc sản phẩm theo màu và chỉ sản phẩm có giá ưu đãi (client-side)
   const products =
-    filters.onSale === true
+    onlyDiscounted || filters.color
       ? rawProducts.filter((p) => {
-          const hasDiscount =
-            p.currentPrice && p.price && p.currentPrice < p.price;
-          return hasDiscount;
+          let match = true;
+          if (onlyDiscounted) {
+            match = p.currentPrice && p.price && p.currentPrice < p.price;
+          }
+          if (filters.color) {
+            match = match && p.variants?.some((v) => v.color === filters.color);
+          }
+          return match;
         })
       : rawProducts;
-
-  console.log("Products after onSale filter:", {
-    onSaleFilter: filters.onSale,
-    rawCount: rawProducts.length,
-    filteredCount: products.length,
-    sampleProduct: rawProducts[0]
-      ? {
-          name: rawProducts[0].name,
-          price: rawProducts[0].price,
-          currentPrice: rawProducts[0].currentPrice,
-          hasDiscount:
-            rawProducts[0].currentPrice &&
-            rawProducts[0].price &&
-            rawProducts[0].currentPrice < rawProducts[0].price,
-        }
-      : null,
-  });
 
   // Cập nhật khi query param thay đổi
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const keyword = params.get("q") || "";
     const categoryId = params.get("categoryId") || null;
-    const onSale = params.get("onSale") === "true" ? true : null;
     const minPrice = params.get("minPrice") || "";
     const maxPrice = params.get("maxPrice") || "";
     const sort = params.get("sort") || "";
+    const color = params.get("color") || "";
+    const onlyDiscountedParam = params.get("onlyDiscounted") === "true";
 
     setSearchInput(keyword);
     setSearch(keyword);
     setFilters({
       categoryId,
-      onSale,
       minPrice,
       maxPrice,
       sort,
+      color,
     });
+    setOnlyDiscounted(onlyDiscountedParam);
     setCurrentPage(1);
   }, [location.search]);
 
   // Build query string từ filters
-  const buildQueryString = (newFilters = filters, newSearch = search) => {
+  const buildQueryString = (
+    newFilters = filters,
+    newSearch = search,
+    onlyDiscountedValue = onlyDiscounted
+  ) => {
     const params = new URLSearchParams();
     if (newSearch.trim()) params.set("q", newSearch.trim());
     if (newFilters.categoryId) params.set("categoryId", newFilters.categoryId);
-    if (newFilters.onSale === true) params.set("onSale", "true");
     if (newFilters.minPrice) params.set("minPrice", newFilters.minPrice);
     if (newFilters.maxPrice) params.set("maxPrice", newFilters.maxPrice);
     if (newFilters.sort) params.set("sort", newFilters.sort);
+    if (newFilters.color) params.set("color", newFilters.color);
+    if (onlyDiscountedValue) params.set("onlyDiscounted", "true");
     return params.toString();
   };
 
   const handleSearch = () => {
     if (searchInput.trim()) {
-      const queryString = buildQueryString(filters, searchInput);
+      const queryString = buildQueryString(
+        filters,
+        searchInput,
+        onlyDiscounted
+      );
       navigate(`/search?${queryString}`);
     }
   };
@@ -155,7 +172,6 @@ export default function SearchProductPage() {
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    console.log("Filter changed:", key, value, newFilters);
   };
 
   //cập nhật cả state và apply ngay
@@ -169,7 +185,7 @@ export default function SearchProductPage() {
   };
 
   const applyFilters = () => {
-    const queryString = buildQueryString(filters, search);
+    const queryString = buildQueryString(filters, search, onlyDiscounted);
     navigate(`/search?${queryString}`);
     setShowFilters(false);
   };
@@ -177,21 +193,23 @@ export default function SearchProductPage() {
   const clearFilters = () => {
     const newFilters = {
       categoryId: null,
-      onSale: null,
       minPrice: "",
       maxPrice: "",
       sort: "",
+      color: "",
     };
     setFilters(newFilters);
-    const queryString = buildQueryString(newFilters, search);
+    setOnlyDiscounted(false);
+    const queryString = buildQueryString(newFilters, search, false);
     navigate(`/search?${queryString}`);
   };
 
   const hasActiveFilters =
     filters.categoryId ||
-    filters.onSale === true ||
     filters.minPrice ||
-    filters.maxPrice;
+    filters.maxPrice ||
+    filters.color ||
+    onlyDiscounted;
 
   // Sort options
   const sortOptions = [
@@ -262,9 +280,10 @@ export default function SearchProductPage() {
               {
                 [
                   filters.categoryId,
-                  filters.onSale === true,
                   filters.minPrice,
                   filters.maxPrice,
+                  filters.color,
+                  onlyDiscounted,
                 ].filter(Boolean).length
               }
             </span>
@@ -273,11 +292,11 @@ export default function SearchProductPage() {
         </button>
       </div>
 
-      {/* Advanced Filters Panel - Liquid Glass Effect */}
+      {/* Advanced Filters Panel */}
       {showFilters && (
         <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 mb-6 shadow-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:to-transparent before:rounded-2xl before:pointer-events-none">
           <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               {/* Category Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -352,7 +371,7 @@ export default function SearchProductPage() {
                 </div>
               </div>
 
-              {/* Sale Filter */}
+              {/* Discounted Price Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
                   {t("search.promotion", "Khuyến mãi")}
@@ -360,16 +379,12 @@ export default function SearchProductPage() {
                 <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all border border-gray-200">
                   <input
                     type="checkbox"
-                    checked={filters.onSale === true}
-                    onChange={(e) => {
-                      const newValue = e.target.checked ? true : null;
-                      handleFilterChange("onSale", newValue);
-                      console.log("OnSale checkbox changed to:", newValue);
-                    }}
+                    checked={onlyDiscounted}
+                    onChange={(e) => setOnlyDiscounted(e.target.checked)}
                     className="w-4 h-4 rounded accent-blue-600"
                   />
                   <span className="text-sm">
-                    {t("search.on_sale_only", "Chỉ sản phẩm giảm giá")}
+                    {t("search.on_sale_only", "Chỉ sản phẩm có giá ưu đãi")}
                   </span>
                 </label>
               </div>
@@ -392,6 +407,49 @@ export default function SearchProductPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Color Filter */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  {t("search.color", "Màu sắc")}
+                </label>
+                <select
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  value={filters.color || ""}
+                  onChange={(e) => handleFilterChange("color", e.target.value)}
+                >
+                  <option value="">
+                    {t("search.all_colors", "Tất cả màu")}
+                  </option>
+                  {colorOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {/* Nút chọn màu đẹp hơn */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {colorOptions.map((c) => (
+                    <button
+                      key={c}
+                      className={`w-8 h-8 rounded-full border-2 ${
+                        filters.color === c
+                          ? "border-blue-600"
+                          : "border-gray-300"
+                      }`}
+                      style={{ background: getColorHex(c) }}
+                      title={c}
+                      onClick={() =>
+                        handleFilterChange(
+                          "color",
+                          filters.color === c ? "" : c
+                        )
+                      }
+                      type="button"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -424,7 +482,11 @@ export default function SearchProductPage() {
                 onClick={() => {
                   const newFilters = { ...filters, categoryId: null };
                   setFilters(newFilters);
-                  const queryString = buildQueryString(newFilters, search);
+                  const queryString = buildQueryString(
+                    newFilters,
+                    search,
+                    onlyDiscounted
+                  );
                   navigate(`/search?${queryString}`);
                 }}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
@@ -433,14 +495,13 @@ export default function SearchProductPage() {
               </button>
             </span>
           )}
-          {filters.onSale === true && (
+          {onlyDiscounted && (
             <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
               {t("search.on_sale", "Đang giảm giá")}
               <button
                 onClick={() => {
-                  const newFilters = { ...filters, onSale: null };
-                  setFilters(newFilters);
-                  const queryString = buildQueryString(newFilters, search);
+                  setOnlyDiscounted(false);
+                  const queryString = buildQueryString(filters, search, false);
                   navigate(`/search?${queryString}`);
                 }}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
@@ -464,10 +525,39 @@ export default function SearchProductPage() {
                     maxPrice: "",
                   };
                   setFilters(newFilters);
-                  const queryString = buildQueryString(newFilters, search);
+                  const queryString = buildQueryString(
+                    newFilters,
+                    search,
+                    onlyDiscounted
+                  );
                   navigate(`/search?${queryString}`);
                 }}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          )}
+          {filters.color && (
+            <span className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-pink-50 text-pink-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-pink-200">
+              <span
+                className="inline-block w-4 h-4 rounded-full border mr-1"
+                style={{ background: getColorHex(filters.color) }}
+              ></span>
+              {filters.color}
+              <button
+                onClick={() => {
+                  const newFilters = { ...filters, color: "" };
+                  setFilters(newFilters);
+                  const queryString = buildQueryString(
+                    newFilters,
+                    search,
+                    onlyDiscounted
+                  );
+                  navigate(`/search?${queryString}`);
+                }}
+                className="hover:bg-pink-200 rounded-full p-0.5 transition-colors"
+                aria-label="Remove color filter"
               >
                 <X size={14} />
               </button>

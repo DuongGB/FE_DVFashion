@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../services/categoryAPI";
-import { getCookie } from "../utils/cookies";
 
 export const useCategory = ({
   lang = "VI",
