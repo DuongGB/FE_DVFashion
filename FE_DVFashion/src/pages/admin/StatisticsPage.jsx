@@ -17,7 +17,7 @@ import {
   useYearlyRevenue,
   useRevenueForecast,
 } from "../../hooks/useStatistics";
-import { useExportRevenueReport } from "../../hooks/useReport";
+import { useExportTaxReport } from "../../hooks/useReportTax";
 import { useQuarterlyRevenue } from "../../services/reportAPI";
 import { toast } from "react-toastify";
 
@@ -52,8 +52,36 @@ export default function StatisticsPage() {
 
   const monthly = useMonthlyRevenue({ year, enabled: mode === "month" });
   const yearly = useYearlyRevenue({ year, enabled: mode === "year" });
-  const total = useRevenueStatistics({ period: mode });
-  const exportReport = useExportRevenueReport();
+  const total = useRevenueStatistics({
+    period: mode,
+    year,
+    enabled: mode !== "year",
+  });
+  const { exportVATForm011, exportVATForm04, exportVATForm014A } =
+    useExportTaxReport();
+
+  // Hàm dùng chung để tải file
+  const handleExportTax = async (type) => {
+    try {
+      let res;
+      const params = { startDate, endDate };
+      if (type === "011") res = await exportVATForm011(params);
+      if (type === "04") res = await exportVATForm04(params);
+      if (type === "014A") res = await exportVATForm014A(params);
+      const url = window.URL.createObjectURL(res.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }, 100);
+    } catch (e) {
+      toast(t("admin.statistics.export.error"));
+    }
+  };
 
   // Hàm xử lý xuất báo cáo
   const handleExportReport = async () => {
@@ -260,6 +288,12 @@ export default function StatisticsPage() {
     [t]
   );
 
+  const loadingChart =
+    (mode === "day" && daily.isLoading) ||
+    (mode === "month" && monthly.isLoading) ||
+    (mode === "quarter" && quarterly.isLoading) ||
+    (mode === "year" && yearly.isLoading);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -269,14 +303,42 @@ export default function StatisticsPage() {
             {t("admin.statistics.title") || "Thống kê doanh thu"}
           </h1>
           {/* Nút xuất báo cáo */}
-          <button
-            onClick={handleExportReport}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md"
-            title={t("admin.statistics.export")}
-          >
-            <IconDownload size={18} />
-            {t("admin.statistics.export")}
-          </button>
+          <div className="flex gap-2">
+            {/* Nút xuất báo cáo doanh thu */}
+            <button
+              onClick={handleExportReport}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md"
+              title={t("admin.statistics.export")}
+            >
+              <IconDownload size={18} />
+              {t("admin.statistics.export")}
+            </button>
+            {/* Nút xuất báo cáo thuế */}
+            <button
+              onClick={() => handleExportTax("011")}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              title="Xuất bảng kê 01-1/GTGT"
+            >
+              <IconDownload size={16} />
+              01-1/GTGT
+            </button>
+            <button
+              onClick={() => handleExportTax("04")}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              title="Xuất tờ khai 04/GTGT"
+            >
+              <IconDownload size={16} />
+              04/GTGT
+            </button>
+            <button
+              onClick={() => handleExportTax("014A")}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              title="Xuất bảng phân bổ 01-4A/GTGT"
+            >
+              <IconDownload size={16} />
+              01-4A/GTGT
+            </button>
+          </div>
         </div>
 
         {/* Mode Selector và Date Range */}
@@ -401,6 +463,12 @@ export default function StatisticsPage() {
                       0
                     )
                   )
+                : mode === "year"
+                ? vnd(
+                    Array.isArray(yearly.data) && yearly.data.length > 0
+                      ? yearly.data[0].revenue
+                      : 0
+                  )
                 : vnd(total.data ?? 0)}
             </h3>
           </div>
@@ -424,25 +492,24 @@ export default function StatisticsPage() {
             </h3>
           </div>
 
-          {chartData.length > 1 &&
-          (mode !== "year" ||
-            (mode === "year" && yearly.data && yearly.data.length > 0)) ? (
+          {loadingChart ? (
+            <div className="h-96 flex items-center justify-center">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="text-gray-500 text-sm">
+                  {t("admin.statistics.chart.loading")}
+                </p>
+              </div>
+            </div>
+          ) : chartData.length > 1 &&
+            (mode !== "year" ||
+              (mode === "year" && yearly.data && yearly.data.length > 0)) ? (
             <Chart
               chartType="ColumnChart"
               width="100%"
               height="400px"
               data={chartData}
               options={columnOptions}
-              loader={
-                <div className="h-96 flex items-center justify-center">
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <p className="text-gray-500 text-sm">
-                      {t("admin.statistics.chart.loading")}
-                    </p>
-                  </div>
-                </div>
-              }
             />
           ) : (
             <div className="h-96 flex items-center justify-center">
