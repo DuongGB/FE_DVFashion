@@ -8,15 +8,23 @@ export const useRevenueStatistics = ({
   period = "day",
   startDate,
   endDate,
+  year,
+  enabled = true,
 } = {}) => {
   return useQuery({
-    queryKey: ["statistics", "revenue", { period, startDate, endDate }],
-    queryFn: () =>
-      statisticAPI.getRevenueStatistics({ period, startDate, endDate }),
+    queryKey: ["statistics", "revenue", { period, startDate, endDate, year }],
+    queryFn: async () => {
+      if (period === "year") {
+        const res = await statisticAPI.getYearlyRevenue({ year });
+        const arr = res?.data ?? [];
+        return arr.length > 0 ? parseFloat(arr[0].revenue) || 0 : 0;
+      }
+      return statisticAPI.getRevenueStatistics({ period, startDate, endDate });
+    },
+    enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => {
-      // console.log("Revenue response:", response);
-      // Backend returns: { success: true, data: 841400.00, message: "..." }
+      if (typeof response === "number") return response;
       return parseFloat(response?.data ?? 0) || 0;
     },
   });
