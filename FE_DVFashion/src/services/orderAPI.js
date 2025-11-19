@@ -151,3 +151,36 @@ export const getOrderStatistics = async () => {
   const res = await api.get("/orders/statistics");
   return res.data;
 };
+
+export const getOrdersByStatusPaging = async (status, params) => {
+  // Map status to correct endpoint
+  let endpoint = "";
+  switch (status) {
+    case "PENDING":
+      endpoint = "/orders/all/pending";
+      break;
+    case "CONFIRMED":
+      endpoint = "/orders/all/confirmed";
+      break;
+    case "PROCESSING":
+      endpoint = "/orders/all/processing";
+      break;
+    case "SHIPPED":
+      endpoint = "/orders/all/shipped";
+      break;
+    case "DELIVERED":
+      endpoint = "/orders/all/delivered";
+      break;
+    case "RETURNED":
+      endpoint = "/orders/all/returned";
+      break;
+    case "CANCELED":
+    case "CANCELLED":
+      endpoint = "/orders/all/cancelled";
+      break;
+    default:
+      endpoint = "/orders";
+  }
+  const response = await api.get(endpoint, { params });
+  return response.data?.data;
+};
