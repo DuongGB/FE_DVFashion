@@ -1,31 +1,35 @@
 import {
   IconAdCircle,
   IconBriefcase,
-  IconBuildingStore,
   IconCategory,
   IconChevronDown,
   IconChevronRight,
   IconDeviceAnalytics,
   IconDevicesCheck,
+  IconGift,
   IconHomeEdit,
   IconHomeInfinity,
   IconLogout,
+  IconMessage,
   IconReportAnalytics,
   IconShirt,
   IconSpeakerphone,
   IconTruckDelivery,
   IconUserHeart,
-  IconUsers,
   IconWorldWww,
-  IconReceipt,
-  IconGift,
-  IconMessage,
+  IconClock,
+  IconCheck,
+  IconPackage,
+  IconX,
+  IconProgressCheck,
+  IconTruckLoading,
+  IconTruckReturn,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import EmployeeCard from "../common/EmployeeCard";
-import { useTranslation } from "react-i18next";
 
 export default function Sidebar({ onClose }) {
   const { logout, isLogoutLoading, user, isLoading } = useAuth();
@@ -200,15 +204,63 @@ export default function Sidebar({ onClose }) {
               </Link>
             </li>
 
+            {/* Quản lý đơn hàng */}
+            <MenuWithSubmenu
+              title={t("admin.sidebar.order_management")}
+              icon={<IconBriefcase stroke={2} />}
+              menuKey="order"
+            >
+              {/* Đơn hàng theo trạng thái */}
+              <SubMenuItem
+                to="/admin/orders/pending"
+                icon={<IconClock size={16} />}
+              >
+                {t("order.status.pending")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/confirmed"
+                icon={<IconCheck size={16} />}
+              >
+                {t("order.status.confirmed")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/processing"
+                icon={<IconProgressCheck size={16} />}
+              >
+                {t("order.status.processing")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/shipped"
+                icon={<IconTruckDelivery size={16} />}
+              >
+                {t("order.status.shipped")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/delivered"
+                icon={<IconPackage size={16} />}
+              >
+                {t("order.status.delivered")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/returned"
+                icon={<IconTruckReturn size={16} />}
+              >
+                {t("order.status.returned")}
+              </SubMenuItem>
+              <SubMenuItem
+                to="/admin/orders/canceled"
+                icon={<IconX size={16} />}
+              >
+                {t("order.status.canceled")}
+              </SubMenuItem>
+            </MenuWithSubmenu>
+
             {/* Quản lý kinh doanh */}
             <MenuWithSubmenu
               title={t("admin.sidebar.business_management")}
               icon={<IconBriefcase stroke={2} />}
               menuKey="business"
             >
-              <SubMenuItem to="/admin/orders" icon={<IconReceipt size={16} />}>
-                {t("admin.sidebar.orders")}
-              </SubMenuItem>
               <SubMenuItem
                 to="/admin/inventories"
                 icon={<IconTruckDelivery size={16} />}

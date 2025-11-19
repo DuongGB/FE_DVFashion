@@ -38,6 +38,13 @@ import StatisticsPage from "./pages/admin/StatisticsPage";
 import PromotionProductsPage from "./pages/customer/promotion/PromotionProductsPage";
 import CustomerSupportPage from "./pages/admin/CustomerSupportPage";
 import InvoicePreview from "./pages/customer/invoice/InvoicePreview";
+import OrderPendingPage from "./pages/admin/order/OrderPendingPage";
+import OrderConfirmedPage from "./pages/admin/order/OrderConfirmedPage";
+import OrderProcessingPage from "./pages/admin/order/OrderProcessingPage";
+import OrderShippedPage from "./pages/admin/order/OrderShippedPage";
+import OrderDeliveredPage from "./pages/admin/order/OrderDeliveredPage";
+import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
+import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -59,7 +66,13 @@ function AppRoutes() {
             <Route path="promotions" element={<PromotionPage />} />
             <Route path="customers" element={<CustomerManagermentPage />} />
             <Route path="employees" element={<EmployeePage />} />
-            <Route path="orders" element={<OrderPage />} />
+            <Route path="orders/pending" element={<OrderPendingPage />} />
+            <Route path="orders/confirmed" element={<OrderConfirmedPage />} />
+            <Route path="orders/processing" element={<OrderProcessingPage />} />
+            <Route path="orders/shipped" element={<OrderShippedPage />} />
+            <Route path="orders/delivered" element={<OrderDeliveredPage />} />
+            <Route path="orders/returned" element={<OrderReturnedPage />} />
+            <Route path="orders/canceled" element={<OrderCanceledPage />} />
             <Route path="statistics" element={<StatisticsPage />} />
             <Route path="vouchers" element={<VoucherPage />} />
             <Route path="support" element={<CustomerSupportPage />} />
