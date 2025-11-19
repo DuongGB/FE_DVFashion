@@ -17,6 +17,7 @@ import {
   getAllOrdersPaging,
   cancelOrderByCustomer,
   getOrderStatistics,
+  getOrdersByStatusPaging,
 } from "../services/orderAPI";
 
 export const useCreateOrder = () => {
@@ -251,5 +252,15 @@ export const useOrderStatistics = () => {
     queryKey: ["orderStatistics"],
     queryFn: getOrderStatistics,
     select: (res) => res.data,
+  });
+};
+
+export const useOrdersByStatusPaging = (status, params, options = {}) => {
+  return useQuery({
+    queryKey: ["orders", status, params],
+    queryFn: () => getOrdersByStatusPaging(status, params),
+    staleTime: 1000 * 30,
+    keepPreviousData: true,
+    ...options,
   });
 };
