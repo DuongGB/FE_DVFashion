@@ -646,10 +646,14 @@ export default function OrderStatusListPage({ status }) {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                  className="px-4 py-2 rounded bg-blue-600 text-white flex items-center justify-center gap-2"
                   disabled={!batchStatus || isBatchUpdating}
                 >
-                  {isBatchUpdating ? t("common.processing") : t("common.save")}
+                  {isBatchUpdating ? (
+                    <span className="inline-block w-5 h-5 border-2 border-white border-t-blue-400 rounded-full animate-spin"></span>
+                  ) : (
+                    t("common.save")
+                  )}
                 </button>
               </div>
             </form>
