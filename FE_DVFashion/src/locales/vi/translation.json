@@ -456,6 +456,7 @@
     "voucher_not_applicable": "Voucher không áp dụng cho đơn hàng này"
   },
   "order": {
+    "batch_update_result": "Cập nhật hàng loạt hoàn tất. Thành công: {{success}}, Thất bại: {{fail}}",
     "min_total": "Tổng tối thiểu",
     "max_total": "Tổng tối đa",
     "start_date": "Từ ngày",

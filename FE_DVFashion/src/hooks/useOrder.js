@@ -18,6 +18,7 @@ import {
   cancelOrderByCustomer,
   getOrderStatistics,
   getOrdersByStatusPaging,
+  batchUpdateOrderStatus,
 } from "../services/orderAPI";
 
 export const useCreateOrder = () => {
@@ -262,5 +263,26 @@ export const useOrdersByStatusPaging = (status, params, options = {}) => {
     staleTime: 1000 * 30,
     keepPreviousData: true,
     ...options,
+  });
+};
+
+// Hook để cập nhật trạng thái đơn hàng hàng loạt
+export const useBatchUpdateOrderStatus = () => {
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: batchUpdateOrderStatus,
+    onSuccess: (data) => {
+      // Lấy số lượng thành công/thất bại từ response
+      const success = data?.data?.successfulUpdates ?? 0;
+      const fail = data?.data?.failedUpdates ?? 0;
+      // Ưu tiên message từ API, nếu không có thì dùng translation với số lượng
+      const msg = t("order.batch_update_result", { success, fail });
+      toast.success(msg);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orderStatistics"] });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || t("order.update_fail"));
+    },
   });
 };

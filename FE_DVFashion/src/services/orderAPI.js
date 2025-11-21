@@ -184,3 +184,13 @@ export const getOrdersByStatusPaging = async (status, params) => {
   const response = await api.get(endpoint, { params });
   return response.data?.data;
 };
+
+/**
+ * Batch update order status.
+ * @param {object} payload - { orderNumbers: string[], targetStatus: string, notes?: string }
+ * @returns {Promise<object>} BatchUpdateOrderStatusResponse
+ */
+export const batchUpdateOrderStatus = async (payload) => {
+  const response = await api.put("/orders/batch/status", payload);
+  return response.data;
+};

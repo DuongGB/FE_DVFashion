@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Pagination from "../../../components/common/Pagination";
 import OrderDetailModal from "../../../components/ui/order/OrderDetailModal";
 import OrderEditModal from "../../../components/ui/order/OrderEditModal";
-import { useOrdersByStatusPaging } from "../../../hooks/useOrder";
+import {
+  useOrdersByStatusPaging,
+  useBatchUpdateOrderStatus,
+} from "../../../hooks/useOrder";
 import {
   IconEye,
   IconEdit,
@@ -21,6 +24,37 @@ import {
   IconFilter,
 } from "@tabler/icons-react";
 import { formatVND } from "../../../utils/formatVND";
+
+const ORDER_STATUS_FLOW = {
+  PENDING: ["CONFIRMED", "CANCELED"],
+  CONFIRMED: ["PROCESSING", "CANCELED"],
+  PROCESSING: ["SHIPPED", "CANCELED"],
+  SHIPPED: ["DELIVERED", "RETURNED"],
+  DELIVERED: ["RETURNED"],
+  CANCELED: [],
+  RETURNED: [],
+};
+
+function getAllowedBatchTargetStatuses(selectedOrders, orders) {
+  if (selectedOrders.length === 0) return [];
+  const selectedOrderObjs = orders.filter((o) =>
+    selectedOrders.includes(o.orderNumber ?? o.id)
+  );
+  const currentStatuses = selectedOrderObjs.map((o) => o.status);
+
+  let allowed = null;
+  for (const status of currentStatuses) {
+    const nexts = ORDER_STATUS_FLOW[status] || [];
+    // KHÔNG cho phép giữ nguyên trạng thái hiện tại
+    const allowedForThis = [...nexts];
+    if (allowed === null) {
+      allowed = allowedForThis;
+    } else {
+      allowed = allowed.filter((s) => allowedForThis.includes(s));
+    }
+  }
+  return allowed || [];
+}
 
 const statusColors = {
   PENDING: "bg-gray-500",
@@ -89,6 +123,11 @@ export default function OrderStatusListPage({ status }) {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [batchStatus, setBatchStatus] = useState("");
+  const [batchNotes, setBatchNotes] = useState("");
+  const selectAllRef = useRef();
 
   // Advanced filter states (input vs. applied)
   const [startDateInput, setStartDateInput] = useState("");
@@ -103,6 +142,9 @@ export default function OrderStatusListPage({ status }) {
   // Payment method filter (applies immediately)
   const [paymentMethod, setPaymentMethod] = useState("");
   const pageSize = 10;
+
+  const { mutate: batchUpdateOrderStatus, isLoading: isBatchUpdating } =
+    useBatchUpdateOrderStatus();
 
   // Debounce search input (1s)
   useEffect(() => {
@@ -135,6 +177,30 @@ export default function OrderStatusListPage({ status }) {
   const totalPages = data?.totalPages ?? 1;
   const totalStatusOrders = data?.totalElements ?? 0;
 
+  const allowedBatchStatuses = getAllowedBatchTargetStatuses(selectedOrders, [
+    ...orders,
+  ]);
+
+  // Thêm hàm formatDateTime
+  function formatDateTime(isoString) {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const pad = (n) => n.toString().padStart(2, "0");
+    return (
+      pad(date.getHours()) +
+      ":" +
+      pad(date.getMinutes()) +
+      ":" +
+      pad(date.getSeconds()) +
+      " " +
+      pad(date.getDate()) +
+      "-" +
+      pad(date.getMonth() + 1) +
+      "-" +
+      date.getFullYear()
+    );
+  }
+
   const summaryText =
     search && search.trim()
       ? t("admin.brand.showing_results", {
@@ -145,6 +211,51 @@ export default function OrderStatusListPage({ status }) {
           current: orders.length,
           total: totalStatusOrders,
         });
+
+  // Handle select all (multi-page support)
+  const handleSelectAll = (e) => {
+    const pageOrderNumbers = orders.map((o) => o.orderNumber ?? o.id);
+    if (e.target.checked) {
+      setSelectedOrders((prev) => [
+        ...prev,
+        ...pageOrderNumbers.filter((id) => !prev.includes(id)),
+      ]);
+    } else {
+      setSelectedOrders((prev) =>
+        prev.filter((id) => !pageOrderNumbers.includes(id))
+      );
+    }
+  };
+
+  // Handle select one
+  const handleSelectOrder = (orderNumber) => {
+    setSelectedOrders((prev) =>
+      prev.includes(orderNumber)
+        ? prev.filter((id) => id !== orderNumber)
+        : [...prev, orderNumber]
+    );
+  };
+
+  // Handle batch update submit
+  const handleBatchUpdate = (e) => {
+    e.preventDefault();
+    if (!batchStatus || selectedOrders.length === 0) return;
+    batchUpdateOrderStatus(
+      {
+        orderNumbers: selectedOrders,
+        targetStatus: batchStatus,
+        notes: batchNotes,
+      },
+      {
+        onSuccess: () => {
+          setShowBatchModal(false);
+          setSelectedOrders([]);
+          setBatchStatus("");
+          setBatchNotes("");
+        },
+      }
+    );
+  };
 
   // Only apply advanced filter when submit
   const handleAdvancedFilterSubmit = (e) => {
@@ -158,6 +269,11 @@ export default function OrderStatusListPage({ status }) {
 
   if (isLoading) return <div>{t("common.loading")}...</div>;
   if (isError) return <div className="text-red-600">{t("common.error")}</div>;
+
+  // Helper for select all checkbox checked state (multi-page)
+  const isAllPageSelected =
+    orders.length > 0 &&
+    orders.every((o) => selectedOrders.includes(o.orderNumber ?? o.id));
 
   return (
     <div>
@@ -311,6 +427,29 @@ export default function OrderStatusListPage({ status }) {
           </form>
         )}
       </div>
+      {/* Batch update bar */}
+      <div className="flex items-center gap-2 mb-2">
+        <input
+          type="checkbox"
+          ref={selectAllRef}
+          checked={isAllPageSelected}
+          onChange={handleSelectAll}
+          disabled={orders.length === 0}
+        />
+        <span className="text-sm">{t("common.select")}</span>
+        <button
+          className="px-3 py-1 bg-blue-600 text-white rounded shadow disabled:opacity-50"
+          disabled={selectedOrders.length === 0}
+          onClick={() => setShowBatchModal(true)}
+        >
+          {t("order.update_order") || "Batch Update Status"}
+        </button>
+        {selectedOrders.length > 0 && (
+          <span className="text-xs text-gray-500">
+            {selectedOrders.length} {t("order.orders_count")}
+          </span>
+        )}
+      </div>
 
       {/* Summary search */}
       <div className="text-sm text-gray-600 mb-2">{summaryText}</div>
@@ -321,6 +460,16 @@ export default function OrderStatusListPage({ status }) {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-400">
               <tr>
+                <th className="p-3">
+                  <input
+                    type="checkbox"
+                    ref={selectAllRef}
+                    checked={isAllPageSelected}
+                    onChange={handleSelectAll}
+                    disabled={orders.length === 0}
+                  />
+                </th>
+                {/* ...existing columns... */}
                 <th className="p-3 whitespace-nowrap">{t("order.number")}</th>
                 <th className="p-3 whitespace-nowrap">
                   {t("account.main.full_name")}
@@ -344,18 +493,27 @@ export default function OrderStatusListPage({ status }) {
               {orders.map((order) => {
                 const payment =
                   order.payment?.paymentMethod || order.paymentMethod;
+                const orderNumber = order.orderNumber ?? order.id;
                 return (
                   <tr
-                    key={order.orderNumber ?? order.id}
+                    key={orderNumber}
                     className="border-b hover:bg-white/80 transition-colors"
                   >
-                    <td className="p-3 whitespace-nowrap">
-                      {order.orderNumber ?? order.id}
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(orderNumber)}
+                        onChange={() => handleSelectOrder(orderNumber)}
+                      />
                     </td>
+                    {/* ...existing columns... */}
+                    <td className="p-3 whitespace-nowrap">{orderNumber}</td>
                     <td className="p-3 whitespace-nowrap">
                       {order.customerName}
                     </td>
-                    <td className="p-3 whitespace-nowrap">{order.orderDate}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      {formatDateTime(order.orderDate)}
+                    </td>
                     <td className="p-3 whitespace-nowrap">
                       <span
                         className={`text-white text-xs px-3 py-1 rounded-lg shadow whitespace-nowrap ${
@@ -407,7 +565,7 @@ export default function OrderStatusListPage({ status }) {
               })}
               {orders.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-6 text-gray-500">
+                  <td colSpan={8} className="text-center py-6 text-gray-500">
                     {t("order.no_orders_found")}
                   </td>
                 </tr>
@@ -416,6 +574,89 @@ export default function OrderStatusListPage({ status }) {
           </table>
         </div>
       </div>
+
+      {/* Batch update modal */}
+      {showBatchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div
+            className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative rounded-t-2xl">
+              <button
+                type="button"
+                onClick={() => setShowBatchModal(false)}
+                className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
+                aria-label={t("common.close")}
+                disabled={isBatchUpdating}
+              >
+                <IconX size={16} />
+              </button>
+              <h2 className="text-lg font-semibold">
+                {t("order.update_order")}
+              </h2>
+              <div className="text-xs text-blue-100 opacity-90 mt-1">
+                {t("order.orders_count")}: {selectedOrders.length}
+              </div>
+            </div>
+            {/* Body */}
+            <form
+              onSubmit={handleBatchUpdate}
+              className="flex-1 flex flex-col gap-3 p-6"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t("order.status_label")}
+                </label>
+                <select
+                  value={batchStatus}
+                  onChange={(e) => setBatchStatus(e.target.value)}
+                  className="w-full border rounded px-3 py-2 border-gray-300"
+                  required
+                >
+                  <option value="">{t("common.select")}</option>
+                  {allowedBatchStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {t(`order.status.${status.toLowerCase()}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t("common.note")}
+                </label>
+                <textarea
+                  value={batchNotes}
+                  onChange={(e) => setBatchNotes(e.target.value)}
+                  className="w-full border rounded px-3 py-2 border-gray-300"
+                  rows={2}
+                  placeholder={t("common.note")}
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded bg-gray-200"
+                  onClick={() => setShowBatchModal(false)}
+                  disabled={isBatchUpdating}
+                >
+                  {t("common.cancel")}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                  disabled={!batchStatus || isBatchUpdating}
+                >
+                  {isBatchUpdating ? t("common.processing") : t("common.save")}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

@@ -489,6 +489,7 @@
     "voucher_not_applicable": "Voucher is not applicable for this order"
   },
   "order": {
+    "batch_update_result": "Batch update completed. Success: {{success}}, Failed: {{fail}}",
     "min_total": "Min total",
     "max_total": "Max total",
     "start_date": "Start date",
