@@ -24,6 +24,7 @@ import {
   IconProgressCheck,
   IconTruckLoading,
   IconTruckReturn,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -207,7 +208,7 @@ export default function Sidebar({ onClose }) {
             {/* Quản lý đơn hàng */}
             <MenuWithSubmenu
               title={t("admin.sidebar.order_management")}
-              icon={<IconBriefcase stroke={2} />}
+              icon={<IconReceipt stroke={2} />}
               menuKey="order"
             >
               {/* Đơn hàng theo trạng thái */}

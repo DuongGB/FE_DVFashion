@@ -86,3 +86,20 @@ export const getProductRecommendationStats = async ({ limit = 10, days }) => {
   });
   return response.data;
 };
+
+// Lấy gợi ý hôm nay (có thể truyền userId)
+export const getTodayRecommendations = async ({ userId, limit = 10 }) => {
+  const params = { limit };
+  if (userId) params.userId = userId;
+  const res = await api.get("/recommendations/today", { params });
+  return res.data?.data ?? [];
+};
+
+// Lấy sản phẩm vừa xem hôm nay
+export const getTodayViewedProducts = async ({ limit = 20 }) => {
+  const params = { interactionType: "VIEW", limit };
+  const res = await api.get("/recommendations/user/today-interactions", {
+    params,
+  });
+  return res.data?.data ?? [];
+};

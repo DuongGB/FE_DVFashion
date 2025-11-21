@@ -4,6 +4,8 @@ import {
   getTopRecommendedProducts,
   getRecommendationAnalytics,
   getProductRecommendationStats,
+  getTodayRecommendations,
+  getTodayViewedProducts,
 } from "../services/recommendationAPI";
 import { useAuth } from "../hooks/useAuth";
 
@@ -78,3 +80,17 @@ export const useProductRecommendationStats = ({ limit = 10, days } = {}) => {
     select: (data) => data?.data ?? data ?? [],
   });
 };
+
+export const useTodayRecommendations = (userId, limit = 10) =>
+  useQuery({
+    queryKey: ["todayRecommendations", userId, limit],
+    queryFn: () => getTodayRecommendations({ userId, limit }),
+    staleTime: 1000 * 60,
+  });
+
+export const useTodayViewedProducts = (limit = 20) =>
+  useQuery({
+    queryKey: ["todayViewedProducts", limit],
+    queryFn: () => getTodayViewedProducts({ limit }),
+    staleTime: 1000 * 60,
+  });

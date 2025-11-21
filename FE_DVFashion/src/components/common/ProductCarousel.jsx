@@ -33,11 +33,10 @@ export default function ProductCarousel({
     ) {
       swiperRef.current.params.navigation.prevEl = prevRef.current;
       swiperRef.current.params.navigation.nextEl = nextRef.current;
-      swiperRef.current.navigation.destroy();
       swiperRef.current.navigation.init();
       swiperRef.current.navigation.update();
     }
-  }, [products]);
+  }, [swiperRef.current, products]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-10 py-10 relative">

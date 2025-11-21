@@ -322,14 +322,14 @@ export default function StatisticsPage() {
               <IconDownload size={16} />
               01-1/GTGT
             </button>
-            <button
+            {/* <button
               onClick={() => handleExportTax("04")}
               className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
               title="Xuất tờ khai 04/GTGT"
             >
               <IconDownload size={16} />
               04/GTGT
-            </button>
+            </button> */}
             <button
               onClick={() => handleExportTax("014A")}
               className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
