@@ -362,6 +362,9 @@
     }
   },
   "product": {
+    "today_recommendations": "Today's Recommendations",
+    "today_popular": "Today's Popular Products",
+    "today_viewed": "Products You Viewed Today",
     "title": "Product Management",
     "no_products_available": "No products available to display.",
     "featured_products": "Featured Products",

@@ -4,6 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Banner from "../components/common/Banner";
 import Category from "../components/common/Category";
 import ProductCarousel from "../components/common/ProductCarousel";
+import {
+  useTodayRecommendations,
+  useTodayViewedProducts,
+} from "../hooks/useProductRecomendations";
 import { useAuth } from "../hooks/useAuth";
 import { useProduct } from "../hooks/useProduct";
 import { encodeId } from "../utils/encodeId";
@@ -13,6 +17,15 @@ import { useProductsByCategoryPaging } from "../hooks/useProduct";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
+
+  // Lấy gợi ý hôm nay
+  const { data: todayRecs = [], isLoading: loadingTodayRecs } =
+    useTodayRecommendations(isAuthenticated ? user?.id : undefined, 10);
+
+  // Lấy sản phẩm vừa xem hôm nay (chỉ khi đăng nhập)
+  const { data: todayViewed = [], isLoading: loadingTodayViewed } =
+    useTodayViewedProducts(20);
+
   const location = useLocation();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -58,18 +71,18 @@ export default function HomePage() {
     }
   }, [isAuthenticated, user, i18n]);
 
-  useEffect(() => {
-    if (isAuthenticated && user?.roles && location.pathname === "/") {
-      const defaultRoute = getDefaultRouteByRoles(user?.roles);
-      if (
-        defaultRoute !== "/" &&
-        defaultRoute !== "/customer" &&
-        location.pathname === "/"
-      ) {
-        navigate(defaultRoute);
-      }
-    }
-  }, [isAuthenticated, user, navigate, location.pathname]);
+  // useEffect(() => {
+  //   if (isAuthenticated && user?.roles && location.pathname === "/") {
+  //     const defaultRoute = getDefaultRouteByRoles(user?.roles);
+  //     if (
+  //       defaultRoute !== "/" &&
+  //       defaultRoute !== "/customer" &&
+  //       location.pathname === "/"
+  //     ) {
+  //       navigate(defaultRoute);
+  //     }
+  //   }
+  // }, [isAuthenticated, user, navigate, location.pathname]);
 
   const ads = [
     {
@@ -168,6 +181,26 @@ export default function HomePage() {
           </div>
         </div>
       )} */}
+
+      {/* Gợi ý hôm nay: luôn hiển thị, truyền userId nếu có */}
+      <ProductCarousel
+        products={todayRecs}
+        title={
+          isAuthenticated
+            ? t("product.today_recommendations")
+            : t("product.today_popular")
+        }
+        loading={loadingTodayRecs}
+      />
+
+      {/* Sản phẩm vừa xem hôm nay: chỉ hiển thị khi đã đăng nhập và có dữ liệu */}
+      {isAuthenticated && todayViewed.length > 0 && (
+        <ProductCarousel
+          products={todayViewed}
+          title={t("product.today_viewed")}
+          loading={loadingTodayViewed}
+        />
+      )}
 
       {/* ProductCarousel theo danh mục */}
       {isLoadingCategories ? (

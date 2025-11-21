@@ -361,6 +361,9 @@
     }
   },
   "product": {
+    "today_recommendations": "Gợi ý hôm nay cho bạn",
+    "today_popular": "Sản phẩm phổ biến hôm nay",
+    "today_viewed": "Sản phẩm bạn đã xem hôm nay",
     "loading": "sản phẩm",
     "no_products_available": "Không có sản phẩm nào để hiển thị.",
     "featured_products": "Sản phẩm nổi bật",
