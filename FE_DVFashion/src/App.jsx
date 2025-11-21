@@ -96,7 +96,7 @@ function AppRoutes() {
               />
             }
           >
-            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/customer" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
         </Route>

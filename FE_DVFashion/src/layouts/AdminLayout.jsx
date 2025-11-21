@@ -30,7 +30,7 @@ export default function AdminLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col relative z-10">
         <header className="backdrop-blur-xl bg-white/60 border-b border-white/30 shadow-lg flex items-center justify-between px-6 py-4 rounded-b-2xl">
-          <div className="text-lg font-semibold bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+          <div className="text-3xl sm:text-xl font-extrabold tracking-tight text-gray-800 drop-shadow-lg py-2">
             {t("admin.dashboard.title")}
           </div>
           <div className="flex items-center space-x-4">
