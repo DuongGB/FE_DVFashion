@@ -20,6 +20,9 @@
     }
   },
   "search": {
+    "suggest_title": "Today's trending keywords",
+    "recent_viewed": "Recently viewed products",
+    "no_recent": "No recently viewed products",
     "result_title": "Search results",
     "result_for": "Results for",
     "products_found": "products",
@@ -33,6 +36,8 @@
     "min_price": "Min",
     "max_price": "Max",
     "showing_results": "Showing {{current}} of {{total}} products",
+    "color": "Color",
+    "all_colors": "All Colors",
     "price": {
       "under_200k": "Under 200k",
       "200k_500k": "200k - 500k",
@@ -93,7 +98,15 @@
     "tagline": "↠ Freedom to grow ↞"
   },
   "voucher": {
-    "section_title": "Special Vouchers For You",
+    "currency": "đ",
+    "valid_from": "Valid from",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "total": "Total Vouchers",
+    "no_vouchers_found": "No vouchers found",
+    "load_error": "Unable to load vouchers",
+    "section_title": "Exclusive Discount Vouchers",
     "section_subtitle": "Save more with exclusive discount codes",
     "expiring_soon": "Expiring Soon",
     "discount": "OFF",

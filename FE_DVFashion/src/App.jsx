@@ -45,6 +45,7 @@ import OrderShippedPage from "./pages/admin/order/OrderShippedPage";
 import OrderDeliveredPage from "./pages/admin/order/OrderDeliveredPage";
 import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
 import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
+import HelpPage from "./pages/HelpPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -98,6 +99,7 @@ function AppRoutes() {
           >
             <Route path="/customer" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="/help" element={<HelpPage />} />
           </Route>
         </Route>
 
