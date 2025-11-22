@@ -46,6 +46,7 @@ import OrderDeliveredPage from "./pages/admin/order/OrderDeliveredPage";
 import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
 import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
 import HelpPage from "./pages/HelpPage";
+import TodayProductsPage from "./pages/TodayProductsPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -100,6 +101,7 @@ function AppRoutes() {
             <Route path="/customer" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/help" element={<HelpPage />} />
+            <Route path="/today-products" element={<TodayProductsPage />} />
           </Route>
         </Route>
 
