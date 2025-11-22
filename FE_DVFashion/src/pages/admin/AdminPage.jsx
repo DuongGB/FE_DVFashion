@@ -97,9 +97,14 @@ const AdminPage = () => {
 
   // Fetch recommendation data
   const { data: topRecommendedProducts, isLoading: topRecommendedLoading } =
-    useTopRecommendedProducts({ limit: 5, days: recommendationDays });
+    useTopRecommendedProducts({
+      limit: 5,
+      days: recommendationDays === 0 ? undefined : recommendationDays,
+    });
   const { data: recommendationAnalytics, isLoading: analyticsLoading } =
-    useRecommendationAnalytics({ days: recommendationDays });
+    useRecommendationAnalytics({
+      days: recommendationDays === 0 ? undefined : recommendationDays,
+    });
 
   // Tính tổng số khách hàng (lọc role CUSTOMER)
   const totalCustomers = useMemo(() => {
@@ -264,14 +269,6 @@ const AdminPage = () => {
               {t("admin.dashboard.recent_activity.no_activities")}
             </p>
           )}
-        </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <button
-            onClick={() => navigate("/admin/orders")}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-          >
-            {t("admin.dashboard.recent_activity.view_all")}
-          </button>
         </div>
       </div>
     );
