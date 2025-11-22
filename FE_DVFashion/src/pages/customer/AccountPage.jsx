@@ -16,6 +16,7 @@ import OrderHistory from "../../components/ui/account/OrderHistory";
 import ModalReview from "../../components/ui/review/ModalReview";
 import MyReviews from "../../components/ui/account/MyReviews";
 import MyAddresses from "../../components/ui/account/MyAddresses";
+import MyVoucher from "../../components/ui/account/MyVoucher";
 
 const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
@@ -177,6 +178,8 @@ export default function AccountPage() {
             refreshKey={reviewRefreshKey}
           />
         );
+      case "voucher_wallet":
+        return <MyVoucher />;
       case "reviews_feedback":
         return (
           <MyReviews

@@ -90,6 +90,14 @@
     "no_products": "Chưa có sản phẩm nào trong chương trình"
   },
   "voucher": {
+    "currency": "đ",
+    "valid_from": "Hiệu lực",
+    "status": "Trạng thái",
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động",
+    "total": "Tổng số voucher",
+    "no_vouchers_found": "Không tìm thấy voucher nào",
+    "load_error": "Không thể tải voucher",
     "section_title": "Mã Giảm Giá Đặc Biệt",
     "section_subtitle": "Tiết kiệm hơn với các mã giảm giá độc quyền",
     "expiring_soon": "Sắp hết hạn",
