@@ -20,6 +20,9 @@
     }
   },
   "search": {
+    "suggest_title": "Từ khóa thịnh hành hôm nay",
+    "recent_viewed": "Sản phẩm đã xem gần đây",
+    "no_recent": "Chưa có sản phẩm đã xem gần đây",
     "result_title": "Kết quả tìm kiếm",
     "result_for": "Kết quả cho",
     "products_found": "sản phẩm",
@@ -33,6 +36,8 @@
     "min_price": "Từ",
     "max_price": "Đến",
     "showing_results": "Hiển thị {{current}} trên {{total}} sản phẩm",
+    "color": "Màu sắc",
+    "all_colors": "Tất cả màu sắc",
     "price": {
       "under_200k": "Dưới 200k",
       "200k_500k": "200k - 500k",
@@ -88,6 +93,14 @@
     "no_products": "Chưa có sản phẩm nào trong chương trình"
   },
   "voucher": {
+    "currency": "đ",
+    "valid_from": "Hiệu lực",
+    "status": "Trạng thái",
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động",
+    "total": "Tổng số voucher",
+    "no_vouchers_found": "Không tìm thấy voucher nào",
+    "load_error": "Không thể tải voucher",
     "section_title": "Mã Giảm Giá Đặc Biệt",
     "section_subtitle": "Tiết kiệm hơn với các mã giảm giá độc quyền",
     "expiring_soon": "Sắp hết hạn",
