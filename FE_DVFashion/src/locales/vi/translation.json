@@ -33,6 +33,8 @@
     "min_price": "Từ",
     "max_price": "Đến",
     "showing_results": "Hiển thị {{current}} trên {{total}} sản phẩm",
+    "color": "Màu sắc",
+    "all_colors": "Tất cả màu sắc",
     "price": {
       "under_200k": "Dưới 200k",
       "200k_500k": "200k - 500k",

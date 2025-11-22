@@ -33,6 +33,8 @@
     "min_price": "Min",
     "max_price": "Max",
     "showing_results": "Showing {{current}} of {{total}} products",
+    "color": "Color",
+    "all_colors": "All Colors",
     "price": {
       "under_200k": "Under 200k",
       "200k_500k": "200k - 500k",
