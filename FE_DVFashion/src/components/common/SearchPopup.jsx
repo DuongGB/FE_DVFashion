@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { encodeId } from "../../utils/encodeId";
 import { useNavigate } from "react-router-dom";
+import { useTodayViewedProducts } from "../../hooks/useProductRecomendations";
 
 export default function SearchPopup({ show, onClose }) {
   const navigate = useNavigate();
@@ -30,6 +31,10 @@ export default function SearchPopup({ show, onClose }) {
     page: 0,
     size: 4,
   });
+
+  // Fetch recently viewed products (chỉ khi popup mở và chưa nhập search)
+  const { data: recentProducts = [], isLoading: isLoadingRecent } =
+    useTodayViewedProducts(4);
 
   // Đóng popup khi click ngoài
   useEffect(() => {
@@ -66,7 +71,7 @@ export default function SearchPopup({ show, onClose }) {
           <div className="relative w-[500px]">
             <input
               type="text"
-              placeholder={t("header.search_placeholder")}
+              placeholder={t("header.search_placeholder", "Tìm kiếm...")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-gray-300 rounded-full px-12 py-3 text-lg shadow focus:outline-none"
@@ -153,15 +158,22 @@ export default function SearchPopup({ show, onClose }) {
                             <div className="flex items-center gap-2 mt-1">
                               <span className="font-bold text-lg text-black">
                                 {p.currentPrice
-                                  ? `${p.currentPrice.toLocaleString()}đ`
+                                  ? `${p.currentPrice.toLocaleString()}${t(
+                                      "voucher.currency",
+                                      "đ"
+                                    )}`
                                   : p.price
-                                  ? `${p.price.toLocaleString()}đ`
+                                  ? `${p.price.toLocaleString()}${t(
+                                      "voucher.currency",
+                                      "đ"
+                                    )}`
                                   : ""}
                               </span>
                               {p.currentPrice && p.currentPrice < p.price && (
                                 <>
                                   <span className="line-through text-gray-400 text-sm">
-                                    {p.price?.toLocaleString()}đ
+                                    {p.price?.toLocaleString()}
+                                    {t("voucher.currency", "đ")}
                                   </span>
                                   {discountPercent && (
                                     <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
@@ -212,8 +224,52 @@ export default function SearchPopup({ show, onClose }) {
                   </button>
                 ))}
               </div>
-              <div className="text-gray-500">
-                {t("search.no_recent", "Không có sản phẩm đã xem gần đây")}
+              {/* Sản phẩm đã xem gần đây */}
+              <div className="w-full mt-6">
+                <div className="font-semibold mb-2 text-gray-700">
+                  {t("search.recent_viewed", "Sản phẩm đã xem gần đây")}
+                </div>
+                {isLoadingRecent ? (
+                  <div className="text-gray-500">
+                    {t("common.loading", "Đang tải")}...
+                  </div>
+                ) : recentProducts.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-6">
+                    {recentProducts.map((p) => {
+                      const mainVariant = p.variants?.[0];
+                      const mainImage =
+                        mainVariant?.images?.find((img) => img.isPrimary)
+                          ?.imageUrl ||
+                        mainVariant?.images?.[0]?.imageUrl ||
+                        p.primaryImage?.imageUrl ||
+                        p.image ||
+                        "/placeholder.png";
+                      return (
+                        <Link
+                          to={`/product/${encodeId(p.id)}`}
+                          key={p.id}
+                          className="block hover:shadow-lg transition"
+                          onClick={onClose}
+                        >
+                          <div className="flex flex-col items-center bg-white rounded-xl p-4">
+                            <img
+                              src={mainImage}
+                              alt={p.name}
+                              className="w-36 h-48 object-cover rounded-lg mb-2"
+                            />
+                            <div className="font-semibold text-base text-center">
+                              {p.name}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-gray-500">
+                    {t("search.no_recent", "Không có sản phẩm đã xem gần đây")}
+                  </div>
+                )}
               </div>
             </>
           )}

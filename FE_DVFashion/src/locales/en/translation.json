@@ -20,6 +20,9 @@
     }
   },
   "search": {
+    "suggest_title": "Today's trending keywords",
+    "recent_viewed": "Recently viewed products",
+    "no_recent": "No recently viewed products",
     "result_title": "Search results",
     "result_for": "Results for",
     "products_found": "products",

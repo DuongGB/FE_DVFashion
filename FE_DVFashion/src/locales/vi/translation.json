@@ -20,6 +20,9 @@
     }
   },
   "search": {
+    "suggest_title": "Từ khóa thịnh hành hôm nay",
+    "recent_viewed": "Sản phẩm đã xem gần đây",
+    "no_recent": "Chưa có sản phẩm đã xem gần đây",
     "result_title": "Kết quả tìm kiếm",
     "result_for": "Kết quả cho",
     "products_found": "sản phẩm",
