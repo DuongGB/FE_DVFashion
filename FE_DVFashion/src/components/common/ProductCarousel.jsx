@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import ProductCard from "./ProductCard";
 import AuthModal from "../ui/auth/AuthModal";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductCarousel({
   products = [],
@@ -16,6 +17,7 @@ export default function ProductCarousel({
   onViewAll,
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
@@ -46,13 +48,21 @@ export default function ProductCarousel({
             t("product.featured_products", "Sản phẩm có thể phù hợp với bạn")}
         </h2>
         {(onViewAll || viewAllLink) && (
-          <a
-            href={viewAllLink}
-            className="text-sm underline"
-            onClick={onViewAll}
+          <button
+            className="text-sm underline bg-transparent border-none cursor-pointer"
+            type="button"
+            onClick={
+              onViewAll
+                ? onViewAll
+                : () => {
+                    if (viewAllLink && viewAllLink !== "#") {
+                      navigate(viewAllLink);
+                    }
+                  }
+            }
           >
             {t("common.view_details", "Xem thêm")}
-          </a>
+          </button>
         )}
       </div>
 
