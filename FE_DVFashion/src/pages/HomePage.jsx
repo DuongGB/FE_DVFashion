@@ -191,6 +191,11 @@ export default function HomePage() {
             : t("product.today_popular")
         }
         loading={loadingTodayRecs}
+        viewAllLink={
+          isAuthenticated
+            ? "/today-products?type=recommend"
+            : "/today-products?type=popular"
+        }
       />
 
       {/* Sản phẩm vừa xem hôm nay: chỉ hiển thị khi đã đăng nhập và có dữ liệu */}
@@ -199,6 +204,7 @@ export default function HomePage() {
           products={todayViewed}
           title={t("product.today_viewed")}
           loading={loadingTodayViewed}
+          viewAllLink="/today-products?type=viewed"
         />
       )}
 

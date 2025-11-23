@@ -358,7 +358,7 @@ export default function AddressModal({
       <div
         className="relative w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden
         rounded-3xl shadow-2xl border border-white/30
-        bg-gradient-to-br from-white/70 via-white/40 to-blue-200/50
+        bg-white/80
         backdrop-blur-2xl
         transition-all duration-300
         animate-scaleIn
