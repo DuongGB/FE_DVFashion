@@ -193,8 +193,10 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                 {getContactIcon()}
               </span>
             </div>
-            {errors && (
-              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">{errors}</p>
+            {errors.contact && (
+              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+                {errors.contact}
+              </p>
             )}
 
             {/* General Error */}
