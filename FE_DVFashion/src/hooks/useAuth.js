@@ -1,14 +1,10 @@
-import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
-import chatAPI from "../services/chatAPI";
 import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
-import { useChat } from "./useChat";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
   const isAuthenticated = getCookie("isAuthenticated") === "true";
-  const { createCustomerChatRoom } = useChat();
 
   // Get current user
   const {
@@ -25,54 +21,6 @@ export const useAuth = () => {
     retry: false,
     enabled: isAuthenticated, // Only fetch if authenticated
   });
-
-  // Khi user login thành công, tự động lấy chatRoomCode customer
-  useEffect(() => {
-    async function fetchRoomCodeIfNeeded() {
-      if (
-        isAuthenticated &&
-        user &&
-        Array.isArray(user.roles) &&
-        user.roles.includes("ROLE_CUSTOMER") &&
-        !user.roles.includes("ROLE_ADMIN")
-      ) {
-        // Nếu user đã có roomCode thì lưu vào localStorage, không tạo mới
-        if (user.roomCode) {
-          localStorage.setItem("chatRoomCode", user.roomCode);
-        } else {
-          // Thử lấy roomCode từ API mới bằng userId
-          try {
-            const savedRoomCode = localStorage.getItem("chatRoomCode");
-            if (!savedRoomCode) {
-              const res = await chatAPI.getRoomCodeByUserId(user.id);
-              if (res?.data) {
-                localStorage.setItem("chatRoomCode", res.data);
-              } else {
-                // Nếu vẫn chưa có thì tạo mới
-                createCustomerChatRoom.mutate(undefined, {
-                  onSuccess: (data) => {
-                    if (data?.data?.roomCode) {
-                      localStorage.setItem("chatRoomCode", data.data.roomCode);
-                    }
-                  },
-                });
-              }
-            }
-          } catch (err) {
-            // Nếu không có roomCode thì tạo mới
-            createCustomerChatRoom.mutate(undefined, {
-              onSuccess: (data) => {
-                if (data?.data?.roomCode) {
-                  localStorage.setItem("chatRoomCode", data.data.roomCode);
-                }
-              },
-            });
-          }
-        }
-      }
-    }
-    fetchRoomCodeIfNeeded();
-  }, [isAuthenticated, user]);
 
   // Register mutation
   const registerMutation = useMutation({
