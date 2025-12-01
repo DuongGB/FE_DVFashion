@@ -47,6 +47,7 @@ import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
 import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
 import HelpPage from "./pages/HelpPage";
 import TodayProductsPage from "./pages/TodayProductsPage";
+import PasswordResetPage from "./pages/customer/account/PasswordResetPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -90,6 +91,10 @@ function AppRoutes() {
           <Route
             path="/promotions/:promotionId"
             element={<PromotionProductsPage />}
+          />
+          <Route
+            path="/password-reset/:token"
+            element={<PasswordResetPage />}
           />
           <Route
             element={

@@ -194,12 +194,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
     return (
       <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] min-h-[500px] flex flex-col relative">
         {/* Logo */}
-        <div className="flex items-center gap-2 mb-6 w-16 h-8 sm:w-20 sm:h-10">
-          <img
-            src="./src/assets/logo_DVF.png"
-            alt="DVFashion Logo"
-            className="w-full h-full object-contain"
-          />
+        <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center">
+            <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
+              DV
+            </span>
+            <span className="text-2xl sm:text-3xl font-light tracking-wider text-gray-700 pl-2">
+              Fashion
+            </span>
+          </div>
         </div>
 
         {/* Success Content */}
@@ -244,12 +247,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-2 w-16 h-8 sm:w-20 sm:h-10">
-        <img
-          src="./src/assets/logo_DVF.png"
-          alt="DVFashion Logo"
-          className="w-full h-full object-contain"
-        />
+      <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center">
+          <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
+            DV
+          </span>
+          <span className="text-2xl sm:text-3xl font-light tracking-wider text-gray-700 pl-2">
+            Fashion
+          </span>
+        </div>
       </div>
 
       {/* Title */}

@@ -297,6 +297,26 @@
         "general_error": "An error occurred. Please try again."
       }
     },
+    "password_reset": {
+      "title": "Reset Password",
+      "description": "Enter your new password",
+      "new_password": "New Password",
+      "new_password_placeholder": "Enter new password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Re-enter new password",
+      "submit_button": "RESET PASSWORD",
+      "submitting": "Processing...",
+      "password_requirement": "Password must be at least 8 characters, including letters and numbers",
+      "success_title": "Password Changed Successfully!",
+      "success_message": "Redirecting to home page for login...",
+      "additional_info": "After successfully changing your password, you will be redirected to the login page to continue using the service.",
+      "errors": {
+        "password_mismatch": "Confirm password does not match.",
+        "password_invalid": "Password must contain at least 8 characters, including letters and numbers.",
+        "token_invalid": "Token is invalid or has expired.",
+        "general_error": "An error occurred. Please try again."
+      }
+    },
     "login": {
       "title": "Many shopping privileges and benefits are waiting for you",
       "benefits": {

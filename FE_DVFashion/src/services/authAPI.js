@@ -35,4 +35,8 @@ export const authAPI = {
   verifyOtpForSignUp: (data) => {
     return api.post("/auth/verify-otp-sign-up", data);
   },
+
+  resetPasswordMail: (data) => {
+    return api.post("/auth/reset-password-mail", data);
+  },
 };

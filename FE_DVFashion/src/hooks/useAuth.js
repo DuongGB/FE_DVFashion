@@ -93,6 +93,14 @@ export const useAuth = () => {
     },
   });
 
+  // Reset password via email token
+  const resetPasswordMailMutation = useMutation({
+    mutationFn: authAPI.resetPasswordMail,
+    onSuccess: () => {
+      console.log("Password reset successfully");
+    },
+  });
+
   return {
     // User data
     user: isAuthenticated ? user : null,
@@ -104,6 +112,11 @@ export const useAuth = () => {
     login: loginMutation.mutateAsync,
     isLoginLoading: loginMutation.isPending,
     loginError: loginMutation.error,
+
+    // Reset password mail
+    resetPasswordMail: resetPasswordMailMutation.mutateAsync,
+    isResetPasswordMailLoading: resetPasswordMailMutation.isPending,
+    resetPasswordMailError: resetPasswordMailMutation.error,
 
     // Register
     register: registerMutation.mutateAsync,
