@@ -1111,6 +1111,8 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "creating_progress": "Creating promotion...",
+        "updating_progress": "Updating promotion...",
         "apply_to_all": "Apply",
         "start_date_in_past": "Start date must be today or later",
         "remove": " Remove",
