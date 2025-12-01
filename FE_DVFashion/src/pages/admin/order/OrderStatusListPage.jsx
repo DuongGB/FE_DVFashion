@@ -138,6 +138,8 @@ export default function OrderStatusListPage({ status }) {
   const [endDate, setEndDate] = useState("");
   const [minTotal, setMinTotal] = useState("");
   const [maxTotal, setMaxTotal] = useState("");
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Payment method filter (applies immediately)
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -237,9 +239,24 @@ export default function OrderStatusListPage({ status }) {
   };
 
   // Handle batch update submit
-  const handleBatchUpdate = (e) => {
+  const handleBatchUpdate = async (e) => {
     e.preventDefault();
-    if (!batchStatus || selectedOrders.length === 0) return;
+    if (!batchStatus || selectedOrders.length === 0 || isProcessing) return;
+
+    setIsProcessing(true);
+    setBatchProgress(0);
+
+    // Simulate progress (since API doesn't return real-time progress)
+    const progressInterval = setInterval(() => {
+      setBatchProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
     batchUpdateOrderStatus(
       {
         orderNumbers: selectedOrders,
@@ -248,10 +265,21 @@ export default function OrderStatusListPage({ status }) {
       },
       {
         onSuccess: () => {
-          setShowBatchModal(false);
-          setSelectedOrders([]);
-          setBatchStatus("");
-          setBatchNotes("");
+          clearInterval(progressInterval);
+          setBatchProgress(100);
+          setTimeout(() => {
+            setShowBatchModal(false);
+            setSelectedOrders([]);
+            setBatchStatus("");
+            setBatchNotes("");
+            setBatchProgress(0);
+            setIsProcessing(false);
+          }, 500);
+        },
+        onError: () => {
+          clearInterval(progressInterval);
+          setBatchProgress(0);
+          setIsProcessing(false);
         },
       }
     );
@@ -460,16 +488,7 @@ export default function OrderStatusListPage({ status }) {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-400">
               <tr>
-                <th className="p-3">
-                  <input
-                    type="checkbox"
-                    ref={selectAllRef}
-                    checked={isAllPageSelected}
-                    onChange={handleSelectAll}
-                    disabled={orders.length === 0}
-                  />
-                </th>
-                {/* ...existing columns... */}
+                <th className="p-3"></th>
                 <th className="p-3 whitespace-nowrap">{t("order.number")}</th>
                 <th className="p-3 whitespace-nowrap">
                   {t("account.main.full_name")}
@@ -589,7 +608,7 @@ export default function OrderStatusListPage({ status }) {
                 onClick={() => setShowBatchModal(false)}
                 className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
                 aria-label={t("common.close")}
-                disabled={isBatchUpdating}
+                disabled={isProcessing}
               >
                 <IconX size={16} />
               </button>
@@ -614,6 +633,7 @@ export default function OrderStatusListPage({ status }) {
                   onChange={(e) => setBatchStatus(e.target.value)}
                   className="w-full border rounded px-3 py-2 border-gray-300"
                   required
+                  disabled={isProcessing}
                 >
                   <option value="">{t("common.select")}</option>
                   {allowedBatchStatuses.map((status) => (
@@ -633,24 +653,49 @@ export default function OrderStatusListPage({ status }) {
                   className="w-full border rounded px-3 py-2 border-gray-300"
                   rows={2}
                   placeholder={t("common.note")}
+                  disabled={isProcessing}
                 />
               </div>
+
+              {/* Progress indicator */}
+              {isProcessing && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      {t("common.processing") || "Processing"}...
+                    </span>
+                    <span className="font-semibold text-blue-600">
+                      {batchProgress}%
+                    </span>
+                  </div>
+                  <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 ease-out"
+                      style={{ width: `${batchProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-2 mt-2">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-gray-200"
+                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setShowBatchModal(false)}
-                  disabled={isBatchUpdating}
+                  disabled={isProcessing}
                 >
                   {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white flex items-center justify-center gap-2"
-                  disabled={!batchStatus || isBatchUpdating}
+                  className="px-4 py-2 rounded bg-blue-600 text-white flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!batchStatus || isProcessing}
                 >
-                  {isBatchUpdating ? (
-                    <span className="inline-block w-5 h-5 border-2 border-white border-t-blue-400 rounded-full animate-spin"></span>
+                  {isProcessing ? (
+                    <>
+                      <span className="inline-block w-5 h-5 border-2 border-white border-t-blue-400 rounded-full animate-spin"></span>
+                      <span>{t("common.processing") || "Processing"}</span>
+                    </>
                   ) : (
                     t("common.save")
                   )}
