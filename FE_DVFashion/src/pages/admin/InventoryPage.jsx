@@ -171,23 +171,28 @@ export default function InventoryPage() {
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-0">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
           {t("admin.inventory.title")}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={() => setShowGeneralImportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer text-sm sm:text-base"
           >
             <IconPackageImport size={16} />
-            {t("admin.inventory.import_stock")}
+            <span className="hidden sm:inline">
+              {t("admin.inventory.import_stock")}
+            </span>
+            <span className="sm:hidden">
+              {t("admin.inventory.import_stock")}
+            </span>
           </button>
           <button
             onClick={() => setShowGeneralExportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors cursor-pointer text-sm sm:text-base"
           >
             <IconPackageExport size={16} />
             {t("admin.inventory.export")}
@@ -196,55 +201,61 @@ export default function InventoryPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.inventory.total_products")}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
                 {totalProducts}
               </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.inventory.normal_stock")}
               </p>
-              <p className="text-2xl font-bold text-green-600">{normalStock}</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">
+                {normalStock}
+              </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.inventory.low_stock")}
               </p>
-              <p className="text-2xl font-bold text-yellow-600">{lowStock}</p>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-600">
+                {lowStock}
+              </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.inventory.out_of_stock")}
               </p>
-              <p className="text-2xl font-bold text-red-600">{outOfStock}</p>
+              <p className="text-xl sm:text-2xl font-bold text-red-600">
+                {outOfStock}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-          <div className="md:col-span-2">
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg shadow-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-center">
+          <div className="sm:col-span-2 lg:col-span-2">
             <input
               type="text"
               placeholder={t("admin.inventory.search_placeholder")}
@@ -256,14 +267,14 @@ export default function InventoryPage() {
                   setCurrentPage(1);
                 }
               }}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
             />
           </div>
           <div>
             <select
               value={stockFilter}
               onChange={(e) => setStockFilter(e.target.value)}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg w-full px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
             >
               <option value="all">{t("admin.inventory.all")}</option>
               <option value="low">{t("admin.inventory.filter_low")}</option>
@@ -273,14 +284,16 @@ export default function InventoryPage() {
           <div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-xl ${
+              className={`w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-xl text-sm ${
                 showAdvancedFilters
                   ? "bg-blue-50 border-blue-300 text-blue-700"
                   : "border-white/30 hover:bg-white/70"
               }`}
             >
               <IconFilter size={16} />
-              {t("admin.inventory.advanced_filters")}
+              <span className="hidden sm:inline">
+                {t("admin.inventory.advanced_filters")}
+              </span>
               {getActiveFiltersCount() > 0 && (
                 <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
                   {getActiveFiltersCount()}
@@ -292,7 +305,7 @@ export default function InventoryPage() {
             <button
               type="button"
               onClick={() => refetch && refetch()}
-              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow justify-center cursor-pointer"
+              className="w-full flex items-center justify-center gap-1 px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow text-sm cursor-pointer"
             >
               <IconRefresh size={18} />
             </button>
@@ -302,21 +315,21 @@ export default function InventoryPage() {
         {/* Advanced Filters */}
         {showAdvancedFilters && (
           <div className="mt-4 pt-4 border-t space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-gray-700">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <h3 className="font-semibold text-gray-700 text-sm sm:text-base">
                 {t("admin.inventory.advanced_filters")}
               </h3>
               <button
                 onClick={() => setFilters({ colors: [], sizes: [] })}
-                className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
+                className="text-red-600 hover:text-red-800 text-xs sm:text-sm underline cursor-pointer"
               >
                 {t("admin.inventory.clear_all")}
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Lọc theo màu */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   {t("admin.inventory.color")}
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -331,7 +344,7 @@ export default function InventoryPage() {
                             : [...prev.colors, color],
                         }))
                       }
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border transition-colors ${
                         filters.colors.includes(color)
                           ? "bg-blue-500 text-white border-blue-500"
                           : "bg-white/80 text-gray-700 border-white/30 hover:border-blue-300"
@@ -344,7 +357,7 @@ export default function InventoryPage() {
               </div>
               {/* Lọc theo size */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   {t("admin.inventory.size")}
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -359,7 +372,7 @@ export default function InventoryPage() {
                             : [...prev.sizes, size],
                         }))
                       }
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border transition-colors ${
                         filters.sizes.includes(size)
                           ? "bg-green-500 text-white border-green-500"
                           : "bg-white/80 text-gray-700 border-white/30 hover:border-green-300"
@@ -394,7 +407,7 @@ export default function InventoryPage() {
       {!search && getActiveFiltersCount() > 0 && (
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-600">
+            <span className="text-xs sm:text-sm text-gray-600">
               {t("admin.inventory.active_filters")}
             </span>
             {stockFilter !== "all" && (
@@ -443,15 +456,162 @@ export default function InventoryPage() {
       )}
 
       {/* Results Summary */}
-      <div className="text-sm text-gray-600">
+      <div className="text-xs sm:text-sm text-gray-600">
         {t("admin.inventory.showing_results", {
           current: paginatedInventories.length,
           total: filteredInventories.length,
         })}
       </div>
 
+      {/* Inventory Table - Mobile Card View */}
+      <div className="block lg:hidden space-y-3">
+        {paginatedInventories.length > 0 ? (
+          paginatedInventories.map((inventory) => (
+            <div
+              key={inventory.id}
+              className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-3 sm:p-4"
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
+                  {inventory.productImage ? (
+                    <img
+                      src={inventory.productImage}
+                      alt={inventory.productName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <IconPackageImport size={24} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 mb-1">
+                    {inventory.productName}
+                  </h3>
+                  <p className="text-xs text-gray-500">ID: {inventory.id}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {t("admin.inventory.color")}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded-full border-2 border-gray-300"
+                      style={{
+                        backgroundColor: getColorCode(inventory.productColor),
+                      }}
+                    ></div>
+                    <span className="text-sm">{inventory.productColor}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {t("admin.inventory.size")}
+                  </p>
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-sm">
+                    {inventory.sizeName}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {t("admin.inventory.stock")}
+                  </p>
+                  <p
+                    className={`text-lg font-bold ${getStockLevelColor(
+                      inventory
+                    )}`}
+                  >
+                    {inventory.quantityInStock}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {t("admin.inventory.reserved")}
+                  </p>
+                  <p className="text-lg font-semibold text-orange-600">
+                    {inventory.reservedQuantity}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {t("admin.inventory.available")}
+                  </p>
+                  <p className="text-lg font-semibold text-green-600">
+                    {inventory.availableQuantity}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  {inventory.quantityInStock === 0 ? (
+                    <span className="inline-flex items-center gap-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                      <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                      {t("admin.inventory.status_out")}
+                    </span>
+                  ) : inventory.quantityInStock <= inventory.minStockLevel ? (
+                    <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                      {t("admin.inventory.status_low")}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      {t("admin.inventory.status_normal")}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-600 text-right">
+                  {formatDate(inventory.lastUpdated).split(",")[0]}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all text-sm cursor-pointer"
+                  onClick={() => handleViewDetail(inventory)}
+                >
+                  <IconEye size={18} />
+                  {t("admin.inventory.view_detail")}
+                </button>
+                <button
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all text-sm cursor-pointer"
+                  onClick={() => {
+                    setSelectedInventory(inventory);
+                    setShowAdjustModal(true);
+                  }}
+                >
+                  <IconAdjustments size={18} />
+                  {t("admin.inventory.adjust")}
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-8 text-center">
+            <IconPackageImport
+              size={48}
+              className="mx-auto mb-4 opacity-50 text-gray-400"
+            />
+            <p className="text-base font-medium text-gray-400">
+              {t("admin.inventory.no_data")}
+            </p>
+            <p className="text-sm mt-2 text-gray-400">
+              {t("admin.inventory.no_data_description")}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Inventory Table */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
+      <div className="hidden lg:block backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1200px]">
             <thead className="bg-gray-400">
