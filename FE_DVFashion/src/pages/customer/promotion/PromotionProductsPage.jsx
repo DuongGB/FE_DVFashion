@@ -267,45 +267,45 @@ export default function PromotionProductsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
       {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-3 text-gray-800">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 text-gray-800">
           {promotion.name}
         </h1>
         {promotion.description && (
-          <p className="text-gray-600 mb-4 text-base">
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
             {promotion.description}
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200">
-            <IconCalendar size={16} />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500">
+          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200">
+            <IconCalendar size={14} className="sm:size-16" />
             {t("promotion.from", "Từ")}{" "}
             {new Date(promotion.startDate).toLocaleDateString(
               i18n.language === "VI" ? "vi-VN" : "en-US"
             )}
           </span>
           <span>→</span>
-          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200">
-            <IconCalendar size={16} />
+          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200">
+            <IconCalendar size={14} className="sm:size-16" />
             {t("promotion.to", "đến")}{" "}
             {new Date(promotion.endDate).toLocaleDateString(
               i18n.language === "VI" ? "vi-VN" : "en-US"
             )}
           </span>
-          <span className="flex items-center gap-1.5 bg-orange-100/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-orange-200 text-orange-700 font-medium">
-            <IconTarget size={16} />
+          <span className="flex items-center gap-1.5 bg-orange-100/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-orange-200 text-orange-700 font-medium">
+            <IconTarget size={14} className="sm:size-16" />
             {products.length} {t("search.products_found", "sản phẩm")}
           </span>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
         <input
           type="text"
-          className="border border-gray-200 rounded-full px-6 py-3 w-[300px] text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/70 backdrop-blur-sm"
+          className="border border-gray-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 w-full sm:w-[300px] text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/70 backdrop-blur-sm"
           placeholder={t("search_placeholder")}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
@@ -321,31 +321,37 @@ export default function PromotionProductsPage() {
             setSearch(searchInput);
             setCurrentPage(1);
           }}
-          className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
+          className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 text-sm sm:text-base"
         >
           {t("search.search_button", "Tìm kiếm")}
         </button>
         {/* Toggle Filter Button */}
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 border border-gray-200 px-4 py-3 rounded-full hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 bg-white/70"
+          className="flex justify-center items-center gap-2 border border-gray-200 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 bg-white/70 text-sm sm:text-base"
         >
-          <Filter size={18} />
-          {t("search.filters", "Bộ lọc")}
+          <Filter size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span className="hidden sm:inline">
+            {t("search.filters", "Bộ lọc")}
+          </span>
           {activeFiltersCount > 0 && (
             <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
               {activeFiltersCount}
             </span>
           )}
-          {showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          {showFilters ? (
+            <ChevronUp size={16} className="sm:w-[18px] sm:h-[18px]" />
+          ) : (
+            <ChevronDown size={16} className="sm:w-[18px] sm:h-[18px]" />
+          )}
         </button>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 mb-6 shadow-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:to-transparent before:rounded-2xl before:pointer-events-none">
+        <div className="relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-xl">
           <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -355,14 +361,14 @@ export default function PromotionProductsPage() {
                   <input
                     type="number"
                     placeholder={t("search.min_price", "Từ")}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80 text-sm sm:text-base"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
                   />
                   <input
                     type="number"
                     placeholder={t("search.max_price", "Đến")}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80 text-sm sm:text-base"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
                   />
@@ -375,7 +381,7 @@ export default function PromotionProductsPage() {
                     return (
                       <button
                         key={idx}
-                        className={`text-xs border rounded-full px-3 py-1.5 transition-all duration-200 ${
+                        className={`text-xs border rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all duration-200 ${
                           isActive
                             ? "bg-blue-600 text-white border-blue-600 shadow-md"
                             : "border-gray-300 bg-white/60 backdrop-blur-sm hover:bg-white/90 hover:border-blue-400"
@@ -398,7 +404,7 @@ export default function PromotionProductsPage() {
                   {t("search.sort_by", "Sắp xếp")}
                 </label>
                 <select
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80 text-sm sm:text-base"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -416,7 +422,7 @@ export default function PromotionProductsPage() {
                   {t("search.color", "Màu sắc")}
                 </label>
                 <select
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80"
+                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/60 backdrop-blur-sm transition-all hover:bg-white/80 text-sm sm:text-base"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                 >
@@ -429,13 +435,15 @@ export default function PromotionProductsPage() {
                     </option>
                   ))}
                 </select>
-                {/* Hoặc nút chọn màu đẹp hơn */}
+                {/* Nút chọn màu đẹp hơn */}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {colorOptions.map((c) => (
                     <button
                       key={c}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        color === c ? "border-blue-600" : "border-gray-300"
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 ${
+                        color === c
+                          ? "border-blue-600 ring-2 ring-blue-300"
+                          : "border-gray-300"
                       }`}
                       style={{ background: getColorHex(c) }}
                       title={c}
@@ -446,10 +454,10 @@ export default function PromotionProductsPage() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
               <button
                 onClick={clearFilters}
-                className="border border-gray-300 bg-white/60 backdrop-blur-sm px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 hover:border-gray-400 transition-all duration-200"
+                className="border border-gray-300 bg-white/60 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold hover:bg-white/90 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
               >
                 {t("search.clear_filters", "Xóa bộ lọc")}
               </button>
@@ -462,7 +470,7 @@ export default function PromotionProductsPage() {
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 mb-4">
           {search.trim() && (
-            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
+            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
               {t("search.result_for", "Kết quả cho")}: "{search}"
               <button
                 onClick={() => {
@@ -472,12 +480,12 @@ export default function PromotionProductsPage() {
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                 aria-label="Remove search filter"
               >
-                <X size={14} />
+                <X size={12} className="sm:w-[14px] sm:h-[14px]" />
               </button>
             </span>
           )}
           {(minPrice || maxPrice) && (
-            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
+            <span className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm backdrop-blur-sm border border-blue-200">
               {minPrice && `${parseInt(minPrice).toLocaleString()}đ`}
               {minPrice && maxPrice && " - "}
               {maxPrice && `${parseInt(maxPrice).toLocaleString()}đ`}
@@ -488,26 +496,26 @@ export default function PromotionProductsPage() {
                 }}
                 className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
               >
-                <X size={14} />
+                <X size={12} className="sm:w-[14px] sm:h-[14px]" />
               </button>
             </span>
           )}
           {sortBy && (
-            <span className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-purple-200">
+            <span className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm backdrop-blur-sm border border-purple-200">
               {sortOptions.find((o) => o.value === sortBy)?.label}
               <button
                 onClick={() => setSortBy("")}
                 className="hover:bg-purple-200 rounded-full p-0.5 transition-colors"
                 aria-label="Remove sort filter"
               >
-                <X size={14} />
+                <X size={12} className="sm:w-[14px] sm:h-[14px]" />
               </button>
             </span>
           )}
           {color && (
-            <span className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-pink-50 text-pink-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm border border-pink-200">
+            <span className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-pink-50 text-pink-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm backdrop-blur-sm border border-pink-200">
               <span
-                className="inline-block w-4 h-4 rounded-full border mr-1"
+                className="inline-block w-3 h-3 sm:w-4 sm:h-4 rounded-full border mr-1"
                 style={{ background: getColorHex(color) }}
               ></span>
               {color}
@@ -516,7 +524,7 @@ export default function PromotionProductsPage() {
                 className="hover:bg-pink-200 rounded-full p-0.5 transition-colors"
                 aria-label="Remove color filter"
               >
-                <X size={14} />
+                <X size={12} className="sm:w-[14px] sm:h-[14px]" />
               </button>
             </span>
           )}
@@ -525,10 +533,10 @@ export default function PromotionProductsPage() {
 
       {/* Results Header */}
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-800">
+        <h2 className="text-base sm:text-lg font-bold text-gray-800">
           {t("promotion.promotion_products", "Sản phẩm khuyến mãi")}
           {filteredProducts.length > 0 && (
-            <span className="text-gray-500 font-normal ml-2">
+            <span className="text-gray-500 font-normal ml-2 text-xs sm:text-base">
               (
               {t(
                 "search.showing_results",
@@ -547,7 +555,7 @@ export default function PromotionProductsPage() {
       {/* Products Grid */}
       {paginatedProducts.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
             {paginatedProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -560,7 +568,7 @@ export default function PromotionProductsPage() {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -570,13 +578,13 @@ export default function PromotionProductsPage() {
           )}
         </>
       ) : (
-        <div className="text-center py-10 text-gray-500">
+        <div className="text-center py-10 text-gray-500 text-sm sm:text-base">
           {search.trim() || sortBy || color ? (
             <>
               {t("search.no_result", "Không tìm thấy sản phẩm phù hợp")}
               <button
                 onClick={clearFilters}
-                className="block mx-auto mt-4 text-blue-600 underline hover:text-blue-700 transition-colors"
+                className="block mx-auto mt-4 text-blue-600 underline hover:text-blue-700 transition-colors text-sm sm:text-base"
               >
                 {t("search.clear_filters", "Xóa bộ lọc")}
               </button>

@@ -440,6 +440,23 @@
       "stock": "Stock",
       "actions": "Actions"
     },
+    "detail": {
+      "quantity": "Quantity",
+      "cashback": "Get up to",
+      "color": "Color",
+      "size": "Size",
+      "size_guide": "Size Guide",
+      "price": "Price",
+      "add_to_cart": "Add to Cart",
+      "description": "Product Description",
+      "no_description": "No description available for this product.",
+      "policy_easy_return": "Easy return within 60 days if not satisfied",
+      "policy_hotline": "Hotline support 24/7: 0123456789",
+      "policy_60days": "60-day return policy",
+      "policy_fast_refund": "Fast refund process within 24 hours",
+      "recommendations": "Recommended for You",
+      "loading_recommendations": "Loading recommendations..."
+    },
     "actions": {
       "view_details": "View Details",
       "edit": "Edit",

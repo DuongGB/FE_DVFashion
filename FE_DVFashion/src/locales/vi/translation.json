@@ -409,6 +409,7 @@
       "out_of_stock": "Sản phẩm đã hết hàng!"
     },
     "detail": {
+      "quantity": "Số lượng",
       "cashback": "Được hoàn lên đến",
       "color": "Màu sắc",
       "size": "Kích thước",
