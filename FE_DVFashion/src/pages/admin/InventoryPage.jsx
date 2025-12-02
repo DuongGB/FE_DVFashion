@@ -5,6 +5,7 @@ import {
   IconAdjustments,
   IconPackageExport,
   IconRefresh,
+  IconX,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import Pagination from "../../components/common/Pagination";
@@ -14,6 +15,7 @@ import AdjustStockModal from "../../components/ui/inventory/AdjustStockModal";
 import { useTranslation } from "react-i18next";
 import GeneralImportStockModal from "../../components/ui/inventory/GeneralImportStockModal";
 import GeneralExportStockModal from "../../components/ui/inventory/GeneralExportStockModal";
+import { Icon } from "lucide-react";
 
 export default function InventoryPage() {
   const { t } = useTranslation();
@@ -419,7 +421,7 @@ export default function InventoryPage() {
                   onClick={() => removeFilter("stockFilter")}
                   className="hover:text-gray-600"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
@@ -433,7 +435,7 @@ export default function InventoryPage() {
                   onClick={() => removeFilter("colors", color)}
                   className="hover:text-blue-600"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             ))}
