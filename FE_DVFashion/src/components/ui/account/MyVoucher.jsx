@@ -102,12 +102,12 @@ export default function MyVoucher() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-6 rounded-3xl shadow-2xl backdrop-blur-lg">
+    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-3 sm:p-6 rounded-xl sm:rounded-3xl shadow-2xl backdrop-blur-lg">
       <div className="flex-shrink-0">
-        <h2 className="text-3xl font-bold mb-2 drop-shadow">
+        <h2 className="text-xl sm:text-3xl font-bold mb-2 drop-shadow">
           {t("account.sidebar.voucher_wallet")}
         </h2>
-        <div className="mb-6 text-gray-700/80">
+        <div className="mb-4 sm:mb-6 text-gray-700/80 text-sm sm:text-base">
           {t("voucher.total")}: {totalElements}
         </div>
       </div>

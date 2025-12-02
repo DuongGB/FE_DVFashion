@@ -63,10 +63,10 @@ export default function ModalAccount({ show, onClose, user }) {
     >
       <div
         className={`
-          bg-white rounded-lg shadow-lg p-6 relative min-w-[400px] max-w-[420px] h-full overflow-y-auto
-          transition-transform duration-300
-          ${isVisible ? "translate-x-0" : "translate-x-full"}
-        `}
+        bg-white rounded-lg shadow-lg p-4 sm:p-6 relative w-full max-w-[420px] h-full overflow-y-auto
+        transition-transform duration-300
+        ${isVisible ? "translate-x-0" : "translate-x-full"}
+      `}
         onClick={(e) => e.stopPropagation()}
         style={{ right: 0 }}
       >
@@ -78,7 +78,7 @@ export default function ModalAccount({ show, onClose, user }) {
         </button>
         {/* Header */}
         <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-1">
+          <h2 className="text-xl sm:text-2xl font-bold mb-1">
             {t("modal_account.greeting")}, {user?.fullName}
           </h2>
           <div className="text-blue-600 font-semibold flex items-center gap-2">
@@ -90,17 +90,19 @@ export default function ModalAccount({ show, onClose, user }) {
         </div>
         {/* Banner */}
         <div className="mb-4">
-          <div className="bg-black text-white rounded-lg px-4 py-2 flex items-center justify-center">
+          <div className="bg-black text-white rounded-lg px-4 py-2 flex items-center justify-center text-sm sm:text-base">
             <span>{t("modal_account.banner_text")}</span>
           </div>
         </div>
         {/* Rank Progress */}
-        <div className="mb-4 bg-gray-50 rounded-lg p-4">
-          <div className="text-gray-700 mb-1">
+        <div className="mb-4 bg-gray-50 rounded-lg p-3 sm:p-4">
+          <div className="text-gray-700 mb-1 text-sm sm:text-base">
             {t("modal_account.spend_more")}
           </div>
-          <div className="text-blue-600 font-bold text-2xl mb-1">300.000đ</div>
-          <div className="text-gray-700 mb-2">
+          <div className="text-blue-600 font-bold text-xl sm:text-2xl mb-1">
+            300.000đ
+          </div>
+          <div className="text-gray-700 mb-2 text-sm sm:text-base">
             {t("modal_account.to_rank_up")}{" "}
             <span className="font-bold text-gray-800">
               {t("modal_account.silver")}
@@ -120,9 +122,9 @@ export default function ModalAccount({ show, onClose, user }) {
           </div>
         </div>
         {/* DVFcash */}
-        <div className="mb-4 flex gap-2">
+        <div className="mb-4 flex flex-col sm:flex-row gap-2">
           <div className="bg-white border rounded-lg flex-1 p-3 flex flex-col justify-center">
-            <div className="font-bold text-lg flex items-center gap-2">
+            <div className="font-bold text-base sm:text-lg flex items-center gap-2">
               <span className="text-black">🪙</span>
               <span>0 {t("modal_account.dv_cash")}</span>
             </div>
@@ -130,7 +132,7 @@ export default function ModalAccount({ show, onClose, user }) {
               {t("modal_account.pending_cash", { amount: 0 })}
             </div>
           </div>
-          <Link className="bg-black text-white rounded-lg flex-1 p-3 flex flex-col justify-center items-center">
+          <Link className="bg-black text-white rounded-lg flex-1 p-3 flex flex-col justify-center items-center mt-2 sm:mt-0">
             <div className="font-bold">{t("modal_account.go_to_dvfclub")}</div>
             <span className="text-xl">→</span>
           </Link>
@@ -138,7 +140,7 @@ export default function ModalAccount({ show, onClose, user }) {
 
         {/* Go to account */}
         <button
-          className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 cursor-pointer"
+          className="w-full bg-blue-700 text-white font-bold py-2.5 sm:py-3 rounded-lg mt-4 cursor-pointer text-base sm:text-lg"
           onClick={() => {
             navigate("/account");
             onClose();
@@ -147,7 +149,7 @@ export default function ModalAccount({ show, onClose, user }) {
           {t("modal_account.go_to_account")}
         </button>
         <button
-          className="w-full bg-red-500 text-white font-bold py-3 rounded-lg mt-2 cursor-pointer"
+          className="w-full bg-red-500 text-white font-bold py-2.5 sm:py-3 rounded-lg mt-2 cursor-pointer text-base sm:text-lg"
           onClick={handleLogout}
           disabled={isLogoutLoading}
         >

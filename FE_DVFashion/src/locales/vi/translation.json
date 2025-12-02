@@ -296,6 +296,26 @@
         "general_error": "Có lỗi xảy ra. Vui lòng thử lại."
       }
     },
+    "password_reset": {
+      "title": "Đặt lại mật khẩu",
+      "description": "Nhập mật khẩu mới cho tài khoản của bạn",
+      "new_password": "Mật khẩu mới",
+      "new_password_placeholder": "Nhập mật khẩu mới",
+      "confirm_password": "Xác nhận mật khẩu",
+      "confirm_password_placeholder": "Nhập lại mật khẩu mới",
+      "submit_button": "ĐẶT LẠI MẬT KHẨU",
+      "submitting": "Đang xử lý...",
+      "password_requirement": "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ cái và số",
+      "success_title": "Đổi mật khẩu thành công!",
+      "success_message": "Đang chuyển hướng đến trang chủ để đăng nhập...",
+      "additional_info": "Sau khi đổi mật khẩu thành công, bạn sẽ được chuyển đến trang đăng nhập để tiếp tục sử dụng dịch vụ.",
+      "errors": {
+        "password_mismatch": "Mật khẩu xác nhận không khớp.",
+        "password_invalid": "Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ và số.",
+        "token_invalid": "Token không hợp lệ hoặc đã hết hạn.",
+        "general_error": "Có lỗi xảy ra. Vui lòng thử lại."
+      }
+    },
     "login": {
       "title": "Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn",
       "benefits": {
@@ -389,6 +409,7 @@
       "out_of_stock": "Sản phẩm đã hết hàng!"
     },
     "detail": {
+      "quantity": "Số lượng",
       "cashback": "Được hoàn lên đến",
       "color": "Màu sắc",
       "size": "Kích thước",
@@ -1060,6 +1081,8 @@
       "showing_results": "Hiển thị {{current}} trên tổng số {{total}} khuyến mãi",
       "no_description": "Không có mô tả",
       "form": {
+        "creating_progress": "Đang tạo khuyến mãi...",
+        "updating_progress": "Đang cập nhật khuyến mãi...",
         "apply_to_all": "Áp dụng",
         "start_date_in_past": "Ngày bắt đầu phải từ hôm nay trở đi",
         "remove": " Xóa",

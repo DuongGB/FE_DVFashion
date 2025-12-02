@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 export default function AdminLayout() {
   const { t, i18n } = useTranslation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const handleLanguageChange = () => {};
@@ -27,13 +28,46 @@ export default function AdminLayout() {
           style={{ animationDelay: "1s" }}
         ></div>
       </div>
-      <Sidebar />
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+      <div
+        className={`fixed inset-0 z-50 bg-black/40 md:hidden transition-all duration-300 ${
+          isSidebarOpen ? "block" : "hidden"
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+      >
+        <div
+          className="absolute left-0 top-0 h-full w-64 bg-gradient-to-br from-blue-900 to-indigo-900 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        </div>
+      </div>
       <div className="flex-1 flex flex-col relative z-10">
-        <header className="backdrop-blur-xl bg-white/60 border-b border-white/30 shadow-lg flex items-center justify-between px-6 py-4 rounded-b-2xl">
-          <div className="text-3xl sm:text-xl font-extrabold tracking-tight text-gray-800 drop-shadow-lg py-2">
+        <header className="backdrop-blur-xl bg-white/60 border-b border-white/30 shadow-lg flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-b-2xl">
+          {/* Hamburger menu mobile */}
+          <button
+            className="md:hidden p-2 rounded-full hover:bg-white/70"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect x="4" y="8" width="20" height="2" rx="1" />
+              <rect x="4" y="14" width="20" height="2" rx="1" />
+              <rect x="4" y="20" width="20" height="2" rx="1" />
+            </svg>
+          </button>
+          <div className="text-xl sm:text-3xl font-extrabold tracking-tight text-gray-800 drop-shadow-lg py-2">
             {t("admin.dashboard.title")}
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Settings Icon */}
             <div className="flex items-center space-x-3">
               <button

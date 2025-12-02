@@ -960,11 +960,11 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex w-full min-h-screen bg-white font-sans">
+    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-white font-sans pb-28 lg:pb-0">
       {/* Left: Shipping info */}
-      <div className="flex-1 p-10 pr-8 border-r border-gray-100 bg-[#f7f8fa]">
+      <div className="flex-1 p-4 md:p-6 lg:p-10 lg:pr-8 border-r-0 lg:border-r border-gray-100 bg-[#f7f8fa]">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
             {t("cart.shipping_info")}
           </h2>
           <button
@@ -981,23 +981,23 @@ export default function CartPage() {
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-blue-900">
+                <span className="font-medium text-blue-900 text-sm md:text-base">
                   {t("cart.selected_address")}
                 </span>
                 {selectedAddress.isDefault && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-[10px] md:text-xs rounded-full whitespace-nowrap">
                     {t("address.default")}
                   </span>
                 )}
               </div>
               <button
                 onClick={() => handleSelectAddress(null)}
-                className="text-red-500 text-xs font-semibold hover:underline cursor-pointer"
+                className="text-red-500 text-xs font-semibold hover:underline cursor-pointer whitespace-nowrap ml-2"
               >
                 {t("cart.cancel_selection")}
               </button>
             </div>
-            <div className="text-sm text-blue-800">
+            <div className="text-sm text-blue-800 break-words">
               <p className="font-medium">
                 {selectedAddress.fullName} | {selectedAddress.phone}
               </p>
@@ -1021,7 +1021,7 @@ export default function CartPage() {
           </div>
         )}
 
-        <div className="flex gap-3 mb-5">
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
           <input
             className={`border border-gray-300 rounded-full px-4 py-2 flex-1 bg-white focus:outline-blue-500 ${
               selectedAddress ? "opacity-60 cursor-not-allowed" : ""
@@ -1034,7 +1034,7 @@ export default function CartPage() {
             disabled={!!selectedAddress}
           />
           <input
-            className={`border border-gray-300 rounded-full px-4 py-2 w-56 bg-white focus:outline-blue-500 ${
+            className={`border border-gray-300 rounded-full px-4 py-2 w-full sm:w-56 bg-white focus:outline-blue-500 ${
               selectedAddress ? "opacity-60 cursor-not-allowed" : ""
             }`}
             placeholder={t("cart.phone_placeholder")}
@@ -1047,10 +1047,10 @@ export default function CartPage() {
         </div>
 
         {/* Location Selection */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {/* Province/City */}
           <select
-            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 text-sm ${
               selectedAddress || locationData.isLoading
                 ? "opacity-60 cursor-not-allowed"
                 : ""
@@ -1069,7 +1069,7 @@ export default function CartPage() {
 
           {/* District */}
           <select
-            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 text-sm ${
               selectedAddress || !shipping.province || locationData.isLoading
                 ? "opacity-60 cursor-not-allowed"
                 : ""
@@ -1090,7 +1090,7 @@ export default function CartPage() {
 
           {/* Ward */}
           <select
-            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 ${
+            className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 text-sm ${
               selectedAddress || !shipping.province || locationData.isLoading
                 ? "opacity-60 cursor-not-allowed"
                 : ""
@@ -1127,7 +1127,6 @@ export default function CartPage() {
             {t("cart.shipping_fee")}:
           </span>
           <div className="flex items-center gap-3">
-            {/* Hiển thị phí đã format */}
             <div className="text-sm text-gray-700">
               {formatVND(shipping.shippingFee)}
             </div>
@@ -1143,10 +1142,10 @@ export default function CartPage() {
               name="payment"
               checked={payment === "cod"}
               onChange={() => setPayment("cod")}
-              className="mr-3 accent-blue-600"
+              className="mr-3 accent-blue-600 flex-shrink-0"
             />
-            <span className="flex items-center gap-2 text-gray-800">
-              <IconReceipt size={20} />
+            <span className="flex items-center gap-2 text-gray-800 text-sm md:text-base">
+              <IconReceipt size={20} className="flex-shrink-0" />
               {t("cart.payment_cod")}
             </span>
           </label>
@@ -1156,26 +1155,26 @@ export default function CartPage() {
               name="payment"
               checked={payment === "PAYPAL"}
               onChange={() => setPayment("PAYPAL")}
-              className="mr-3 accent-blue-600"
+              className="mr-3 accent-blue-600 flex-shrink-0"
             />
-            <span className="flex items-center gap-2 text-gray-800">
-              <IconCreditCard size={20} />
+            <span className="flex items-center gap-2 text-gray-800 text-sm md:text-base flex-wrap">
+              <IconCreditCard size={20} className="flex-shrink-0" />
               {t("cart.payment_online")}
-              <span className="text-xs text-gray-400 ml-2">
+              <span className="text-xs text-gray-400 ml-0 md:ml-2 w-full md:w-auto mt-1 md:mt-0">
                 {t("cart.payment_online_note")}
               </span>
             </span>
           </label>
         </div>
       </div>
+
       {/* Right: Cart */}
-      <div className="w-[600px] pl-8 mb-8 flex flex-col bg-gray-100 max-h-screen rounded-l-2xl border-l border-gray-200">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+      <div className="w-full lg:w-[500px] xl:w-[600px] p-4 lg:pl-8 lg:pr-4 mb-8 flex flex-col bg-gray-100 h-auto lg:max-h-screen rounded-none lg:rounded-l-2xl border-l-0 lg:border-l border-gray-200 mt-4 lg:mt-0">
+        <div className="flex items-center justify-between mb-4 lg:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
             {t("cart.title")}
           </h2>
         </div>
-
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <input
@@ -1186,7 +1185,9 @@ export default function CartPage() {
               onChange={handleSelectAll}
               className="accent-blue-600"
             />
-            <span className="text-gray-700">{t("cart.select_all")}</span>
+            <span className="text-gray-700 text-sm md:text-base">
+              {t("cart.select_all")}
+            </span>
           </div>
           <button
             className="text-gray-400 text-sm hover:underline cursor-pointer"
@@ -1196,16 +1197,19 @@ export default function CartPage() {
           </button>
         </div>
 
-        <div className="overflow-y-auto h-full flex-1 pr-2 custom-scroll">
+        <div className="overflow-y-auto flex-1 pr-2 custom-scroll lg:h-full h-auto">
           {orderedCartItems?.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full py-24">
-              <div className="flex items-center justify-center w-24 h-24 rounded-full bg-blue-50 mb-6 shadow-inner">
-                <IconShoppingBag size={48} className="text-blue-400" />
+            <div className="flex flex-col items-center justify-center py-12 lg:py-24">
+              <div className="flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-50 mb-6 shadow-inner">
+                <IconShoppingBag
+                  size={40}
+                  className="text-blue-400 md:w-12 md:h-12"
+                />
               </div>
-              <div className="text-xl font-bold text-gray-700 mb-2">
+              <div className="text-lg md:text-xl font-bold text-gray-700 mb-2">
                 {t("cart.empty_title")}
               </div>
-              <div className="text-base text-gray-500 mb-6">
+              <div className="text-sm md:text-base text-gray-500 mb-6 text-center px-4">
                 {t("cart.empty_subtitle")}
               </div>
               <Link
@@ -1219,30 +1223,30 @@ export default function CartPage() {
             orderedCartItems.map((item) => (
               <div
                 key={item.cartItemId}
-                className="flex items-center border-b border-gray-100 py-5 gap-4 group hover:bg-gray-50 transition"
+                className="flex items-start md:items-center border-b border-gray-200 py-5 gap-3 md:gap-4 group hover:bg-gray-50 transition rounded-lg px-2"
               >
                 <input
                   type="checkbox"
                   checked={selected?.includes(item.cartItemId)}
                   onChange={() => handleSelect(item.cartItemId)}
-                  className="mr-2 accent-blue-600"
+                  className="mt-2 md:mt-0 mr-2 accent-blue-600 flex-shrink-0"
                 />
                 <img
                   src={item.imageUrl}
                   alt={item.productName}
-                  className="w-20 h-20 object-cover rounded-lg bg-gray-100 border border-gray-200"
+                  className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg bg-gray-100 border border-gray-200 flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-base truncate text-gray-900">
+                  <div className="font-semibold text-sm md:text-base text-gray-900 line-clamp-2">
                     {item.productName}
                   </div>
                   <div className="flex gap-2 mt-1">
-                    <select className="border border-gray-200 rounded-full px-2 py-1 text-xs bg-white focus:outline-blue-500">
-                      <option>{item.color}</option>
-                    </select>
-                    <select className="border border-gray-200 rounded-full px-2 py-1 text-xs bg-white focus:outline-blue-500">
-                      <option>{item.sizeName}</option>
-                    </select>
+                    <span className="border border-gray-200 rounded-full px-2 py-1 text-xs bg-white text-gray-600">
+                      {item.color}
+                    </span>
+                    <span className="border border-gray-200 rounded-full px-2 py-1 text-xs bg-white text-gray-600">
+                      {item.sizeName}
+                    </span>
                   </div>
                   <button
                     className="text-gray-400 text-xs mt-2 hover:text-red-500 flex items-center gap-1 cursor-pointer"
@@ -1252,27 +1256,29 @@ export default function CartPage() {
                     {t("cart.remove")}
                   </button>
                 </div>
-                <div className="flex flex-col items-end min-w-[120px]">
-                  <div className="flex items-center gap-2 mb-2">
+
+                {/* Quantity & Price Column */}
+                <div className="flex flex-col items-end min-w-[80px] md:min-w-[120px]">
+                  <div className="flex items-center gap-1 md:gap-2 mb-2">
                     <button
-                      className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold hover:bg-gray-100"
+                      className="w-6 h-6 md:w-7 md:h-7 rounded-full border border-gray-300 flex items-center justify-center text-sm md:text-lg font-bold hover:bg-gray-100"
                       onClick={() => handleQuantity(item.cartItemId, -1)}
                       disabled={isUpdating}
                     >
                       –
                     </button>
-                    <span className="w-6 text-center text-gray-900">
+                    <span className="w-5 md:w-6 text-center text-gray-900 text-sm md:text-base">
                       {item.quantity}
                     </span>
                     <button
-                      className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold hover:bg-gray-100"
+                      className="w-6 h-6 md:w-7 md:h-7 rounded-full border border-gray-300 flex items-center justify-center text-sm md:text-lg font-bold hover:bg-gray-100"
                       onClick={() => handleQuantity(item.cartItemId, 1)}
                       disabled={isUpdating}
                     >
                       +
                     </button>
                   </div>
-                  <div className="font-bold text-base text-right text-blue-700">
+                  <div className="font-bold text-sm md:text-base text-right text-blue-700">
                     {item.unitPrice.toLocaleString()}đ
                   </div>
                   {item.oldPrice && (
@@ -1329,7 +1335,7 @@ export default function CartPage() {
               <button
                 onClick={handleApplyVoucher}
                 disabled={!!selectedVoucherCode}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="bg-blue-600 text-white px-4 md:px-6 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 {t("cart.apply")}
               </button>
@@ -1494,7 +1500,12 @@ export default function CartPage() {
         .custom-scroll {
           scrollbar-width: thin;
           scrollbar-color: #c1c1c1 #f1f1f1;
-          max-height: calc(100vh - 120px);
+        }
+        /* Chỉ giới hạn chiều cao scroll trên màn hình lớn */
+        @media (min-width: 1024px) {
+            .custom-scroll {
+                max-height: calc(100vh - 120px);
+            }
         }
         .custom-scroll::-webkit-scrollbar {
           width: 6px;

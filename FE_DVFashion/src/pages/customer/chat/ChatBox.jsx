@@ -6,6 +6,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { isAdminMessage } from "../../../utils/isAdminMessage";
+import chatAPI from "../../../services/chatAPI";
 import {
   IconMessage2,
   IconUserCircle,
@@ -44,48 +45,71 @@ const ChatBox = ({ isOpen, onClose }) => {
   } = useChat();
 
   // Load dữ liệu khi mở chat box hoặc khi user thay đổi
+  // Auto-fetch hoặc create room cho Customer
   useEffect(() => {
-    if (!isOpen || authLoading) return;
-
+    // Chỉ chạy khi mở chat và user là customer
     if (
-      user &&
-      Array.isArray(user.roles) &&
-      user.roles.includes("ROLE_CUSTOMER") &&
-      !user.roles.includes("ROLE_ADMIN")
-    ) {
-      setShowGuestForm(false);
-      setGuestInfo({ name: "", phone: "" });
+      !isOpen ||
+      authLoading ||
+      !user ||
+      !user.roles?.includes("ROLE_CUSTOMER")
+    )
+      return;
 
-      // Lấy roomCode từ user hoặc localStorage, không tự tạo mới ở đây nữa
-      const userRoomCode = user.roomCode || localStorage.getItem(CHAT_ROOM_KEY);
-      if (userRoomCode) {
-        setRoomCode(userRoomCode);
-        setIsRoomReady(true);
-      }
-      // Không gọi createCustomerChatRoom ở đây nữa!
-    } else if (!user) {
-      // Guest logic giữ nguyên
-      const savedRoomCode = localStorage.getItem(CHAT_ROOM_KEY);
-      const savedGuestInfo = localStorage.getItem(CHAT_GUEST_KEY);
-      if (savedRoomCode) {
-        setRoomCode(savedRoomCode);
-        setIsRoomReady(true);
-        if (savedGuestInfo) {
-          try {
-            setGuestInfo(JSON.parse(savedGuestInfo));
-          } catch {}
+    // Nếu đã có roomCode thì thôi
+    if (roomCode) return;
+
+    // Hàm xử lý logic: Check API -> Nếu không có -> Create
+    const initializeChatRoom = async () => {
+      if (creatingRoomRef.current) return;
+      creatingRoomRef.current = true;
+
+      try {
+        // 1. Thử lấy room code từ API trước (tránh tạo trùng)
+        // Giả sử API getRoomCodeByUserId trả về string code hoặc object có code
+        const res = await chatAPI
+          .getRoomCodeByUserId(user.id)
+          .catch(() => null);
+
+        if (res?.data) {
+          // Nếu tìm thấy room cũ
+          const foundCode =
+            typeof res.data === "string" ? res.data : res.data.roomCode;
+          console.log("Found existing room:", foundCode);
+          setRoomCode(foundCode);
+          localStorage.setItem(CHAT_ROOM_KEY, foundCode);
+          setIsRoomReady(true);
+        } else {
+          // 2. Nếu không tìm thấy -> Tạo mới
+          console.log("No room found, creating new one...");
+          createCustomerChatRoom.mutate(undefined, {
+            onSuccess: (data) => {
+              const newRoomCode = data.data.roomCode;
+              setRoomCode(newRoomCode);
+              localStorage.setItem(CHAT_ROOM_KEY, newRoomCode);
+              setIsRoomReady(true);
+            },
+            // onError...
+          });
         }
-        setShowGuestForm(false);
-      } else {
-        setShowGuestForm(true);
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+      } finally {
+        creatingRoomRef.current = false;
       }
-    }
-  }, [isOpen, user, authLoading]);
+    };
+
+    initializeChatRoom();
+  }, [isOpen, user?.id, roomCode]);
 
   // Clear chat storage bất cứ khi user thay đổi (login/logout)
   useEffect(() => {
-    if (prevUserRef.current !== user) {
-      // Khi user thay đổi (login/logout), reset toàn bộ state chatbox
+    const prevUserId = prevUserRef.current?.id;
+    const currentUserId = user?.id;
+
+    // Chỉ reset khi ID thay đổi (User A -> User B, hoặc Login -> Logout)
+    if (prevUserId !== currentUserId) {
+      console.log("User changed (ID comparison), resetting chat...");
       setRoomCode(null);
       setIsRoomReady(false);
       setShowGuestForm(!user);
@@ -95,8 +119,10 @@ const ChatBox = ({ isOpen, onClose }) => {
       localStorage.removeItem(CHAT_ROOM_KEY);
       localStorage.removeItem(CHAT_GUEST_KEY);
     }
+
+    // Cập nhật ref để so sánh cho lần sau
     prevUserRef.current = user;
-  }, [user]);
+  }, [user?.id]);
 
   // Khi user đăng nhập, clear guest info
   useEffect(() => {
@@ -104,6 +130,7 @@ const ChatBox = ({ isOpen, onClose }) => {
       localStorage.removeItem(CHAT_GUEST_KEY);
       setGuestInfo({ name: "", phone: "" });
       setShowGuestForm(false);
+      console.log("user logged in, cleared guest info", user);
     }
   }, [user]);
 

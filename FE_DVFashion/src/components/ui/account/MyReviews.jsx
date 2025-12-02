@@ -63,12 +63,12 @@ export default function MyReviews({ refreshKey = 0 }) {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-6 rounded-3xl shadow-2xl backdrop-blur-lg">
-        <h2 className="text-3xl font-bold mb-8 drop-shadow">
+      <div className="flex flex-col h-full bg-gradient-to-br from-blue-100/60 via-white/60 to-blue-200/60 p-3 sm:p-6 rounded-xl sm:rounded-3xl shadow-2xl backdrop-blur-lg">
+        <h2 className="text-xl sm:text-3xl font-bold mb-4 sm:mb-8 drop-shadow">
           {t("account.sidebar.reviews_feedback")}
         </h2>
 
-        <div className="flex flex-col gap-6 flex-grow overflow-y-auto pr-2">
+        <div className="flex flex-col gap-4 sm:gap-6 flex-grow overflow-y-auto pr-2">
           {reviews.length === 0 && (
             <div className="text-center text-gray-500 py-10 bg-white/30 backdrop-blur-sm rounded-xl border border-white/20">
               {t("review.no_reviews")}
@@ -78,7 +78,7 @@ export default function MyReviews({ refreshKey = 0 }) {
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="bg-white/40 backdrop-blur-md rounded-2xl p-6 flex flex-col gap-4 shadow-lg border border-white/30 transition hover:shadow-xl"
+              className="bg-white/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col gap-4 shadow-lg border border-white/30 transition hover:shadow-xl"
             >
               {/* Header: Rating + Product Info */}
               <div className="flex items-start gap-4">
@@ -205,7 +205,7 @@ export default function MyReviews({ refreshKey = 0 }) {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-8 flex-shrink-0">
+          <div className="mt-6 sm:mt-8 flex-shrink-0">
             <Pagination
               currentPage={page + 1}
               totalPages={totalPages}

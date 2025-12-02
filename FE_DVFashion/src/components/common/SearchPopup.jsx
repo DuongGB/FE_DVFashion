@@ -68,13 +68,13 @@ export default function SearchPopup({ show, onClose }) {
       <div ref={popupRef} className="flex flex-col items-center w-full">
         {/* Thanh search */}
         <div className="w-full flex justify-center bg-white h-20 items-center">
-          <div className="relative w-[500px]">
+          <div className="relative w-full max-w-[500px] px-2 sm:px-0">
             <input
               type="text"
               placeholder={t("header.search_placeholder", "Tìm kiếm...")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full border border-gray-300 rounded-full px-12 py-3 text-lg shadow focus:outline-none"
+              className="w-full border border-gray-300 rounded-full px-12 py-3 text-base sm:text-lg shadow focus:outline-none"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter" && search.trim()) {
@@ -108,7 +108,7 @@ export default function SearchPopup({ show, onClose }) {
         </div>
 
         {/* Kết quả tìm kiếm hoặc gợi ý */}
-        <div className="bg-white rounded-2xl shadow-xl mt-2 p-8 w-full max-w-[1100px] min-h-[420px] relative flex flex-col items-center">
+        <div className="bg-white rounded-2xl shadow-xl mt-2 p-4 sm:p-8 w-full max-w-full sm:max-w-[1100px] min-h-[320px] sm:min-h-[420px] relative flex flex-col items-center">
           {search.trim() ? (
             <>
               <div className="font-bold text-lg mb-6 w-full text-left">
@@ -120,7 +120,7 @@ export default function SearchPopup({ show, onClose }) {
                 </div>
               ) : products.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-4 gap-6 w-full">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 w-full">
                     {products.map((p) => {
                       const mainVariant = p.variants?.[0];
                       const mainImage =
@@ -146,13 +146,13 @@ export default function SearchPopup({ show, onClose }) {
                           className="block hover:shadow-lg transition"
                           onClick={onClose}
                         >
-                          <div className="flex flex-col items-center bg-white rounded-xl p-4">
+                          <div className="flex flex-col items-center bg-white rounded-xl p-2 sm:p-4">
                             <img
                               src={mainImage}
                               alt={p.name}
-                              className="w-48 h-64 object-cover rounded-lg mb-2"
+                              className="w-32 h-44 sm:w-48 sm:h-64 object-cover rounded-lg mb-2"
                             />
-                            <div className="font-semibold text-base text-center">
+                            <div className="font-semibold text-sm sm:text-base text-center">
                               {p.name}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
@@ -234,7 +234,7 @@ export default function SearchPopup({ show, onClose }) {
                     {t("common.loading", "Đang tải")}...
                   </div>
                 ) : recentProducts.length > 0 ? (
-                  <div className="grid grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                     {recentProducts.map((p) => {
                       const mainVariant = p.variants?.[0];
                       const mainImage =
@@ -251,13 +251,13 @@ export default function SearchPopup({ show, onClose }) {
                           className="block hover:shadow-lg transition"
                           onClick={onClose}
                         >
-                          <div className="flex flex-col items-center bg-white rounded-xl p-4">
+                          <div className="flex flex-col items-center bg-white rounded-xl p-2 sm:p-4">
                             <img
                               src={mainImage}
                               alt={p.name}
-                              className="w-36 h-48 object-cover rounded-lg mb-2"
+                              className="w-24 h-32 sm:w-36 sm:h-48 object-cover rounded-lg mb-2"
                             />
-                            <div className="font-semibold text-base text-center">
+                            <div className="font-semibold text-sm sm:text-base text-center">
                               {p.name}
                             </div>
                           </div>
