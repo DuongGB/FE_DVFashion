@@ -177,7 +177,7 @@ export default function Sidebar({ onClose }) {
   );
 
   return (
-    <aside className="sidebar-liquid w-64 text-white flex flex-col py-8 px-6 h-full">
+    <aside className="sidebar-liquid w-64 text-white flex flex-col py-6 px-3 sm:py-8 sm:px-6 h-full">
       {/* Thông tin nhân viên */}
       <EmployeeCard
         name={user?.fullName || t("admin.sidebar.employee_name")}

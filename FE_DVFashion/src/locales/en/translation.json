@@ -297,6 +297,26 @@
         "general_error": "An error occurred. Please try again."
       }
     },
+    "password_reset": {
+      "title": "Reset Password",
+      "description": "Enter your new password",
+      "new_password": "New Password",
+      "new_password_placeholder": "Enter new password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Re-enter new password",
+      "submit_button": "RESET PASSWORD",
+      "submitting": "Processing...",
+      "password_requirement": "Password must be at least 8 characters, including letters and numbers",
+      "success_title": "Password Changed Successfully!",
+      "success_message": "Redirecting to home page for login...",
+      "additional_info": "After successfully changing your password, you will be redirected to the login page to continue using the service.",
+      "errors": {
+        "password_mismatch": "Confirm password does not match.",
+        "password_invalid": "Password must contain at least 8 characters, including letters and numbers.",
+        "token_invalid": "Token is invalid or has expired.",
+        "general_error": "An error occurred. Please try again."
+      }
+    },
     "login": {
       "title": "Many shopping privileges and benefits are waiting for you",
       "benefits": {
@@ -419,6 +439,23 @@
       "variants": "Variants",
       "stock": "Stock",
       "actions": "Actions"
+    },
+    "detail": {
+      "quantity": "Quantity",
+      "cashback": "Get up to",
+      "color": "Color",
+      "size": "Size",
+      "size_guide": "Size Guide",
+      "price": "Price",
+      "add_to_cart": "Add to Cart",
+      "description": "Product Description",
+      "no_description": "No description available for this product.",
+      "policy_easy_return": "Easy return within 60 days if not satisfied",
+      "policy_hotline": "Hotline support 24/7: 0123456789",
+      "policy_60days": "60-day return policy",
+      "policy_fast_refund": "Fast refund process within 24 hours",
+      "recommendations": "Recommended for You",
+      "loading_recommendations": "Loading recommendations..."
     },
     "actions": {
       "view_details": "View Details",
@@ -1091,6 +1128,8 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "creating_progress": "Creating promotion...",
+        "updating_progress": "Updating promotion...",
         "apply_to_all": "Apply",
         "start_date_in_past": "Start date must be today or later",
         "remove": " Remove",

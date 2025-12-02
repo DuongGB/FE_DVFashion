@@ -75,9 +75,9 @@ export default function CartBottom({
   return (
     <div>
       {/* Voucher & Thanh toán khi nhận hàng bar */}
-      <div className="fixed bottom-0 left-0 w-full flex z-20">
-        <div className="flex-1 flex items-center gap-8 bg-[#edeffe] px-12 py-4 border-t">
-          <div className="flex items-center gap-2 font-semibold text-gray-700 text-lg">
+      <div className="fixed bottom-0 left-0 w-full flex z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none">
+        <div className="hidden lg:flex flex-1 items-center gap-4 xl:gap-8 bg-[#edeffe] px-4 xl:px-12 py-4 border-t">
+          <div className="flex items-center gap-2 font-semibold text-gray-700 text-sm xl:text-lg">
             {paymentMethod === "cod" ? (
               <>
                 <IconTruckDelivery size={24} />
@@ -90,28 +90,28 @@ export default function CartBottom({
               </>
             )}
           </div>
-          <div className="border-l h-8 mx-6" />
-          <div className="flex items-center gap-2 font-medium">
-            <span className="bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
-              <IconCircleDashedPercentage size={24} />
+          <div className="border-l h-8 mx-2 xl:mx-6 border-gray-300" />
+          <div className="flex items-center gap-2 font-medium text-sm xl:text-base">
+            <span className="bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">
+              <IconCircleDashedPercentage size={16} />
             </span>
-            {t("cart.voucher")}
+            <span className="truncate">{t("cart.voucher")}</span>
           </div>
         </div>
-        <div className="w-[600px] flex items-center justify-between bg-white px-10 py-4 border-t">
-          <div className="flex items-center">
-            <span className="text-2xl font-bold text-blue-700">
+        <div className="w-full lg:w-[500px] xl:w-[600px] flex items-center justify-between bg-white px-4 md:px-6 lg:px-10 py-4 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center">
+            <span className="text-xl md:text-2xl font-bold text-blue-700">
               {computedTotal?.toLocaleString()}đ
             </span>
-            <span className="ml-4 text-xs text-gray-500">
+            <span className="text-xs text-gray-500 mt-1 md:mt-0 md:ml-4">
               {t("cart.save_amount")}{" "}
-              <span className="font-bold">
+              <span className="font-bold text-green-600">
                 {computedDiscount > 0 ? discount?.toLocaleString() : "0"}đ
               </span>
             </span>
           </div>
           <button
-            className="bg-black text-white px-10 py-3 rounded-lg text-medium font-bold cursor-pointer"
+            className="bg-black text-white px-6 md:px-10 py-3 rounded-lg text-sm md:text-base font-bold cursor-pointer hover:bg-gray-800 transition active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap ml-4"
             disabled={creatingLock}
             onClick={handleOrderClick}
           >

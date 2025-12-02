@@ -28,7 +28,7 @@ export default function ProductPage() {
   const isStaff = user?.roles?.includes("ROLE_STAFF") && !isAdmin;
 
   const { categories: getAllCategories, isLoading: isLoadingCategories } =
-    useCategory(language);
+    useCategory({ lang: language });
 
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
@@ -366,24 +366,29 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-0">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
           {t("admin.product.title")}
         </h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
           {!isStaff && (
             <button
               onClick={handleCreateProduct}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
             >
-              <IconPlus size={20} />
-              {t("admin.product.create_product")}
+              <IconPlus size={18} />
+              <span className="hidden sm:inline">
+                {t("admin.product.create_product")}
+              </span>
+              <span className="sm:hidden">
+                {t("admin.product.create_product")}
+              </span>
             </button>
           )}
           {isStaff && (
-            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+            <div className="text-xs sm:text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
                 {t("admin.product.staff_view_only") ||
                   "Chế độ xem - Không thể chỉnh sửa"}
@@ -394,50 +399,50 @@ export default function ProductPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.product.total_products")}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
                 {stats?.totalProducts ?? 0}
               </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.product.active_products")}
               </p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl sm:text-2xl font-bold text-green-600">
                 {stats?.totalActiveProducts ?? 0}
               </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.product.inactive_products")}
               </p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-xl sm:text-2xl font-bold text-red-600">
                 {stats?.totalInactiveProducts ?? 0}
               </p>
             </div>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
                 {t("admin.product.on_sale_products")}
               </p>
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-xl sm:text-2xl font-bold text-orange-600">
                 {stats?.totalProductsOnPromotion ?? 0}
               </p>
             </div>
@@ -446,380 +451,538 @@ export default function ProductPage() {
       </div>
 
       {/* Filters + Refresh */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex-1">
-          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <IconSearch
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={16}
-                  />
-                  <input
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        setSearch(searchInput);
-                        setCurrentPage(0);
-                      }
-                    }}
-                    placeholder={t("admin.product.search_placeholder")}
-                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
-                  />
-                </div>
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg shadow-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="sm:col-span-2 lg:col-span-2">
+            <div className="relative">
+              <IconSearch
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={16}
+              />
+              <input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearch(searchInput);
+                    setCurrentPage(0);
+                  }
+                }}
+                placeholder={t("admin.product.search_placeholder")}
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+              />
+            </div>
+          </div>
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+            >
+              <option value="">{t("admin.product.all_status")}</option>
+              <option value="active">{t("admin.product.status.active")}</option>
+              <option value="inactive">
+                {t("admin.product.status.inactive")}
+              </option>
+              <option value="out_of_stock">
+                {t("admin.product.status.out_of_stock")}
+              </option>
+              <option value="discontinued">
+                {t("admin.product.status.discontinued")}
+              </option>
+            </select>
+          </div>
+          <div>
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-lg ${
+                showAdvancedFilters
+                  ? "bg-blue-50 border-blue-300 text-blue-700"
+                  : "border-white/30 hover:bg-white/70"
+              }`}
+            >
+              <IconFilter size={16} />
+              {t("admin.product.filters.filter")}
+              {getActiveFiltersCount() > 0 && (
+                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
+          </div>
+          <div className="flex items-center h-full">
+            <button
+              type="button"
+              onClick={() => refetch && refetch()}
+              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+              title={t("common.refresh") || "Làm mới"}
+            >
+              <IconRefresh size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Advanced Filters */}
+        {showAdvancedFilters && (
+          <div className="mt-4 pt-4 border-t space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <h3 className="font-semibold text-gray-700 text-sm sm:text-base">
+                {t("admin.product.filters.advanced_filters")}
+              </h3>
+              <button
+                onClick={clearAllFilters}
+                className="text-red-600 hover:text-red-800 text-xs sm:text-sm underline cursor-pointer"
+              >
+                {t("admin.product.filters.clear_all")}
+              </button>
+            </div>
+
+            {/* Price Range Filter */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  {t("admin.product.filters.min_price")}
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={tempMinPrice}
+                  onChange={(e) => setTempMinPrice(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceRange: { ...prev.priceRange, min: tempMinPrice },
+                      }));
+                    }
+                  }}
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
               <div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
-                >
-                  <option value="">{t("admin.product.all_status")}</option>
-                  <option value="active">
-                    {t("admin.product.status.active")}
-                  </option>
-                  <option value="inactive">
-                    {t("admin.product.status.inactive")}
-                  </option>
-                  <option value="out_of_stock">
-                    {t("admin.product.status.out_of_stock")}
-                  </option>
-                  <option value="discontinued">
-                    {t("admin.product.status.discontinued")}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors cursor-pointer backdrop-blur-sm shadow-lg ${
-                    showAdvancedFilters
-                      ? "bg-blue-50 border-blue-300 text-blue-700"
-                      : "border-white/30 hover:bg-white/70"
-                  }`}
-                >
-                  <IconFilter size={16} />
-                  {t("admin.product.filters.filter")}
-                  {getActiveFiltersCount() > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
-                      {getActiveFiltersCount()}
-                    </span>
-                  )}
-                </button>
-              </div>
-              <div className="flex items-center h-full">
-                <button
-                  type="button"
-                  onClick={() => refetch && refetch()}
-                  className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
-                  title={t("common.refresh") || "Làm mới"}
-                >
-                  <IconRefresh size={18} />
-                </button>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  {t("admin.product.filters.max_price")}
+                </label>
+                <input
+                  type="number"
+                  placeholder="999999999"
+                  value={tempMaxPrice}
+                  onChange={(e) => setTempMaxPrice(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceRange: { ...prev.priceRange, max: tempMaxPrice },
+                      }));
+                    }
+                  }}
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
             </div>
 
-            {/* Advanced Filters */}
-            {showAdvancedFilters && (
-              <div className="mt-4 pt-4 border-t space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-700">
-                    {t("admin.product.filters.advanced_filters")}
-                  </h3>
-                  <button
-                    onClick={clearAllFilters}
-                    className="text-red-600 hover:text-red-800 text-sm underline cursor-pointer"
-                  >
-                    {t("admin.product.filters.clear_all")}
-                  </button>
-                </div>
+            {/* Category Filter */}
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                {t("admin.product.filters.category")}
+              </label>
+              <select
+                value={filters.categoryIds[0] || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    categoryIds: e.target.value ? [Number(e.target.value)] : [],
+                  }))
+                }
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="">
+                  {t("admin.product.filters.all_categories")}
+                </option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                {/* Price Range Filter */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t("admin.product.filters.min_price")}
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={tempMinPrice}
-                      onChange={(e) => setTempMinPrice(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          setFilters((prev) => ({
-                            ...prev,
-                            priceRange: {
-                              ...prev.priceRange,
-                              min: tempMinPrice,
-                            },
-                          }));
-                        }
-                      }}
-                      className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t("admin.product.filters.max_price")}
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="999999999"
-                      value={tempMaxPrice}
-                      onChange={(e) => setTempMaxPrice(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          setFilters((prev) => ({
-                            ...prev,
-                            priceRange: {
-                              ...prev.priceRange,
-                              max: tempMaxPrice,
-                            },
-                          }));
-                        }
-                      }}
-                      className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Category Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t("admin.product.filters.category")}
-                  </label>
-                  <select
-                    value={filters.categoryIds[0] || ""}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        categoryIds: e.target.value
-                          ? [Number(e.target.value)]
-                          : [],
-                      }))
-                    }
-                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">
-                      {t("admin.product.filters.all_categories")}
-                    </option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* On Sale Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t("admin.product.filters.sale_status")}
-                  </label>
-                  <select
-                    value={
-                      filters.onSale === null ? "" : filters.onSale.toString()
-                    }
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        onSale:
-                          e.target.value === ""
-                            ? null
-                            : e.target.value === "true",
-                      }))
-                    }
-                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">{t("admin.product.filters.all")}</option>
-                    <option value="true">
-                      {t("admin.product.filters.on_sale")}
-                    </option>
-                    <option value="false">
-                      {t("admin.product.filters.not_on_sale")}
-                    </option>
-                  </select>
-                </div>
-              </div>
-            )}
+            {/* On Sale Filter */}
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                {t("admin.product.filters.sale_status")}
+              </label>
+              <select
+                value={filters.onSale === null ? "" : filters.onSale.toString()}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    onSale:
+                      e.target.value === "" ? null : e.target.value === "true",
+                  }))
+                }
+                className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="">{t("admin.product.filters.all")}</option>
+                <option value="true">
+                  {t("admin.product.filters.on_sale")}
+                </option>
+                <option value="false">
+                  {t("admin.product.filters.not_on_sale")}
+                </option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Results Summary */}
-      <div className="text-sm text-gray-600">
+      <div className="text-xs sm:text-sm text-gray-600">
         {t("admin.product.showing_results", {
           current: products.length,
           total: totalElements,
         })}
       </div>
 
-      {/* Products Table */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-400">
-              <th className="p-3">{t("admin.product.columns.id")}</th>
-              <th className="p-3">{t("admin.product.columns.image")}</th>
-              <th className="p-3">{t("admin.product.columns.name")}</th>
-              <th className="p-3">{t("admin.product.columns.category")}</th>
-              <th className="p-3">
-                {t("admin.product.columns.original_price")}
-              </th>
-              <th className="p-3">{t("admin.product.columns.sale_price")}</th>
-              <th className="p-3">{t("admin.product.columns.status")}</th>
-              <th className="p-3">{t("admin.product.columns.variants")}</th>
-              <th className="p-3">{t("admin.product.columns.stock")}</th>
-              <th className="p-3">{t("admin.product.columns.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length > 0 ? (
-              products.map((product) => {
-                const primaryImage = getPrimaryImage(product);
-                const totalStock = getTotalStock(product);
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-3">
+        {products.length > 0 ? (
+          products.map((product) => {
+            const primaryImage = getPrimaryImage(product);
+            const totalStock = getTotalStock(product);
 
-                return (
-                  <tr
-                    key={product.id}
-                    className="border-b hover:bg-white/80 transition-colors"
-                  >
-                    <td className="p-3">{product.id}</td>
-                    <td className="p-3">
-                      {primaryImage ? (
-                        <img
-                          src={primaryImage.imageUrl}
-                          alt={product.name}
-                          className="w-10 h-10 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
-                          No Image
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <div>
-                        <p className="font-semibold">{product.name}</p>
+            return (
+              <div
+                key={product.id}
+                className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-3 sm:p-4"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
+                    {primaryImage ? (
+                      <img
+                        src={primaryImage.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                        No Image
                       </div>
-                    </td>
-                    <td className="p-3">{product.categoryName}</td>
-                    <td className="p-3 font-medium">
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 mb-1">
+                      {product.name}
+                    </h3>
+                    {/* <p className="text-xs text-gray-500">ID: {product.id}</p> */}
+                    <p className="text-xs text-gray-600 mt-1">
+                      {product.categoryName}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      {t("admin.product.columns.original_price")}
+                    </p>
+                    <p className="font-medium text-sm">
                       {formatPrice(product.price)}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {formatPrice(product.salePrice)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      {t("admin.product.columns.sale_price")}
+                    </p>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-sm">
+                        {formatPrice(product.salePrice)}
+                      </span>
+                      {product.onSale && (
+                        <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs w-fit">
+                          {t("admin.product.values.sale")}
                         </span>
-                        {product.onSale && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
-                            {t("admin.product.values.sale")}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      {isStaff ? (
-                        <span
-                          className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(
-                            product.status
-                          )}`}
-                        >
-                          {getStatusText(product.status)}
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleToggleStatus(product)}
-                          disabled={loadingStatusId === product.id}
-                          className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
-                            product.status
-                          )}`}
-                          title={
-                            product.status === "ACTIVE"
-                              ? t("admin.product.status.inactive")
-                              : t("admin.product.status.active")
-                          }
-                        >
-                          {loadingStatusId === product.id ? (
-                            <div className="flex items-center gap-1">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                            </div>
-                          ) : (
-                            getStatusText(product.status)
-                          )}
-                        </button>
                       )}
-                    </td>
-                    <td className="p-3 text-center">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {product.variants ? product.variants.length : 0}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center">
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      {t("admin.product.columns.status")}
+                    </p>
+                    {isStaff ? (
                       <span
-                        className={`px-2 py-1 rounded text-sm font-medium ${
-                          totalStock > 0
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                          product.status
+                        )}`}
                       >
-                        {totalStock}
+                        {getStatusText(product.status)}
                       </span>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-2">
-                        <button
-                          className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
-                          onClick={() => handleViewProduct(product)}
-                          title={t("admin.product.actions.view_details")}
-                        >
-                          <IconEye size={24} />
-                        </button>
-                        {!isStaff ? (
-                          <button
-                            className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
-                            onClick={() => handleEditProduct(product)}
-                            title={t("admin.product.actions.edit")}
+                    ) : (
+                      <button
+                        onClick={() => handleToggleStatus(product)}
+                        disabled={loadingStatusId === product.id}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                          product.status
+                        )}`}
+                      >
+                        {loadingStatusId === product.id ? (
+                          <div className="flex items-center justify-center gap-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                          </div>
+                        ) : (
+                          getStatusText(product.status)
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      {t("admin.product.columns.variants")}
+                    </p>
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                      {product.variants ? product.variants.length : 0}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      {t("admin.product.columns.stock")}
+                    </p>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        totalStock > 0
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {totalStock}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all text-sm cursor-pointer"
+                    onClick={() => handleViewProduct(product)}
+                  >
+                    <IconEye size={18} />
+                    {t("admin.product.actions.view_details")}
+                  </button>
+                  {!isStaff ? (
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-yellow-600 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-all text-sm cursor-pointer"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      <IconEdit size={18} />
+                      {t("admin.product.actions.edit")}
+                    </button>
+                  ) : (
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-gray-400 bg-gray-50 rounded-lg text-sm cursor-not-allowed opacity-50"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      <IconEdit size={18} />
+                      {t("admin.product.actions.edit")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-8 text-center">
+            <p className="text-base font-medium text-gray-400">
+              {t("admin.product.no_products")}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1200px]">
+            <thead>
+              <tr className="bg-gray-400">
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.id")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.image")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.name")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.category")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.original_price")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.sale_price")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.status")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.variants")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.stock")}
+                </th>
+                <th className="p-3 text-sm font-bold">
+                  {t("admin.product.columns.actions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.length > 0 ? (
+                products.map((product) => {
+                  const primaryImage = getPrimaryImage(product);
+                  const totalStock = getTotalStock(product);
+
+                  return (
+                    <tr
+                      key={product.id}
+                      className="border-b hover:bg-white/80 transition-colors"
+                    >
+                      <td className="p-3">{product.id}</td>
+                      <td className="p-3">
+                        {primaryImage ? (
+                          <img
+                            src={primaryImage.imageUrl}
+                            alt={product.name}
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                            No Image
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <div>
+                          <p className="font-semibold">{product.name}</p>
+                        </div>
+                      </td>
+                      <td className="p-3">{product.categoryName}</td>
+                      <td className="p-3 font-medium">
+                        {formatPrice(product.price)}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {formatPrice(product.salePrice)}
+                          </span>
+                          {product.onSale && (
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
+                              {t("admin.product.values.sale")}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        {isStaff ? (
+                          <span
+                            className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(
+                              product.status
+                            )}`}
                           >
-                            <IconEdit size={24} />
-                          </button>
+                            {getStatusText(product.status)}
+                          </span>
                         ) : (
                           <button
-                            className="text-gray-400 p-1 cursor-not-allowed opacity-50"
-                            onClick={() => handleEditProduct(product)}
+                            onClick={() => handleToggleStatus(product)}
+                            disabled={loadingStatusId === product.id}
+                            className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                              product.status
+                            )}`}
                             title={
-                              t("admin.product.staff_no_permission") ||
-                              "Không có quyền chỉnh sửa"
+                              product.status === "ACTIVE"
+                                ? t("admin.product.status.inactive")
+                                : t("admin.product.status.active")
                             }
                           >
-                            <IconEdit size={24} />
+                            {loadingStatusId === product.id ? (
+                              <div className="flex items-center gap-1">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                              </div>
+                            ) : (
+                              getStatusText(product.status)
+                            )}
                           </button>
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={11} className="text-center text-gray-500 p-4">
-                  {t("admin.product.no_products")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                          {product.variants ? product.variants.length : 0}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`px-2 py-1 rounded text-sm font-medium ${
+                            totalStock > 0
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {totalStock}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                            onClick={() => handleViewProduct(product)}
+                            title={t("admin.product.actions.view_details")}
+                          >
+                            <IconEye size={24} />
+                          </button>
+                          {!isStaff ? (
+                            <button
+                              className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                              onClick={() => handleEditProduct(product)}
+                              title={t("admin.product.actions.edit")}
+                            >
+                              <IconEdit size={24} />
+                            </button>
+                          ) : (
+                            <button
+                              className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                              onClick={() => handleEditProduct(product)}
+                              title={
+                                t("admin.product.staff_no_permission") ||
+                                "Không có quyền chỉnh sửa"
+                              }
+                            >
+                              <IconEdit size={24} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={10} className="text-center text-gray-500 p-4">
+                    {t("admin.product.no_products")}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
       <Pagination
-        currentPage={currentPage + 1} // Display as 1-indexed
+        currentPage={currentPage + 1}
         totalPages={totalPages}
-        onPageChange={(page) => setCurrentPage(page - 1)} // Convert back to 0-indexed
+        onPageChange={(page) => setCurrentPage(page - 1)}
       />
 
       {/* Product Detail Modal */}

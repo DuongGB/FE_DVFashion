@@ -80,47 +80,51 @@ export default function ProductDetailModal({ product, open, onClose }) {
     allImages.find((img) => img.isPrimary) || allImages[0] || null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4">
       <div
-        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
+        className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto flex flex-col transition-all duration-300 animate-scaleIn"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <IconPackage size={28} className="text-white" />
-            <h2 className="text-2xl font-bold">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-xl sm:rounded-t-2xl sticky top-0 z-10">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <IconPackage size={24} className="text-white sm:w-7 sm:h-7" />
+            <h2 className="text-lg sm:text-2xl font-bold">
               {t("admin.product.detail.title")}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/50 transition-colors cursor-pointer"
           >
-            <IconX size={20} />
+            <IconX size={18} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
-        <div className="p-3 flex-1 overflow-y-auto">
+        <div className="p-3 sm:p-4 lg:p-6 flex-1 overflow-y-auto">
           {/* Product Images and Basic Info */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
             {/* Images */}
             <div className="lg:col-span-1">
-              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
-                <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                  <IconPhoto size={18} className="text-purple-600" />
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-700 flex items-center gap-2">
+                  <IconPhoto
+                    size={16}
+                    className="text-purple-600 sm:w-[18px] sm:h-[18px]"
+                  />
                   {t("admin.product.detail.images")}
                 </h3>
                 {primaryImage ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <img
                       src={primaryImage.imageUrl}
                       alt=""
-                      className="w-full h-64 object-cover rounded-lg border"
+                      className="w-full h-48 sm:h-56 lg:h-64 object-cover rounded-lg border"
                     />
                     {allImages.length > 1 && (
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                         {allImages
                           .filter((img) => img !== primaryImage)
                           .slice(0, 3)
@@ -129,15 +133,15 @@ export default function ProductDetailModal({ product, open, onClose }) {
                               key={index}
                               src={img.imageUrl}
                               alt=""
-                              className="w-full h-16 object-cover rounded border"
+                              className="w-full h-14 sm:h-16 object-cover rounded border"
                             />
                           ))}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-400">
+                  <div className="w-full h-40 sm:h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400 text-sm sm:text-base">
                       {t("admin.product.detail.no_image")}
                     </span>
                   </div>
@@ -146,66 +150,71 @@ export default function ProductDetailModal({ product, open, onClose }) {
             </div>
 
             {/* Basic Information */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
-                <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                  <IconTag size={18} className="text-blue-600" />
+            <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-700 flex items-center gap-2">
+                  <IconTag
+                    size={16}
+                    className="text-blue-600 sm:w-[18px] sm:h-[18px]"
+                  />
                   {t("admin.product.detail.basic_info")}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <strong className="text-gray-600">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.id")}:
                     </strong>
-                    <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">
+                    <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-xs sm:text-sm">
                       #{product.id}
                     </span>
                   </div>
-                  <div>
-                    <strong className="text-gray-600">
+                  <div className="sm:col-span-1">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.name")}:
                     </strong>
-                    <span className="ml-2 font-medium text-lg">
+                    <span className="ml-2 font-medium text-base sm:text-lg break-words">
                       {product.name}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.brand")}:
                     </strong>
-                    <span className="ml-2 bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+                    <span className="ml-2 bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs sm:text-sm">
                       {product.brandName || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.category")}:
                     </strong>
-                    <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                    <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded text-xs sm:text-sm">
                       {product.categoryName || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.material")}:
                     </strong>
-                    <span className="ml-2">{product.material}</span>
+                    <span className="ml-2 text-sm sm:text-base">
+                      {product.material}
+                    </span>
                   </div>
                   <div>
-                    <strong className="text-gray-600">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.status")}:
                     </strong>
                     <span
-                      className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}
+                      className={`ml-2 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${statusInfo.color}`}
                     >
                       {statusInfo.text}
                     </span>
                   </div>
-                  <div className="col-span-2">
-                    <strong className="text-gray-600">
+                  <div className="sm:col-span-2">
+                    <strong className="text-gray-600 text-sm sm:text-base">
                       {t("admin.product.detail.description")}:
                     </strong>
-                    <p className="ml-2 mt-1 text-gray-700 leading-relaxed">
+                    <p className="ml-2 mt-1 text-gray-700 leading-relaxed text-sm sm:text-base">
                       {product.description ||
                         t("admin.product.detail.no_description")}
                     </p>
@@ -214,33 +223,39 @@ export default function ProductDetailModal({ product, open, onClose }) {
               </div>
 
               {/* Price and Status */}
-              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
-                <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                  <IconCurrencyDollar size={18} className="text-green-600" />
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-700 flex items-center gap-2">
+                  <IconCurrencyDollar
+                    size={16}
+                    className="text-green-600 sm:w-[18px] sm:h-[18px]"
+                  />
                   {t("admin.product.detail.price_status")}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
                     <div>
-                      <strong className="text-gray-600">
+                      <strong className="text-gray-600 text-sm sm:text-base">
                         {t("admin.product.detail.original_price")}:
                       </strong>
-                      <span className="ml-2 text-lg font-bold text-gray-800">
+                      <span className="ml-2 text-base sm:text-lg font-bold text-gray-800">
                         {formatCurrency(product.price)}
                       </span>
                     </div>
                     <div>
-                      <strong className="text-gray-600">
+                      <strong className="text-gray-600 text-sm sm:text-base">
                         {t("admin.product.detail.sale_price")}:
                       </strong>
-                      <span className="ml-2 text-lg font-bold text-green-600">
+                      <span className="ml-2 text-base sm:text-lg font-bold text-green-600">
                         {formatCurrency(product.salePrice)}
                       </span>
                     </div>
                     {product.onSale && (
                       <div className="flex items-center gap-2">
-                        <IconDiscount size={16} className="text-red-500" />
-                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
+                        <IconDiscount
+                          size={14}
+                          className="text-red-500 sm:w-4 sm:h-4"
+                        />
+                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs sm:text-sm font-medium">
                           {t("admin.product.detail.on_sale")}
                         </span>
                       </div>
@@ -248,11 +263,14 @@ export default function ProductDetailModal({ product, open, onClose }) {
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <IconStar size={16} className="text-yellow-500" />
-                      <span className="text-gray-600">
+                      <IconStar
+                        size={14}
+                        className="text-yellow-500 sm:w-4 sm:h-4"
+                      />
+                      <span className="text-gray-600 text-sm sm:text-base">
                         {t("admin.product.detail.review_count")}:
                       </span>
-                      <span className="font-medium">
+                      <span className="font-medium text-sm sm:text-base">
                         {product.reviewCount || 0}{" "}
                         {t("admin.product.detail.review_unit")}
                       </span>
@@ -265,23 +283,117 @@ export default function ProductDetailModal({ product, open, onClose }) {
 
           {/* Product Variants */}
           {product.variants && product.variants.length > 0 && (
-            <div className="mb-3 backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
-              <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-                <IconShoppingBag size={18} className="text-blue-600" />
+            <div className="mb-3 sm:mb-4 backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg">
+              <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-700 flex items-center gap-2">
+                <IconShoppingBag
+                  size={16}
+                  className="text-blue-600 sm:w-[18px] sm:h-[18px]"
+                />
                 {t("admin.product.detail.variants", {
                   count: product.variants.length,
                 })}
               </h3>
-              <div className="overflow-x-auto">
+
+              {/* Mobile Card View */}
+              <div className="block lg:hidden space-y-3">
+                {product.variants.map((variant, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white/40 border border-white/30 p-3 rounded-lg"
+                  >
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">
+                          {t("admin.product.detail.color")}
+                        </p>
+                        <p className="font-medium text-sm">{variant.color}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">
+                          {t("admin.product.detail.additional_price")}
+                        </p>
+                        <p className="font-medium text-sm">
+                          {formatCurrency(variant.additionalPrice)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-600 mb-1">
+                        {t("admin.product.detail.sizes")}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {variant.sizes &&
+                          variant.sizes.map((size, sidx) => (
+                            <span
+                              key={sidx}
+                              className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs"
+                            >
+                              {size.sizeName}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-600 mb-1">
+                        {t("admin.product.detail.images")}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {variant.images &&
+                          variant.images.map((img, i) => (
+                            <img
+                              key={i}
+                              src={img.imageUrl}
+                              alt=""
+                              className={`w-10 h-10 object-cover rounded border ${
+                                img.isPrimary ? "ring-2 ring-green-500" : ""
+                              }`}
+                              title={
+                                img.isPrimary
+                                  ? t("admin.product.detail.primary_image")
+                                  : ""
+                              }
+                            />
+                          ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        {t("admin.product.detail.status")}
+                      </p>
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-xs ${
+                          variant.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : variant.status === "OUT_OF_STOCK"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {getStatusInfo(variant.status).text}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-white/60">
-                      <th className="p-2">{t("admin.product.detail.color")}</th>
-                      <th className="p-2">
+                      <th className="p-2 text-left">
+                        {t("admin.product.detail.color")}
+                      </th>
+                      <th className="p-2 text-left">
                         {t("admin.product.detail.additional_price")}
                       </th>
-                      <th className="p-2">{t("admin.product.detail.sizes")}</th>
-                      <th className="p-2">
+                      <th className="p-2 text-left">
+                        {t("admin.product.detail.sizes")}
+                      </th>
+                      <th className="p-2 text-left">
                         {t("admin.product.detail.images")}
                       </th>
                       <th className="p-2 text-center">
@@ -349,25 +461,28 @@ export default function ProductDetailModal({ product, open, onClose }) {
           )}
 
           {/* Timestamps */}
-          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-xl shadow-lg">
-            <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
-              <IconCalendar size={18} className="text-green-600" />
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg">
+            <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-700 flex items-center gap-2">
+              <IconCalendar
+                size={16}
+                className="text-green-600 sm:w-[18px] sm:h-[18px]"
+              />
               {t("admin.product.detail.timestamps")}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <strong className="text-gray-600">
+                <strong className="text-gray-600 text-sm sm:text-base">
                   {t("admin.product.detail.created_at")}:
                 </strong>
-                <span className="ml-2 text-gray-800">
+                <span className="ml-2 text-gray-800 text-sm sm:text-base block sm:inline mt-1 sm:mt-0">
                   {formatDate(product.createdAt)}
                 </span>
               </div>
               <div>
-                <strong className="text-gray-600">
+                <strong className="text-gray-600 text-sm sm:text-base">
                   {t("admin.product.detail.updated_at")}:
                 </strong>
-                <span className="ml-2 text-gray-800">
+                <span className="ml-2 text-gray-800 text-sm sm:text-base block sm:inline mt-1 sm:mt-0">
                   {formatDate(product.updatedAt)}
                 </span>
               </div>

@@ -105,8 +105,16 @@ const paymentMethodColors = {
   BANK_TRANSFER: "text-purple-600",
 };
 
-const StatCard = ({ title, value, icon, color = "text-gray-900" }) => (
-  <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow flex flex-col items-center justify-center min-w-[90px] min-h-[90px]">
+const StatCard = ({
+  title,
+  value,
+  icon,
+  color = "text-gray-900",
+  className = "",
+}) => (
+  <div
+    className={`backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow flex flex-col items-center justify-center min-w-[90px] min-h-[90px] w-full sm:w-auto ${className}`}
+  >
     <div className={`mb-1 p-2 rounded-full bg-gray-100 shadow ${color}`}>
       {icon}
     </div>
@@ -138,6 +146,8 @@ export default function OrderStatusListPage({ status }) {
   const [endDate, setEndDate] = useState("");
   const [minTotal, setMinTotal] = useState("");
   const [maxTotal, setMaxTotal] = useState("");
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Payment method filter (applies immediately)
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -237,9 +247,24 @@ export default function OrderStatusListPage({ status }) {
   };
 
   // Handle batch update submit
-  const handleBatchUpdate = (e) => {
+  const handleBatchUpdate = async (e) => {
     e.preventDefault();
-    if (!batchStatus || selectedOrders.length === 0) return;
+    if (!batchStatus || selectedOrders.length === 0 || isProcessing) return;
+
+    setIsProcessing(true);
+    setBatchProgress(0);
+
+    // Simulate progress (since API doesn't return real-time progress)
+    const progressInterval = setInterval(() => {
+      setBatchProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
     batchUpdateOrderStatus(
       {
         orderNumbers: selectedOrders,
@@ -248,10 +273,21 @@ export default function OrderStatusListPage({ status }) {
       },
       {
         onSuccess: () => {
-          setShowBatchModal(false);
-          setSelectedOrders([]);
-          setBatchStatus("");
-          setBatchNotes("");
+          clearInterval(progressInterval);
+          setBatchProgress(100);
+          setTimeout(() => {
+            setShowBatchModal(false);
+            setSelectedOrders([]);
+            setBatchStatus("");
+            setBatchNotes("");
+            setBatchProgress(0);
+            setIsProcessing(false);
+          }, 500);
+        },
+        onError: () => {
+          clearInterval(progressInterval);
+          setBatchProgress(0);
+          setIsProcessing(false);
         },
       }
     );
@@ -276,26 +312,28 @@ export default function OrderStatusListPage({ status }) {
     orders.every((o) => selectedOrders.includes(o.orderNumber ?? o.id));
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+    <div className="w-full">
+      <h1 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
         {statusIcons[status]}
-        {t(`order.status.${status.toLowerCase()}`)}
+        <span>{t(`order.status.${status.toLowerCase()}`)}</span>
       </h1>
 
       {/* Statistics Card */}
-      <div className="mb-6">
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title={t(`order.status.${status.toLowerCase()}`)}
           value={totalStatusOrders}
           icon={statusIcons[status]}
           color={statusColorsText[status]}
+          className="col-span-2 md:col-span-4"
         />
       </div>
 
-      {/* Filter bar */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg mb-2">
-        <div className="flex flex-col md:flex-row gap-3 items-center flex-wrap">
-          <div className="relative w-full md:w-100">
+      {/* Filter bar - RESPONSIVE: flex-col on mobile */}
+      <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg mb-4">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+          {/* Search Input */}
+          <div className="relative w-full lg:flex-1">
             <input
               type="text"
               placeholder={t("admin.order.search")}
@@ -307,22 +345,23 @@ export default function OrderStatusListPage({ status }) {
                   setCurrentPage(1);
                 }
               }}
-              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg px-4 py-2 w-full shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg pl-4 pr-10 py-2 w-full shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
             />
             <IconSearch
               className="absolute right-3 top-2.5 text-gray-400 pointer-events-none"
               size={18}
             />
           </div>
-          {/* Payment method filter luôn hiển thị */}
-          <div className="w-full md:w-60">
+
+          {/* Payment method filter */}
+          <div className="w-full lg:w-48">
             <select
               value={paymentMethod}
               onChange={(e) => {
                 setPaymentMethod(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full"
+              className="px-2 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full text-sm md:text-base cursor-pointer"
             >
               {paymentMethodOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -331,40 +370,47 @@ export default function OrderStatusListPage({ status }) {
               ))}
             </select>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowAdvanced((v) => !v)}
-            className={`flex items-center gap-1 px-3 py-2 border rounded-lg transition-colors shadow cursor-pointer
-              ${
-                showAdvanced
-                  ? "bg-blue-50 border-blue-300 text-blue-700"
-                  : "bg-gray-100 border-white/30 text-gray-700 hover:bg-gray-200"
-              }
-            `}
-          >
-            <IconFilter size={16} />
-            {t("admin.inventory.advanced_filters")}
-            {showAdvanced ? (
-              <IconChevronUp size={16} />
-            ) : (
-              <IconChevronDown size={16} />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
-          >
-            <IconRefresh size={18} />
-          </button>
+
+          {/* Buttons Group */}
+          <div className="flex gap-2 w-full lg:w-auto">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className={`flex-1 lg:flex-none flex items-center justify-center gap-1 px-3 py-2 border rounded-lg transition-colors shadow cursor-pointer text-sm md:text-base
+                ${
+                  showAdvanced
+                    ? "bg-blue-50 border-blue-300 text-blue-700"
+                    : "bg-gray-100 border-white/30 text-gray-700 hover:bg-gray-200"
+                }
+              `}
+            >
+              <IconFilter size={16} />
+              <span className="whitespace-nowrap">
+                {t("admin.inventory.advanced_filters")}
+              </span>
+              {showAdvanced ? (
+                <IconChevronUp size={16} />
+              ) : (
+                <IconChevronDown size={16} />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+            >
+              <IconRefresh size={18} />
+            </button>
+          </div>
         </div>
-        {/* Advanced filter */}
+
+        {/* Advanced filter - RESPONSIVE GRID */}
         {showAdvanced && (
           <form
             onSubmit={handleAdvancedFilterSubmit}
             className="mt-4 pt-4 border-t space-y-2"
           >
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   {t("order.min_total") || "Min total"}
@@ -374,8 +420,8 @@ export default function OrderStatusListPage({ status }) {
                   min={0}
                   value={minTotalInput}
                   onChange={(e) => setMinTotalInput(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full"
-                  placeholder={t("order.min_total") || "Min total"}
+                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full text-sm"
+                  placeholder="Min total"
                 />
               </div>
               <div>
@@ -387,8 +433,8 @@ export default function OrderStatusListPage({ status }) {
                   min={0}
                   value={maxTotalInput}
                   onChange={(e) => setMaxTotalInput(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full"
-                  placeholder={t("order.max_total") || "Max total"}
+                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full text-sm"
+                  placeholder="Max total"
                 />
               </div>
               <div>
@@ -399,8 +445,7 @@ export default function OrderStatusListPage({ status }) {
                   type="date"
                   value={startDateInput}
                   onChange={(e) => setStartDateInput(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full"
-                  placeholder="Start date"
+                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full text-sm"
                 />
               </div>
               <div>
@@ -411,15 +456,14 @@ export default function OrderStatusListPage({ status }) {
                   type="date"
                   value={endDateInput}
                   onChange={(e) => setEndDateInput(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full"
-                  placeholder="End date"
+                  className="px-3 py-2 rounded-lg border border-gray-200 shadow bg-white/80 w-full text-sm"
                 />
               </div>
             </div>
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors"
+                className="mt-2 w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors text-sm font-medium"
               >
                 {t("common.filter") || "Filter"}
               </button>
@@ -427,49 +471,148 @@ export default function OrderStatusListPage({ status }) {
           </form>
         )}
       </div>
-      {/* Batch update bar */}
-      <div className="flex items-center gap-2 mb-2">
-        <input
-          type="checkbox"
-          ref={selectAllRef}
-          checked={isAllPageSelected}
-          onChange={handleSelectAll}
-          disabled={orders.length === 0}
-        />
-        <span className="text-sm">{t("common.select")}</span>
+
+      {/* Batch update bar - RESPONSIVE: flex-wrap */}
+      <div className="flex flex-wrap items-center gap-2 mb-3 bg-white/50 p-2 rounded-lg border border-white/40">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            ref={selectAllRef}
+            checked={isAllPageSelected}
+            onChange={handleSelectAll}
+            disabled={orders.length === 0}
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            {t("common.select")}
+          </span>
+        </label>
+        <div className="h-4 w-px bg-gray-300 mx-1 hidden sm:block"></div>
         <button
-          className="px-3 py-1 bg-blue-600 text-white rounded shadow disabled:opacity-50"
+          className="flex-1 sm:flex-none px-3 py-1.5 bg-blue-600 text-white text-sm rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
           disabled={selectedOrders.length === 0}
           onClick={() => setShowBatchModal(true)}
         >
-          {t("order.update_order") || "Batch Update Status"}
+          {t("order.update_order") || "Update Status"}
         </button>
         {selectedOrders.length > 0 && (
-          <span className="text-xs text-gray-500">
+          <span className="w-full sm:w-auto text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">
             {selectedOrders.length} {t("order.orders_count")}
           </span>
         )}
       </div>
 
       {/* Summary search */}
-      <div className="text-sm text-gray-600 mb-2">{summaryText}</div>
+      <div className="text-xs md:text-sm text-gray-600 mb-3 px-1">
+        {summaryText}
+      </div>
 
-      {/* Table */}
-      <div className="backdrop-blur-xl bg-white/60 shadow-lg rounded-lg overflow-hidden border border-white/30">
+      {/* Mobile Card View (Visible < md) */}
+      <div className="md:hidden space-y-4">
+        {orders.length === 0 && (
+          <div className="text-center py-8 bg-white/60 rounded-lg shadow border border-white/30 text-gray-500">
+            {t("order.no_orders_found")}
+          </div>
+        )}
+        {orders.map((order) => {
+          const payment = order.payment?.paymentMethod || order.paymentMethod;
+          const orderNumber = order.orderNumber ?? order.id;
+          return (
+            <div
+              key={orderNumber}
+              className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ${
+                selectedOrders.includes(orderNumber)
+                  ? "ring-2 ring-blue-500"
+                  : ""
+              }`}
+            >
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedOrders.includes(orderNumber)}
+                      onChange={() => handleSelectOrder(orderNumber)}
+                      className="w-5 h-5 rounded border-gray-300"
+                    />
+                    <div>
+                      <div className="font-bold text-gray-900">
+                        #{orderNumber}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatDateTime(order.orderDate)}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase shadow-sm ${
+                      statusColors[order.status] ?? "bg-gray-400"
+                    }`}
+                  >
+                    {t(`order.status.${order.status?.toLowerCase()}`) ||
+                      order.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-sm border-t border-b border-gray-100 py-3">
+                  <div>
+                    <span className="text-gray-500 text-xs block">
+                      {t("account.main.full_name")}
+                    </span>
+                    <span className="font-medium">{order.customerName}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-gray-500 text-xs block">
+                      {t("order.total_amount")}
+                    </span>
+                    <span className="font-bold text-blue-700">
+                      {formatVND(order.totalAmount)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div
+                    className={`flex items-center gap-1.5 text-sm ${
+                      paymentMethodColors[payment] ?? "text-gray-600"
+                    }`}
+                  >
+                    {paymentMethodIcons[payment]}
+                    <span className="truncate max-w-[120px]">
+                      {payment === "CASH_ON_DELIVERY" && "COD"}
+                      {payment === "PAYPAL" && "PayPal"}
+                      {payment === "BANK_TRANSFER" && "Bank"}
+                      {!payment && "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <IconEye size={18} />
+                    </button>
+                    <button
+                      className="p-2 bg-yellow-50 text-yellow-600 rounded-full hover:bg-yellow-100 transition"
+                      onClick={() => setEditingOrder(order)}
+                    >
+                      <IconEdit size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View (Visible >= md) */}
+      <div className="hidden md:block backdrop-blur-xl bg-white/60 shadow-lg rounded-lg overflow-hidden border border-white/30">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-400">
+            <thead className="bg-gray-400 ">
               <tr>
-                <th className="p-3">
-                  <input
-                    type="checkbox"
-                    ref={selectAllRef}
-                    checked={isAllPageSelected}
-                    onChange={handleSelectAll}
-                    disabled={orders.length === 0}
-                  />
-                </th>
-                {/* ...existing columns... */}
+                <th className="p-3 w-10"></th>
                 <th className="p-3 whitespace-nowrap">{t("order.number")}</th>
                 <th className="p-3 whitespace-nowrap">
                   {t("account.main.full_name")}
@@ -484,7 +627,7 @@ export default function OrderStatusListPage({ status }) {
                 <th className="p-3 whitespace-nowrap">
                   {t("order.total_amount")}
                 </th>
-                <th className="p-3 whitespace-nowrap">
+                <th className="p-3 whitespace-nowrap text-right">
                   {t("admin.brand.columns.actions")}
                 </th>
               </tr>
@@ -497,26 +640,28 @@ export default function OrderStatusListPage({ status }) {
                 return (
                   <tr
                     key={orderNumber}
-                    className="border-b hover:bg-white/80 transition-colors"
+                    className="border-b hover:bg-white/80 transition-colors last:border-b-0"
                   >
                     <td className="p-3">
                       <input
                         type="checkbox"
                         checked={selectedOrders.includes(orderNumber)}
                         onChange={() => handleSelectOrder(orderNumber)}
+                        className="w-4 h-4 rounded border-gray-300"
                       />
                     </td>
-                    {/* ...existing columns... */}
-                    <td className="p-3 whitespace-nowrap">{orderNumber}</td>
+                    <td className="p-3 whitespace-nowrap font-medium text-gray-900">
+                      {orderNumber}
+                    </td>
                     <td className="p-3 whitespace-nowrap">
                       {order.customerName}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-sm text-gray-600">
                       {formatDateTime(order.orderDate)}
                     </td>
                     <td className="p-3 whitespace-nowrap">
                       <span
-                        className={`text-white text-xs px-3 py-1 rounded-lg shadow whitespace-nowrap ${
+                        className={`text-white text-xs px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap font-medium ${
                           statusColors[order.status] ?? "bg-gray-400"
                         }`}
                       >
@@ -526,7 +671,7 @@ export default function OrderStatusListPage({ status }) {
                     </td>
                     <td className="p-3 whitespace-nowrap">
                       <span
-                        className={`flex items-center gap-2 ${
+                        className={`flex items-center gap-2 text-sm font-medium ${
                           paymentMethodColors[payment] ?? "text-gray-600"
                         }`}
                       >
@@ -541,32 +686,37 @@ export default function OrderStatusListPage({ status }) {
                         </span>
                       </span>
                     </td>
-                    <td className="p-3 font-semibold whitespace-nowrap">
+                    <td className="p-3 font-bold whitespace-nowrap text-gray-900">
                       {formatVND(order.totalAmount)}
                     </td>
-                    <td className="p-3 space-x-2 whitespace-nowrap">
-                      <button
-                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                        onClick={() => setSelectedOrder(order)}
-                        title={t("common.view_details")}
-                      >
-                        <IconEye size={18} />
-                      </button>
-                      <button
-                        className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
-                        onClick={() => setEditingOrder(order)}
-                        title={t("common.edit")}
-                      >
-                        <IconEdit size={18} />
-                      </button>
+                    <td className="p-3 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          onClick={() => setSelectedOrder(order)}
+                          title={t("common.view_details")}
+                        >
+                          <IconEye size={20} />
+                        </button>
+                        <button
+                          className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors cursor-pointer"
+                          onClick={() => setEditingOrder(order)}
+                          title={t("common.edit")}
+                        >
+                          <IconEdit size={20} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
               {orders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center py-6 text-gray-500">
-                    {t("order.no_orders_found")}
+                  <td colSpan={8} className="text-center py-12 text-gray-500">
+                    <div className="flex flex-col items-center justify-center">
+                      <IconPackage size={48} className="text-gray-300 mb-2" />
+                      <p>{t("order.no_orders_found")}</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -575,45 +725,45 @@ export default function OrderStatusListPage({ status }) {
         </div>
       </div>
 
-      {/* Batch update modal */}
+      {/* Batch update modal - RESPONSIVE: Width and Max Height */}
       {showBatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div
-            className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-scaleIn"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md w-[90%] md:w-full flex flex-col overflow-hidden animate-scaleIn max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative rounded-t-2xl">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setShowBatchModal(false)}
-                className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
                 aria-label={t("common.close")}
-                disabled={isBatchUpdating}
+                disabled={isProcessing}
               >
-                <IconX size={16} />
+                <IconX size={20} />
               </button>
-              <h2 className="text-lg font-semibold">
-                {t("order.update_order")}
-              </h2>
+              <h2 className="text-lg font-bold">{t("order.update_order")}</h2>
               <div className="text-xs text-blue-100 opacity-90 mt-1">
                 {t("order.orders_count")}: {selectedOrders.length}
               </div>
             </div>
-            {/* Body */}
+
+            {/* Body - Scrollable */}
             <form
               onSubmit={handleBatchUpdate}
-              className="flex-1 flex flex-col gap-3 p-6"
+              className="flex-1 flex flex-col gap-4 p-6 overflow-y-auto"
             >
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   {t("order.status_label")}
                 </label>
                 <select
                   value={batchStatus}
                   onChange={(e) => setBatchStatus(e.target.value)}
-                  className="w-full border rounded px-3 py-2 border-gray-300"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                   required
+                  disabled={isProcessing}
                 >
                   <option value="">{t("common.select")}</option>
                   {allowedBatchStatuses.map((status) => (
@@ -624,36 +774,57 @@ export default function OrderStatusListPage({ status }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   {t("common.note")}
                 </label>
                 <textarea
                   value={batchNotes}
                   onChange={(e) => setBatchNotes(e.target.value)}
-                  className="w-full border rounded px-3 py-2 border-gray-300"
-                  rows={2}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  rows={3}
                   placeholder={t("common.note")}
+                  disabled={isProcessing}
                 />
               </div>
-              <div className="flex justify-end gap-2 mt-2">
+
+              {/* Progress indicator */}
+              {isProcessing && (
+                <div className="space-y-2 mt-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">
+                      {t("common.processing") || "Processing"}...
+                    </span>
+                    <span className="font-semibold text-blue-600">
+                      {batchProgress}%
+                    </span>
+                  </div>
+                  <div className="relative w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-blue-600 transition-all duration-300 ease-out"
+                      style={{ width: `${batchProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-gray-200"
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium text-sm"
                   onClick={() => setShowBatchModal(false)}
-                  disabled={isBatchUpdating}
+                  disabled={isProcessing}
                 >
                   {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white flex items-center justify-center gap-2"
-                  disabled={!batchStatus || isBatchUpdating}
+                  className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 font-medium text-sm disabled:opacity-70 disabled:shadow-none flex items-center gap-2"
+                  disabled={!batchStatus || isProcessing}
                 >
-                  {isBatchUpdating ? (
-                    <span className="inline-block w-5 h-5 border-2 border-white border-t-blue-400 rounded-full animate-spin"></span>
-                  ) : (
-                    t("common.save")
+                  {isProcessing && (
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   )}
+                  {t("common.save")}
                 </button>
               </div>
             </form>
@@ -661,11 +832,14 @@ export default function OrderStatusListPage({ status }) {
         </div>
       )}
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+      <div className="mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
+
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}

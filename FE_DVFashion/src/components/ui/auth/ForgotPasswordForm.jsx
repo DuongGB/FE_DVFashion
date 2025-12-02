@@ -8,7 +8,6 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
     useAuth();
   const { t, i18n } = useTranslation();
   const [contact, setContact] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [contactType, setContactType] = useState(""); // "email" or "phone"
@@ -157,12 +156,15 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-6 w-20 h-10">
-        <img
-          src="./src/assets/logo_DVF.png"
-          alt="DVFashion Logo"
-          className="w-full h-full object-contain"
-        />
+      <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center">
+          <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
+            DV
+          </span>
+          <span className="text-2xl sm:text-3xl font-light tracking-wider text-gray-700 pl-2">
+            Fashion
+          </span>
+        </div>
       </div>
 
       {!isEmailSent ? (
@@ -188,13 +190,16 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                   errors ? "border-red-500" : "border-gray-300"
                 }`}
                 required
+                disabled={isForgotPasswordLoading}
               />
               <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200">
                 {getContactIcon()}
               </span>
             </div>
-            {errors && (
-              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">{errors}</p>
+            {errors.contact && (
+              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+                {errors.contact}
+              </p>
             )}
 
             {/* General Error */}
@@ -208,10 +213,10 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading || !contact.trim()}
+              disabled={isForgotPasswordLoading || !contact.trim()}
               className="w-full bg-black text-white rounded-full py-4 text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isLoading ? (
+              {isForgotPasswordLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   {t("auth.forgot_password.sending")}

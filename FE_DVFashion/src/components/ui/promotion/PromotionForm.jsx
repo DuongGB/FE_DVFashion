@@ -37,6 +37,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const [removingProductId, setRemovingProductId] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
   const bannerInputRef = useRef();
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // state cho input chung
   const [bulkInput, setBulkInput] = useState({
@@ -123,9 +125,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         bannerFile: null,
         promotionProducts: (promotion.promotionProducts || []).map((pp) => ({
           id: pp.id ?? null,
-          // prefer explicit productId from API, fall back to nested product.id
           productId: pp.productId ?? pp.product?.id ?? null,
-          // name fallbacks in case API uses different keys
           name:
             pp.product?.name ??
             pp.productName ??
@@ -148,7 +148,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         })),
       }));
     } else if (!promotion && isOpen) {
-      // Reset form cho create mới
       setFormData({
         name: "",
         description: "",
@@ -164,6 +163,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       });
     }
     setErrors({});
+    setBatchProgress(0);
+    setIsProcessing(false);
   }, [promotion, isOpen]);
 
   // Product modal state
@@ -171,7 +172,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
 
   // Xử lý thêm sản phẩm từ modal
   const handleAddProducts = (selectedProducts) => {
-    // merge selected products into formData.promotionProducts, avoid duplicates
     setFormData((prev) => {
       const existingById = new Set(
         prev.promotionProducts.map((p) => p.productId)
@@ -183,7 +183,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           productId: p.productId,
           name: p.name,
           originalPrice: p.originalPrice ?? 0,
-          // use null for empty numeric fields so backend BigDecimal parsing won't fail
           promotionPrice: null,
           discountPercentage: null,
           stockQuantity: 1,
@@ -200,29 +199,24 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const handleRemoveProduct = async (identifier) => {
     if (identifier === null || identifier === undefined) return;
 
-    // Tìm item hiện tại trong state (có thể match bằng promotionProduct.id (db id) hoặc productId)
     const item = formData.promotionProducts.find(
       (p) => p.id === identifier || p.productId === identifier
     );
     if (!item) return;
 
-    // determine productId to send to backend (backend expects productId)
     const productIdToSend =
       item.productId ??
       (item.product && (item.product.id ?? item.productId)) ??
       null;
 
-    // Nếu đang edit promotion và có productId hợp lệ -> gọi API DELETE
     if (promotion && productIdToSend != null) {
       try {
-        // use promotionProduct id or productId as removing key for UI feedback
         setRemovingProductId(item.id ?? productIdToSend);
         await removeProduct({
           promotionId: promotion.id,
           productId: productIdToSend,
           lang: language,
         });
-        // Remove locally after successful server removal
         setFormData((prev) => ({
           ...prev,
           promotionProducts: prev.promotionProducts.filter(
@@ -245,14 +239,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         setRemovingProductId(null);
       }
     } else {
-      // Nếu không có productId (ví dụ item chưa đầy đủ) hoặc đang tạo mới -> chỉ xóa local
       setFormData((prev) => ({
         ...prev,
         promotionProducts: prev.promotionProducts.filter(
           (p) => p.id !== identifier && p.productId !== identifier
         ),
       }));
-      // Nếu đang edit nhưng không có productId, thông báo cho user
       if (promotion && item.id != null && productIdToSend == null) {
         toast.warn(
           t("admin.promotion.form.product_remove_local_only") ||
@@ -268,7 +260,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       ...prev,
       promotionProducts: prev.promotionProducts.map((p) => {
         if (p.productId !== productId) return p;
-        // Đảm bảo chỉ một trong hai trường được điền
         const updated = { ...p, [field]: value };
         if (field === "promotionPrice" && value !== "" && value !== null) {
           updated.discountPercentage = "";
@@ -287,7 +278,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
     if (type === "file") {
       const file = files[0] || null;
       setFormData((prev) => ({ ...prev, [name]: file }));
-      // Preview image
       if (file) {
         const reader = new FileReader();
         reader.onload = (ev) => setBannerPreview(ev.target.result);
@@ -302,7 +292,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Clear error khi user thay đổi
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -333,7 +322,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate required fields
     if (!formData.name.trim()) {
       newErrors.name = t("admin.promotion.form.promotion_name_required");
     }
@@ -350,7 +338,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.endDate = t("admin.promotion.form.end_date_required");
     }
 
-    // Validate startDate >= today
     if (formData.startDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -374,7 +361,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.endDate = t("admin.promotion.form.end_date_error");
     }
 
-    // Validate optional numeric fields
     if (formData.minOrderAmount && parseFloat(formData.minOrderAmount) < 0) {
       newErrors.minOrderAmount = t(
         "admin.promotion.form.min_order_amount_error"
@@ -385,7 +371,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       newErrors.maxUsages = t("admin.promotion.form.max_usages_error");
     }
 
-    // Validate promotionProducts presence (backend: @NotEmpty)
     if (
       !formData.promotionProducts ||
       formData.promotionProducts.length === 0
@@ -408,6 +393,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       return;
     }
 
+    if (isProcessing) return;
+
     const productErrors = [];
     const processedProducts = [];
 
@@ -427,7 +414,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           ? Number(p.discountPercentage)
           : null;
 
-      // If neither provided -> invalid (CreatePromotionRequest requires promotionPrice non-null)
       if (promotionPrice === null && discountPercentage === null) {
         productErrors.push(
           `product ${p.productId}: promotionPrice or discountPercentage required`
@@ -435,7 +421,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         continue;
       }
 
-      // If only discount -> compute promotionPrice
       if (promotionPrice === null && discountPercentage !== null) {
         if (discountPercentage < 0 || discountPercentage > 100) {
           productErrors.push(
@@ -444,9 +429,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           continue;
         }
         promotionPrice = round2(original * (1 - discountPercentage / 100));
-      }
-      // If only promotionPrice -> compute discount
-      else if (promotionPrice !== null && discountPercentage === null) {
+      } else if (promotionPrice !== null && discountPercentage === null) {
         if (original <= 0) {
           discountPercentage = 0;
         } else {
@@ -456,14 +439,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           );
         }
       } else if (promotionPrice !== null && discountPercentage !== null) {
-        // both provided -> basic consistency check
         const expected = calculateDiscountPercentage(original, promotionPrice);
         if (Math.abs(expected - discountPercentage) > 1) {
           discountPercentage = expected;
         }
       }
 
-      // Validate promotionPrice < original (if original > 0)
       if (p.id == null && original > 0 && promotionPrice >= original) {
         productErrors.push(
           `product ${p.productId}: promotionPrice must be less than original price`
@@ -471,7 +452,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         continue;
       }
 
-      // Validate promotionPrice < original (if original > 0)
       if (
         !promotion &&
         p.id == null &&
@@ -484,7 +464,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         continue;
       }
 
-      // Validate stock & maxQuantity for new items (if id is null assume new)
       if (p.id == null) {
         if (p.stockQuantity == null || p.stockQuantity === "") {
           productErrors.push(
@@ -500,7 +479,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         }
       }
 
-      // normalize numeric fields
       const normalized = {
         id: p.id ?? undefined,
         productId: p.productId,
@@ -523,20 +501,31 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
       return;
     }
 
-    // Format data theo CreatePromotionRequest (backend expects part 'promotion' as JSON)
     const submitData = {
       name: formData.name.trim(),
       description: formData.description?.trim() || null,
-      type: formData.type, // must be one of backend enum strings
-      startDate: formData.startDate, // yyyy-MM-dd
-      endDate: formData.endDate, // yyyy-MM-dd
+      type: formData.type,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
       active: formData.active,
       promotionProducts: processedProducts,
-      // bannerFile handled by promotionAPI via FormData; we still attach here and promotionAPI will include it
       bannerFile: formData.bannerFile || undefined,
     };
 
     console.log("[handleSubmit] submitData prepared", submitData);
+
+    setIsProcessing(true);
+    setBatchProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setBatchProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 200);
 
     try {
       if (promotion) {
@@ -545,7 +534,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           promotionData: submitData,
           lang: language,
         });
-        // console.log("[handleSubmit] updatePromotion response", res);
+        clearInterval(progressInterval);
+        setBatchProgress(100);
         toast.success(t("admin.promotion.form.update_success"));
       } else {
         console.log("[handleSubmit] calling createPromotion", language);
@@ -553,19 +543,26 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
           promotionData: submitData,
           lang: language,
         });
-        // console.log("[handleSubmit] createPromotion response", res);
+        clearInterval(progressInterval);
+        setBatchProgress(100);
         toast.success(t("admin.promotion.form.create_success"));
       }
 
-      // Đóng form sau khi thành công
-      onClose();
+      setTimeout(() => {
+        setBatchProgress(0);
+        setIsProcessing(false);
+        onClose();
+      }, 500);
     } catch (error) {
+      clearInterval(progressInterval);
+      setBatchProgress(0);
+      setIsProcessing(false);
+
       console.error("[handleSubmit] Error submitting promotion:", error);
       if (error?.response) {
         console.error("[handleSubmit] error.response:", error.response);
       }
 
-      // Improved error handling
       let errorMessage = t("admin.promotion.form.create_error");
 
       if (error.response?.data?.message) {
@@ -590,12 +587,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
         className="backdrop-blur-xl bg-white/80 border border-white/30 rounded-2xl shadow-2xl w-full max-w-4xl relative overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header với gradient background */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative rounded-t-2xl">
           <button
             onClick={onClose}
-            disabled={isSubmitting}
-            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-black/50 transition-all duration-200 cursor-pointer disabled:opacity-50"
+            disabled={isProcessing}
+            className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-black/50 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IconX size={20} />
           </button>
@@ -638,7 +635,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                     errors.name
                       ? "border-red-500 bg-red-50"
@@ -665,7 +662,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   rows={4}
                   className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                   placeholder={
@@ -686,13 +683,12 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     name="bannerFile"
                     accept="image/*"
                     onChange={handleChange}
-                    disabled={isSubmitting}
-                    className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg"
+                    disabled={isProcessing}
+                    className="w-full backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg disabled:cursor-not-allowed"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {t("admin.promotion.form.banner_file_note")}
                   </p>
-                  {/* Banner preview */}
                   {bannerPreview && (
                     <div className="mt-2">
                       <img
@@ -716,7 +712,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   <button
                     type="button"
                     onClick={() => setProductModalOpen(true)}
-                    disabled={isSubmitting}
+                    disabled={isProcessing}
                     className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                   >
                     {t("admin.promotion.form.select_products_button") ||
@@ -724,7 +720,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </button>
                 </div>
               </div>
-              {/* Show product-level validation errors */}
               {errors.promotionProducts && (
                 <div className="mt-2">
                   <p className="text-red-500 text-sm flex items-start gap-2">
@@ -733,7 +728,6 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   </p>
                 </div>
               )}
-              {/* Bulk vào input danh sách sản phẩm đã chọn */}
               {!promotion &&
                 formData.promotionProducts &&
                 formData.promotionProducts.length > 0 && (
@@ -751,8 +745,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         onChange={handleBulkInputChange}
                         className="w-32 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                         disabled={
-                          bulkInput.discountPercentage !== "" &&
-                          bulkInput.discountPercentage !== null
+                          isProcessing ||
+                          (bulkInput.discountPercentage !== "" &&
+                            bulkInput.discountPercentage !== null)
                         }
                       />
                     </div>
@@ -770,8 +765,9 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         onChange={handleBulkInputChange}
                         className="w-24 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                         disabled={
-                          bulkInput.promotionPrice !== "" &&
-                          bulkInput.promotionPrice !== null
+                          isProcessing ||
+                          (bulkInput.promotionPrice !== "" &&
+                            bulkInput.promotionPrice !== null)
                         }
                       />
                     </div>
@@ -784,6 +780,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         min="0"
                         step="1"
                         onChange={handleBulkInputChange}
+                        disabled={isProcessing}
                         className="w-20 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                       />
                     </div>
@@ -796,13 +793,15 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                         min="1"
                         step="1"
                         onChange={handleBulkInputChange}
+                        disabled={isProcessing}
                         className="w-20 px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={handleApplyBulkInput}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
+                      disabled={isProcessing}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       {t("admin.promotion.form.apply_to_all")}
                     </button>
@@ -848,11 +847,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                 )
                               }
                               disabled={
-                                isSubmitting ||
+                                isProcessing ||
                                 (p.discountPercentage !== null &&
                                   p.discountPercentage !== "")
                               }
-                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow disabled:bg-gray-50"
                             />
                           </div>
                           <div className="w-28">
@@ -875,11 +874,11 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                 )
                               }
                               disabled={
-                                isSubmitting ||
+                                isProcessing ||
                                 (p.promotionPrice !== null &&
                                   p.promotionPrice !== "")
                               }
-                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow disabled:bg-gray-50"
                             />
                           </div>
                           <div className="w-24">
@@ -898,7 +897,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                   e.target.value
                                 )
                               }
-                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                              disabled={isProcessing}
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow disabled:bg-gray-50"
                             />
                           </div>
                           <div className="w-28">
@@ -917,7 +917,8 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                   e.target.value
                                 )
                               }
-                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow"
+                              disabled={isProcessing}
+                              className="w-full px-2 py-1 backdrop-blur-sm bg-white/80 border border-white/30 rounded-md shadow disabled:bg-gray-50"
                             />
                           </div>
                           <div>
@@ -927,7 +928,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                                 handleRemoveProduct(p.productId ?? p.id)
                               }
                               disabled={
-                                isSubmitting ||
+                                isProcessing ||
                                 removingProductId === (p.id ?? p.productId)
                               }
                               className={`text-sm px-2 ${
@@ -972,7 +973,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     name="type"
                     value={formData.type}
                     onChange={handleChange}
-                    disabled={isSubmitting}
+                    disabled={isProcessing}
                     className="w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
                     required
                   >
@@ -1011,7 +1012,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    disabled={isSubmitting}
+                    disabled={isProcessing}
                     className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                       errors.startDate
                         ? "border-red-500 bg-red-50"
@@ -1035,7 +1036,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    disabled={isSubmitting}
+                    disabled={isProcessing}
                     className={`w-full px-3 py-2 backdrop-blur-sm bg-white/80 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
                       errors.endDate
                         ? "border-red-500 bg-red-50"
@@ -1065,7 +1066,7 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
                   name="active"
                   checked={formData.active}
                   onChange={handleChange}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed transition-all duration-200"
                 />
                 <div>
@@ -1079,14 +1080,53 @@ const PromotionForm = ({ isOpen, onClose, promotion = null }) => {
               </label>
             </div>
 
+            {/* Progress indicator */}
+            {isProcessing && (
+              <div className="backdrop-blur-xl bg-white/60 border border-white/30 rounded-xl p-6 shadow-lg">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 font-medium">
+                      {t("common.processing") || "Processing"}...
+                    </span>
+                    <span className="font-bold text-blue-600">
+                      {batchProgress}%
+                    </span>
+                  </div>
+                  <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 transition-all duration-300 ease-out"
+                      style={{ width: `${batchProgress}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">
+                    {promotion
+                      ? t("admin.promotion.form.updating_progress") ||
+                        "Updating promotion..."
+                      : t("admin.promotion.form.creating_progress") ||
+                        "Creating promotion..."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-6 border-t border-white/30">
               <button
+                type="button"
+                onClick={onClose}
+                disabled={isProcessing}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isProcessing}
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
-                {isSubmitting ? (
+                {isProcessing ? (
                   <>
                     <IconLoader2 size={16} className="animate-spin" />
                     {promotion
