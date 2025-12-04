@@ -13,7 +13,6 @@ import AdminLayout from "./layouts/AdminLayout";
 import CartLayout from "./layouts/CartLayout";
 import MainLayout from "./layouts/MainLayout";
 import AdminPage from "./pages/admin/AdminPage";
-import BrandPage from "./pages/admin/BrandPage";
 import CategoryPage from "./pages/admin/CategoryPage";
 import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
 import CustomerSupportPage from "./pages/admin/CustomerSupportPage";
@@ -62,7 +61,6 @@ function AppRoutes() {
             <Route path="inventories" element={<InventoryPage />} />
             <Route path="products" element={<ProductPage />} />
             <Route path="categories" element={<CategoryPage />} />
-            <Route path="brands" element={<BrandPage />} />
             <Route path="reviews" element={<ReviewPage />} />
             <Route path="promotions" element={<PromotionPage />} />
             <Route path="customers" element={<CustomerManagermentPage />} />
