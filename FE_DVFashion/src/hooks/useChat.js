@@ -13,7 +13,7 @@ export const useChat = () => {
   const createGuestChatRoom = useMutation({
     mutationFn: ({ name, phone }) => chatAPI.createGuestChatRoom(name, phone),
     onSuccess: (data) => {
-      console.log("Guest chat room created:", data);
+      // console.log("Guest chat room created:", data);
       // Save room code to localStorage
       localStorage.setItem("chatRoomCode", data.data.roomCode);
       // Invalidate queries
@@ -53,9 +53,9 @@ export const useChat = () => {
       queryFn: () => chatAPI.getChatMessages(roomCode, page, size),
       enabled: !!roomCode,
       refetchInterval: isWebSocketConnected ? false : 3000, // Only poll if WebSocket is not connected
-      onSuccess: (data) => {
-        console.log(" Chat messages fetched successfully:", data);
-      },
+      // onSuccess: (data) => {
+      //   console.log(" Chat messages fetched successfully:", data);
+      // },
     });
   };
 
@@ -114,25 +114,25 @@ export const useChat = () => {
     }
 
     if (connectionPromiseRef.current && websocketService.isConnected()) {
-      console.log("✅ WebSocket already connected for room:", roomCode);
+      // console.log("✅ WebSocket already connected for room:", roomCode);
       return connectionPromiseRef.current;
     }
 
-    console.log("🔌 Initiating WebSocket connection for room:", roomCode);
+    // console.log("🔌 Initiating WebSocket connection for room:", roomCode);
 
     connectionPromiseRef.current = new Promise((resolve, reject) => {
       websocketService.connect(
         () => {
-          console.log("✅ WebSocket Connected Successfully");
-          console.log("📍 Room Code:", roomCode);
-          console.log("🌐 WebSocket State:", {
-            isConnected: websocketService.isConnected(),
-            timestamp: new Date().toISOString(),
-          });
+          // console.log("✅ WebSocket Connected Successfully");
+          // console.log("📍 Room Code:", roomCode);
+          // console.log("🌐 WebSocket State:", {
+          //   isConnected: websocketService.isConnected(),
+          //   timestamp: new Date().toISOString(),
+          // });
           setIsWebSocketConnected(true);
 
           // Subscribe to chat messages
-          console.log("📡 Subscribing to /topic/chat/" + roomCode);
+          // console.log("📡 Subscribing to /topic/chat/" + roomCode);
           const messageSubscription = websocketService.subscribe(
             `/topic/chat/${roomCode}`,
             (message) => {
@@ -152,22 +152,22 @@ export const useChat = () => {
           }
 
           // Subscribe to typing indicators
-          console.log("📡 Subscribing to /topic/chat/" + roomCode + "/typing");
+          // console.log("📡 Subscribing to /topic/chat/" + roomCode + "/typing");
           const typingSubscription = websocketService.subscribe(
             `/topic/chat/${roomCode}/typing`,
             (indicator) => {
-              console.log("⌨️ Typing indicator received:", indicator);
+              // console.log("⌨️ Typing indicator received:", indicator);
               if (onTypingIndicator) onTypingIndicator(indicator);
             }
           );
 
           if (typingSubscription) {
-            console.log("✅ Successfully subscribed to typing indicators");
+            // console.log("✅ Successfully subscribed to typing indicators");
           }
 
-          console.log(
-            "🎉 WebSocket connection fully established and subscribed"
-          );
+          // console.log(
+          //   "🎉 WebSocket connection fully established and subscribed"
+          // );
           resolve();
         },
         (error) => {
