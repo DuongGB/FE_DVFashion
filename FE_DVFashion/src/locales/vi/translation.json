@@ -1084,6 +1084,7 @@
       "showing_results": "Hiển thị {{current}} trên tổng số {{total}} khuyến mãi",
       "no_description": "Không có mô tả",
       "form": {
+        "bulk_input": " Nhập nhiều sản phẩm",
         "creating_progress": "Đang tạo khuyến mãi...",
         "updating_progress": "Đang cập nhật khuyến mãi...",
         "apply_to_all": "Áp dụng",
