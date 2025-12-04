@@ -1,25 +1,22 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useChat } from "../../hooks/useChat";
-import ChatMessage from "../../components/ui/chat/ChatMessage";
-import ChatInput from "../../components/ui/chat/ChatInput";
-import { useAuth } from "../../hooks/useAuth";
-import { useTranslation } from "react-i18next";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import chatAPI from "../../services/chatAPI";
-import { formatDistanceToNow } from "date-fns";
-import { vi, enUS } from "date-fns/locale";
-import { isAdminMessage } from "../../utils/isAdminMessage";
-import websocketService from "../../services/websocketService";
 import {
-  IconUser,
-  IconUserCircle,
-  IconUserQuestion,
-  IconMessage,
   IconChevronLeft,
   IconChevronRight,
-  IconX,
   IconMenu2,
+  IconMessage,
+  IconUserCircle,
+  IconUserQuestion,
 } from "@tabler/icons-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { enUS, vi } from "date-fns/locale";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import ChatInput from "../../components/ui/chat/ChatInput";
+import ChatMessage from "../../components/ui/chat/ChatMessage";
+import { useAuth } from "../../hooks/useAuth";
+import { useChat } from "../../hooks/useChat";
+import chatAPI from "../../services/chatAPI";
+import { isAdminMessage } from "../../utils/isAdminMessage";
 
 const CustomerSupportPage = () => {
   const { t, i18n } = useTranslation();
@@ -29,7 +26,7 @@ const CustomerSupportPage = () => {
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const [pendingMessage, setPendingMessage] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
     useChatRoom,
