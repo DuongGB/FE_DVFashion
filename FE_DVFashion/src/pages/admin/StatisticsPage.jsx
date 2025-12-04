@@ -295,36 +295,38 @@ export default function StatisticsPage() {
     (mode === "year" && yearly.isLoading);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto space-y-6 px-2 sm:px-4">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            {t("admin.statistics.title")}
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-2 gap-4">
+          {/* Header */}
+          <h1 className="text-2xl font-bold text-gray-800">
+            {t("admin.statistics.title") || "Thống kê doanh thu"}
           </h1>
           {/* Nút xuất báo cáo */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 w-full lg:w-auto">
             {/* Nút xuất báo cáo doanh thu */}
             <button
               onClick={handleExportReport}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
               title={t("admin.statistics.export")}
             >
               <IconDownload size={18} />
-              {t("admin.statistics.export")}
+              <span className="whitespace-nowrap">
+                {t("admin.statistics.export")}
+              </span>
             </button>
             {/* Nút xuất báo cáo thuế */}
             <button
               onClick={() => handleExportTax("011")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
               title="Xuất bảng kê 01-1/GTGT"
             >
               <IconDownload size={16} />
-              01-1/GTGT
+              <span className="whitespace-nowrap">01-1/GTGT</span>
             </button>
             {/* <button
               onClick={() => handleExportTax("04")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
               title="Xuất tờ khai 04/GTGT"
             >
               <IconDownload size={16} />
@@ -332,23 +334,23 @@ export default function StatisticsPage() {
             </button> */}
             <button
               onClick={() => handleExportTax("014A")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
               title="Xuất bảng phân bổ 01-4A/GTGT"
             >
               <IconDownload size={16} />
-              01-4A/GTGT
+              <span className="whitespace-nowrap">01-4A/GTGT</span>
             </button>
           </div>
         </div>
 
         {/* Mode Selector và Date Range */}
-        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200">
-          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 items-start md:items-center">
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200">
+          <div className="flex flex-col xl:flex-row flex-wrap gap-4 items-start xl:items-center">
             {/* Mode buttons */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex gap-2 w-full xl:w-auto">
               <button
                 onClick={() => setMode("day")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex justify-center items-center ${
                   mode === "day"
                     ? "bg-blue-500 text-white shadow-md"
                     : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -359,7 +361,7 @@ export default function StatisticsPage() {
               </button>
               <button
                 onClick={() => setMode("month")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex justify-center items-center ${
                   mode === "month"
                     ? "bg-blue-500 text-white shadow-md"
                     : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -370,7 +372,7 @@ export default function StatisticsPage() {
               </button>
               <button
                 onClick={() => setMode("quarter")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex justify-center items-center ${
                   mode === "quarter"
                     ? "bg-blue-500 text-white shadow-md"
                     : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -381,7 +383,7 @@ export default function StatisticsPage() {
               </button>
               <button
                 onClick={() => setMode("year")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex justify-center items-center ${
                   mode === "year"
                     ? "bg-blue-500 text-white shadow-md"
                     : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -394,34 +396,38 @@ export default function StatisticsPage() {
 
             {/* Date Range Filter (only for daily mode) */}
             {mode === "day" && (
-              <div className="flex flex-col sm:flex-row items-center gap-2 ml-0 sm:ml-auto">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto xl:ml-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label className="text-sm font-medium text-gray-700 min-w-[30px]">
                     {t("admin.statistics.date_range.from") || "Từ"}:
                   </label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label className="text-sm font-medium text-gray-700 min-w-[30px]">
                     {t("admin.statistics.date_range.to") || "Đến"}:
                   </label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                   />
                 </div>
               </div>
             )}
 
             {/* Nút chọn năm */}
-            <div className="flex items-center gap-2 ml-0 sm:ml-auto mt-2 sm:mt-0">
+            <div
+              className={`flex items-center gap-2 ${
+                mode !== "day" ? "ml-auto" : ""
+              }`}
+            >
               <button
                 onClick={() => setYear(year - 1)}
                 className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -442,7 +448,7 @@ export default function StatisticsPage() {
         </div>
 
         {/* Revenue Card */}
-        <div className="bg-white rounded-xl shadow p-3 sm:p-4 border border-gray-100 flex flex-col sm:flex-row items-center gap-4 mt-2">
+        <div className="bg-white rounded-xl shadow p-4 border border-gray-100 flex items-center gap-4 mt-2">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-500 mb-0.5">
               {mode === "day"
@@ -453,7 +459,7 @@ export default function StatisticsPage() {
                 ? t("admin.statistics.cards.revenue.quarterly")
                 : t("admin.statistics.cards.revenue.yearly")}
             </p>
-            <h3 className="text-2xl font-bold text-blue-600 leading-tight">
+            <h3 className="text-xl md:text-2xl font-bold text-blue-600 leading-tight break-all">
               {mode === "quarter"
                 ? vnd(totalQuarterRevenue)
                 : mode === "day"
@@ -472,23 +478,25 @@ export default function StatisticsPage() {
                 : vnd(total.data ?? 0)}
             </h3>
           </div>
-          <div className="p-2 bg-blue-50 rounded-full">
+          <div className="p-2 bg-blue-50 rounded-full flex-shrink-0">
             <IconChartBar size={24} className="text-blue-500" />
           </div>
         </div>
 
         {/* Main Chart */}
-        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <IconChartBar size={20} className="text-blue-500" />
-              {mode === "day"
-                ? t("admin.statistics.chart.title_daily")
-                : mode === "month"
-                ? t("admin.statistics.chart.title_monthly")
-                : mode === "quarter"
-                ? t("admin.statistics.chart.title_quarterly")
-                : t("admin.statistics.chart.title_yearly")}
+              <IconChartBar size={20} className="text-blue-500 flex-shrink-0" />
+              <span className="truncate">
+                {mode === "day"
+                  ? t("admin.statistics.chart.title_daily")
+                  : mode === "month"
+                  ? t("admin.statistics.chart.title_monthly")
+                  : mode === "quarter"
+                  ? t("admin.statistics.chart.title_quarterly")
+                  : t("admin.statistics.chart.title_yearly")}
+              </span>
             </h3>
           </div>
 
@@ -504,13 +512,15 @@ export default function StatisticsPage() {
           ) : chartData.length > 1 &&
             (mode !== "year" ||
               (mode === "year" && yearly.data && yearly.data.length > 0)) ? (
-            <Chart
-              chartType="ColumnChart"
-              width="100%"
-              height="400px"
-              data={chartData}
-              options={columnOptions}
-            />
+            <div className="-ml-4 sm:ml-0">
+              <Chart
+                chartType="ColumnChart"
+                width="100%"
+                height="400px"
+                data={chartData}
+                options={columnOptions}
+              />
+            </div>
           ) : (
             <div className="h-96 flex items-center justify-center">
               <p className="text-gray-500">
@@ -522,26 +532,31 @@ export default function StatisticsPage() {
 
         {/* Pie Chart and Top 5 Months (only show when mode is 'month') */}
         {mode === "month" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pie Chart */}
-            <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
+            <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200 overflow-hidden">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <IconChartPie size={20} className="text-purple-500" />
+                <IconChartPie
+                  size={20}
+                  className="text-purple-500 flex-shrink-0"
+                />
                 {t("admin.statistics.pie_chart.title")}
               </h3>
               {pieData.length > 1 ? (
-                <Chart
-                  chartType="PieChart"
-                  width="100%"
-                  height="360px"
-                  data={pieData}
-                  options={pieOptions}
-                  loader={
-                    <div className="h-80 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                    </div>
-                  }
-                />
+                <div className="-ml-4 sm:ml-0">
+                  <Chart
+                    chartType="PieChart"
+                    width="100%"
+                    height="360px"
+                    data={pieData}
+                    options={pieOptions}
+                    loader={
+                      <div className="h-80 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                      </div>
+                    }
+                  />
+                </div>
               ) : (
                 <div className="h-80 flex items-center justify-center">
                   <p className="text-gray-500">
@@ -552,9 +567,12 @@ export default function StatisticsPage() {
             </div>
 
             {/* Top 5 Months */}
-            <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200">
+            <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <IconTrendingUp size={20} className="text-yellow-500" />
+                <IconTrendingUp
+                  size={20}
+                  className="text-yellow-500 flex-shrink-0"
+                />
                 {t("admin.statistics.pie_chart.top_months") ||
                   "Top 5 tháng cao nhất"}
               </h3>
@@ -566,7 +584,7 @@ export default function StatisticsPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0 ${
                           i === 0
                             ? "bg-gradient-to-br from-yellow-400 to-yellow-600"
                             : i === 1
@@ -582,7 +600,7 @@ export default function StatisticsPage() {
                         {m.period}
                       </span>
                     </div>
-                    <span className="text-blue-600 font-bold">
+                    <span className="text-blue-600 font-bold whitespace-nowrap">
                       {vnd(m.revenue)}
                     </span>
                   </div>
@@ -593,14 +611,17 @@ export default function StatisticsPage() {
         )}
 
         {/* Dự báo doanh thu */}
-        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200 overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <IconChartLine size={20} className="text-blue-500" />
+              <IconChartLine
+                size={20}
+                className="text-blue-500 flex-shrink-0"
+              />
               {t("admin.statistics.forecast.title") || "Dự báo doanh thu"}
             </h3>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">
+              <label className="text-sm text-gray-700 whitespace-nowrap">
                 {t("admin.statistics.forecast.days") || "Số ngày dự báo"}:
               </label>
               <input
@@ -618,22 +639,24 @@ export default function StatisticsPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           ) : forecastChartData.length > 1 ? (
-            <Chart
-              chartType="LineChart"
-              width="100%"
-              height="350px"
-              data={forecastChartData}
-              options={{
-                title: t("admin.statistics.forecast.chart_title"),
-                backgroundColor: "transparent",
-                legend: { position: "bottom" },
-                hAxis: { title: t("admin.statistics.forecast.date") },
-                vAxis: {
-                  title: t("admin.statistics.forecast.revenue"),
-                },
-                colors: ["#06b6d4"],
-              }}
-            />
+            <div className="-ml-4 sm:ml-0">
+              <Chart
+                chartType="LineChart"
+                width="100%"
+                height="350px"
+                data={forecastChartData}
+                options={{
+                  title: t("admin.statistics.forecast.chart_title"),
+                  backgroundColor: "transparent",
+                  legend: { position: "bottom" },
+                  hAxis: { title: t("admin.statistics.forecast.date") },
+                  vAxis: {
+                    title: t("admin.statistics.forecast.revenue"),
+                  },
+                  colors: ["#06b6d4"],
+                }}
+              />
+            </div>
           ) : (
             <div className="h-64 flex items-center justify-center">
               <p className="text-gray-500">
@@ -644,9 +667,9 @@ export default function StatisticsPage() {
         </div>
 
         {/* Notes */}
-        <div className="bg-blue-50 rounded-lg p-3 sm:p-6 border border-blue-200">
+        <div className="bg-blue-50 rounded-lg p-4 md:p-6 border border-blue-200">
           <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-            <IconRefresh size={18} />
+            <IconRefresh size={18} className="flex-shrink-0" />
             {t("admin.statistics.notes.title")}
           </h4>
           <ul className="space-y-2 text-sm text-blue-800">
