@@ -862,6 +862,7 @@
   },
   "customer_support": {
     "support": "Support",
+    "no_vouchers": "No vouchers available",
     "open_conversations": "Open Conversations",
     "customer_support": "Customer Support",
     "conversations_count": "{{count}} conversations",

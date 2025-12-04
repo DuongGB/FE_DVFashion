@@ -815,6 +815,7 @@
   },
   "customer_support": {
     "support": "Hỗ trợ",
+    "no_vouchers": "Chưa có voucher nào",
     "open_conversations": "Mở cuộc trò chuyện",
     "customer_support": "Hỗ trợ khách hàng",
     "conversations_count": "{{count}} cuộc trò chuyện",
