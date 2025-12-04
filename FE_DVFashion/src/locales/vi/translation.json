@@ -814,6 +814,8 @@
     }
   },
   "customer_support": {
+    "support": "Hỗ trợ",
+    "open_conversations": "Mở cuộc trò chuyện",
     "customer_support": "Hỗ trợ khách hàng",
     "conversations_count": "{{count}} cuộc trò chuyện",
     "error_loading_rooms": "Không thể tải danh sách phòng chat",

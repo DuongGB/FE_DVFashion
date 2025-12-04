@@ -17,6 +17,8 @@ import {
   IconMessage,
   IconChevronLeft,
   IconChevronRight,
+  IconX,
+  IconMenu2,
 } from "@tabler/icons-react";
 
 const CustomerSupportPage = () => {
@@ -27,6 +29,7 @@ const CustomerSupportPage = () => {
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const [pendingMessage, setPendingMessage] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar toggle
 
   const {
     useChatRoom,
@@ -48,32 +51,28 @@ const CustomerSupportPage = () => {
     queryKey: ["adminChatRooms", roomsPage],
     queryFn: () => chatAPI.getAdminChatRooms(roomsPage, 20),
     refetchInterval: 10000,
-    refetchOnWindowFocus: false, // Không refetch khi focus window
-    staleTime: 5000, // Cache 5 giây
+    refetchOnWindowFocus: false,
+    staleTime: 5000,
   });
 
-  //  Xử lý cấu trúc dữ liệu và sắp xếp theo tin nhắn mới nhất
   const chatRooms = React.useMemo(() => {
     if (!chatRoomsData) return [];
 
     let rooms = [];
 
-    // Kiểm tra nếu data nằm trong thuộc tính 'data'
     if (chatRoomsData.data) {
       rooms = Array.isArray(chatRoomsData.data) ? chatRoomsData.data : [];
     } else {
       rooms = Array.isArray(chatRoomsData) ? chatRoomsData : [];
     }
 
-    // Sắp xếp phòng chat theo lastMessageAt (mới nhất lên đầu)
     return rooms.sort((a, b) => {
       const timeA = new Date(a.lastMessageAt || 0).getTime();
       const timeB = new Date(b.lastMessageAt || 0).getTime();
-      return timeB - timeA; // Mới nhất lên đầu
+      return timeB - timeA;
     });
   }, [chatRoomsData]);
 
-  // Debug log
   useEffect(() => {
     if (chatRoomsData) {
       // console.log("Chat Rooms Data:", chatRoomsData);
@@ -84,16 +83,12 @@ const CustomerSupportPage = () => {
     }
   }, [chatRoomsData, roomsError, chatRooms]);
 
-  // Connect WebSocket when room is selected
   useEffect(() => {
     if (selectedRoomCode) {
       const timer = setTimeout(() => {
         connectWebSocket(selectedRoomCode, (message) => {
           console.log("New message received:", message);
-
-          // Invalidate chat rooms để cập nhật danh sách
           queryClient.invalidateQueries(["adminChatRooms"]);
-
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
           }, 100);
@@ -112,21 +107,18 @@ const CustomerSupportPage = () => {
 
   const messages = messagesData?.data || [];
 
-  //  Sắp xếp tin nhắn theo thứ tự cũ nhất -> mới nhất (giống ChatBox)
   const sortedMessages = React.useMemo(() => {
     return [...messages].sort(
       (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
     );
   }, [messages]);
 
-  //  Scroll to bottom when messages change
   useEffect(() => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }, [sortedMessages]);
 
-  // Mark messages as read
   useEffect(() => {
     if (selectedRoomCode && messages.length > 0) {
       markMessagesAsRead.mutate(selectedRoomCode);
@@ -136,14 +128,9 @@ const CustomerSupportPage = () => {
   const handleSendMessage = async (content) => {
     if (!selectedRoomCode || !content?.trim()) return;
     try {
-      // Luôn dùng REST API để gửi tin nhắn admin (cookie đã có accessToken)
       await chatAPI.sendMessage(selectedRoomCode, content);
-
-      // Làm mới danh sách tin nhắn và rooms
       await queryClient.invalidateQueries(["chatMessages", selectedRoomCode]);
       await queryClient.invalidateQueries(["adminChatRooms"]);
-
-      // Cuộn xuống cuối sau khi gửi
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -186,7 +173,6 @@ const CustomerSupportPage = () => {
 
   const getRelativeTime = (dateString) => {
     try {
-      // Hỗ trợ cả "vi", "vi-VN", "en", "en-US"
       const lang = i18n.language?.toLowerCase();
       const locale = lang.startsWith("vi") ? vi : enUS;
       const distance = formatDistanceToNow(new Date(dateString), {
@@ -237,23 +223,52 @@ const CustomerSupportPage = () => {
     return room.unreadAdminCount || 0;
   };
 
+  const handleSelectRoom = (roomCode) => {
+    setSelectedRoomCode(roomCode);
+    setIsSidebarOpen(false); // Đóng sidebar trên mobile khi chọn room
+  };
+
   return (
-    <div className="w-full h-full min-h-[600px] bg-gradient-to-br from-blue-100/60 via-white/60 to-gray-200/60 flex rounded-2xl shadow-lg overflow-hidden">
+    <div className="w-full h-full min-h-[600px] bg-gradient-to-br from-blue-100/60 via-white/60 to-gray-200/60 flex rounded-none sm:rounded-2xl shadow-lg overflow-hidden relative">
+      {/* Overlay cho mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Danh sách phòng chat */}
-      <div className="w-80 min-w-[320px] max-w-[340px] h-full backdrop-blur-xl bg-white/70 border-r border-white/30 flex flex-col shadow-xl rounded-r-2xl">
-        <div className="p-5 border-b border-white/30">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-            <IconMessage size={26} className="text-gay-500" />
-            {t("customer_support.customer_support")}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
+      <div
+        className={`
+        fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+        w-80 sm:w-80 lg:min-w-[320px] lg:max-w-[340px]
+        h-full backdrop-blur-xl bg-white/70 border-r border-white/30 
+        flex flex-col shadow-xl rounded-r-2xl
+        transform transition-transform duration-300 ease-in-out
+        ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }
+      `}
+      >
+        <div className="p-4 sm:p-5 border-b border-white/30">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <IconMessage size={26} className="text-gay-500" />
+              <span className="hidden sm:inline">
+                {t("customer_support.customer_support")}
+              </span>
+              <span className="sm:hidden">{t("customer_support.support")}</span>
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             {t("customer_support.conversations_count", {
               count: chatRooms.length,
             })}
           </p>
         </div>
 
-        {/* Danh sách phòng chat với custom scrollbar */}
+        {/* Danh sách phòng chat */}
         <div className="flex-1 overflow-y-auto chat-messages-container scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent px-1 py-2">
           {isLoadingRooms ? (
             <div className="flex items-center justify-center h-full">
@@ -262,13 +277,15 @@ const CustomerSupportPage = () => {
           ) : roomsError ? (
             <div className="text-center text-red-500 mt-8 px-4">
               <i className="fas fa-exclamation-triangle text-4xl mb-2"></i>
-              <p>{t("customer_support.error_loading_rooms")}</p>
-              <p className="text-sm mt-2">{roomsError.message}</p>
+              <p className="text-sm">
+                {t("customer_support.error_loading_rooms")}
+              </p>
+              <p className="text-xs mt-2">{roomsError.message}</p>
             </div>
           ) : chatRooms.length === 0 ? (
             <div className="text-center text-gray-500 mt-8 px-4">
               <i className="fas fa-inbox text-4xl mb-2"></i>
-              <p>{t("customer_support.no_rooms")}</p>
+              <p className="text-sm">{t("customer_support.no_rooms")}</p>
             </div>
           ) : (
             chatRooms.map((room) => {
@@ -277,37 +294,43 @@ const CustomerSupportPage = () => {
               return (
                 <div
                   key={room.roomCode}
-                  onClick={() => setSelectedRoomCode(room.roomCode)}
-                  className={`flex items-center gap-3 p-3 mb-1 rounded-xl cursor-pointer transition-all border border-transparent hover:bg-blue-50/70 ${
+                  onClick={() => handleSelectRoom(room.roomCode)}
+                  className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 mb-1 rounded-xl cursor-pointer transition-all border border-transparent hover:bg-blue-50/70 ${
                     isSelected
                       ? "bg-blue-100/80 border-blue-400 shadow"
                       : "bg-white/70"
                   }`}
-                  style={{ minHeight: 72 }}
+                  style={{ minHeight: 64 }}
                 >
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shadow bg-gradient-to-br from-blue-300 to-blue-500">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow bg-gradient-to-br from-blue-300 to-blue-500">
                       {room.type === "CUSTOMER" ? (
-                        <IconUserCircle size={32} className="text-white" />
+                        <IconUserCircle
+                          size={28}
+                          className="text-white sm:w-8 sm:h-8"
+                        />
                       ) : (
-                        <IconUserQuestion size={32} className="text-white" />
+                        <IconUserQuestion
+                          size={28}
+                          className="text-white sm:w-8 sm:h-8"
+                        />
                       )}
                     </div>
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow font-bold">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-pulse shadow font-bold">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <h3 className="font-semibold text-gray-800 truncate text-base">
+                      <h3 className="font-semibold text-gray-800 truncate text-sm sm:text-base">
                         {room.customerName ||
                           room.guestName ||
                           t("customer_support.unknown_user")}
                       </h3>
                       {room.type && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 ml-2">
+                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 ml-2 flex-shrink-0">
                           {room.type === "CUSTOMER"
                             ? t("customer_support.customer")
                             : t("customer_support.guest")}
@@ -315,7 +338,7 @@ const CustomerSupportPage = () => {
                       )}
                     </div>
                     <p
-                      className={`text-sm truncate ${
+                      className={`text-xs sm:text-sm truncate ${
                         unreadCount > 0
                           ? "text-gray-800 font-medium"
                           : "text-gray-500"
@@ -323,7 +346,7 @@ const CustomerSupportPage = () => {
                     >
                       {getLastMessageText(room)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">
                       {getLastMessageTime(room)}
                     </p>
                   </div>
@@ -335,23 +358,23 @@ const CustomerSupportPage = () => {
 
         {/* Pagination */}
         {chatRooms.length > 0 && (
-          <div className="p-4 border-t border-white/30 flex items-center justify-between bg-white/50">
+          <div className="p-3 sm:p-4 border-t border-white/30 flex items-center justify-between bg-white/50">
             <button
               onClick={() => setRoomsPage((prev) => Math.max(0, prev - 1))}
               disabled={roomsPage === 0}
-              className="p-2 rounded-full bg-gray-200/80 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="p-1.5 sm:p-2 rounded-full bg-gray-200/80 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              <IconChevronLeft size={20} />
+              <IconChevronLeft size={18} className="sm:w-5 sm:h-5" />
             </button>
-            <span className="text-sm text-gray-600 font-medium">
+            <span className="text-xs sm:text-sm text-gray-600 font-medium">
               {t("customer_support.page")} {roomsPage + 1}
             </span>
             <button
               onClick={() => setRoomsPage((prev) => prev + 1)}
               disabled={chatRooms.length < 20}
-              className="p-2 rounded-full bg-gray-200/80 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="p-1.5 sm:p-2 rounded-full bg-gray-200/80 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              <IconChevronRight size={20} />
+              <IconChevronRight size={18} className="sm:w-5 sm:h-5" />
             </button>
           </div>
         )}
@@ -360,43 +383,65 @@ const CustomerSupportPage = () => {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
         {!selectedRoomCode ? (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50/60 to-gray-100/60">
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50/60 to-gray-100/60 p-4">
             <div className="text-center text-gray-500">
-              <IconMessage size={64} className="mb-4 text-blue-300 mx-auto" />
-              <p className="text-xl font-medium">
+              <IconMessage
+                size={48}
+                className="sm:w-16 sm:h-16 mb-4 text-blue-300 mx-auto"
+              />
+              <p className="text-lg sm:text-xl font-medium">
                 {t("customer_support.select_room_to_chat")}
               </p>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-xs sm:text-sm text-gray-400 mt-2">
                 {t("customer_support.select_room_description")}
               </p>
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2 mx-auto"
+              >
+                <IconMenu2 size={20} />
+                {t("customer_support.open_conversations")}
+              </button>
             </div>
           </div>
         ) : (
           <>
             {/* Header */}
-            <div className="backdrop-blur-xl bg-white/70 shadow-md p-5 flex items-center justify-between border-b border-white/30">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center shadow bg-gradient-to-br from-blue-200 to-blue-500">
+            <div className="backdrop-blur-xl bg-white/70 shadow-md p-3 sm:p-5 flex items-center justify-between border-b border-white/30">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-full hover:bg-gray-200/80 transition flex-shrink-0"
+                >
+                  <IconMenu2 size={20} />
+                </button>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow bg-gradient-to-br from-blue-200 to-blue-500 flex-shrink-0">
                   {chatRoom?.data?.type === "CUSTOMER" ? (
-                    <IconUserCircle size={32} className="text-white" />
+                    <IconUserCircle
+                      size={28}
+                      className="text-white sm:w-8 sm:h-8"
+                    />
                   ) : (
-                    <IconUserQuestion size={32} className="text-white" />
+                    <IconUserQuestion
+                      size={28}
+                      className="text-white sm:w-8 sm:h-8"
+                    />
                   )}
                 </div>
-                <div>
-                  <h1 className="font-semibold text-lg text-gray-800">
+                <div className="min-w-0 flex-1">
+                  <h1 className="font-semibold text-base sm:text-lg text-gray-800 truncate">
                     {chatRoom?.data?.customerName ||
                       chatRoom?.data?.guestName ||
                       t("customer_support.customer")}
                   </h1>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                     <span className="font-mono text-gray-700">
                       #{selectedRoomCode}
                     </span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <span
                   className={`w-2 h-2 rounded-full ${
                     isWebSocketConnected
@@ -404,7 +449,7 @@ const CustomerSupportPage = () => {
                       : "bg-gray-400"
                   }`}
                 ></span>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
                   {isWebSocketConnected
                     ? t("customer_support.online")
                     : t("customer_support.offline")}
@@ -412,22 +457,21 @@ const CustomerSupportPage = () => {
               </div>
             </div>
 
-            {/*Messages Container - flex-col với custom scrollbar */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-white/80 to-blue-50/60 flex flex-col chat-messages-container scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+            {/* Messages Container */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-gradient-to-br from-white/80 to-blue-50/60 flex flex-col chat-messages-container scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
               {sortedMessages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-8">
+                <div className="text-center text-gray-500 mt-8 px-4">
                   <IconMessage
-                    size={40}
-                    className="mb-2 text-blue-300 mx-auto"
+                    size={32}
+                    className="sm:w-10 sm:h-10 mb-2 text-blue-300 mx-auto"
                   />
-                  <p>{t("customer_support.no_messages")}</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm">{t("customer_support.no_messages")}</p>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-1">
                     {t("customer_support.start_conversation")}
                   </p>
                 </div>
               ) : (
                 <>
-                  {/* Render messages theo thứ tự cũ nhất -> mới nhất */}
                   {sortedMessages.map((message) => (
                     <ChatMessage
                       key={message.id}
@@ -437,7 +481,6 @@ const CustomerSupportPage = () => {
                       }
                     />
                   ))}
-                  {/* Loader message khi upload file */}
                   {pendingMessage && (
                     <ChatMessage
                       message={pendingMessage}
@@ -445,7 +488,6 @@ const CustomerSupportPage = () => {
                       isLoading={true}
                     />
                   )}
-                  {/* Scroll anchor ở cuối */}
                   <div ref={messagesEndRef} />
                 </>
               )}

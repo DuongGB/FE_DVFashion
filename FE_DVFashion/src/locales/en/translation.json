@@ -861,6 +861,8 @@
     }
   },
   "customer_support": {
+    "support": "Support",
+    "open_conversations": "Open Conversations",
     "customer_support": "Customer Support",
     "conversations_count": "{{count}} conversations",
     "error_loading_rooms": "Error loading conversations. Please try again.",
