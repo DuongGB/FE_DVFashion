@@ -42,7 +42,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = "login", stayOnPage }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
         className="relative w-full max-w-lg max-h-[95vh] overflow-y-auto"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -50,10 +50,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = "login", stayOnPage }) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-4 z-20 p-2 bg-black rounded-full shadow-lg hover:opacity-70 cursor-pointer transition-colors duration-200"
+          className="absolute top-0 right-0 sm:top-2 sm:right-4 z-20 p-1.5 sm:p-2 bg-black rounded-full shadow-lg hover:opacity-70 cursor-pointer transition-colors duration-200"
           aria-label="Đóng modal"
         >
-          <IconX size={20} className="text-gray-600" />
+          <IconX size={18} className="sm:w-5 sm:h-5 text-gray-600" />
         </button>
 
         {/* Modal Content */}

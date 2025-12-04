@@ -154,14 +154,14 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 w-full sm:w-[500px] flex flex-col relative">
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-4 sm:mb-6">
         <div className="flex items-center">
-          <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
+          <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
             DV
           </span>
-          <span className="text-2xl sm:text-3xl font-light tracking-wider text-gray-700 pl-2">
+          <span className="text-xl sm:text-2xl md:text-3xl font-light tracking-wider text-gray-700 pl-2">
             Fashion
           </span>
         </div>
@@ -170,11 +170,11 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
       {!isEmailSent ? (
         <>
           {/* Title */}
-          <h2 className="text-2xl font-bold mb-4 leading-tight">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 leading-tight">
             {t("auth.forgot_password.title")}
           </h2>
 
-          <p className="text-gray-600 mb-8 leading-relaxed">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">
             {t("auth.forgot_password.description")}
           </p>
 
@@ -186,26 +186,28 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                 placeholder={getPlaceholder()}
                 value={contact}
                 onChange={handleContactChange}
-                className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full rounded-full border px-8 sm:px-10 md:px-12 py-2.5 sm:py-3 md:py-4 bg-gray-100 text-xs sm:text-sm md:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors ? "border-red-500" : "border-gray-300"
                 }`}
                 required
                 disabled={isForgotPasswordLoading}
               />
-              <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200">
+              <span className="absolute left-2.5 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200">
                 {getContactIcon()}
               </span>
             </div>
             {errors.contact && (
-              <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+              <p className="text-red-500 text-xs sm:text-sm mt-1 ml-2.5 sm:ml-3 md:ml-4">
                 {errors.contact}
               </p>
             )}
 
             {/* General Error */}
             {errors.general && (
-              <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">⚠️</span>
+              <div className="text-red-500 text-xs sm:text-sm p-2.5 sm:p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+                <span className="text-red-500 mt-0.5 text-sm sm:text-base">
+                  ⚠️
+                </span>
                 <span>{errors.general}</span>
               </div>
             )}
@@ -214,11 +216,11 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             <button
               type="submit"
               disabled={isForgotPasswordLoading || !contact.trim()}
-              className="w-full bg-black text-white rounded-full py-4 text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full bg-black text-white rounded-full py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isForgotPasswordLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 border-b-2 border-white"></div>
                   {t("auth.forgot_password.sending")}
                 </div>
               ) : (
@@ -231,32 +233,36 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
         <>
           {/* Success State */}
           <div className="flex flex-col items-center justify-center flex-1 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-              <span className="text-3xl">✅</span>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+              <span className="text-2xl sm:text-3xl">✅</span>
             </div>
 
-            <h2 className="text-2xl font-bold mb-4 text-green-600">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-green-600">
               {contactType === "phone"
                 ? t("auth.forgot_password.success.phone_title")
                 : t("auth.forgot_password.success.email_title")}
             </h2>
 
-            <p className="text-gray-600 mb-6 leading-relaxed">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-4 sm:mb-6 leading-relaxed px-2">
               {contactType === "phone" ? (
                 <>
                   {t("auth.forgot_password.success.phone_message")}{" "}
-                  <span className="font-semibold text-black">{contact}</span>
+                  <span className="font-semibold text-black break-all">
+                    {contact}
+                  </span>
                 </>
               ) : (
                 <>
                   {t("auth.forgot_password.success.email_message")}{" "}
-                  <span className="font-semibold text-black">{contact}</span>
+                  <span className="font-semibold text-black break-all">
+                    {contact}
+                  </span>
                 </>
               )}
             </p>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 w-full">
-              <p className="text-sm text-blue-800">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 w-full">
+              <p className="text-xs sm:text-sm text-blue-800">
                 {contactType === "phone"
                   ? t("auth.forgot_password.success.phone_help")
                   : t("auth.forgot_password.success.email_help")}
@@ -264,7 +270,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
             </div>
 
             {/* Action buttons */}
-            <div className="w-full space-y-3">
+            <div className="w-full space-y-2 sm:space-y-3">
               <button
                 onClick={() => {
                   setIsEmailSent(false);
@@ -272,7 +278,7 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
                   setContactType("");
                   setErrors("");
                 }}
-                className="w-full bg-gray-100 text-gray-700 rounded-full py-3 text-md font-semibold hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
+                className="w-full bg-gray-100 text-gray-700 rounded-full py-2.5 sm:py-3 text-xs sm:text-sm md:text-md font-semibold hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
               >
                 {contactType === "phone"
                   ? t("auth.forgot_password.success.try_other_phone")
@@ -284,8 +290,8 @@ export default function ForgotPasswordForm({ onSuccess, onSwitchToLogin }) {
       )}
 
       {/* Bottom Links */}
-      <div className="mt-auto pt-6">
-        <div className="flex justify-center text-sm">
+      <div className="mt-auto pt-4 sm:pt-6">
+        <div className="flex justify-center text-xs sm:text-sm">
           <button
             type="button"
             onClick={handleSwitchToLogin}

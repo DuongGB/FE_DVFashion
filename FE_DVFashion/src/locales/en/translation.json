@@ -861,6 +861,9 @@
     }
   },
   "customer_support": {
+    "support": "Support",
+    "no_vouchers": "No vouchers available",
+    "open_conversations": "Open Conversations",
     "customer_support": "Customer Support",
     "conversations_count": "{{count}} conversations",
     "error_loading_rooms": "Error loading conversations. Please try again.",
@@ -1128,6 +1131,7 @@
       "showing_results": "Showing {{current}} of {{total}} promotions",
       "no_description": "No description",
       "form": {
+        "bulk_input": " Bulk Input",
         "creating_progress": "Creating promotion...",
         "updating_progress": "Updating promotion...",
         "apply_to_all": "Apply",
