@@ -23,8 +23,8 @@ class WebSocketService {
         // Lấy token từ cookie hoặc localStorage
         const token = this.getAuthToken();
 
-        console.log("🔌 Connecting to WebSocket:", socketUrl);
-        console.log("🔑 Using auth token:", token ? "✓ Present" : "✗ Missing");
+        // console.log("🔌 Connecting to WebSocket:", socketUrl);
+        // console.log("🔑 Using auth token:", token ? "✓ Present" : "✗ Missing");
 
         const socket = new SockJS(socketUrl, null, {
           timeout: 10000,
@@ -35,9 +35,9 @@ class WebSocketService {
         this.client = new Client({
           webSocketFactory: () => socket,
 
-          debug: (str) => {
-            if (import.meta.env.DEV) console.log("📡 STOMP:", str);
-          },
+          // debug: (str) => {
+          //   if (import.meta.env.DEV) console.log("📡 STOMP:", str);
+          // },
 
           reconnectDelay: 0, // Tắt auto reconnect
 
@@ -50,7 +50,7 @@ class WebSocketService {
             // Thêm frame vào đây
             this.connected = true;
             this.reconnectAttempts = 0;
-            console.log("WebSocket Connected. Server response:", frame);
+            // console.log("WebSocket Connected. Server response:", frame);
             onConnected?.();
             resolve();
           },
@@ -94,9 +94,9 @@ class WebSocketService {
     }
 
     this.reconnectAttempts++;
-    console.log(
-      `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
-    );
+    // console.log(
+    //   `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+    // );
 
     setTimeout(() => {
       this.connect(onConnected, onError).catch((err) => {
@@ -122,7 +122,7 @@ class WebSocketService {
   disconnect() {
     if (this.client) {
       try {
-        console.log("Disconnecting WebSocket...");
+        // console.log("Disconnecting WebSocket...");
         this.subscriptions.clear();
         this.client.deactivate();
         this.connected = false;
@@ -140,7 +140,7 @@ class WebSocketService {
     }
 
     try {
-      console.log("Subscribing to:", destination);
+      // console.log("Subscribing to:", destination);
 
       const subscription = this.client.subscribe(destination, (message) => {
         try {
@@ -164,7 +164,7 @@ class WebSocketService {
     try {
       const subscription = this.subscriptions.get(destination);
       if (subscription) {
-        console.log("Unsubscribing from:", destination);
+        // console.log("Unsubscribing from:", destination);
         subscription.unsubscribe();
         this.subscriptions.delete(destination);
       }
@@ -184,7 +184,7 @@ class WebSocketService {
     }
 
     try {
-      console.log("Sending message to:", destination);
+      // console.log("Sending message to:", destination);
       this.client.publish({
         destination,
         body: JSON.stringify(body),
