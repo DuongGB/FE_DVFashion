@@ -1,7 +1,7 @@
 import {
+  Route,
   BrowserRouter as Router,
   Routes,
-  Route,
   useLocation,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -16,38 +16,36 @@ import AdminPage from "./pages/admin/AdminPage";
 import BrandPage from "./pages/admin/BrandPage";
 import CategoryPage from "./pages/admin/CategoryPage";
 import CustomerManagermentPage from "./pages/admin/CustomerManagermentPage";
+import CustomerSupportPage from "./pages/admin/CustomerSupportPage";
 import EmployeePage from "./pages/admin/EmployeePage";
 import InventoryPage from "./pages/admin/InventoryPage";
-import OrderPage from "./pages/admin/OrderPage";
+import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
+import OrderConfirmedPage from "./pages/admin/order/OrderConfirmedPage";
+import OrderDeliveredPage from "./pages/admin/order/OrderDeliveredPage";
+import OrderPendingPage from "./pages/admin/order/OrderPendingPage";
+import OrderProcessingPage from "./pages/admin/order/OrderProcessingPage";
+import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
+import OrderShippedPage from "./pages/admin/order/OrderShippedPage";
 import ProductPage from "./pages/admin/ProductPage";
 import PromotionPage from "./pages/admin/PromotionPage";
 import ReviewPage from "./pages/admin/ReviewPage";
+import StatisticsPage from "./pages/admin/StatisticsPage";
+import VoucherPage from "./pages/admin/VoucherPage";
 import BlogPage from "./pages/BlogPage";
+import CategoryProductPage from "./pages/CategoryProductPage";
+import PasswordResetPage from "./pages/customer/account/PasswordResetPage";
 import AccountPage from "./pages/customer/AccountPage";
 import CartPage from "./pages/customer/CartPage";
-import CustomerPage from "./pages/customer/CustomerPage";
+import InvoicePreview from "./pages/customer/invoice/InvoicePreview";
+import PayPalCancelHandler from "./pages/customer/order/PaypalCancelHandler";
 import OrderSuccessPage from "./pages/customer/OrderSuccessPage";
-import PayPalSuccessHandler from "./pages/customer/PayPalSuccessHandler";
+import PayPalSuccessHandler from "./pages/customer/PaypalSuccessHandler";
+import PromotionProductsPage from "./pages/customer/promotion/PromotionProductsPage";
+import HelpPage from "./pages/HelpPage";
 import HomePage from "./pages/HomePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import SearchProductPage from "./pages/SearchProductPage";
-import CategoryProductPage from "./pages/CategoryProductPage";
-import VoucherPage from "./pages/admin/VoucherPage";
-import PayPalCancelHandler from "./pages/customer/order/PaypalCancelHandler";
-import StatisticsPage from "./pages/admin/StatisticsPage";
-import PromotionProductsPage from "./pages/customer/promotion/PromotionProductsPage";
-import CustomerSupportPage from "./pages/admin/CustomerSupportPage";
-import InvoicePreview from "./pages/customer/invoice/InvoicePreview";
-import OrderPendingPage from "./pages/admin/order/OrderPendingPage";
-import OrderConfirmedPage from "./pages/admin/order/OrderConfirmedPage";
-import OrderProcessingPage from "./pages/admin/order/OrderProcessingPage";
-import OrderShippedPage from "./pages/admin/order/OrderShippedPage";
-import OrderDeliveredPage from "./pages/admin/order/OrderDeliveredPage";
-import OrderReturnedPage from "./pages/admin/order/OrderReturnedPage";
-import OrderCanceledPage from "./pages/admin/order/OrderCanceledPage";
-import HelpPage from "./pages/HelpPage";
 import TodayProductsPage from "./pages/TodayProductsPage";
-import PasswordResetPage from "./pages/customer/account/PasswordResetPage";
 
 function AppRoutes() {
   const location = useLocation();
