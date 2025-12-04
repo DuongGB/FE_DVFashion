@@ -296,14 +296,14 @@ export default function StatisticsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-2">
-          {/* Header */}
-          <h1 className="text-2xl font-bold text-gray-800">
-            {t("admin.statistics.title") || "Thống kê doanh thu"}
+      <div className="max-w-7xl mx-auto space-y-6 px-2 sm:px-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+            {t("admin.statistics.title")}
           </h1>
           {/* Nút xuất báo cáo */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {/* Nút xuất báo cáo doanh thu */}
             <button
               onClick={handleExportReport}
@@ -342,10 +342,10 @@ export default function StatisticsPage() {
         </div>
 
         {/* Mode Selector và Date Range */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-          <div className="flex flex-wrap gap-4 items-center">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200">
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 items-start md:items-center">
             {/* Mode buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setMode("day")}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
@@ -394,7 +394,7 @@ export default function StatisticsPage() {
 
             {/* Date Range Filter (only for daily mode) */}
             {mode === "day" && (
-              <div className="flex items-center gap-3 ml-auto">
+              <div className="flex flex-col sm:flex-row items-center gap-2 ml-0 sm:ml-auto">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700">
                     {t("admin.statistics.date_range.from") || "Từ"}:
@@ -421,7 +421,7 @@ export default function StatisticsPage() {
             )}
 
             {/* Nút chọn năm */}
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 ml-0 sm:ml-auto mt-2 sm:mt-0">
               <button
                 onClick={() => setYear(year - 1)}
                 className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -442,7 +442,7 @@ export default function StatisticsPage() {
         </div>
 
         {/* Revenue Card */}
-        <div className="bg-white rounded-xl shadow p-4 border border-gray-100 flex items-center gap-4  mt-2">
+        <div className="bg-white rounded-xl shadow p-3 sm:p-4 border border-gray-100 flex flex-col sm:flex-row items-center gap-4 mt-2">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-500 mb-0.5">
               {mode === "day"
@@ -478,7 +478,7 @@ export default function StatisticsPage() {
         </div>
 
         {/* Main Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <IconChartBar size={20} className="text-blue-500" />
@@ -522,9 +522,9 @@ export default function StatisticsPage() {
 
         {/* Pie Chart and Top 5 Months (only show when mode is 'month') */}
         {mode === "month" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Pie Chart */}
-            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <IconChartPie size={20} className="text-purple-500" />
                 {t("admin.statistics.pie_chart.title")}
@@ -552,7 +552,7 @@ export default function StatisticsPage() {
             </div>
 
             {/* Top 5 Months */}
-            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <IconTrendingUp size={20} className="text-yellow-500" />
                 {t("admin.statistics.pie_chart.top_months") ||
@@ -593,7 +593,7 @@ export default function StatisticsPage() {
         )}
 
         {/* Dự báo doanh thu */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 overflow-x-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <IconChartLine size={20} className="text-blue-500" />
@@ -644,7 +644,7 @@ export default function StatisticsPage() {
         </div>
 
         {/* Notes */}
-        <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+        <div className="bg-blue-50 rounded-lg p-3 sm:p-6 border border-blue-200">
           <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <IconRefresh size={18} />
             {t("admin.statistics.notes.title")}
