@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import chatAPI from "../services/chatAPI";
 import { toast } from "react-toastify";
 import { useRef, useState } from "react";
-import websocketService from "../services/websocketService";
+import WebSocketService from "../services/WebSocketService";
 
 export const useChat = () => {
   const queryClient = useQueryClient();
@@ -63,7 +63,7 @@ export const useChat = () => {
   const sendMessage = useMutation({
     mutationFn: ({ roomCode, content }) => {
       if (isWebSocketConnected) {
-        websocketService.send(`/app/chat/${roomCode}`, { content });
+        WebSocketService.send(`/app/chat/${roomCode}`, { content });
         return Promise.resolve({ data: { content } });
       }
       return chatAPI.sendMessage(roomCode, content);
@@ -113,7 +113,7 @@ export const useChat = () => {
       return;
     }
 
-    if (connectionPromiseRef.current && websocketService.isConnected()) {
+    if (connectionPromiseRef.current && WebSocketService.isConnected()) {
       // console.log("✅ WebSocket already connected for room:", roomCode);
       return connectionPromiseRef.current;
     }
@@ -121,19 +121,19 @@ export const useChat = () => {
     // console.log("🔌 Initiating WebSocket connection for room:", roomCode);
 
     connectionPromiseRef.current = new Promise((resolve, reject) => {
-      websocketService.connect(
+      WebSocketService.connect(
         () => {
           // console.log("✅ WebSocket Connected Successfully");
           // console.log("📍 Room Code:", roomCode);
           // console.log("🌐 WebSocket State:", {
-          //   isConnected: websocketService.isConnected(),
+          //   isConnected: WebSocketService.isConnected(),
           //   timestamp: new Date().toISOString(),
           // });
           setIsWebSocketConnected(true);
 
           // Subscribe to chat messages
           // console.log("📡 Subscribing to /topic/chat/" + roomCode);
-          const messageSubscription = websocketService.subscribe(
+          const messageSubscription = WebSocketService.subscribe(
             `/topic/chat/${roomCode}`,
             (message) => {
               // Invalidate queries để trigger re-fetch
@@ -153,7 +153,7 @@ export const useChat = () => {
 
           // Subscribe to typing indicators
           // console.log("📡 Subscribing to /topic/chat/" + roomCode + "/typing");
-          const typingSubscription = websocketService.subscribe(
+          const typingSubscription = WebSocketService.subscribe(
             `/topic/chat/${roomCode}/typing`,
             (indicator) => {
               // console.log("⌨️ Typing indicator received:", indicator);
@@ -184,15 +184,15 @@ export const useChat = () => {
 
   const disconnectWebSocket = (roomCode) => {
     if (roomCode) {
-      websocketService.unsubscribe(`/topic/chat/${roomCode}`);
-      websocketService.unsubscribe(`/topic/chat/${roomCode}/typing`);
+      WebSocketService.unsubscribe(`/topic/chat/${roomCode}`);
+      WebSocketService.unsubscribe(`/topic/chat/${roomCode}/typing`);
     }
-    websocketService.disconnect();
+    WebSocketService.disconnect();
     setIsWebSocketConnected(false);
   };
 
   const sendTypingIndicator = (roomCode, isTyping, userName) => {
-    websocketService.sendTypingIndicator(roomCode, isTyping, userName);
+    WebSocketService.sendTypingIndicator(roomCode, isTyping, userName);
   };
 
   return {
