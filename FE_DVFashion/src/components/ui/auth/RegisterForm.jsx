@@ -192,9 +192,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   // Success state
   if (step === "success") {
     return (
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] min-h-[500px] flex flex-col relative">
+      <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 w-full sm:w-[500px] min-h-[400px] sm:min-h-[500px] flex flex-col relative">
         {/* Logo */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-4 sm:mb-6">
           <div className="flex items-center">
             <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
               DV
@@ -206,19 +206,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
         </div>
 
         {/* Success Content */}
-        <div className="flex flex-col items-center justify-center flex-1 text-center py-12">
+        <div className="flex flex-col items-center justify-center flex-1 text-center py-6 sm:py-12">
           {/* Success Icon */}
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-            <span className="text-3xl">✅</span>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+            <span className="text-2xl sm:text-3xl">✅</span>
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-bold mb-4 text-green-600">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-green-600">
             {t("auth.register.success.title")}
           </h2>
 
           {/* Message */}
-          <p className="text-gray-600 mb-6 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 leading-relaxed px-2 sm:px-0">
             {t("auth.register.success.welcome_message", {
               name: formData.fullName,
             })}
@@ -227,8 +227,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           </p>
 
           {/* Additional Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 w-full">
-            <p className="text-sm text-blue-800">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 w-full">
+            <p className="text-xs sm:text-sm text-blue-800">
               {t("auth.register.success.enjoy_shopping")}
             </p>
           </div>
@@ -236,7 +236,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           {/* Manual Login Button */}
           <button
             onClick={handleSwitchToLogin}
-            className="bg-black text-white rounded-full px-8 py-3 text-lg font-bold hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
+            className="bg-black text-white rounded-full px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg font-bold hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
           >
             {t("auth.register.success.login_now")}
           </button>
@@ -244,8 +244,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
       </div>
     );
   }
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 w-full sm:w-[500px] flex flex-col relative">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-2">
         <div className="flex items-center">
@@ -292,7 +293,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
         <hr className="flex-1 border-gray-300" />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 ">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         {/* Input Full Name */}
         <div className="relative">
           <input
@@ -307,7 +308,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconUser size={22} />
+            <IconUser size={18} className="sm:w-[22px] sm:h-[22px]" />
           </span>
         </div>
         {errors.fullName && (
@@ -315,6 +316,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.fullName}
           </p>
         )}
+
         {/* Input Email  */}
         <div className="relative">
           <input
@@ -329,7 +331,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconMail size={22} />
+            <IconMail size={18} className="sm:w-[22px] sm:h-[22px]" />
           </span>
         </div>
         {errors.email && (
@@ -337,6 +339,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.email}
           </p>
         )}
+
         {/* Input Phone */}
         <div className="relative">
           <input
@@ -351,7 +354,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconPhone size={22} />
+            <IconPhone size={18} className="sm:w-[22px] sm:h-[22px]" />
           </span>
         </div>
         {errors.phone && (
@@ -359,6 +362,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.phone}
           </p>
         )}
+
         {/* Input Password */}
         <div className="relative">
           <input
@@ -373,7 +377,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconLock size={22} />
+            <IconLock size={18} className="sm:w-[22px] sm:h-[22px]" />
           </span>
           <button
             type="button"
@@ -381,7 +385,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
           >
-            {showPassword ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+            {showPassword ? (
+              <IconEyeOff size={18} className="sm:w-[22px] sm:h-[22px]" />
+            ) : (
+              <IconEye size={18} className="sm:w-[22px] sm:h-[22px]" />
+            )}
           </button>
         </div>
         {errors.password && (
@@ -389,6 +397,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.password}
           </p>
         )}
+
         {/* Input Confirm Password */}
         <div className="relative">
           <input
@@ -403,7 +412,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             required
           />
           <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconLock size={22} />
+            <IconLock size={18} className="sm:w-[22px] sm:h-[22px]" />
           </span>
           <button
             type="button"
@@ -412,9 +421,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             tabIndex={-1}
           >
             {showConfirmPassword ? (
-              <IconEyeOff size={22} />
+              <IconEyeOff size={18} className="sm:w-[22px] sm:h-[22px]" />
             ) : (
-              <IconEye size={22} />
+              <IconEye size={18} className="sm:w-[22px] sm:h-[22px]" />
             )}
           </button>
         </div>
@@ -423,6 +432,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
             {errors.confirmPassword}
           </p>
         )}
+
         {/* Terms and Conditions */}
         <div className="text-sm text-gray-600 mb-2">
           {t("auth.register.terms_text")}{" "}
@@ -435,21 +445,23 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
           </a>{" "}
           {t("auth.register.of_dvfashion")}
         </div>
+
         {/* General Error */}
         {(registerError || errors.general) && (
           <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200">
             {getErrorMessage()}
           </div>
         )}
+
         {/* Submit */}
         <button
           type="submit"
           disabled={isRegisterLoading}
-          className="w-full bg-black text-white rounded-full py-4 text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full bg-black text-white rounded-full py-3 sm:py-4 text-base sm:text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isRegisterLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
               {t("auth.register.registering")}
             </div>
           ) : (
