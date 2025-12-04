@@ -112,7 +112,7 @@ export default function CategoryDetailModal({ category, open, onClose }) {
                 </h3>
 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-blue-50/60 rounded-lg border border-blue-200/40">
+                  {/* <div className="flex items-start gap-3 p-3 bg-blue-50/60 rounded-lg border border-blue-200/40">
                     <div className="bg-blue-100/60 rounded-full p-1">
                       <IconInfoCircle size={16} className="text-blue-600" />
                     </div>
@@ -126,7 +126,7 @@ export default function CategoryDetailModal({ category, open, onClose }) {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="p-3 bg-white/60 rounded-lg border border-white/30">
                     <strong className="text-gray-700 text-sm font-medium">

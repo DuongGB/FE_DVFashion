@@ -342,22 +342,22 @@ export default function CategoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
           {t("admin.category.title")}
         </h1>
         <div className="flex items-center gap-4">
           {!isStaff && (
             <button
               onClick={handleCreate}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer text-sm sm:text-base"
             >
               <IconPlus size={20} />
               {t("admin.category.create_category")}
             </button>
           )}
           {isStaff && (
-            <div className="text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+            <div className="text-xs sm:text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
               <span className="font-medium text-yellow-800">
                 {t("admin.category.staff_view_only") ||
                   "Chế độ xem - Không thể chỉnh sửa"}
@@ -368,49 +368,45 @@ export default function CategoryPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                {t("admin.category.total_categories")}
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-6 rounded-lg shadow-lg">
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">
+              {t("admin.category.total_categories")}
+            </p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">
+              {stats.total}
+            </p>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                {t("admin.category.active_categories")}
-              </p>
-              <p className="text-2xl font-bold text-green-600">
-                {stats.active}
-              </p>
-            </div>
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-6 rounded-lg shadow-lg">
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">
+              {t("admin.category.active_categories")}
+            </p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">
+              {stats.active}
+            </p>
           </div>
         </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                {t("admin.category.inactive_categories")}
-              </p>
-              <p className="text-2xl font-bold text-red-600">
-                {stats.inactive}
-              </p>
-            </div>
+        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-6 rounded-lg shadow-lg">
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">
+              {t("admin.category.inactive_categories")}
+            </p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">
+              {stats.inactive}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Filters + Refresh */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex-1">
-          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
+          <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 rounded-lg shadow-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="sm:col-span-2">
                 <div className="relative">
                   <IconSearch
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -426,7 +422,7 @@ export default function CategoryPage() {
                         setSearch(searchInput);
                       }
                     }}
-                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+                    className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl text-sm"
                   />
                 </div>
               </div>
@@ -434,7 +430,7 @@ export default function CategoryPage() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl"
+                  className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xl text-sm"
                 >
                   <option value="">{t("admin.category.all_status")}</option>
                   <option value="active">
@@ -449,7 +445,7 @@ export default function CategoryPage() {
                 <button
                   type="button"
                   onClick={() => refetch && refetch()}
-                  className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer"
+                  className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow cursor-pointer text-sm"
                 >
                   <IconRefresh size={18} />
                 </button>
@@ -460,16 +456,104 @@ export default function CategoryPage() {
       </div>
 
       {/* Results Summary */}
-      <div className="mb-4 text-sm text-gray-600">
+      <div className="mb-4 text-xs sm:text-sm text-gray-600">
         {t("admin.category.showing_results", {
           current: paginatedCategories.length,
           total: filteredCategories.length,
         })}
       </div>
 
-      {/* Categories Table */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      {/* Responsive Categories Table/Card */}
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-3">
+        {isLoading ? (
+          <div className="text-center text-gray-500 p-4">
+            <div className="flex items-center justify-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+              {t("admin.category.loading")}
+            </div>
+          </div>
+        ) : paginatedCategories.length > 0 ? (
+          paginatedCategories.map((category, index) => (
+            <div
+              key={`category-card-${category.id}-${index}`}
+              className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-3 flex flex-col gap-2"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {category.imageUrl || category.image ? (
+                    <img
+                      src={category.imageUrl || category.image}
+                      alt={category.name || "Category"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-xs">No Image</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-base text-gray-900 truncate">
+                    {category.name || "N/A"}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {category.description || "N/A"}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span
+                  className={`px-3 py-1 rounded text-xs font-medium ${
+                    category.active
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {category.active
+                    ? t("admin.category.status.active")
+                    : t("admin.category.status.inactive")}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleViewDetail(category)}
+                    className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                    title={t("admin.category.actions.view_details")}
+                  >
+                    <IconEye size={20} />
+                  </button>
+                  {!isStaff ? (
+                    <button
+                      onClick={() => handleEdit(category)}
+                      className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                      title={t("admin.category.actions.edit")}
+                    >
+                      <IconEdit size={20} />
+                    </button>
+                  ) : (
+                    <button
+                      className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                      onClick={() => handleEdit(category)}
+                      title={
+                        t("admin.category.staff_no_permission") ||
+                        "Không có quyền chỉnh sửa"
+                      }
+                    >
+                      <IconEdit size={20} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-500 p-4">
+            {t("admin.category.no_categories")}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-gray-400">
               <th className="p-3">{t("admin.category.columns.id")}</th>
@@ -503,21 +587,12 @@ export default function CategoryPage() {
                         src={category.imageUrl || category.image}
                         alt={category.name || "Category"}
                         className="w-10 h-10 rounded object-cover"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
                       />
-                    ) : null}
-                    <div
-                      className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
-                      style={{
-                        display:
-                          category.imageUrl || category.image ? "none" : "flex",
-                      }}
-                    >
-                      No Image
-                    </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+                        No Image
+                      </div>
+                    )}
                   </td>
                   <td className="p-3">
                     <div>

@@ -182,55 +182,57 @@ export default function LoginForm({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px] flex flex-col relative">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 w-full sm:w-[500px] flex flex-col relative">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-2">
         <div className="flex items-center">
-          <span className="text-2xl sm:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
+          <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-widest text-black border-r-2 border-black pr-2">
             DV
           </span>
-          <span className="text-2xl sm:text-3xl font-light tracking-wider text-gray-700 pl-2">
+          <span className="text-xl sm:text-2xl md:text-3xl font-light tracking-wider text-gray-700 pl-2">
             Fashion
           </span>
         </div>
       </div>
 
       {/* Title */}
-      <h2 className="text-xl sm:text-2xl font-bold mb-2 leading-tight">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 leading-tight">
         {t("auth.login.title")}
       </h2>
 
       {/* Benefits */}
-      <div className="flex gap-3 sm:gap-4 mb-3 justify-center">
+      <div className="flex gap-2 sm:gap-3 md:gap-4 mb-3 justify-center">
         <div className="flex flex-col items-center gap-1">
-          <span className="text-lg sm:text-xl">%</span>
-          <span className="text-xs text-center">
+          <span className="text-base sm:text-lg md:text-xl">%</span>
+          <span className="text-[10px] sm:text-xs text-center">
             {t("auth.login.benefits.voucher")}
           </span>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <span className="text-lg sm:text-xl">🎁</span>
-          <span className="text-xs text-center">
+          <span className="text-base sm:text-lg md:text-xl">🎁</span>
+          <span className="text-[10px] sm:text-xs text-center">
             {t("auth.login.benefits.gifts")}
           </span>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <span className="text-lg sm:text-xl">💸</span>
-          <span className="text-xs text-center">
+          <span className="text-base sm:text-lg md:text-xl">💸</span>
+          <span className="text-[10px] sm:text-xs text-center">
             {t("auth.login.benefits.cashback")}
           </span>
         </div>
       </div>
 
       {/* Social login */}
-      <div className="flex justify-center gap-3 mb-3">
+      <div className="flex justify-center gap-2 sm:gap-3 mb-3">
         <GoogleLoginButton />
       </div>
 
       {/* Divider */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
         <hr className="flex-1 border-gray-300" />
-        <span className="text-sm text-gray-500">{t("auth.login.or")}</span>
+        <span className="text-xs sm:text-sm text-gray-500">
+          {t("auth.login.or")}
+        </span>
         <hr className="flex-1 border-gray-300" />
       </div>
 
@@ -243,21 +245,27 @@ export default function LoginForm({
             placeholder={t("auth.login.username_placeholder")}
             value={formData.username}
             onChange={handleChange}
-            className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full rounded-full border px-8 sm:px-10 md:px-12 py-2.5 sm:py-3 md:py-4 bg-gray-100 text-xs sm:text-sm md:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.username ? "border-red-500" : "border-gray-300"
             }`}
             required
           />
-          <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <span className="absolute left-2.5 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
             {/^[0-9]{10,11}$/.test(formData.username) ? (
-              <IconPhone size={22} />
+              <IconPhone
+                size={18}
+                className="sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]"
+              />
             ) : (
-              <IconMail size={22} />
+              <IconMail
+                size={18}
+                className="sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]"
+              />
             )}
           </span>
         </div>
         {errors.username && (
-          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+          <p className="text-red-500 text-xs sm:text-sm mt-1 ml-2.5 sm:ml-3 md:ml-4">
             {errors.username}
           </p>
         )}
@@ -270,25 +278,38 @@ export default function LoginForm({
             placeholder={t("auth.login.password_placeholder")}
             value={formData.password}
             onChange={handleChange}
-            className={`w-full rounded-full border px-10 sm:px-12 py-3 sm:py-4 bg-gray-100 text-sm sm:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full rounded-full border px-8 sm:px-10 md:px-12 py-2.5 sm:py-3 md:py-4 bg-gray-100 text-xs sm:text-sm md:text-md font-medium outline-none transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.password ? "border-red-500" : "border-gray-300"
             }`}
             required
           />
-          <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <IconLock size={22} />
+          <span className="absolute left-2.5 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <IconLock
+              size={18}
+              className="sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]"
+            />
           </span>
           <button
             type="button"
-            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className="absolute right-2.5 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
           >
-            {showPassword ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+            {showPassword ? (
+              <IconEyeOff
+                size={18}
+                className="sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]"
+              />
+            ) : (
+              <IconEye
+                size={18}
+                className="sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]"
+              />
+            )}
           </button>
         </div>
         {errors.password && (
-          <p className="text-red-500 text-sm mt-1 ml-3 sm:ml-4">
+          <p className="text-red-500 text-xs sm:text-sm mt-1 ml-2.5 sm:ml-3 md:ml-4">
             {errors.password}
           </p>
         )}
@@ -300,9 +321,9 @@ export default function LoginForm({
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="mr-2 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              className="mr-1.5 sm:mr-2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-600">
+            <span className="text-xs sm:text-sm text-gray-600">
               {t("auth.login.remember_me")}
             </span>
           </label>
@@ -310,8 +331,8 @@ export default function LoginForm({
 
         {/* General Error */}
         {errors.general && (
-          <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
-            <span className="text-red-500 mt-0.5">⚠️</span>
+          <div className="text-red-500 text-xs sm:text-sm p-2.5 sm:p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+            <span className="text-red-500 mt-0.5 text-sm sm:text-base">⚠️</span>
             <span>{errors.general}</span>
           </div>
         )}
@@ -320,11 +341,11 @@ export default function LoginForm({
         <button
           type="submit"
           disabled={isLoginLoading}
-          className="w-full bg-black text-white rounded-full py-3 sm:py-4 text-base sm:text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full bg-black text-white rounded-full py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoginLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 border-b-2 border-white"></div>
               {t("auth.login.logging_in")}
             </div>
           ) : (
@@ -334,7 +355,7 @@ export default function LoginForm({
       </form>
 
       {/* Links */}
-      <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2 sm:gap-0 text-sm">
+      <div className="flex flex-col sm:flex-row justify-between mt-3 sm:mt-4 gap-2 sm:gap-0 text-xs sm:text-sm">
         <button
           type="button"
           onClick={handleSwitchToRegister}
@@ -352,8 +373,8 @@ export default function LoginForm({
       </div>
 
       {/* Additional Features */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500 text-center leading-relaxed">
+      <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+        <p className="text-[10px] sm:text-xs text-gray-500 text-center leading-relaxed">
           {t("auth.login.terms_text")}{" "}
           <a href="/terms" className="text-blue-600 hover:underline">
             {t("auth.login.terms_link")}

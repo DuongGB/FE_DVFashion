@@ -356,9 +356,223 @@ export default function ReviewPage() {
         })}
       </div>
 
-      {/* Reviews Table */}
-      <div className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-x-auto">
-        <table className="w-full text-left">
+      {/* Responsive Reviews Table/Card */}
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-3">
+        {isLoading ? (
+          <div className="text-center text-gray-500 p-4">
+            <div className="flex items-center justify-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              {t("admin.review.loading")}
+            </div>
+          </div>
+        ) : paginatedReviews.length > 0 ? (
+          paginatedReviews.map((review) => (
+            <div
+              key={review.id}
+              className="backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg p-3 flex flex-col gap-2"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-base text-gray-900 truncate">
+                    {review.user?.fullName || "N/A"}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {review.productName || "N/A"}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="font-semibold">{review.rating}</span>
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <IconStarFilled
+                          key={i}
+                          size={14}
+                          className={
+                            i < review.rating
+                              ? "text-yellow-400"
+                              : "text-gray-300"
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    statusConfig[review.status]?.color
+                  }`}
+                >
+                  {statusConfig[review.status]?.label}
+                </span>
+              </div>
+              <div className="text-xs text-gray-600 truncate">
+                {review.comment || (
+                  <span className="text-gray-400 italic">
+                    {t("admin.review.no_comment")}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <div className="text-xs text-gray-500">
+                  {formatDate(review.createdAt)}
+                  {review.verifiedPurchase && (
+                    <span className="inline-flex items-center text-green-600 ml-2">
+                      <IconCheck size={12} className="mr-1" />
+                      {t("admin.review.verified_purchase")}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedReview(review);
+                      setShowDetailModal(true);
+                    }}
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
+                    title={t("admin.review.actions.view_detail")}
+                  >
+                    <IconEye size={20} />
+                  </button>
+                  {isAdmin && (
+                    <>
+                      {(review.status === "PENDING" ||
+                        review.status === "NEED_REVIEW") && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "APPROVED",
+                                t("admin.review.actions.approve")
+                              )
+                            }
+                            title={t("admin.review.actions.approve")}
+                            className="hover:text-green-600 transition-colors cursor-pointer"
+                          >
+                            <IconCheck size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "REJECTED",
+                                t("admin.review.actions.reject")
+                              )
+                            }
+                            title={t("admin.review.actions.reject")}
+                            className="hover:text-red-600 transition-colors cursor-pointer"
+                          >
+                            <IconX size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "HIDDEN",
+                                t("admin.review.actions.hide")
+                              )
+                            }
+                            title={t("admin.review.actions.hide")}
+                            className="hover:text-gray-600 transition-colors cursor-pointer"
+                          >
+                            <IconBan size={20} />
+                          </button>
+                        </>
+                      )}
+                      {review.status === "AUTO_APPROVED" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "APPROVED",
+                                t("admin.review.actions.approve")
+                              )
+                            }
+                            title={t("admin.review.actions.approve")}
+                            className="hover:text-green-600 transition-colors cursor-pointer"
+                          >
+                            <IconCheck size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "NEED_REVIEW",
+                                t("admin.review.actions.need_review")
+                              )
+                            }
+                            title={t("admin.review.actions.need_review")}
+                            className="hover:text-orange-600 transition-colors cursor-pointer"
+                          >
+                            <IconMessage size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleModerate(
+                                review,
+                                "HIDDEN",
+                                t("admin.review.actions.hide")
+                              )
+                            }
+                            title={t("admin.review.actions.hide")}
+                            className="hover:text-gray-600 transition-colors cursor-pointer"
+                          >
+                            <IconBan size={20} />
+                          </button>
+                        </>
+                      )}
+                      {review.status === "APPROVED" && (
+                        <button
+                          onClick={() =>
+                            handleModerate(
+                              review,
+                              "HIDDEN",
+                              t("admin.review.actions.hide")
+                            )
+                          }
+                          title={t("admin.review.actions.hide")}
+                          className="hover:text-red-600 transition-colors cursor-pointer"
+                        >
+                          <IconBan size={20} />
+                        </button>
+                      )}
+                      {review.status === "HIDDEN" && (
+                        <button
+                          onClick={() =>
+                            handleModerate(
+                              review,
+                              "APPROVED",
+                              t("admin.review.actions.restore")
+                            )
+                          }
+                          title={t("admin.review.actions.restore")}
+                          className="hover:text-green-600 transition-colors cursor-pointer"
+                        >
+                          <IconRestore size={20} />
+                        </button>
+                      )}
+                      {review.status === "REJECTED" && (
+                        <span className="text-xs text-gray-500 italic">
+                          {t("admin.review.final_state")}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-500 p-4">
+            {t("admin.review.no_reviews")}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-x-auto">
+        <table className="w-full text-left min-w-[900px]">
           <thead className="bg-gray-400">
             <tr>
               <th className="p-3">{t("admin.review.columns.customer")}</th>
