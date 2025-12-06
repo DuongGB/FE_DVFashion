@@ -7,6 +7,7 @@ import {
   useOrdersByStatusPaging,
   useBatchUpdateOrderStatus,
 } from "../../../hooks/useOrder";
+import LoadingSpinner from "../../../utils/LoadingSpinner";
 import {
   IconEye,
   IconEdit,
@@ -22,6 +23,7 @@ import {
   IconCash,
   IconBuildingBank,
   IconFilter,
+  IconLoader2,
 } from "@tabler/icons-react";
 import { formatVND } from "../../../utils/formatVND";
 
@@ -137,7 +139,6 @@ export default function OrderStatusListPage({ status }) {
   const [batchNotes, setBatchNotes] = useState("");
   const selectAllRef = useRef();
 
-  // Advanced filter states (input vs. applied)
   const [startDateInput, setStartDateInput] = useState("");
   const [endDateInput, setEndDateInput] = useState("");
   const [minTotalInput, setMinTotalInput] = useState("");
@@ -149,14 +150,12 @@ export default function OrderStatusListPage({ status }) {
   const [batchProgress, setBatchProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Payment method filter (applies immediately)
   const [paymentMethod, setPaymentMethod] = useState("");
   const pageSize = 10;
 
   const { mutate: batchUpdateOrderStatus, isLoading: isBatchUpdating } =
     useBatchUpdateOrderStatus();
 
-  // Debounce search input (1s)
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearch(searchInput);
@@ -165,7 +164,6 @@ export default function OrderStatusListPage({ status }) {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  // API params
   const params = {
     page: currentPage - 1,
     size: pageSize,
@@ -191,7 +189,6 @@ export default function OrderStatusListPage({ status }) {
     ...orders,
   ]);
 
-  // Thêm hàm formatDateTime
   function formatDateTime(isoString) {
     if (!isoString) return "";
     const date = new Date(isoString);
@@ -222,7 +219,6 @@ export default function OrderStatusListPage({ status }) {
           total: totalStatusOrders,
         });
 
-  // Handle select all (multi-page support)
   const handleSelectAll = (e) => {
     const pageOrderNumbers = orders.map((o) => o.orderNumber ?? o.id);
     if (e.target.checked) {
@@ -237,7 +233,6 @@ export default function OrderStatusListPage({ status }) {
     }
   };
 
-  // Handle select one
   const handleSelectOrder = (orderNumber) => {
     setSelectedOrders((prev) =>
       prev.includes(orderNumber)
@@ -246,7 +241,6 @@ export default function OrderStatusListPage({ status }) {
     );
   };
 
-  // Handle batch update submit
   const handleBatchUpdate = async (e) => {
     e.preventDefault();
     if (!batchStatus || selectedOrders.length === 0 || isProcessing) return;
@@ -254,7 +248,6 @@ export default function OrderStatusListPage({ status }) {
     setIsProcessing(true);
     setBatchProgress(0);
 
-    // Simulate progress (since API doesn't return real-time progress)
     const progressInterval = setInterval(() => {
       setBatchProgress((prev) => {
         if (prev >= 90) {
@@ -293,7 +286,6 @@ export default function OrderStatusListPage({ status }) {
     );
   };
 
-  // Only apply advanced filter when submit
   const handleAdvancedFilterSubmit = (e) => {
     e.preventDefault();
     setMinTotal(minTotalInput);
@@ -303,10 +295,15 @@ export default function OrderStatusListPage({ status }) {
     setCurrentPage(1);
   };
 
-  if (isLoading) return <div>{t("common.loading")}...</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner size="medium" />
+      </div>
+    );
+
   if (isError) return <div className="text-red-600">{t("common.error")}</div>;
 
-  // Helper for select all checkbox checked state (multi-page)
   const isAllPageSelected =
     orders.length > 0 &&
     orders.every((o) => selectedOrders.includes(o.orderNumber ?? o.id));
@@ -318,7 +315,6 @@ export default function OrderStatusListPage({ status }) {
         <span>{t(`order.status.${status.toLowerCase()}`)}</span>
       </h1>
 
-      {/* Statistics Card */}
       <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title={t(`order.status.${status.toLowerCase()}`)}
@@ -329,10 +325,8 @@ export default function OrderStatusListPage({ status }) {
         />
       </div>
 
-      {/* Filter bar - RESPONSIVE: flex-col on mobile */}
       <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-4 rounded-lg shadow-lg mb-4">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
-          {/* Search Input */}
           <div className="relative w-full lg:flex-1">
             <input
               type="text"
@@ -353,7 +347,6 @@ export default function OrderStatusListPage({ status }) {
             />
           </div>
 
-          {/* Payment method filter */}
           <div className="w-full lg:w-48">
             <select
               value={paymentMethod}
@@ -371,7 +364,6 @@ export default function OrderStatusListPage({ status }) {
             </select>
           </div>
 
-          {/* Buttons Group */}
           <div className="flex gap-2 w-full lg:w-auto">
             <button
               type="button"
@@ -404,7 +396,6 @@ export default function OrderStatusListPage({ status }) {
           </div>
         </div>
 
-        {/* Advanced filter - RESPONSIVE GRID */}
         {showAdvanced && (
           <form
             onSubmit={handleAdvancedFilterSubmit}
@@ -472,7 +463,6 @@ export default function OrderStatusListPage({ status }) {
         )}
       </div>
 
-      {/* Batch update bar - RESPONSIVE: flex-wrap */}
       <div className="flex flex-wrap items-center gap-2 mb-3 bg-white/50 p-2 rounded-lg border border-white/40">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
@@ -502,7 +492,6 @@ export default function OrderStatusListPage({ status }) {
         )}
       </div>
 
-      {/* Summary search */}
       <div className="text-xs md:text-sm text-gray-600 mb-3 px-1">
         {summaryText}
       </div>

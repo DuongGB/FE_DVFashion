@@ -92,6 +92,8 @@ function AppRoutes() {
             path="/password-reset/:token"
             element={<PasswordResetPage />}
           />
+          <Route path="/help" element={<HelpPage />} />
+
           <Route
             element={
               <ProtectedRoute
@@ -101,7 +103,6 @@ function AppRoutes() {
           >
             <Route path="/customer" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
-            <Route path="/help" element={<HelpPage />} />
             <Route path="/today-products" element={<TodayProductsPage />} />
           </Route>
         </Route>

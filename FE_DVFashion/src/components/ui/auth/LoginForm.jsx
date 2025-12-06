@@ -122,15 +122,18 @@ export default function LoginForm({
           localStorage.setItem("rememberLogin", "true");
         }
 
-        // Chuyển hướng đến route tương ứng
-        if (stayOnPage) {
-          if (onSuccess) onSuccess();
-        } else {
+        // QUAN TRỌNG: Đảm bảo admin luôn redirect đến /admin
+        if (!stayOnPage) {
+          // Force navigate với replace để không để lại history
           navigate(defaultRoute, { replace: true });
+          // Đóng modal nếu có
+          if (onSuccess) {
+            setTimeout(() => onSuccess(), 100);
+          }
+        } else {
+          // Chỉ đóng modal, không navigate
           if (onSuccess) onSuccess();
         }
-
-        if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Login failed:", err);

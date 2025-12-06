@@ -9,23 +9,17 @@ import {
   IconShoppingBag,
   IconShoppingCart,
   IconStar,
-  IconTrendingUp,
   IconUsers,
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import {
-  useDashboardStats,
-  useRecentActivities,
-  useRevenueChartData,
-} from "../../hooks/useDashboard";
 import { useOrderStatistics } from "../../hooks/useOrder";
-import { useAdminReviews } from "../../hooks/useReview";
+import { useProductStatistics } from "../../hooks/useProduct";
 import {
   useRecommendationAnalytics,
   useTopRecommendedProducts,
 } from "../../hooks/useProductRecomendations";
+import { useAdminReviews } from "../../hooks/useReview";
 import {
   useLowStockItems,
   useMonthlyRevenue,
@@ -36,18 +30,15 @@ import {
 import { useUser } from "../../hooks/useUser";
 
 const AdminPage = () => {
-  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [recommendationDays, setRecommendationDays] = useState(30);
 
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  const currentMonthStr = `${currentYear}-${currentMonth
-    .toString()
-    .padStart(2, "0")}`;
 
+  // Fetch monthly revenue for current year
   const { data: monthlyRevenueData } = useMonthlyRevenue({ year: currentYear });
+
   const { data: reviewsData } = useAdminReviews({
     page: 0,
     size: 1000,
@@ -58,36 +49,52 @@ const AdminPage = () => {
   // Tính điểm trung bình rating
   const averageRating = useMemo(() => {
     if (!allReviews.length) return 0;
-    // Có thể lọc chỉ review đã duyệt nếu muốn:
-    // const approvedReviews = allReviews.filter(r => r.status === "APPROVED");
-    // const list = approvedReviews.length ? approvedReviews : allReviews;
     const total = allReviews.reduce((sum, r) => sum + (r.rating || 0), 0);
     return allReviews.length ? total / allReviews.length : 0;
   }, [allReviews]);
 
-  const currentMonthRevenue =
-    monthlyRevenueData?.find((item) => item.period === currentMonthStr)
-      ?.revenue || 0;
+  // Lấy doanh thu tháng gần nhất có dữ liệu
+  const currentMonthRevenue = useMemo(() => {
+    if (!monthlyRevenueData || !Array.isArray(monthlyRevenueData)) {
+      return 0;
+    }
+
+    // Nếu không có dữ liệu, trả về 0
+    if (monthlyRevenueData.length === 0) {
+      return 0;
+    }
+
+    // Sắp xếp dữ liệu theo period (tháng) giảm dần để lấy tháng gần nhất
+    const sortedData = [...monthlyRevenueData].sort((a, b) => {
+      return b.period.localeCompare(a.period);
+    });
+
+    // Lấy doanh thu của tháng gần nhất
+    const latestMonthData = sortedData[0];
+
+    return latestMonthData.revenue || 0;
+  }, [monthlyRevenueData]);
+
+  // Lấy thống kê sản phẩm
+  const { data: productStats, isLoading: productStatsLoading } =
+    useProductStatistics();
 
   // Lấy thống kê đơn hàng
   const { data: orderStats, isLoading: orderStatsLoading } =
     useOrderStatistics();
 
-  // Fetch real data from API
-  const { data: dashboardData, isLoading: statsLoading } = useDashboardStats();
-  const { isLoading: revenueLoading } = useRevenueChartData();
-  // Lấy hoạt động gần đây
-  const { data: recentActivities, isLoading: activitiesLoading } =
-    useRecentActivities();
   // Lấy top 5 sản phẩm bán chạy nhất
   const { data: bestSellingProducts, isLoading: isLoadingBestSelling } =
     useTopBestSellingProducts({ limit: 5 });
+
   // Lấy top 5 sản phẩm tồn kho cao nhất
   const { data: topStockProducts, isLoading: isLoadingTopStock } =
     useTopStockProducts({ limit: 5 });
+
   // Lấy top 5 sản phẩm tồn kho thấp nhất
   const { data: lowStockProducts, isLoading: isLoadingLowStock } =
     useLowStockItems({ limit: 5 });
+
   // Lấy top 5 khuyến mãi mang lại doanh thu cao nhất
   const { data: topPromotions, isLoading: isLoadingPromotions } =
     useTopPromotionsByRevenue({ limit: 5 });
@@ -136,8 +143,7 @@ const AdminPage = () => {
   const totalOrders = orderStats?.totalOrders || 0;
   const pendingOrders = orderStats?.ordersByStatus?.PENDING || 0;
 
-  const loading =
-    statsLoading || revenueLoading || orderStatsLoading || isLoadingUsers;
+  const loading = !productStats || !orderStats || !users;
 
   const StatCard = ({
     icon: Icon,
@@ -195,81 +201,6 @@ const AdminPage = () => {
         <p className={`text-xl font-bold ${colorClasses[color]} text-center`}>
           {formatValue(value)}
         </p>
-      </div>
-    );
-  };
-
-  const RecentActivity = () => {
-    const getActivityColor = (type) => {
-      const colors = {
-        order: "bg-blue-500",
-        user: "bg-green-500",
-        product: "bg-yellow-500",
-        review: "bg-purple-500",
-        payment: "bg-indigo-500",
-      };
-      return colors[type] || "bg-gray-500";
-    };
-
-    if (activitiesLoading) {
-      return (
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {t("admin.dashboard.recent_activity.title")}
-          </h3>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex items-center space-x-3 p-3 animate-pulse"
-              >
-                <div className="w-2 h-2 rounded-full bg-gray-200"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-                <div className="h-3 bg-gray-200 rounded w-16"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t("admin.dashboard.recent_activity.title")}
-        </h3>
-        <div className="space-y-4">
-          {recentActivities && recentActivities.length > 0 ? (
-            recentActivities.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200"
-              >
-                <div
-                  className={`w-2 h-2 rounded-full ${getActivityColor(
-                    activity.type
-                  )}`}
-                ></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {activity.action}
-                  </p>
-                  <p className="text-sm text-gray-600">{activity.detail}</p>
-                </div>
-                <span className="text-xs text-gray-500">
-                  {activity.timeAgo}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500 py-8">
-              {t("admin.dashboard.recent_activity.no_activities")}
-            </p>
-          )}
-        </div>
       </div>
     );
   };
@@ -494,7 +425,7 @@ const AdminPage = () => {
           <StatCard
             icon={IconPackage}
             title={t("admin.dashboard.stats.total_products")}
-            value={dashboardData?.totalProducts || 0}
+            value={productStats?.totalActiveProducts || 0}
             change={5}
             color="green"
           />
@@ -534,10 +465,8 @@ const AdminPage = () => {
           <TopRecommendedProducts />
         </div>
 
-        {/* Activity and Promotions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {/* Recent Activity */}
-          <RecentActivity />
+        {/* Top Promotions (Full Width) */}
+        <div className="grid grid-cols-1 gap-6 mt-8">
           {/* Top khuyến mãi doanh thu cao */}
           <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 flex flex-col min-h-[320px]">
             <h3 className="text-base font-semibold mb-4 text-gray-800 flex items-center gap-2">

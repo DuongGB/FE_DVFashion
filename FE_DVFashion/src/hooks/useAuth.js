@@ -34,16 +34,23 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authAPI.login,
     onSuccess: async (data) => {
-      // set cookie để các hook dựa vào cookie nhận biết đã đăng nhập
+      // Set cookie trước để các hook biết đã đăng nhập
       setCookie("isAuthenticated", "true");
-      // Fetch lại user để lấy thông tin roomCode
-      await queryClient.invalidateQueries(["auth", "user"]);
 
-      // Invalidate user
-      queryClient.invalidateQueries(["auth", "user"]);
+      // Nếu API trả về thông tin user luôn, set vào cache ngay
+      const userData = data?.data?.data;
+      if (userData) {
+        queryClient.setQueryData(["auth", "user"], userData);
+      }
+
+      // Invalidate để fetch lại user data mới nhất (không await để không chặn UI)
+      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+
       // Invalidate các dữ liệu phụ thuộc trạng thái đăng nhập
       queryClient.invalidateQueries({ queryKey: ["vouchers", "customer"] });
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+
+      // Clear chat data
       localStorage.removeItem("chatRoomCode");
       localStorage.removeItem("chatGuestInfo");
     },
