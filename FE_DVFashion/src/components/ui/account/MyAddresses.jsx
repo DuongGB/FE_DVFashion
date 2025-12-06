@@ -116,15 +116,15 @@ export default function MyAddresses() {
                   <div className="flex gap-2 mt-2 sm:mt-0">
                     <button
                       onClick={() => handleEdit(address)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded"
+                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded"
                     >
-                      <IconEdit size={16} className="sm:size-18" />
+                      <IconEdit size={18} />
                     </button>
                     <button
                       onClick={() => handleDelete(address)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded"
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded"
                     >
-                      <IconTrash size={16} className="sm:size-18" />
+                      <IconTrash size={18} />
                     </button>
                   </div>
                 </div>

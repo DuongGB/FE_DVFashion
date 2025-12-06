@@ -14,6 +14,7 @@ import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { useCategory } from "../../hooks/useCategory";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function CategoryPage() {
   const { t, i18n } = useTranslation();
@@ -317,6 +318,13 @@ export default function CategoryPage() {
     active: sortedCategories?.filter((c) => c.active).length || 0,
     inactive: sortedCategories?.filter((c) => !c.active).length || 0,
   };
+
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner size="medium" />
+      </div>
+    );
 
   // Handle error state
   if (error) {
