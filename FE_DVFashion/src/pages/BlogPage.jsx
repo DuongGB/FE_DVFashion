@@ -5,48 +5,54 @@ const featuredPost = [
   {
     title: "DVFASHION 2024",
     desc: `Nhìn lại chặng đường 6 năm phát triển, tri ân sự ủng hộ của khách hàng, đối tác và hé lộ những kế hoạch đầy hứa hẹn cho năm mới, bao gồm ra mắt dòng sản phẩm thể thao DVFahsion Active cho cả nam và nữ, mở rộng kênh phân phối và tiến ra thị trường quốc tế.`,
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://media.istockphoto.com/id/887987150/vi/anh/vi%E1%BA%BFt-blog-ng%C6%B0%E1%BB%9Di-ph%E1%BB%A5-n%E1%BB%AF-%C4%91%E1%BB%8Dc-blog.jpg?s=612x612&w=0&k=20&c=Qy--ALMrZybQz3h--AeKI-Ysw9-FkErBX0HC8wzRhmo=",
     subImages: [
-      "./src/assets/blog2.png",
-      "./src/assets/blog1.jpg",
-      "./src/assets/blog2.png",
-      "./src/assets/blog1.jpg",
+      "https://bazaarvietnam.vn/wp-content/uploads/2018/04/20180304-phong-cach-thoi-trang-toi-gian-10-1.jpg",
+      "https://laforce.vn/wp-content/uploads/2024/10/blogger-thoi-trang-nam-3.jpg",
+      "https://media.istockphoto.com/id/887987150/vi/anh/vi%E1%BA%BFt-blog-ng%C6%B0%E1%BB%9Di-ph%E1%BB%A5-n%E1%BB%AF-%C4%91%E1%BB%8Dc-blog.jpg?s=612x612&w=0&k=20&c=Qy--ALMrZybQz3h--AeKI-Ysw9-FkErBX0HC8wzRhmo=",
+      "https://laforce.vn/wp-content/uploads/2024/10/blogger-thoi-trang-nam-3.jpg",
     ],
   },
   {
     title: "DVFASHION 2025",
     desc: `Nhìn lại chặng đường 7 năm phát triển, tri ân sự ủng hộ của khách hàng, đối tác và hé lộ những kế hoạch đầy hứa hẹn cho năm mới, bao gồm ra mắt dòng sản phẩm thể thao DVFahsion Active cho cả nam và nữ, mở rộng kênh phân phối và tiến ra thị trường quốc tế.`,
-    image: "./src/assets/blog2.png",
+    image:
+      "https://www.elle.vn/app/uploads/2018/01/21/ELLE-Vi%E1%BB%87t-Nam-Nh%E1%BB%AFng-blogger-th%E1%BB%9Di-trang-H%C3%A0n-Qu%E1%BB%91c-b%E1%BA%A1n-s%E1%BA%BD-kh%C3%B4ng-mu%E1%BB%91n-b%E1%BB%8F-l%E1%BB%A1-tr%C3%AAn-Instagram-12.jpg",
     subImages: [
-      "./src/assets/blog2.png",
-      "./src/assets/blog1.jpg",
-      "./src/assets/blog2.png",
-      "./src/assets/blog1.jpg",
+      "https://laforce.vn/wp-content/uploads/2024/10/blogger-thoi-trang-nam-3.jpg",
+      "https://bazaarvietnam.vn/wp-content/uploads/2018/04/20180304-phong-cach-thoi-trang-toi-gian-10-1.jpg",
+      "https://laforce.vn/wp-content/uploads/2024/10/blogger-thoi-trang-nam-3.jpg",
+      "https://bazaarvietnam.vn/wp-content/uploads/2018/04/20180304-phong-cach-thoi-trang-toi-gian-10-1.jpg",
     ],
   },
 ];
 
 const mostViewed = [
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://storage.googleapis.com/ops-shopee-files-live/live/shopee-blog/2018/08/Son-Tung-MTP-1.jpg",
     category: "Phối đồ",
     date: "21.05.2023",
     title: "Bí kíp phối đồ tập gym nam cực chất lại thoải mái cho chàng",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://5sfashion.vn/storage/upload/images/ckeditor/VUf8Vq6Xdj9Ymv7vU9p1Xu52VPmt9VlRdgaMoQyY.jpg",
     category: "Kinh nghiệm hay",
     date: "05.10.2024",
     title: "Bí kíp tạo dáng chụp ảnh nam đẹp ngầu như mẫu nam Hàn Quốc",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://media.vov.vn/sites/default/files/styles/large/public/2024-11/455462366_1068380357977690_1174935175788425614_n.jpg",
     category: "Thương hiệu thời trang",
     date: "24.05.2024",
     title: "20 Local Brand Giá Rẻ mà CHẤT Được Giới Trẻ Săn Lùng",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://cdn.24h.com.vn/upload/3-2019/images/2019-07-04/1562207436-263-hanh-trinh-f5-phong-cach-cua-son-tung-mtp-tu-trai-ngo-thai-binh-cho-den-nam-ca-si-van-nguoi-me-e3-1562059068-width1080height1075.jpg",
     category: "Phối đồ",
     date: "21.05.2023",
     title: "Bí kíp phối đồ tập gym nam cực chất lại thoải mái cho chàng",
@@ -55,7 +61,7 @@ const mostViewed = [
 
 const dailyPosts = [
   {
-    image: "./src/assets/blog1.jpg",
+    image: "https://eosport.vn/upload/images/quan-short-4.jpg",
     title:
       "So sánh quần short thể thao nữ 2 lớp và 1 lớp chi tiết từ A đến Z & Cách chọn phù hợp nhất",
     category: "Tư vấn - Review Sản phẩm",
@@ -63,21 +69,23 @@ const dailyPosts = [
     desc: "Cùng DVFahsion phân tích ưu nhược điểm và so sánh quần short thể thao nữ 2 lớp và 1 lớp khác nhau như thế nào. Đâu là lựa chọn tối ưu khi tập luyện hay mặc thường ngày?",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://n7media.coolmate.me/image/August2025/cach-quan-bang-tay-boxing-2.jpg",
     title: "Cách Quấn Băng Tay Boxing Chuẩn: Bảo Vệ Tay, Tối Ưu Lực Đấm",
     category: "Sức khỏe & Thể thao",
     date: "20.08.2025",
     desc: "Học cách quấn băng tay boxing chuẩn như chuyên gia sao cho đúng. DVFahsion hướng dẫn chi tiết từng bước quấn băng tay Boxing qua bài viết sau!",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/Quan_legging_la_gi_cover_23eef6d34b.png",
     title: "Legging là gì? Toàn bộ sự thật & cẩm nang sử dụng từ A-Z",
     category: "Phong cách thời trang",
     date: "20.08.2025",
     desc: "Tìm hiểu legging là gì và mọi điều bạn cần biết. Cẩm nang này hướng dẫn bạn cách phân biệt, chọn legging phù hợp vóc dáng và các mẹo phối đồ tôn dáng nhất.",
   },
   {
-    image: "./src/assets/blog2.png",
+    image: "https://eosport.vn/upload/images/quan-short-4.jpg",
     title:
       "So sánh quần short thể thao nữ 2 lớp và 1 lớp chi tiết từ A đến Z & Cách chọn phù hợp nhất",
     category: "Tư vấn - Review Sản phẩm",
@@ -85,21 +93,23 @@ const dailyPosts = [
     desc: "Cùng DVFahsion phân tích ưu nhược điểm và so sánh quần short thể thao nữ 2 lớp và 1 lớp khác nhau như thế nào. Đâu là lựa chọn tối ưu khi tập luyện hay mặc thường ngày?",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://n7media.coolmate.me/image/August2025/cach-quan-bang-tay-boxing-2.jpg",
     title: "Cách Quấn Băng Tay Boxing Chuẩn: Bảo Vệ Tay, Tối Ưu Lực Đấm",
     category: "Sức khỏe & Thể thao",
     date: "20.08.2025",
     desc: "Học cách quấn băng tay boxing chuẩn như chuyên gia sao cho đúng. DVFahsion hướng dẫn chi tiết từng bước quấn băng tay Boxing qua bài viết sau!",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/Quan_legging_la_gi_cover_23eef6d34b.png",
     title: "Legging là gì? Toàn bộ sự thật & cẩm nang sử dụng từ A-Z",
     category: "Phong cách thời trang",
     date: "20.08.2025",
     desc: "Tìm hiểu legging là gì và mọi điều bạn cần biết. Cẩm nang này hướng dẫn bạn cách phân biệt, chọn legging phù hợp vóc dáng và các mẹo phối đồ tôn dáng nhất.",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image: "https://eosport.vn/upload/images/quan-short-4.jpg",
     title:
       "So sánh quần short thể thao nữ 2 lớp và 1 lớp chi tiết từ A đến Z & Cách chọn phù hợp nhất",
     category: "Tư vấn - Review Sản phẩm",
@@ -107,21 +117,23 @@ const dailyPosts = [
     desc: "Cùng DVFahsion phân tích ưu nhược điểm và so sánh quần short thể thao nữ 2 lớp và 1 lớp khác nhau như thế nào. Đâu là lựa chọn tối ưu khi tập luyện hay mặc thường ngày?",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://n7media.coolmate.me/image/August2025/cach-quan-bang-tay-boxing-2.jpg",
     title: "Cách Quấn Băng Tay Boxing Chuẩn: Bảo Vệ Tay, Tối Ưu Lực Đấm",
     category: "Sức khỏe & Thể thao",
     date: "20.08.2025",
     desc: "Học cách quấn băng tay boxing chuẩn như chuyên gia sao cho đúng. DVFahsion hướng dẫn chi tiết từng bước quấn băng tay Boxing qua bài viết sau!",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/Quan_legging_la_gi_cover_23eef6d34b.png",
     title: "Legging là gì? Toàn bộ sự thật & cẩm nang sử dụng từ A-Z",
     category: "Phong cách thời trang",
     date: "20.08.2025",
     desc: "Tìm hiểu legging là gì và mọi điều bạn cần biết. Cẩm nang này hướng dẫn bạn cách phân biệt, chọn legging phù hợp vóc dáng và các mẹo phối đồ tôn dáng nhất.",
   },
   {
-    image: "./src/assets/blog2.png",
+    image: "https://eosport.vn/upload/images/quan-short-4.jpg",
     title:
       "So sánh quần short thể thao nữ 2 lớp và 1 lớp chi tiết từ A đến Z & Cách chọn phù hợp nhất",
     category: "Tư vấn - Review Sản phẩm",
@@ -129,14 +141,16 @@ const dailyPosts = [
     desc: "Cùng DVFahsion phân tích ưu nhược điểm và so sánh quần short thể thao nữ 2 lớp và 1 lớp khác nhau như thế nào. Đâu là lựa chọn tối ưu khi tập luyện hay mặc thường ngày?",
   },
   {
-    image: "./src/assets/blog1.jpg",
+    image:
+      "https://n7media.coolmate.me/image/August2025/cach-quan-bang-tay-boxing-2.jpg",
     title: "Cách Quấn Băng Tay Boxing Chuẩn: Bảo Vệ Tay, Tối Ưu Lực Đấm",
     category: "Sức khỏe & Thể thao",
     date: "20.08.2025",
     desc: "Học cách quấn băng tay boxing chuẩn như chuyên gia sao cho đúng. DVFahsion hướng dẫn chi tiết từng bước quấn băng tay Boxing qua bài viết sau!",
   },
   {
-    image: "./src/assets/blog2.png",
+    image:
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/Quan_legging_la_gi_cover_23eef6d34b.png",
     title: "Legging là gì? Toàn bộ sự thật & cẩm nang sử dụng từ A-Z",
     category: "Phong cách thời trang",
     date: "20.08.2025",
@@ -183,7 +197,7 @@ export default function BlogPage() {
       {/* Banner */}
       <img
         className="w-full mb-6 rounded-xl"
-        src="./src/assets/blog1.jpg"
+        src="https://i.ibb.co/DfPJk7Jr/blog1.jpg"
         alt={t("blog_banner_alt")}
       />
 
