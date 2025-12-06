@@ -71,32 +71,34 @@ export default function HomePage() {
     }
   }, [isAuthenticated, user, i18n]);
 
-  // useEffect(() => {
-  //   if (isAuthenticated && user?.roles && location.pathname === "/") {
-  //     const defaultRoute = getDefaultRouteByRoles(user?.roles);
-  //     if (
-  //       defaultRoute !== "/" &&
-  //       defaultRoute !== "/customer" &&
-  //       location.pathname === "/"
-  //     ) {
-  //       navigate(defaultRoute);
-  //     }
-  //   }
-  // }, [isAuthenticated, user, navigate, location.pathname]);
+  useEffect(() => {
+    if (isAuthenticated && user?.roles && location.pathname === "/") {
+      const defaultRoute = getDefaultRouteByRoles(user?.roles);
+      if (
+        defaultRoute !== "/" &&
+        defaultRoute !== "/customer" &&
+        location.pathname === "/"
+      ) {
+        navigate(defaultRoute);
+      }
+    }
+  }, [isAuthenticated, user, navigate, location.pathname]);
 
   const ads = [
     {
       id: 1,
       title: t("ads.men_wear.title"),
       subtitle: t("ads.men_wear.subtitle"),
-      image: "./src/assets/ads_home_1.avif",
+      image:
+        "https://n7media.coolmate.me/uploads/September2025/pro_nam_Frame_88042_(2)-min.jpg?aio=w-550",
       button: t("ads.men_wear.button"),
     },
     {
       id: 2,
       title: t("ads.women_active.title"),
       subtitle: t("ads.women_active.subtitle"),
-      image: "./src/assets/ads_home_2.avif",
+      image:
+        "https://n7media.coolmate.me/uploads/September2025/pro_nu_Frame_88041_(2)-min.jpg?aio=w-1069",
       button: t("ads.women_active.button"),
     },
   ];
