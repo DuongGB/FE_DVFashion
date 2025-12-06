@@ -32,24 +32,27 @@ export default function Banner() {
   const fallbackSlides = [
     {
       id: "fb-1",
-      image: "./src/assets/banner_home.avif",
+      image:
+        "https://n7media.coolmate.me/uploads/October2025/Hero-Banner-rpp.jpg",
       title: "2.9 COLLECTION",
       subtitle: "Tự do vươn mình",
-      desc: "Mua 02 giảm thêm 10%",
+      desc: "Khám phá xu hướng mới nhất",
     },
     {
       id: "fb-2",
-      image: "./src/assets/banner_home_2.avif",
+      image:
+        "https://yame.vn/cdn/shop/files/banner_homepage_021225_Jean_PC_e5a84b10-b987-4a02-83be-79caf03247fe.png?v=1764685818&width=2000",
       title: "NEW ARRIVAL",
       subtitle: "Phong cách trẻ trung",
-      desc: "Giảm giá sốc lên đến 30%",
+      desc: "Jeans cho mọi lứa tuổi",
     },
     {
       id: "fb-3",
-      image: "./src/assets/banner_home_3.avif",
-      title: "HOT DEAL",
-      subtitle: "Sale cuối mùa",
-      desc: "Chỉ còn 199k",
+      image:
+        "https://arena.fpt.edu.vn/wp-content/uploads/2022/10/banner-thoi-trang.jpg",
+      title: "END OF SEASON SALE",
+      subtitle: "Ưu đãi lên đến 50%",
+      desc: "Cơ hội sở hữu trang phục yêu thích với giá hấp dẫn",
     },
   ];
 
