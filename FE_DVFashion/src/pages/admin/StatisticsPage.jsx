@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Chart } from "react-google-charts";
 import { useTranslation } from "react-i18next";
+import { useExportRevenueReport } from "../../hooks/useReport";
 import {
   IconCalendar,
   IconChartBar,
@@ -60,6 +61,8 @@ export default function StatisticsPage() {
   const { exportVATForm011, exportVATForm04, exportVATForm014A } =
     useExportTaxReport();
 
+  const exportReport = useExportRevenueReport();
+
   // Hàm dùng chung để tải file
   const handleExportTax = async (type) => {
     try {
@@ -86,25 +89,29 @@ export default function StatisticsPage() {
   // Hàm xử lý xuất báo cáo
   const handleExportReport = async () => {
     try {
+      const yearlyData =
+        mode === "quarter" || mode === "year" ? yearly.data : undefined;
       const { blob, filename } = await exportReport({
         mode,
         year,
         startDate,
         endDate,
-        yearlyData: yearly.data,
+        yearlyData,
       });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      }, 100);
-    } catch (e) {
-      toast(t("admin.statistics.export.error"));
+
+      // Tạo link download file
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename || "BaoCaoDoanhThu.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      // Xử lý lỗi nếu cần
+      alert("Xuất báo cáo thất bại!");
+      console.error(err);
     }
   };
 
