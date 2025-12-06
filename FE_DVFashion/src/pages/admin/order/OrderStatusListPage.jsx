@@ -295,7 +295,12 @@ export default function OrderStatusListPage({ status }) {
     setCurrentPage(1);
   };
 
-  if (isLoading) return <LoadingSpinner size="large" />;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner size="medium" />
+      </div>
+    );
 
   if (isError) return <div className="text-red-600">{t("common.error")}</div>;
 

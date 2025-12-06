@@ -1,21 +1,21 @@
 import {
-  IconPackageImport,
+  IconAdjustments,
   IconEye,
   IconFilter,
-  IconAdjustments,
   IconPackageExport,
+  IconPackageImport,
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Pagination from "../../components/common/Pagination";
+import AdjustStockModal from "../../components/ui/inventory/AdjustStockModal";
+import GeneralExportStockModal from "../../components/ui/inventory/GeneralExportStockModal";
+import GeneralImportStockModal from "../../components/ui/inventory/GeneralImportStockModal";
 import InventoryDetailModal from "../../components/ui/inventory/InventoryDetailModal";
 import { useInventory } from "../../hooks/useInventory";
-import AdjustStockModal from "../../components/ui/inventory/AdjustStockModal";
-import { useTranslation } from "react-i18next";
-import GeneralImportStockModal from "../../components/ui/inventory/GeneralImportStockModal";
-import GeneralExportStockModal from "../../components/ui/inventory/GeneralExportStockModal";
-import { Icon } from "lucide-react";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function InventoryPage() {
   const { t } = useTranslation();
@@ -74,7 +74,13 @@ export default function InventoryPage() {
   );
 
   // Nếu đang loading hoặc lỗi
-  if (isLoading) return <div>{t("admin.inventory.loading")}</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner size="medium" />
+      </div>
+    );
+  }
   if (error) return <div>{t("admin.inventory.error")}</div>;
 
   // Lọc inventory

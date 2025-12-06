@@ -15,6 +15,7 @@ import VoucherDetailModal from "../../components/ui/voucher/VoucherDetailModal";
 import VoucherForm from "../../components/ui/voucher/VoucherForm";
 import useVoucher from "../../hooks/useVoucher";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function VoucherPage() {
   const { t, i18n } = useTranslation();
@@ -365,10 +366,10 @@ export default function VoucherPage() {
               {isLoadingPagedVouchers ? (
                 <tr>
                   <td colSpan={9} className="text-center p-6 text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                      {t("admin.voucher.loading") || "Loading..."}
-                    </div>
+                    <LoadingSpinner
+                      message={t("admin.voucher.loading") || "Loading..."}
+                      size="large"
+                    />
                   </td>
                 </tr>
               ) : pagedVisible.length > 0 ? (
@@ -461,10 +462,10 @@ export default function VoucherPage() {
       <div className="lg:hidden space-y-3">
         {isLoadingPagedVouchers ? (
           <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg text-center">
-            <div className="flex items-center justify-center gap-2 text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-              {t("admin.voucher.loading") || "Loading..."}
-            </div>
+            <LoadingSpinner
+              message={t("admin.voucher.loading") || "Loading..."}
+              size="large"
+            />
           </div>
         ) : pagedVisible.length > 0 ? (
           pagedVisible.map((v) => (
