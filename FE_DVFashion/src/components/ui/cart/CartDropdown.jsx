@@ -19,7 +19,7 @@ export default function CartDropdown({ onRemove, onViewAll }) {
 
   return (
     <div
-      className="absolute -right-8 top-7 w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 p-4 animate-fadeIn h-100"
+      className="absolute -right-6 top-7 w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 p-4 animate-fadeIn h-100"
       style={{
         marginTop: "12px",
         boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",

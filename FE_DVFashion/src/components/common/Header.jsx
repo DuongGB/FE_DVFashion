@@ -52,7 +52,7 @@ function TopBar({ onLoginClick, isAuthenticated, user, onUserClick }) {
 
   return (
     <div className="bg-gray-500 text-white">
-      <div className="max-w-7xl mx-auto flex justify-between px-4 sm:px-6 py-2 text-xs sm:text-sm">
+      <div className="max-w-8xl mx-auto flex justify-between px-4 sm:px-6 py-2 text-xs sm:text-sm">
         <Link to="/" className="hidden md:block">
           {t("header.about_dvfashion")}
         </Link>
@@ -298,7 +298,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 
   return (
     <div className="sticky top-0 z-50 border-b border-white/40 shadow-lg backdrop-blur-xl bg-white/40">
-      <div className="max-w-7xl mx-auto flex items-center justify-between py-3 px-4 sm:px-6">
+      <div className="max-w-8xl mx-auto flex items-center justify-between py-3 px-4 sm:px-6">
         {/* Mobile Menu Button */}
         <button
           className="md:hidden p-2"
