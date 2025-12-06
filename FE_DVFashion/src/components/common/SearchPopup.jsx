@@ -23,18 +23,29 @@ export default function SearchPopup({ show, onClose }) {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Fetch products with search query
+  // Reset search khi đóng popup
+  useEffect(() => {
+    if (!show) {
+      setSearch("");
+      setDebouncedSearch("");
+    }
+  }, [show]);
+
+  // Fetch products with search query - CHỈ KHI có debouncedSearch
   const { products = [], isLoading } = useProduct({
     lang,
-    search: debouncedSearch || null,
+    search: debouncedSearch,
     status: "ACTIVE",
     page: 0,
     size: 4,
+    enabled: !!debouncedSearch, // Chỉ fetch khi có search term
   });
 
-  // Fetch recently viewed products (chỉ khi popup mở và chưa nhập search)
+  // Fetch recently viewed products - CHỈ KHI popup mở VÀ chưa nhập search
   const { data: recentProducts = [], isLoading: isLoadingRecent } =
-    useTodayViewedProducts(4);
+    useTodayViewedProducts(4, {
+      enabled: show && !debouncedSearch, // Chỉ fetch khi popup mở và không có search
+    });
 
   // Đóng popup khi click ngoài
   useEffect(() => {
@@ -61,6 +72,7 @@ export default function SearchPopup({ show, onClose }) {
     setSearch(keyword);
   };
 
+  // KHÔNG render component nếu show = false
   if (!show) return null;
 
   return (
@@ -109,7 +121,7 @@ export default function SearchPopup({ show, onClose }) {
 
         {/* Kết quả tìm kiếm hoặc gợi ý */}
         <div className="bg-white rounded-2xl shadow-xl mt-2 p-4 sm:p-8 w-full max-w-full sm:max-w-[1100px] min-h-[320px] sm:min-h-[420px] relative flex flex-col items-center">
-          {search.trim() ? (
+          {debouncedSearch ? (
             <>
               <div className="font-bold text-lg mb-6 w-full text-left">
                 {t("search.result_title", "Kết quả tìm kiếm")}
@@ -244,6 +256,14 @@ export default function SearchPopup({ show, onClose }) {
                         p.primaryImage?.imageUrl ||
                         p.image ||
                         "/placeholder.png";
+
+                      const discountPercent =
+                        p.price && p.currentPrice
+                          ? Math.round(
+                              ((p.price - p.currentPrice) / p.price) * 100
+                            )
+                          : null;
+
                       return (
                         <Link
                           to={`/product/${encodeId(p.id)}`}
@@ -255,10 +275,38 @@ export default function SearchPopup({ show, onClose }) {
                             <img
                               src={mainImage}
                               alt={p.name}
-                              className="w-24 h-32 sm:w-36 sm:h-48 object-cover rounded-lg mb-2"
+                              className="w-32 h-44 sm:w-48 sm:h-64 object-cover rounded-lg mb-2"
                             />
                             <div className="font-semibold text-sm sm:text-base text-center">
                               {p.name}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="font-bold text-lg text-black">
+                                {p.currentPrice
+                                  ? `${p.currentPrice.toLocaleString()}${t(
+                                      "voucher.currency",
+                                      "đ"
+                                    )}`
+                                  : p.price
+                                  ? `${p.price.toLocaleString()}${t(
+                                      "voucher.currency",
+                                      "đ"
+                                    )}`
+                                  : ""}
+                              </span>
+                              {p.currentPrice && p.currentPrice < p.price && (
+                                <>
+                                  <span className="line-through text-gray-400 text-sm">
+                                    {p.price?.toLocaleString()}
+                                    {t("voucher.currency", "đ")}
+                                  </span>
+                                  {discountPercent && (
+                                    <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                      -{discountPercent}%
+                                    </span>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </div>
                         </Link>

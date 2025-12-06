@@ -17,6 +17,7 @@ import { usePromotion } from "../../hooks/usePromotion";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function PromotionPage() {
   const { t, i18n } = useTranslation();
@@ -457,10 +458,10 @@ export default function PromotionPage() {
               {query.isLoading ? (
                 <tr>
                   <td colSpan={11} className="text-center text-gray-500 p-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                      {t("admin.promotion.loading")}
-                    </div>
+                    <LoadingSpinner
+                      message={t("admin.promotion.loading")}
+                      size="large"
+                    />
                   </td>
                 </tr>
               ) : filteredPromotions.length > 0 ? (
@@ -596,10 +597,10 @@ export default function PromotionPage() {
       <div className="lg:hidden space-y-3">
         {query.isLoading ? (
           <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-6 rounded-lg shadow-lg text-center">
-            <div className="flex items-center justify-center gap-2 text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-              {t("admin.promotion.loading")}
-            </div>
+            <LoadingSpinner
+              message={t("admin.promotion.loading")}
+              size="large"
+            />
           </div>
         ) : filteredPromotions.length > 0 ? (
           filteredPromotions.map((promo, index) => (
