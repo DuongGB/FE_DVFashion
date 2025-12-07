@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { ShoppingCart, User, ChevronDown, ChevronUp } from "react-feather";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../../assets/logo_DVF.png";
 import { useAuthModal } from "../../contexts/AuthModalContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
@@ -339,7 +338,7 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
         >
           <div className="flex items-center gap-2">
             <img
-              src={logo}
+              src="https://i.ibb.co/wvKHnrX/logo-DVF.png"
               alt="DVFASHION logo"
               className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg shadow-md ring-1 ring-white/50 bg-white/70 backdrop-blur"
             />
