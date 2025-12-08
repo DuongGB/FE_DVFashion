@@ -119,8 +119,11 @@ export const deleteReviewReply = async (replyId) => {
 /**
  * Lấy tất cả phản hồi đánh giá cho khách hàng.
  */
-export const getReviewRepliesForCustomer = async (reviewId) => {
-  const response = await api.get(`/review-replies/review/${reviewId}/customer`);
+export const getReviewRepliesForCustomer = async (reviewId, lang = "VI") => {
+  const response = await api.get(
+    `/review-replies/review/${reviewId}/customer`,
+    { params: { lang } }
+  );
   return response.data;
 };
 

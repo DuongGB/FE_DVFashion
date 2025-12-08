@@ -2011,6 +2011,7 @@
       "error_adjust": "Error adjusting stock!"
     },
     "review": {
+      "no_comment": "No comment provided",
       "title": "Review Management",
       "search_placeholder": "Search by customer name, product, comment...",
       "all_status": "All Statuses",

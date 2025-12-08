@@ -201,10 +201,14 @@ export const useDeleteReviewReply = () => {
   });
 };
 
-export const useReviewRepliesForCustomer = (reviewId, options) => {
+export const useReviewRepliesForCustomer = (
+  reviewId,
+  options = {},
+  lang = "VI"
+) => {
   return useQuery({
-    queryKey: ["reviewReplies", reviewId, "customer"],
-    queryFn: () => getReviewRepliesForCustomer(reviewId),
+    queryKey: ["reviewReplies", reviewId, "customer", lang],
+    queryFn: () => getReviewRepliesForCustomer(reviewId, lang),
     enabled: !!reviewId,
     ...options,
   });
