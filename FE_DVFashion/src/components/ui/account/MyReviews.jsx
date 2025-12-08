@@ -11,7 +11,10 @@ import ModalUpdateReview from "../review/ModalUpdateReview";
 import ReviewReplySection from "../review/ReviewReplySection";
 
 export default function MyReviews({ refreshKey = 0 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = (i18n.language || "VI").toUpperCase().startsWith("VI")
+    ? "VI"
+    : "EN";
   const [page, setPage] = useState(0);
   const [selectedReview, setSelectedReview] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -22,7 +25,7 @@ export default function MyReviews({ refreshKey = 0 }) {
     data: pagedData = [],
     isLoading,
     refetch,
-  } = useGetMyReviews({ page, size: 4, refreshKey });
+  } = useGetMyReviews({ page, size: 4, lang, refreshKey }, { staleTime: 0 });
 
   const reviews = Array.isArray(pagedData) ? pagedData : pagedData.values || [];
   const totalPages = pagedData.totalPages || 1;
@@ -170,6 +173,7 @@ export default function MyReviews({ refreshKey = 0 }) {
                         reviewId={review.id}
                         initialReplies={review.replies}
                         isCustomer={true}
+                        lang={lang}
                         onReplySuccess={() => refetch()}
                       />
                     </div>
