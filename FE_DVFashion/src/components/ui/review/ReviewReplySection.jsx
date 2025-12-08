@@ -362,14 +362,25 @@ const ReplyForm = ({
   );
 };
 
-export default function ReviewReplySection({ reviewId, isAdmin = false }) {
-  const { t } = useTranslation();
+export default function ReviewReplySection({
+  reviewId,
+  isAdmin = false,
+  lang = "VI",
+}) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [editingReply, setEditingReply] = useState(null);
 
+  // Chuẩn hóa lang
+  const normalizedLang = (lang || i18n.language || "VI")
+    .toUpperCase()
+    .startsWith("VI")
+    ? "VI"
+    : "EN";
+
   const { data: repliesData, isLoading } = isAdmin
     ? useReviewRepliesForAdmin(reviewId)
-    : useReviewRepliesForCustomer(reviewId);
+    : useReviewRepliesForCustomer(reviewId, {}, normalizedLang);
 
   const { mutate: createReply, isLoading: isCreating } = useCreateReviewReply();
   const { mutate: updateReply, isLoading: isUpdating } = useUpdateReviewReply();

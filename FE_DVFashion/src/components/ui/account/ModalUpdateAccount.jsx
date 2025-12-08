@@ -15,7 +15,7 @@ export default function ModalUpdateAccount({ show, onClose, user }) {
     fullName: "",
     email: "",
     phone: "",
-    gender: "OTHER", // Backend format
+    gender: "OTHER",
     dob: {
       day: "",
       month: "",

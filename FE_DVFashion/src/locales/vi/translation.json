@@ -1921,6 +1921,7 @@
       "error_adjust": "Có lỗi khi điều chỉnh tồn kho!"
     },
     "review": {
+      "no_comment": "Không có bình luận",
       "title": "Quản lý đánh giá",
       "search_placeholder": "Tìm theo tên khách hàng, sản phẩm, bình luận...",
       "all_status": "Tất cả trạng thái",
