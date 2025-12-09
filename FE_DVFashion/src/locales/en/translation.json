@@ -2134,6 +2134,21 @@
       "export": "Export Report",
       "export.success": "Report exported successfully!",
       "export.error": "Failed to export report!",
+      "export_tax": {
+        "title": "Export Tax Report",
+        "month": "Monthly Tax",
+        "quarter": "Quarterly Tax",
+        "year": "Yearly Tax",
+        "exporting": "Exporting...",
+        "select_month": "SELECT MONTH",
+        "select_quarter": "SELECT QUARTER",
+        "select_year": "YEAR {{year}}",
+        "form_011": "List Form 01-1/VAT",
+        "form_014A": "Allocation Form 01-4A/VAT",
+        "form_04": "Declaration Form 04/VAT",
+        "success": "Tax report exported successfully!",
+        "error": "Failed to export tax report!"
+      },
       "chart": {
         "title_daily": "Daily Revenue Chart",
         "title_monthly": "Monthly Revenue Chart",
