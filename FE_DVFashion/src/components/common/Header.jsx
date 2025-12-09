@@ -289,7 +289,8 @@ function MainMenu({ isAuthenticated, user, onUserClick }) {
 
   const handleViewAllCart = (e) => {
     e.stopPropagation();
-    window.location.href = "/cart";
+    navigate("/cart");
+    setShowCart(false);
   };
 
   // Lấy số lượng sản phẩm trong giỏ hàng
