@@ -52,26 +52,24 @@ export const useCategory = ({
           : null,
       }));
     },
-    retry: (failureCount, error) => {
-      if (error.response?.status === 401) {
-        return false;
-      }
-      return failureCount < 2;
-    },
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    retry: 1,
+    // Tăng cache time vì categories ít thay đổi
+    staleTime: 30 * 60 * 1000, // 30 phút thay vì 5 phút
+    gcTime: 60 * 60 * 1000, // 1 giờ thay vì 10 phút
+    refetchOnMount: false, //Không refetch khi mount
+    refetchOnWindowFocus: false,
   });
 
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: ({ categoryData, lang = "VI" }) => {
-      console.log("Creating category with data:", categoryData);
       return categoryAPI.createCategory(categoryData, lang);
     },
     onSuccess: (data) => {
-      console.log("Category created successfully:", data);
-      queryClient.invalidateQueries(["categories", "all"]);
-      queryClient.invalidateQueries(["categories", "public"]);
+      queryClient.invalidateQueries({
+        queryKey: ["categories", "all"],
+        exact: false, // invalidate tất cả variations của categories/all
+      });
     },
     onError: (error) => {
       console.error("Create category error:", error);
@@ -81,13 +79,13 @@ export const useCategory = ({
   // Update category mutation
   const updateCategoryMutation = useMutation({
     mutationFn: ({ categoryId, categoryData, lang = "VI" }) => {
-      console.log("Updating category:", categoryId, categoryData, "lang", lang);
       return categoryAPI.updateCategory(categoryId, categoryData, lang);
     },
     onSuccess: (data) => {
-      console.log("Category updated successfully:", data);
-      queryClient.invalidateQueries(["categories", "all"]);
-      queryClient.invalidateQueries(["categories", "public"]);
+      queryClient.invalidateQueries({
+        queryKey: ["categories", "all"],
+        exact: false,
+      });
     },
     onError: (error) => {
       console.error("Update category error:", error);
@@ -97,13 +95,13 @@ export const useCategory = ({
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: (categoryId) => {
-      console.log("Deleting category:", categoryId);
       return categoryAPI.deleteCategory(categoryId);
     },
     onSuccess: (data) => {
-      console.log("Category deleted successfully:", data);
-      queryClient.invalidateQueries(["categories", "all"]);
-      queryClient.invalidateQueries(["categories", "public"]);
+      queryClient.invalidateQueries({
+        queryKey: ["categories", "all"],
+        exact: false,
+      });
     },
     onError: (error) => {
       console.error("Delete category error:", error);

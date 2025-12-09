@@ -94,7 +94,10 @@ export const usePromotion = (langInput = "VI") => {
       },
       enabled,
       keepPreviousData: true,
-      staleTime: 1000 * 30,
+      staleTime: 15 * 60 * 1000, // Tăng từ 30s lên 15 phút
+      gcTime: 30 * 60 * 1000,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     });
   };
 
@@ -137,7 +140,10 @@ export const usePromotion = (langInput = "VI") => {
           : null;
       },
       enabled: enabled && !!promotionId,
-      staleTime: 1000 * 60,
+      staleTime: 30 * 60 * 1000, // Tăng từ 1 phút lên 30 phút
+      gcTime: 60 * 60 * 1000, // 1 giờ
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
         if (error?.response?.status === 404) return false;
         return failureCount < 2;

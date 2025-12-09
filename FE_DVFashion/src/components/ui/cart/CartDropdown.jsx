@@ -13,7 +13,7 @@ export default function CartDropdown({ onRemove, onViewAll }) {
 
   const items = cart?.items || [];
   const total = items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
+    (sum, item) => sum + (item?.unitPrice || 0) * (item?.quantity || 0),
     0
   );
 
@@ -68,38 +68,57 @@ export default function CartDropdown({ onRemove, onViewAll }) {
             </div>
           </div>
         ) : (
-          items.map((item) => (
-            <div
-              key={item.cartItemId}
-              className="flex gap-3 items-center py-2 border-b last:border-b-0 group"
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.productName}
-                className="w-16 h-16 object-cover rounded-lg bg-gray-100"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold truncate">{item.productName}</div>
-                <div className="text-xs text-gray-500">
-                  {item.color} / {item.sizeName}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-bold text-base text-black">
-                    {item.unitPrice.toLocaleString()}đ
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500">x{item.quantity}</div>
-              </div>
-              <button
-                className="ml-2 text-gray-400 hover:text-red-500"
-                onClick={() => onRemove(item.cartItemId)}
-                aria-label="Xóa"
-                tabIndex={0}
+          items.map((item) => {
+            // ⭐ Kiểm tra item có tồn tại và có các thuộc tính cần thiết không
+            if (!item || !item.cartItemId) {
+              console.warn("Invalid cart item:", item);
+              return null;
+            }
+
+            const unitPrice = item.unitPrice || 0;
+            const quantity = item.quantity || 0;
+            const productName = item.productName || "Sản phẩm";
+            const imageUrl = item.imageUrl || "";
+            const color = item.color || "";
+            const sizeName = item.sizeName || "";
+
+            return (
+              <div
+                key={item.cartItemId}
+                className="flex gap-3 items-center py-2 border-b last:border-b-0 group"
               >
-                <X size={18} />
-              </button>
-            </div>
-          ))
+                <img
+                  src={imageUrl}
+                  alt={productName}
+                  className="w-16 h-16 object-cover rounded-lg bg-gray-100"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://via.placeholder.com/64?text=No+Image";
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{productName}</div>
+                  <div className="text-xs text-gray-500">
+                    {color} {color && sizeName ? "/" : ""} {sizeName}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-bold text-base text-black">
+                      {unitPrice.toLocaleString()}đ
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500">x{quantity}</div>
+                </div>
+                <button
+                  className="ml-2 text-gray-400 hover:text-red-500"
+                  onClick={() => onRemove(item.cartItemId)}
+                  aria-label="Xóa"
+                  tabIndex={0}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
       <style>

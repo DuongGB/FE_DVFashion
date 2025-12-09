@@ -32,12 +32,8 @@ export const useProduct = (params = {}) => {
     queryFn: async () => {
       try {
         const res = await productAPI.getAllProducts(params);
-        // console.log("Products response:", res.data);
-
-        // Backend trả về ApiResponse<PageResponse<ProductResponse>>
         const pageData = res.data?.data ?? res.data ?? {};
 
-        // PageResponse structure: { values: [...], pageIndex, pageSize, totalElements, totalPages, filterInfo }
         const products = (pageData.values ?? pageData.content ?? []).map(
           (p) => ({
             ...p,
@@ -66,7 +62,9 @@ export const useProduct = (params = {}) => {
       }
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 30,
+    refetchOnMount: false, // Thêm dòng này
+    staleTime: 10 * 60 * 1000, // Tăng từ 30s lên 10 phút
+    gcTime: 30 * 60 * 1000, // 30 phút
     retry: (failureCount, error) => {
       if (error.response?.status === 401) {
         return false;
@@ -142,7 +140,10 @@ export const useProductsByCategory = (categoryId, lang = "VI") => {
       }));
     },
     enabled: !!categoryId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 15 * 60 * 1000, // Tăng từ 5 phút lên 15 phút
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -151,7 +152,8 @@ export const useProductsByCategoryPaging = (
   categoryId,
   page = 0,
   size = 12,
-  lang = "VI"
+  lang = "VI",
+  options = {}
 ) => {
   return useQuery({
     queryKey: ["products", "byCategoryPaging", categoryId, page, size, lang],
@@ -166,13 +168,11 @@ export const useProductsByCategoryPaging = (
 
       const data = res.data?.data ?? res.data ?? {};
 
-      // support both backend shapes
       let content = [];
       if (Array.isArray(data.content)) content = data.content;
       else if (Array.isArray(data.values)) content = data.values;
       else if (Array.isArray(data)) content = data;
 
-      // normalize items
       content = content.map((p) => ({
         ...p,
         currentPrice: p.currentPrice ?? p.salePrice ?? p.price ?? null,
@@ -189,7 +189,11 @@ export const useProductsByCategoryPaging = (
       };
     },
     enabled: !!categoryId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 15 * 60 * 1000, // Tăng từ 5 phút lên 15 phút
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    ...options,
   });
 };
 
@@ -207,7 +211,10 @@ export const useProductById = (productId, lang = "VI") => {
       };
     },
     enabled: !!productId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 10 * 60 * 1000, // Tăng từ 5 phút lên 10 phút
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 

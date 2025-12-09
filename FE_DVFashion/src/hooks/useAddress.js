@@ -105,6 +105,52 @@ export const useProvinces = () => {
         name: p.provinceName,
       }));
     },
-    staleTime: 1000 * 60 * 15,
+    staleTime: 24 * 60 * 60 * 1000, //24 giờ - provinces rất ít thay đổi
+    gcTime: 7 * 24 * 60 * 60 * 1000, //7 ngày
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+};
+
+export const useDistricts = (provinceId) => {
+  return useQuery({
+    queryKey: ["districts", provinceId],
+    queryFn: async () => {
+      if (!provinceId) return [];
+      const res = await addressAPI.getDistrictsByProvince(provinceId);
+      const districts = res?.data?.data || res?.data || res || [];
+      return districts.map((d) => ({
+        code: d.districtId || d.code,
+        name: d.districtName || d.name,
+      }));
+    },
+    enabled: !!provinceId,
+    staleTime: 24 * 60 * 60 * 1000, //  24 giờ
+    gcTime: 7 * 24 * 60 * 60 * 1000, //  7 ngày
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+};
+
+export const useWards = (districtId) => {
+  return useQuery({
+    queryKey: ["wards", districtId],
+    queryFn: async () => {
+      if (!districtId) return [];
+      const res = await addressAPI.getWardsByDistrict(districtId);
+      const wards = res?.data?.data || res?.data || res || [];
+      return wards.map((w) => ({
+        code: w.wardCode || w.code,
+        name: w.wardName || w.name,
+      }));
+    },
+    enabled: !!districtId,
+    staleTime: 24 * 60 * 60 * 1000, //  24 giờ
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
