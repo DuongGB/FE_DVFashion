@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   IconReceipt,
   IconCreditCard,
@@ -10,7 +10,7 @@ import CartBottom from "../../components/common/CartBottom";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../../hooks/useCart";
-import { useProvinces, useDistricts, useWards } from "../../hooks/useAddress";
+import { useAddress } from "../../hooks/useAddress";
 import AddressList from "../../components/ui/address/AddressList";
 import { useCreateOrder } from "../../hooks/useOrder";
 import { toast } from "react-toastify";
@@ -19,21 +19,33 @@ import { formatVND } from "../../utils/formatVND";
 import { useCustomerVoucher } from "../../hooks/useVoucher";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useAuth } from "../../hooks/useAuth";
-import { useAddress } from "../../hooks/useAddress";
 
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [selectedVoucherCode, setSelectedVoucherCode] = useState("");
   const [voucherInput, setVoucherInput] = useState("");
 
   const { availableVouchers } = useCustomerVoucher({ page: 0, size: 100 });
   const vouchers = availableVouchers?.values || [];
 
-  //  Sử dụng hooks với cache tốt hơn
-  const { defaultAddress, addresses } = useAddress();
-  const { data: provinces = [], isLoading: loadingProvinces } = useProvinces();
+  const addressHooks = useAddress();
+
+  const {
+    defaultAddress,
+    addresses,
+    fetchProvinces,
+    fetchDistricts,
+    fetchWards,
+  } = addressHooks;
+
+  const safeDefaultAddress = isAuthenticated ? defaultAddress : null;
+  const safeAddresses = isAuthenticated ? addresses : [];
+  const safeFetchProvinces = isAuthenticated ? fetchProvinces : async () => [];
+  const safeFetchDistricts = isAuthenticated ? fetchDistricts : async () => [];
+  const safeFetchWards = isAuthenticated ? fetchWards : async () => [];
 
   const {
     mutate: createOrder,
@@ -53,6 +65,7 @@ export default function CartPage() {
     isUpdating,
   } = useCart();
 
+  // Chuyển đổi dữ liệu từ API sang định dạng dùng trong UI
   const cartItems = cart?.items || [];
 
   const [selected, setSelected] = useState([]);
@@ -75,38 +88,6 @@ export default function CartPage() {
   const [manualDeselect, setManualDeselect] = useState(false);
   const [deliveryText, setDeliveryText] = useState("");
 
-  //  Load districts và wards dynamically với hooks có cache
-  const { data: districts = [], isLoading: loadingDistricts } = useDistricts(
-    shipping.province
-  );
-
-  const districtId = useMemo(() => {
-    const districtObj = districts.find(
-      (d) => d.code?.toString() === shipping.district?.toString()
-    );
-    return districtObj?.id;
-  }, [districts, shipping.district]);
-
-  const { data: wards = [], isLoading: loadingWards } = useWards(districtId);
-
-  //  Combine locationData từ cached hooks
-  const locationData = useMemo(
-    () => ({
-      provinces,
-      districts,
-      wards,
-      isLoading: loadingProvinces || loadingDistricts || loadingWards,
-    }),
-    [
-      provinces,
-      districts,
-      wards,
-      loadingProvinces,
-      loadingDistricts,
-      loadingWards,
-    ]
-  );
-
   // Lọc giỏ hàng theo mục đã chọn
   const filteredCart = useMemo(
     () =>
@@ -116,394 +97,678 @@ export default function CartPage() {
     [cartItems, selected]
   );
 
-  //  Lưu thứ tự cartItemId
-  const [itemOrder, setItemOrder] = useState([]);
+  // helper to build shippingInfo payload (returns null if missing required fields)
+  const buildShippingInfoForCalc = (useSelectedAddress = false) => {
+    const items = filteredCart.map((it) => ({ cartItemId: it.cartItemId }));
+    if (!items?.length) return null;
 
-  //  Sắp xếp lại cartItems theo itemOrder
-  const orderedCartItems = useMemo(() => {
-    if (!itemOrder.length) return cartItems;
-    return itemOrder
-      .map((id) => cartItems.find((item) => item.cartItemId === id))
-      .filter(Boolean);
-  }, [cartItems, itemOrder]);
+    const infoSource =
+      useSelectedAddress && selectedAddress
+        ? selectedAddress
+        : {
+            fullName: shipping.name,
+            phone: shipping.phone,
+            country: shipping.country,
+            city: getProvinceName(shipping.province),
+            district: getDistrictName(shipping.district),
+            ward: getWardName(shipping.ward),
+            street: shipping.address,
+          };
 
-  // Get display names
-  const getProvinceName = useCallback(
-    (code) => {
-      const province = provinces.find(
-        (p) => p.code?.toString() === code?.toString()
+    // find toDistrictId + toWardCode from loaded locationData
+    let toDistrictId = null;
+    let toWardCode = "";
+    if (selectedAddress) {
+      // try map by names
+      const prov = locationData.provinces.find(
+        (p) => p.name === selectedAddress.city
       );
-      return province ? province.name : "";
-    },
-    [provinces]
-  );
-
-  const getDistrictName = useCallback(
-    (code) => {
-      const district = districts.find(
-        (d) => d.code?.toString() === code?.toString()
-      );
-      return district ? district.name : "";
-    },
-    [districts]
-  );
-
-  const getWardName = useCallback(
-    (code) => {
-      const ward = wards.find((w) => w.code?.toString() === code?.toString());
-      return ward ? ward.name : "";
-    },
-    [wards]
-  );
-
-  // Helper to build shippingInfo payload
-  const buildShippingInfoForCalc = useCallback(
-    (useSelectedAddress = false) => {
-      const items = filteredCart.map((it) => ({ cartItemId: it.cartItemId }));
-      if (!items?.length) return null;
-
-      const infoSource =
-        useSelectedAddress && selectedAddress
-          ? selectedAddress
-          : {
-              fullName: shipping.name,
-              phone: shipping.phone,
-              country: shipping.country,
-              city: getProvinceName(shipping.province),
-              district: getDistrictName(shipping.district),
-              ward: getWardName(shipping.ward),
-              street: shipping.address,
-            };
-
-      // Find toDistrictId + toWardCode
-      let toDistrictId = null;
-      let toWardCode = "";
-
-      if (selectedAddress) {
-        const prov = provinces.find((p) => p.name === selectedAddress.city);
-        if (prov) {
-          const d = districts.find(
-            (dd) => dd.name === selectedAddress.district
+      if (prov) {
+        const districts = locationData.districts;
+        const d = districts.find((dd) => dd.name === selectedAddress.district);
+        if (d) {
+          toDistrictId = d.id;
+          // try find ward code by ward name (may not be loaded yet)
+          const ward = locationData.wards.find(
+            (w) => w.name === selectedAddress.ward
           );
-          if (d) {
-            toDistrictId = d.id;
-            const ward = wards.find((w) => w.name === selectedAddress.ward);
-            if (ward) toWardCode = ward.code;
-          }
+          if (ward) toWardCode = ward.code;
         }
-      } else {
-        const dObj = districts.find(
-          (d) => d.code?.toString() === shipping.district?.toString()
-        );
-        if (dObj) toDistrictId = dObj.id;
-        const wObj = wards.find(
-          (w) => w.code?.toString() === shipping.ward?.toString()
-        );
-        if (wObj) toWardCode = wObj.code;
+      }
+    } else {
+      const dObj = locationData.districts.find(
+        (d) => d.code?.toString() === shipping.district?.toString()
+      );
+      if (dObj) toDistrictId = dObj.id;
+      const wObj = locationData.wards.find(
+        (w) => w.code?.toString() === shipping.ward?.toString()
+      );
+      if (wObj) toWardCode = wObj.code;
+    }
+
+    if (
+      !infoSource.fullName ||
+      !infoSource.phone ||
+      !infoSource.country ||
+      !infoSource.city ||
+      !infoSource.district ||
+      !infoSource.ward ||
+      !infoSource.street ||
+      !toDistrictId ||
+      !toWardCode
+    ) {
+      return null; // thiếu dữ liệu để tính
+    }
+
+    const shippingInfo = {
+      fullName: infoSource.fullName,
+      phone: infoSource.phone,
+      country: infoSource.country,
+      city: infoSource.city,
+      district: infoSource.district,
+      ward: infoSource.ward,
+      street: infoSource.street,
+      toDistrictId: parseInt(toDistrictId, 10),
+      toWardCode: toWardCode?.toString(),
+    };
+
+    const payload = {
+      orderItems: items,
+      shippingInfo,
+      notes: shipping.note || "",
+      paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+    };
+
+    return payload;
+  };
+
+  // map an address (from address book) to toDistrictId/toWardCode, loading location data if needed
+  const mapAddressToCodes = async (addr) => {
+    let toDistrictId = null;
+    let toWardCode = null;
+
+    try {
+      // ensure provinces loaded
+      if (!locationData.provinces?.length) {
+        const provincesRaw = await fetchProvinces();
+        const mapped = (provincesRaw || []).map((p) => ({
+          code: p.provinceId,
+          name: p.provinceName,
+        }));
+        setLocationData((prev) => ({ ...prev, provinces: mapped }));
       }
 
-      if (
-        !infoSource.fullName ||
-        !infoSource.phone ||
-        !infoSource.country ||
-        !infoSource.city ||
-        !infoSource.district ||
-        !infoSource.ward ||
-        !infoSource.street ||
-        !toDistrictId ||
-        !toWardCode
-      ) {
-        return null;
+      // find province object (may be in state after the step above)
+      const province = (
+        locationData.provinces?.length ? locationData.provinces : []
+      ).find((p) => p.name === addr.city);
+
+      if (!province) {
+        // try to reload provinces once more from API and try again
+        try {
+          const provincesRaw = await fetchProvinces();
+          const mapped = (provincesRaw || []).map((p) => ({
+            code: p.provinceId,
+            name: p.provinceName,
+          }));
+          setLocationData((prev) => ({ ...prev, provinces: mapped }));
+          const prov2 = mapped.find((p) => p.name === addr.city);
+          if (!prov2) return { toDistrictId, toWardCode };
+          // continue with prov2
+          const districtsRaw = await fetchDistricts(parseInt(prov2.code, 10));
+          const mappedDistricts = (districtsRaw || []).map((d) => ({
+            code: d.code,
+            name: d.districtName,
+            id: d.districtId,
+          }));
+          setLocationData((prev) => ({ ...prev, districts: mappedDistricts }));
+          const districtObj = mappedDistricts.find(
+            (d) => d.name === addr.district
+          );
+          if (!districtObj) return { toDistrictId, toWardCode };
+          toDistrictId = districtObj.id;
+          const wardsRaw = await fetchWards(districtObj.id);
+          const mappedWards = (wardsRaw || []).map((w) => ({
+            code: w.wardCode,
+            name: w.wardName,
+          }));
+          setLocationData((prev) => ({ ...prev, wards: mappedWards }));
+          const wardObj = mappedWards.find((w) => w.name === addr.ward);
+          if (wardObj) toWardCode = wardObj.code?.toString();
+          return { toDistrictId, toWardCode };
+        } catch (err) {
+          console.error("mapAddressToCodes fallback failed:", err);
+          return { toDistrictId, toWardCode };
+        }
       }
 
-      const shippingInfo = {
-        fullName: infoSource.fullName,
-        phone: infoSource.phone,
-        country: infoSource.country,
-        city: infoSource.city,
-        district: infoSource.district,
-        ward: infoSource.ward,
-        street: infoSource.street,
-        toDistrictId: parseInt(toDistrictId, 10),
-        toWardCode: toWardCode?.toString(),
-      };
+      // load districts for province
+      const districtsRaw = await fetchDistricts(parseInt(province.code, 10));
+      const mappedDistricts = (districtsRaw || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
+      setLocationData((prev) => ({ ...prev, districts: mappedDistricts }));
 
-      const payload = {
-        orderItems: items,
-        shippingInfo,
-        notes: shipping.note || "",
-        paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
-      };
+      const districtObj = mappedDistricts.find((d) => d.name === addr.district);
+      if (!districtObj) return { toDistrictId, toWardCode };
+      toDistrictId = districtObj.id;
 
-      return payload;
-    },
-    [
-      filteredCart,
-      selectedAddress,
-      shipping,
-      payment,
-      provinces,
-      districts,
-      wards,
-      getProvinceName,
-      getDistrictName,
-      getWardName,
-    ]
-  );
+      // load wards for district
+      const wardsRaw = await fetchWards(districtObj.id);
+      const mappedWards = (wardsRaw || []).map((w) => ({
+        code: w.wardCode,
+        name: w.wardName,
+      }));
+      setLocationData((prev) => ({ ...prev, wards: mappedWards }));
 
-  //  Debounced shipping calculation với useRef để tránh stale closure
-  const shippingCalcTimerRef = useRef(null);
+      const wardObj = mappedWards.find((w) => w.name === addr.ward);
+      if (wardObj) toWardCode = wardObj.code?.toString();
+    } catch (err) {
+      console.error("Mapping address to codes failed:", err);
+    }
 
+    return { toDistrictId, toWardCode };
+  };
+
+  // Debounced effect: recalc when address/selection/cart changes
   useEffect(() => {
-    // Clear previous timer
-    if (shippingCalcTimerRef.current) {
-      clearTimeout(shippingCalcTimerRef.current);
-    }
+    let timer = null;
 
-    //  Kiểm tra điều kiện trước
-    if (!filteredCart?.length) {
-      setDeliveryText("");
-      setShipping((s) => ({ ...s, shippingFee: 0 }));
-      return;
-    }
-
-    //  Debounce 800ms
-    shippingCalcTimerRef.current = setTimeout(async () => {
-      const payload = buildShippingInfoForCalc(!!selectedAddress);
-
-      if (!payload) {
-        setDeliveryText("");
+    const doCalc = async () => {
+      // prefer selectedAddress if exists
+      const payload =
+        buildShippingInfoForCalc(!!selectedAddress) ||
+        buildShippingInfoForCalc(false);
+      if (payload) {
+        try {
+          const res = await calculateShippingApi(payload);
+          const data = res?.data ?? res;
+          const fee =
+            data?.shippingFee ??
+            data?.shippingFee?.value ??
+            data?.shippingFee?.amount ??
+            null;
+          const text =
+            data?.deliveryTimeText ??
+            (data?.estimatedDeliveryTime
+              ? new Date(data.estimatedDeliveryTime).toLocaleString()
+              : "");
+          if (fee != null) {
+            setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+          }
+          setDeliveryText(text || "");
+        } catch (e) {
+          console.error("Shipping calc failed:", e);
+        }
         return;
       }
 
-      try {
-        const res = await calculateShippingApi(payload);
-        const data = res?.data ?? res;
-        const fee =
-          data?.shippingFee ??
-          data?.shippingFee?.value ??
-          data?.shippingFee?.amount ??
-          0;
-        const text =
-          data?.deliveryTimeText ??
-          (data?.estimatedDeliveryTime
-            ? new Date(data.estimatedDeliveryTime).toLocaleString()
-            : "");
+      // if payload is null but we have a selectedAddress, try to map it to codes and calculate
+      if (selectedAddress && filteredCart?.length > 0) {
+        try {
+          const { toDistrictId, toWardCode } = await mapAddressToCodes(
+            selectedAddress
+          );
+          if (!toDistrictId || !toWardCode) {
+            setDeliveryText("");
+            return;
+          }
 
-        setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
-        setDeliveryText(text || "");
-      } catch (e) {
-        console.error("Shipping calc failed:", e);
+          const shippingInfo = {
+            fullName: selectedAddress.fullName,
+            phone: selectedAddress.phone,
+            country: selectedAddress.country || "Vietnam",
+            city: selectedAddress.city,
+            district: selectedAddress.district,
+            ward: selectedAddress.ward,
+            street: selectedAddress.street,
+            toDistrictId: parseInt(toDistrictId, 10),
+            toWardCode: toWardCode?.toString(),
+          };
+
+          const items = filteredCart.map((it) => ({
+            cartItemId: it.cartItemId,
+          }));
+          const calcPayload = {
+            orderItems: items,
+            shippingInfo,
+            notes: shipping.note || "",
+            paymentMethod: payment === "cod" ? "CASH_ON_DELIVERY" : "PAYPAL",
+          };
+
+          const res = await calculateShippingApi(calcPayload);
+          const data = res?.data ?? res;
+          const fee =
+            data?.shippingFee ??
+            data?.shippingFee?.value ??
+            data?.shippingFee?.amount ??
+            null;
+          const text =
+            data?.deliveryTimeText ??
+            (data?.estimatedDeliveryTime
+              ? new Date(data.estimatedDeliveryTime).toLocaleString()
+              : "");
+          if (fee != null) {
+            setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+          }
+          setDeliveryText(text || "");
+        } catch (e) {
+          console.error("Shipping calc with selectedAddress failed:", e);
+        }
+      } else {
         setDeliveryText("");
       }
-    }, 800);
-
-    return () => {
-      if (shippingCalcTimerRef.current) {
-        clearTimeout(shippingCalcTimerRef.current);
-      }
     };
+
+    // wait 600ms after last change
+    timer = setTimeout(() => {
+      doCalc();
+    }, 600);
+
+    return () => clearTimeout(timer);
   }, [
     shipping.province,
     shipping.district,
     shipping.ward,
-    selectedAddress?.id, //  Chỉ track id
+    shipping.address,
+    shipping.name,
+    shipping.phone,
+    selectedAddress,
     filteredCart?.length,
     payment,
-    buildShippingInfoForCalc,
-    calculateShippingApi,
   ]);
 
-  //  Tự động chọn địa chỉ mặc định
+  // Lưu thứ tự cartItemId ban đầu
+  const [itemOrder, setItemOrder] = useState(
+    cartItems.map((i) => i.cartItemId)
+  );
+
+  // Add location data state
+  const [locationData, setLocationData] = useState({
+    provinces: [],
+    districts: [],
+    wards: [],
+    isLoading: false,
+  });
+
+  // Load provinces when component mounts
   useEffect(() => {
-    if (defaultAddress && !selectedAddress && !manualDeselect) {
-      setSelectedAddress(defaultAddress);
+    loadProvinces();
+  }, []);
+
+  // Load provinces
+  const loadProvinces = async () => {
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const provinces = await fetchProvinces();
+      // backend returns records like { provinceId, provinceName }
+      const mapped = (provinces || []).map((p) => ({
+        code: p.provinceId,
+        name: p.provinceName,
+      }));
+      setLocationData((prev) => ({
+        ...prev,
+        provinces: mapped,
+        districts: [],
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading provinces:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [defaultAddress?.id, selectedAddress, manualDeselect]);
+  };
 
-  //  Sync selectedAddress khi addresses thay đổi
-  useEffect(() => {
-    if (!selectedAddress) return;
+  // Load districts when province changes
+  const handleProvinceChange = async (provinceCode) => {
+    // provinceCode may come as string from select; convert to integer if possible
+    const provinceId = provinceCode ? parseInt(provinceCode, 10) : null;
 
-    const updatedAddress = addresses.find(
-      (addr) => addr.id === selectedAddress.id
-    );
-
-    if (!updatedAddress) {
-      handleSelectAddress(defaultAddress || null);
-    } else if (
-      JSON.stringify(updatedAddress) !== JSON.stringify(selectedAddress)
-    ) {
-      setSelectedAddress(updatedAddress);
-    }
-  }, [addresses.length, selectedAddress?.id]);
-
-  //  Merge 2 useEffect về cart items thành 1
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      const newIds = cartItems.map((item) => item.cartItemId);
-
-      // Update selected chỉ khi cần
-      setSelected((prev) => {
-        const needsUpdate =
-          prev.length !== newIds.length ||
-          !prev.every((id) => newIds.includes(id));
-        return needsUpdate ? newIds : prev;
-      });
-
-      // Update itemOrder
-      setItemOrder((prev) => {
-        if (!prev.length) return newIds;
-        return [
-          ...prev.filter((id) => newIds.includes(id)),
-          ...newIds.filter((id) => !prev.includes(id)),
-        ];
-      });
-    } else {
-      setSelected([]);
-      setItemOrder([]);
-    }
-  }, [cartItems.length]);
-
-  // Handle province change
-  const handleProvinceChange = useCallback((provinceCode) => {
     setShipping((prev) => ({
       ...prev,
       province: provinceCode,
       district: "",
       ward: "",
     }));
-  }, []);
 
-  // Handle district change
-  const handleDistrictChange = useCallback((districtCode) => {
+    if (!provinceId) {
+      setLocationData((prev) => ({ ...prev, districts: [], wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const districts = await fetchDistricts(provinceId);
+      // backend districts: { districtId, provinceId, districtName, code }
+      const mapped = (districts || []).map((d) => ({
+        code: d.code,
+        name: d.districtName,
+        id: d.districtId,
+      }));
+      setLocationData((prev) => ({
+        ...prev,
+        districts: mapped,
+        wards: [],
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading districts:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  // Load wards when district changes
+  const handleDistrictChange = async (districtCode) => {
+    // districtCode here is the district.code (string) — backend expects districtId for wards endpoint
     setShipping((prev) => ({
       ...prev,
       district: districtCode,
       ward: "",
     }));
-  }, []);
+
+    if (!districtCode) {
+      setLocationData((prev) => ({ ...prev, wards: [] }));
+      return;
+    }
+
+    // We need districtId to fetch wards. Try to find it from locationData.districts
+    const districtObj = locationData.districts.find(
+      (d) => d.code === districtCode
+    );
+    const districtId = districtObj ? districtObj.id : null;
+
+    if (!districtId) {
+      // fallback: try to parse as number
+      setLocationData((prev) => ({ ...prev, wards: [] }));
+      return;
+    }
+
+    setLocationData((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const wards = await fetchWards(districtId);
+      // backend ward: { wardCode, districtId, wardName }
+      const mapped = (wards || []).map((w) => ({
+        code: w.wardCode,
+        name: w.wardName,
+      }));
+      setLocationData((prev) => ({
+        ...prev,
+        wards: mapped,
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading wards:", error);
+      setLocationData((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
 
   // Handle ward change
-  const handleWardChange = useCallback((wardCode) => {
+  const handleWardChange = (wardCode) => {
     setShipping((prev) => ({ ...prev, ward: wardCode }));
-  }, []);
+  };
 
-  // Select address from address book
-  const handleSelectAddress = useCallback(
-    async (address) => {
-      setSelectedAddress(address);
+  // Get display names (adapt to mapped shape)
+  const getProvinceName = (code) => {
+    const province = locationData.provinces.find(
+      (p) => p.code?.toString() === code?.toString()
+    );
+    return province ? province.name : "";
+  };
 
-      if (address) {
-        setManualDeselect(false);
-        setShipping((prev) => ({
-          ...prev,
-          name: "",
-          phone: "",
-          address: "",
-          country: address.country || "Vietnam",
-        }));
+  const getDistrictName = (code) => {
+    const district = locationData.districts.find(
+      (d) => d.code?.toString() === code?.toString()
+    );
+    return district ? district.name : "";
+  };
 
-        // Find province by name
-        const province = provinces.find((p) => p.name === address.city);
+  const getWardName = (code) => {
+    const ward = locationData.wards.find(
+      (w) => w.code?.toString() === code?.toString()
+    );
+    return ward ? ward.name : "";
+  };
+
+  // Tự động chọn địa chỉ mặc định khi có thay đổi
+  useEffect(() => {
+    // Nếu đã có selectedAddress thì không làm gì
+    if (!defaultAddress || selectedAddress || manualDeselect) return;
+    // Chỉ gọi khi selectedAddress chưa được set
+    setSelectedAddress(defaultAddress);
+    setManualDeselect(false);
+    // Không gọi handleSelectAddress ở đây!
+  }, [defaultAddress, selectedAddress, manualDeselect]);
+
+  // Sync selectedAddress if it's deleted from the address list
+  useEffect(() => {
+    if (selectedAddress && addresses) {
+      const updatedSelectedAddress = addresses.find(
+        (addr) => addr.id === selectedAddress.id
+      );
+
+      // If the address is deleted, updatedSelectedAddress will be undefined
+      if (!updatedSelectedAddress) {
+        // Fall back to the new default address or null
+        handleSelectAddress(defaultAddress || null);
+      } else {
+        // If the address was edited, its data might have changed.
+        // We update the selectedAddress state to reflect these changes.
+        // JSON.stringify is a simple way to check for object inequality.
+        if (
+          JSON.stringify(updatedSelectedAddress) !==
+          JSON.stringify(selectedAddress)
+        ) {
+          setSelectedAddress(updatedSelectedAddress);
+        }
+      }
+    }
+  }, [addresses, selectedAddress, defaultAddress]);
+
+  // Mặc định selected tất cả khi cartItems thay đổi
+  useEffect(() => {
+    setSelected(cartItems.map((item) => item.cartItemId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems.length]);
+
+  // Đồng bộ selected khi giỏ hàng thay đổi
+  useEffect(() => {
+    setItemOrder((prev) => {
+      const newIds = cartItems.map((i) => i.cartItemId);
+      return [
+        ...prev.filter((id) => newIds.includes(id)),
+        ...newIds.filter((id) => !prev.includes(id)),
+      ];
+    });
+  }, [cartItems?.length]);
+
+  // Sắp xếp lại cartItems theo itemOrder
+  const orderedCartItems = useMemo(() => {
+    return itemOrder
+      .map((id) => cartItems.find((item) => item.cartItemId === id))
+      .filter(Boolean);
+  }, [cartItems, itemOrder]);
+
+  // When selecting address from address book: attempt to set province/district/ward by names/codes
+  const handleSelectAddress = async (address) => {
+    // set selected address immediately for UI
+    setSelectedAddress(address);
+
+    if (address) {
+      setManualDeselect(false);
+      // Clear manual form fields (so form shows empty / uses selectedAddress display)
+      setShipping((prev) => ({
+        ...prev,
+        name: "",
+        phone: "",
+        address: "",
+        country: address.country || "Vietnam",
+      }));
+
+      try {
+        // try find province by name in already loaded provinces
+        const province = locationData.provinces.find(
+          (p) => p.name === address.city
+        );
+
         if (province) {
+          // fetch districts for that province (ensure we have ids)
+          const districtsRaw = await fetchDistricts(
+            parseInt(province.code, 10)
+          );
+          const mappedDistricts = (districtsRaw || []).map((d) => ({
+            code: d.code,
+            name: d.districtName,
+            id: d.districtId,
+          }));
+
+          // find district object by name
+          const districtObj = mappedDistricts.find(
+            (d) => d.name === address.district
+          );
+
+          // fetch wards if district found
+          let mappedWards = [];
+          if (districtObj && districtObj.id) {
+            const wardsRaw = await fetchWards(districtObj.id);
+            mappedWards = (wardsRaw || []).map((w) => ({
+              code: w.wardCode,
+              name: w.wardName,
+            }));
+          }
+
+          // update locationData with loaded districts/wards so later lookups work
+          setLocationData((prev) => ({
+            ...prev,
+            provinces: prev.provinces?.length
+              ? prev.provinces
+              : locationData.provinces,
+            districts: mappedDistricts,
+            wards: mappedWards,
+          }));
+
+          // set shipping codes (use codes if we have them) — keep selects synced
           setShipping((prev) => ({
             ...prev,
             province: province.code?.toString() ?? "",
+            district: districtObj ? districtObj.code?.toString() ?? "" : "",
+            ward:
+              mappedWards?.length > 0
+                ? mappedWards
+                    .find((w) => w.name === address.ward)
+                    ?.code?.toString() ?? ""
+                : "",
           }));
-        }
-      } else {
-        setManualDeselect(true);
-        setShipping({
-          name: "",
-          phone: "",
-          address: "",
-          country: "Vietnam",
-          province: "",
-          district: "",
-          ward: "",
-          note: "",
-          otherReceiver: false,
-          vat: false,
-          shippingFee: 0,
-        });
-      }
 
-      setShowAddressList(false);
-    },
-    [provinces]
-  );
+          // build payload and calculate shipping immediately
+          const payload =
+            buildShippingInfoForCalc(true) || buildShippingInfoForCalc(false);
+          if (payload) {
+            try {
+              const res = await calculateShippingApi(payload);
+              const data = res?.data ?? res;
+              const fee =
+                data?.shippingFee ??
+                data?.shippingFee?.value ??
+                data?.shippingFee?.amount ??
+                null;
+              const text =
+                data?.deliveryTimeText ??
+                (data?.estimatedDeliveryTime
+                  ? new Date(data.estimatedDeliveryTime).toLocaleString()
+                  : "");
+              if (fee != null) {
+                setShipping((s) => ({ ...s, shippingFee: Number(fee) }));
+              }
+              setDeliveryText(text || "");
+            } catch (err) {
+              console.error("Shipping calc after address select failed:", err);
+            }
+          }
+        } else {
+          // province name not found in loaded list — do nothing special (user can pick manually)
+        }
+      } catch (err) {
+        console.error("Error mapping selected address to location codes:", err);
+      }
+    } else {
+      setManualDeselect(true);
+      setShipping({
+        name: "",
+        phone: "",
+        address: "",
+        country: "Vietnam",
+        province: "",
+        district: "",
+        ward: "",
+        note: "",
+        otherReceiver: false,
+        vat: false,
+        shippingFee: 0,
+      });
+    }
+
+    setShowAddressList(false);
+  };
 
   // Format address display
-  const formatAddressDisplay = useCallback((address) => {
+  const formatAddressDisplay = (address) => {
     if (!address) return "";
-    return `${address.street}, ${address.ward}, ${address.district}, ${address.city}`;
-  }, []);
+    return `${address.street}, ${address.ward},  ${address.city}`;
+  };
 
-  // Select all/none
-  const handleSelectAll = useCallback(
-    (e) => {
-      const newSelected = e.target.checked
-        ? cartItems.map((item) => item.cartItemId)
-        : [];
-      setSelected(newSelected);
-    },
-    [cartItems]
-  );
+  // Chọn hoặc bỏ chọn tất cả mục
+  const handleSelectAll = (e) => {
+    const newSelected = e.target.checked
+      ? cartItems.map((item) => item.cartItemId)
+      : [];
+    setSelected(newSelected);
+  };
 
-  // Select single item
-  const handleSelect = useCallback((id) => {
+  // Chọn hoặc bỏ chọn một mục
+  const handleSelect = (id) => {
     setSelected((prev) =>
       prev?.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
-  }, []);
+  };
 
-  // Change quantity
-  const handleQuantity = useCallback(
-    async (id, delta) => {
-      if (isUpdating) return;
+  // Thay đổi số lượng sản phẩm
+  const handleQuantity = async (id, delta) => {
+    if (isUpdating) return; // Chặn nếu đang cập nhật
 
-      const item = cartItems.find((i) => i.cartItemId === id);
-      if (!item) return;
+    const item = cartItems.find((i) => i.cartItemId === id);
+    if (!item) return;
+    const newQuantity = item.quantity + delta;
+    if (newQuantity <= 0) {
+      await handleRemove(id);
+    } else {
+      await updateQuantity({ cartItemId: id, newQuantity });
+    }
+  };
 
-      const newQuantity = item.quantity + delta;
-      if (newQuantity <= 0) {
-        await removeItem(id);
-        setSelected((prev) => prev.filter((i) => i !== id));
-      } else {
-        await updateQuantity({ cartItemId: id, newQuantity });
-      }
-    },
-    [cartItems, isUpdating, updateQuantity, removeItem]
-  );
+  // Xoá sản phẩm khỏi giỏ hàng
+  const handleRemove = async (id) => {
+    await removeItem(id);
+    setSelected((prev) => prev.filter((i) => i !== id));
+  };
 
-  // Remove item
-  const handleRemove = useCallback(
-    async (id) => {
-      await removeItem(id);
-      setSelected((prev) => prev.filter((i) => i !== id));
-    },
-    [removeItem]
-  );
-
-  // Clear cart
-  const handleClearCart = useCallback(async () => {
-    if (!isAuthenticated) return;
+  // Xoá tất cả sản phẩm
+  const handleClearCart = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     await clearCart();
     setSelected([]);
-  }, [isAuthenticated, clearCart]);
+  };
 
-  // Calculate total
-  const total = useMemo(
-    () =>
-      filteredCart.reduce(
-        (acc, item) => acc + item.unitPrice * item.quantity,
-        0
-      ),
-    [filteredCart]
+  // Tính tổng tiền của filteredCart (sản phẩm đã chọn)
+  const total = filteredCart.reduce(
+    (acc, item) => acc + item.unitPrice * item.quantity,
+    0
   );
 
-  // Calculate voucher discount
+  // Tính discount từ voucher
   const voucherDiscount = useMemo(() => {
     if (!selectedVoucherCode) return 0;
 
@@ -525,14 +790,14 @@ export default function CartPage() {
     return 0;
   }, [selectedVoucherCode, vouchers, total]);
 
-  // Final total
+  // Tổng cộng sau khi áp dụng voucher
   const finalTotal = useMemo(() => {
     const afterVoucher = total - voucherDiscount;
     return Math.max(afterVoucher, 0);
   }, [total, voucherDiscount]);
 
-  // Apply voucher
-  const handleApplyVoucher = useCallback(() => {
+  // Hàm apply voucher
+  const handleApplyVoucher = () => {
     if (!voucherInput.trim()) {
       toast.warn(t("cart.enter_voucher_code"));
       return;
@@ -554,6 +819,7 @@ export default function CartPage() {
       return;
     }
 
+    // Kiểm tra điều kiện voucher
     if (voucher.minOrderAmount > total) {
       toast.error(
         t("cart.voucher_min_order_not_met", {
@@ -565,10 +831,10 @@ export default function CartPage() {
 
     setSelectedVoucherCode(voucher.code);
     toast.success(t("cart.voucher_applied"));
-  }, [voucherInput, vouchers, total, t]);
+  };
 
-  // Create order
-  const handleCreateOrder = useCallback(async () => {
+  // Hàm xử lý khi nhấn nút Đặt hàng
+  const handleCreateOrder = async () => {
     if (filteredCart?.length === 0) {
       toast.warn(t("cart.select_product_to_order"));
       return;
@@ -583,21 +849,15 @@ export default function CartPage() {
     let shippingInfoPayload = null;
 
     if (selectedAddress) {
-      const prov = provinces.find((p) => p.name === selectedAddress.city);
-      if (!prov) {
-        toast.warn(t("cart.fill_shipping_info"));
-        return;
-      }
+      const { toDistrictId, toWardCode } = await mapAddressToCodes(
+        selectedAddress
+      );
 
-      const dist = districts.find((d) => d.name === selectedAddress.district);
-      if (!dist) {
-        toast.warn(t("cart.fill_shipping_info"));
-        return;
-      }
-
-      const wardObj = wards.find((w) => w.name === selectedAddress.ward);
-      if (!wardObj) {
-        toast.warn(t("cart.fill_shipping_info"));
+      if (!toDistrictId || !toWardCode) {
+        toast.warn(
+          t("cart.fill_shipping_info") ||
+            "Không thể lấy mã quận/phường từ địa chỉ đã chọn. Vui lòng chọn lại hoặc điền thủ công."
+        );
         return;
       }
 
@@ -609,8 +869,8 @@ export default function CartPage() {
         district: selectedAddress.district,
         ward: selectedAddress.ward,
         street: selectedAddress.street,
-        toDistrictId: parseInt(dist.id, 10),
-        toWardCode: wardObj.code?.toString(),
+        toDistrictId: parseInt(toDistrictId, 10),
+        toWardCode: toWardCode?.toString(),
       };
     } else {
       if (
@@ -624,11 +884,10 @@ export default function CartPage() {
         toast.warn(t("cart.fill_shipping_info"));
         return;
       }
-
-      const dObj = districts.find(
+      const dObj = locationData.districts.find(
         (d) => d.code?.toString() === shipping.district?.toString()
       );
-      const wObj = wards.find(
+      const wObj = locationData.wards.find(
         (w) => w.code?.toString() === shipping.ward?.toString()
       );
       if (!dObj || !wObj) {
@@ -669,30 +928,15 @@ export default function CartPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    filteredCart,
-    isCreatingOrder,
-    isSubmitting,
-    selectedAddress,
-    shipping,
-    payment,
-    selectedVoucherCode,
-    provinces,
-    districts,
-    wards,
-    getProvinceName,
-    getDistrictName,
-    getWardName,
-    createOrderAsync,
-    createOrder,
-    t,
-  ]);
+  };
 
-  // Valid vouchers
+  // Lọc voucher hợp lệ để hiển thị
   const now = new Date();
   const validVouchers = useMemo(() => {
     return vouchers.filter((voucher) => {
+      const start = voucher.startDate ? new Date(voucher.startDate) : null;
       const end = voucher.endDate ? new Date(voucher.endDate) : null;
+      // Ẩn nếu đã hết hạn  hoặc hết lượt sử dụng hoặc bị disable
       if (
         voucher.disabled ||
         (end && now > end) ||
@@ -704,6 +948,8 @@ export default function CartPage() {
       return true;
     });
   }, [vouchers]);
+  console.log("Valid vouchers:", validVouchers);
+  console.log("Ordercart items:", orderedCartItems);
 
   // Loading state
   if (isCartLoading) {
@@ -815,7 +1061,7 @@ export default function CartPage() {
             disabled={!!selectedAddress || locationData.isLoading}
           >
             <option value="">{t("cart.select_province")}</option>
-            {provinces.map((province) => (
+            {locationData.provinces.map((province) => (
               <option key={province.code} value={province.code}>
                 {province.name}
               </option>
@@ -836,7 +1082,7 @@ export default function CartPage() {
             }
           >
             <option value="">{t("cart.select_district")}</option>
-            {districts.map((district) => (
+            {locationData.districts.map((district) => (
               <option key={district.code} value={district.code}>
                 {district.name}
               </option>
@@ -846,18 +1092,18 @@ export default function CartPage() {
           {/* Ward */}
           <select
             className={`border border-gray-300 rounded-full px-4 py-2 bg-white focus:outline-blue-500 text-sm ${
-              selectedAddress || !shipping.district || locationData.isLoading
+              selectedAddress || !shipping.province || locationData.isLoading
                 ? "opacity-60 cursor-not-allowed"
                 : ""
             }`}
             value={shipping.ward}
             onChange={(e) => handleWardChange(e.target.value)}
             disabled={
-              !!selectedAddress || !shipping.district || locationData.isLoading
+              !!selectedAddress || !shipping.province || locationData.isLoading
             }
           >
             <option value="">{t("cart.select_ward")}</option>
-            {wards.map((ward) => (
+            {locationData.wards.map((ward) => (
               <option key={ward.code} value={ward.code}>
                 {ward.name}
               </option>
@@ -887,7 +1133,6 @@ export default function CartPage() {
             </div>
           </div>
         </div>
-
         <h3 className="text-xl font-bold mb-4 text-gray-900">
           {t("cart.payment_method")}
         </h3>
@@ -1013,6 +1258,7 @@ export default function CartPage() {
                   </button>
                 </div>
 
+                {/* Quantity & Price Column */}
                 <div className="flex flex-col items-end min-w-[80px] md:min-w-[120px]">
                   <div className="flex items-center gap-1 md:gap-2 mb-2">
                     <button
@@ -1052,6 +1298,7 @@ export default function CartPage() {
               {t("cart.voucher_code")}
             </h3>
 
+            {/* Selected Voucher Display */}
             {selectedVoucherCode && (
               <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center justify-between">
@@ -1077,6 +1324,7 @@ export default function CartPage() {
               </div>
             )}
 
+            {/* Voucher Input */}
             <div className="flex gap-2 mb-3">
               <input
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:border-blue-500 text-sm"
@@ -1094,6 +1342,7 @@ export default function CartPage() {
               </button>
             </div>
 
+            {/* Available Vouchers */}
             {validVouchers?.length > 0 && !selectedVoucherCode && (
               <div>
                 <details className="text-sm">
@@ -1107,11 +1356,14 @@ export default function CartPage() {
                       const start = voucher.startDate
                         ? new Date(voucher.startDate)
                         : null;
+                      // Disable nếu chưa tới ngày bắt đầu
                       const notYetActive = start && now < start;
+                      // Kiểm tra hết lượt sử dụng với tài khoản
                       const userUsed =
                         voucher.maxUsagePerUser > 0 &&
                         voucher.currentUserUsage >= voucher.maxUsagePerUser;
 
+                      // Nếu là PRODUCT_SPECIFIC, kiểm tra sản phẩm trong giỏ có trùng không
                       let productNotMatch = false;
                       if (
                         voucher.voucherType === "PRODUCT_SPECIFIC" &&
@@ -1124,10 +1376,8 @@ export default function CartPage() {
                           cartProductIds.includes(p.productId)
                         );
                       }
-
                       const isDisabled =
                         !canUse || notYetActive || userUsed || productNotMatch;
-
                       return (
                         <div
                           key={voucher.id}
@@ -1151,6 +1401,7 @@ export default function CartPage() {
                               <p className="text-xs text-gray-600 mt-1">
                                 {voucher.name}
                               </p>
+                              {/* Thời gian hiệu lực */}
                               <p className="text-xs text-gray-500">
                                 {t("voucher.start_date")}:{" "}
                                 {voucher.startDate
@@ -1166,12 +1417,14 @@ export default function CartPage() {
                                     ).toLocaleDateString()
                                   : ""}
                               </p>
+                              {/* Min order */}
                               {voucher.minOrderAmount > 0 && (
                                 <p className="text-xs text-gray-500">
                                   {t("voucher.min_order")}:{" "}
                                   {formatCurrency(voucher.minOrderAmount)}
                                 </p>
                               )}
+                              {/* Max discount */}
                               {voucher.hasMaxDiscount &&
                                 voucher.maxDiscountAmount > 0 && (
                                   <p className="text-xs text-gray-500">
@@ -1179,11 +1432,13 @@ export default function CartPage() {
                                     {formatCurrency(voucher.maxDiscountAmount)}
                                   </p>
                                 )}
+                              {/* Product specific note */}
                               {voucher.voucherType === "PRODUCT_SPECIFIC" && (
                                 <p className="text-xs text-orange-600 mt-1">
                                   {t("voucher.product_specific_note")}
                                 </p>
                               )}
+                              {/* Không đủ điều kiện min order */}
                               {!canUse && (
                                 <p className="text-xs text-red-500 mt-1">
                                   {t("cart.voucher_min_order_not_met", {
@@ -1193,12 +1448,14 @@ export default function CartPage() {
                                   })}
                                 </p>
                               )}
+                              {/* Chưa tới ngày áp dụng */}
                               {notYetActive && (
                                 <p className="text-xs text-yellow-600 mt-1">
                                   {t("cart.voucher_not_active") ||
                                     "Voucher chưa có hiệu lực"}
                                 </p>
                               )}
+                              {/* User hết lượt sử dụng */}
                               {userUsed && (
                                 <p className="text-xs text-red-500 mt-1">
                                   {t("cart.voucher_user_limit_reached") ||
@@ -1232,23 +1489,24 @@ export default function CartPage() {
         />
       </div>
 
+      {/* Address List Modal */}
       <AddressList
         isOpen={showAddressList}
         onClose={() => setShowAddressList(false)}
         onSelectAddress={handleSelectAddress}
         selectedAddressId={selectedAddress?.id}
       />
-
       <style>
         {`
         .custom-scroll {
           scrollbar-width: thin;
           scrollbar-color: #c1c1c1 #f1f1f1;
         }
+        /* Chỉ giới hạn chiều cao scroll trên màn hình lớn */
         @media (min-width: 1024px) {
-          .custom-scroll {
-            max-height: calc(100vh - 120px);
-          }
+            .custom-scroll {
+                max-height: calc(100vh - 120px);
+            }
         }
         .custom-scroll::-webkit-scrollbar {
           width: 6px;

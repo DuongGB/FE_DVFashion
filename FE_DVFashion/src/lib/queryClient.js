@@ -25,3 +25,19 @@ export const dynamicDataQueryOptions = {
   staleTime: 30 * 1000, // 30 giây - cho cart, orders, etc
   gcTime: 5 * 60 * 1000, // 5 phút
 };
+
+// Data bán tĩnh (products, promotions)
+export const semiStaticDataQueryOptions = {
+  staleTime: 10 * 60 * 1000, // 10 phút
+  gcTime: 30 * 60 * 1000, // 30 phút
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+};
+
+// Data user-specific (recommendations)
+export const userDataQueryOptions = {
+  staleTime: 5 * 60 * 1000, // 5 phút
+  gcTime: 15 * 60 * 1000, // 15 phút
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+};
