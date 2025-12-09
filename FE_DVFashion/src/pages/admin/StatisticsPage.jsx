@@ -1,7 +1,3 @@
-import { useMemo, useState } from "react";
-import { Chart } from "react-google-charts";
-import { useTranslation } from "react-i18next";
-import { useExportRevenueReport } from "../../hooks/useReport";
 import {
   IconCalendar,
   IconChartBar,
@@ -10,17 +6,17 @@ import {
   IconDownload,
   IconRefresh,
   IconTrendingUp,
+  IconChevronDown,
 } from "@tabler/icons-react";
-import {
-  useRevenueStatistics,
-  useDailyRevenue,
-  useMonthlyRevenue,
-  useYearlyRevenue,
-  useRevenueForecast,
-} from "../../hooks/useStatistics";
-import { useExportTaxReport } from "../../hooks/useReportTax";
-import { useQuarterlyRevenue } from "../../services/reportAPI";
+import { useMemo, useState } from "react";
+import { Chart } from "react-google-charts";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import { useExportRevenueReport } from "../../hooks/useReport";
+import { useExportTaxReport } from "../../hooks/useReportTax";
+import { useRevenueForecast } from "../../hooks/useStatistics";
+import { useRevenue } from "../../services/reportAPI";
+import { Icon } from "leaflet";
 
 const vnd = (n) =>
   new Intl.NumberFormat("vi-VN").format(Math.round(Number(n || 0))) + " ₫";
@@ -39,38 +35,111 @@ export default function StatisticsPage() {
   //  state cho số ngày dự báo
   const [forecastDays, setForecastDays] = useState(30);
 
-  const daily = useDailyRevenue({
+  // State cho dropdown và loading - Tách riêng cho từng loại
+  const [showMonthDropdown, setShowMonthDropdown] = useState(false);
+  const [showQuarterDropdown, setShowQuarterDropdown] = useState(false);
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
+  const [isExportingTax, setIsExportingTax] = useState(false);
+  const [exportingTaxType, setExportingTaxType] = useState("");
+
+  // Sử dụng useRevenue thay vì các hook cũ
+  const daily = useRevenue({
+    periodType: "DAILY",
     startDate,
     endDate,
     enabled: mode === "day",
   });
 
-  const quarterly = useQuarterlyRevenue({
-    startYear: year,
-    endYear: year,
+  const monthly = useRevenue({
+    periodType: "MONTHLY",
+    startDate: `${year}-01-01`,
+    endDate: `${year}-12-31`,
+    enabled: mode === "month",
+  });
+
+  const quarterly = useRevenue({
+    periodType: "QUARTERLY",
+    startDate: `${year}-01-01`,
+    endDate: `${year}-12-31`,
     enabled: mode === "quarter",
   });
 
-  const monthly = useMonthlyRevenue({ year, enabled: mode === "month" });
-  const yearly = useYearlyRevenue({ year, enabled: mode === "year" });
-  const total = useRevenueStatistics({
-    period: mode,
-    year,
-    enabled: mode !== "year",
+  const yearly = useRevenue({
+    periodType: "YEARLY",
+    startDate: `${year}-01-01`,
+    endDate: `${year}-12-31`,
+    enabled: mode === "year",
   });
+
   const { exportVATForm011, exportVATForm04, exportVATForm014A } =
     useExportTaxReport();
 
   const exportReport = useExportRevenueReport();
 
+  // Định nghĩa các quý
+  const quarters = [
+    {
+      label: "Quý 1 (Q1)",
+      value: "Q1",
+      startDate: `${year}-01-01`,
+      endDate: `${year}-03-31`,
+    },
+    {
+      label: "Quý 2 (Q2)",
+      value: "Q2",
+      startDate: `${year}-04-01`,
+      endDate: `${year}-06-30`,
+    },
+    {
+      label: "Quý 3 (Q3)",
+      value: "Q3",
+      startDate: `${year}-07-01`,
+      endDate: `${year}-09-30`,
+    },
+    {
+      label: "Quý 4 (Q4)",
+      value: "Q4",
+      startDate: `${year}-10-01`,
+      endDate: `${year}-12-31`,
+    },
+  ];
+
+  // Định nghĩa các tháng
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const month = i + 1;
+    const monthStr = month.toString().padStart(2, "0");
+    const lastDay = new Date(year, month, 0).getDate();
+    return {
+      label: `T ${month}`,
+      value: `M${month}`,
+      startDate: `${year}-${monthStr}-01`,
+      endDate: `${year}-${monthStr}-${lastDay}`,
+    };
+  });
+
+  // Hàm đóng tất cả dropdown
+  const closeAllDropdowns = () => {
+    setShowMonthDropdown(false);
+    setShowQuarterDropdown(false);
+    setShowYearDropdown(false);
+  };
+
   // Hàm dùng chung để tải file
-  const handleExportTax = async (type) => {
+  const handleExportTax = async (type, period) => {
+    setIsExportingTax(true);
+    setExportingTaxType(`${type}-${period.value}`);
+    closeAllDropdowns();
+
     try {
       let res;
-      const params = { startDate, endDate };
+      const params = {
+        startDate: period.startDate,
+        endDate: period.endDate,
+      };
       if (type === "011") res = await exportVATForm011(params);
       if (type === "04") res = await exportVATForm04(params);
       if (type === "014A") res = await exportVATForm014A(params);
+
       const url = window.URL.createObjectURL(res.blob);
       const a = document.createElement("a");
       a.href = url;
@@ -81,8 +150,53 @@ export default function StatisticsPage() {
         window.URL.revokeObjectURL(url);
         a.remove();
       }, 100);
+      toast.success(`Xuất báo cáo ${type} ${period.label} thành công!`);
     } catch (e) {
-      toast(t("admin.statistics.export.error"));
+      toast.error(
+        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+      );
+      console.error(e);
+    } finally {
+      setIsExportingTax(false);
+      setExportingTaxType("");
+    }
+  };
+
+  // Hàm xuất báo cáo thuế theo năm
+  const handleExportTaxYear = async (type) => {
+    setIsExportingTax(true);
+    setExportingTaxType(`${type}-year`);
+    closeAllDropdowns();
+
+    try {
+      let res;
+      const params = {
+        startDate: `${year}-01-01`,
+        endDate: `${year}-12-31`,
+      };
+      if (type === "011") res = await exportVATForm011(params);
+      if (type === "04") res = await exportVATForm04(params);
+      if (type === "014A") res = await exportVATForm014A(params);
+
+      const url = window.URL.createObjectURL(res.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }, 100);
+      toast.success(`Xuất báo cáo ${type} năm ${year} thành công!`);
+    } catch (e) {
+      toast.error(
+        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+      );
+      console.error(e);
+    } finally {
+      setIsExportingTax(false);
+      setExportingTaxType("");
     }
   };
 
@@ -110,7 +224,9 @@ export default function StatisticsPage() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       // Xử lý lỗi nếu cần
-      alert("Xuất báo cáo thất bại!");
+      toast.error(
+        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+      );
       console.error(err);
     }
   };
@@ -137,41 +253,44 @@ export default function StatisticsPage() {
       { type: "string", role: "tooltip" },
     ];
     if (mode === "day") {
-      const rows = Array.isArray(daily.data)
-        ? daily.data.map((x) => [
-            formatDateDMY(x.period), // <-- format ngày ở đây
-            x.revenue,
-            `${formatDateDMY(x.period)}: ${vnd(x.revenue)}`,
+      const details = daily.data?.details ?? [];
+      const rows = Array.isArray(details)
+        ? details.map((x) => [
+            x.period,
+            x.totalRevenue,
+            `${x.period}: ${vnd(x.totalRevenue)}`,
           ])
         : [];
       return [header, ...rows];
     }
     if (mode === "month") {
-      const rows = Array.isArray(monthly.data)
-        ? monthly.data.map((x) => [
-            x.period.split("-")[1],
-            x.revenue,
-            `${x.period}: ${vnd(x.revenue)}`,
+      const details = monthly.data?.details ?? [];
+      const rows = Array.isArray(details)
+        ? details.map((x) => [
+            `T${x.period.split("/")[0]}`,
+            x.totalRevenue,
+            `${x.period}: ${vnd(x.totalRevenue)}`,
           ])
         : [];
       return [header, ...rows];
     }
     if (mode === "quarter") {
-      const details = Array.isArray(quarterly.data?.details)
-        ? quarterly.data.details
+      const details = quarterly.data?.details ?? [];
+      const rows = Array.isArray(details)
+        ? details.map((x) => [
+            x.period,
+            x.totalRevenue,
+            `${x.period}: ${vnd(x.totalRevenue)}`,
+          ])
         : [];
-      const rows = details.map((x) => [
-        x.period,
-        x.totalRevenue,
-        `${x.period}: ${vnd(x.totalRevenue)}`,
-      ]);
       return [header, ...rows];
     }
-    const rows = Array.isArray(yearly.data)
-      ? yearly.data.map((x) => [
+    const details = yearly.data?.details ?? [];
+    const rows = Array.isArray(details)
+      ? details.map((x) => [
           x.period,
-          x.revenue,
-          `${x.period}: ${vnd(x.revenue)}`,
+          x.totalRevenue,
+          `${x.period}: ${vnd(x.totalRevenue)}`,
         ])
       : [];
     return [header, ...rows];
@@ -228,33 +347,46 @@ export default function StatisticsPage() {
   }
 
   const sortedQuarters = useMemo(() => {
-    const data = Array.isArray(quarterly.data) ? quarterly.data : [];
-    return [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    const details = quarterly.data?.details ?? [];
+    const data = Array.isArray(details) ? details : [];
+    return [...data]
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .slice(0, 5);
   }, [quarterly.data]);
 
   const sortedMonths = useMemo(() => {
-    const data = Array.isArray(monthly.data) ? monthly.data : [];
-    return [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    const details = monthly.data?.details ?? [];
+    const data = Array.isArray(details) ? details : [];
+    return [...data]
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .slice(0, 5);
   }, [monthly.data]);
 
-  // Tính tổng doanh thu dựa trên chế độ hiện tại
-  const totalQuarterRevenue =
-    mode === "quarter"
-      ? quarterly.data?.totalRevenue ?? 0
-      : mode === "day"
-      ? (Array.isArray(daily.data) ? daily.data : []).reduce(
-          (sum, x) => sum + (x.revenue || 0),
-          0
-        )
-      : total.data ?? 0;
+  // Tính tổng doanh thu dựa trên chế độ hiện tại - sử dụng totalRevenue từ API
+  const totalRevenue = useMemo(() => {
+    if (mode === "day") {
+      return daily.data?.totalRevenue ?? 0;
+    }
+    if (mode === "month") {
+      return monthly.data?.totalRevenue ?? 0;
+    }
+    if (mode === "quarter") {
+      return quarterly.data?.totalRevenue ?? 0;
+    }
+    if (mode === "year") {
+      return yearly.data?.totalRevenue ?? 0;
+    }
+    return 0;
+  }, [mode, daily.data, monthly.data, quarterly.data, yearly.data]);
 
   const pieData = useMemo(() => {
     const header = [
       t("admin.statistics.pie.month") || "Tháng",
       t("admin.statistics.pie.revenue") || "Doanh thu",
     ];
-    const rows = Array.isArray(monthly.data)
-      ? monthly.data.map((x) => [`T${x.period.split("-")[1]}`, x.revenue])
+    const details = monthly.data?.details ?? [];
+    const rows = Array.isArray(details)
+      ? details.map((x) => [`T${x.period.split("/")[0]}`, x.totalRevenue])
       : [];
     return [header, ...rows];
   }, [monthly.data, t]);
@@ -312,43 +444,230 @@ export default function StatisticsPage() {
           {/* Nút xuất báo cáo */}
           <div className="flex flex-wrap gap-2 w-full lg:w-auto">
             {/* Nút xuất báo cáo doanh thu */}
-            <button
-              onClick={handleExportReport}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
-              title={t("admin.statistics.export")}
-            >
-              <IconDownload size={18} />
-              <span className="whitespace-nowrap">
-                {t("admin.statistics.export")}
-              </span>
-            </button>
-            {/* Nút xuất báo cáo thuế */}
-            <button
-              onClick={() => handleExportTax("011")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
-              title="Xuất bảng kê 01-1/GTGT"
-            >
-              <IconDownload size={16} />
-              <span className="whitespace-nowrap">01-1/GTGT</span>
-            </button>
-            {/* <button
-              onClick={() => handleExportTax("04")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
-              title="Xuất tờ khai 04/GTGT"
-            >
-              <IconDownload size={16} />
-              04/GTGT
-            </button> */}
-            <button
-              onClick={() => handleExportTax("014A")}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md flex-1 sm:flex-none justify-center"
-              title="Xuất bảng phân bổ 01-4A/GTGT"
-            >
-              <IconDownload size={16} />
-              <span className="whitespace-nowrap">01-4A/GTGT</span>
-            </button>
+            <div className="relative flex-1 sm:flex-none">
+              <button
+                onClick={handleExportReport}
+                className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md w-full justify-center"
+                title={t("admin.statistics.export")}
+              >
+                <IconDownload size={16} />
+                <span className="whitespace-nowrap text-sm">
+                  {t("admin.statistics.export")}
+                </span>
+              </button>
+            </div>
+
+            {/* Nút Xuất báo cáo thuế theo Tháng */}
+            <div className="relative flex-1 sm:flex-none">
+              <button
+                onClick={() => {
+                  setShowMonthDropdown(!showMonthDropdown);
+                  setShowQuarterDropdown(false);
+                  setShowYearDropdown(false);
+                }}
+                disabled={isExportingTax}
+                className={`flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer shadow-md w-full justify-center ${
+                  isExportingTax ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                title="Xuất thuế theo tháng"
+              >
+                {isExportingTax && exportingTaxType.includes("M") ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="whitespace-nowrap text-sm">
+                      {t("admin.statistics.export_tax.exporting")}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <IconDownload size={16} />
+                    <span className="whitespace-nowrap text-sm">
+                      {t("admin.statistics.export_tax.month")}
+                    </span>
+                    <IconChevronDown size={14} />
+                  </>
+                )}
+              </button>
+
+              {/* Dropdown Tháng */}
+              {showMonthDropdown && !isExportingTax && (
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
+                  <div className="p-2">
+                    <div className="text-xs font-bold text-gray-700 px-3 py-2 bg-green-50 rounded sticky top-0">
+                      <IconCalendar size={12} className="inline mr-1" />
+                      {t("admin.statistics.export_tax.select_month")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 mt-2">
+                      {months.map((month) => (
+                        <div key={month.value} className="mb-1">
+                          <div className="text-xs font-medium text-gray-600 px-2 py-1">
+                            {month.label}
+                          </div>
+                          <div className="space-y-1 ml-1">
+                            <button
+                              onClick={() => handleExportTax("011", month)}
+                              className="w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-green-50 rounded transition-colors flex items-center gap-1"
+                            >
+                              <IconDownload size={12} />
+                              <span>01-1/GTGT</span>
+                            </button>
+                            <button
+                              onClick={() => handleExportTax("014A", month)}
+                              className="w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-green-50 rounded transition-colors flex items-center gap-1"
+                            >
+                              <IconDownload size={12} />
+                              <span>01-4A/GTGT</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Nút Xuất báo cáo thuế theo Quý */}
+            <div className="relative flex-1 sm:flex-none">
+              <button
+                onClick={() => {
+                  setShowQuarterDropdown(!showQuarterDropdown);
+                  setShowMonthDropdown(false);
+                  setShowYearDropdown(false);
+                }}
+                disabled={isExportingTax}
+                className={`flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-md w-full justify-center ${
+                  isExportingTax ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                title="Xuất thuế theo quý"
+              >
+                {isExportingTax && exportingTaxType.includes("Q") ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="whitespace-nowrap text-sm">
+                      Đang xuất...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <IconDownload size={16} />
+                    <span className="whitespace-nowrap text-sm">
+                      {t("admin.statistics.export_tax.quarter")}
+                    </span>
+                    <IconChevronDown size={14} />
+                  </>
+                )}
+              </button>
+
+              {/* Dropdown Quý */}
+              {showQuarterDropdown && !isExportingTax && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="p-2">
+                    <div className="text-xs font-bold text-gray-700 px-3 py-2 bg-blue-50 rounded sticky top-0">
+                      <IconCalendar size={12} className="inline mr-1" />
+                      {t("admin.statistics.export_tax.select_quarter")}
+                    </div>
+                    {quarters.map((quarter) => (
+                      <div key={quarter.value} className="mb-2 mt-2">
+                        <div className="text-xs font-medium text-gray-700 px-3 py-1 bg-gray-50 rounded">
+                          {quarter.label}
+                        </div>
+                        <div className="space-y-1 mt-1 ml-2">
+                          <button
+                            onClick={() => handleExportTax("011", quarter)}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors flex items-center gap-2"
+                          >
+                            <IconDownload size={14} />
+                            <span>
+                              {t("admin.statistics.export_tax.form_011")}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => handleExportTax("014A", quarter)}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors flex items-center gap-2"
+                          >
+                            <IconDownload size={14} />
+                            <span>
+                              {t("admin.statistics.export_tax.form_014A")}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Nút Xuất báo cáo thuế theo Năm */}
+            <div className="relative flex-1 sm:flex-none">
+              <button
+                onClick={() => {
+                  setShowYearDropdown(!showYearDropdown);
+                  setShowMonthDropdown(false);
+                  setShowQuarterDropdown(false);
+                }}
+                disabled={isExportingTax}
+                className={`flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors cursor-pointer shadow-md w-full justify-center ${
+                  isExportingTax ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                title="Xuất thuế theo năm"
+              >
+                {isExportingTax && exportingTaxType.includes("year") ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="whitespace-nowrap text-sm">
+                      Đang xuất...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <IconDownload size={16} />
+                    <span className="whitespace-nowrap text-sm">
+                      {t("admin.statistics.export_tax.year")}
+                    </span>
+                    <IconChevronDown size={14} />
+                  </>
+                )}
+              </button>
+
+              {/* Dropdown Năm */}
+              {showYearDropdown && !isExportingTax && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="p-2">
+                    <div className="text-xs font-bold text-gray-700 px-3 py-2 bg-purple-50 rounded">
+                      <IconCalendar size={12} className="inline mr-1" />
+                      {t("admin.statistics.export_tax.select_year", { year })}
+                    </div>
+                    <div className="space-y-1 mt-2">
+                      <button
+                        onClick={() => handleExportTaxYear("011")}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded transition-colors flex items-center gap-2"
+                      >
+                        <IconDownload size={14} />
+                        <span>{t("admin.statistics.export_tax.form_011")}</span>
+                      </button>
+                      <button
+                        onClick={() => handleExportTaxYear("014A")}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded transition-colors flex items-center gap-2"
+                      >
+                        <IconDownload size={14} />
+                        <span>
+                          {t("admin.statistics.export_tax.form_014A")}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Overlay để đóng dropdown khi click bên ngoài */}
+        {(showMonthDropdown || showQuarterDropdown || showYearDropdown) && (
+          <div className="fixed inset-0 z-40" onClick={closeAllDropdowns}></div>
+        )}
 
         {/* Mode Selector và Date Range */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200">
@@ -467,22 +786,7 @@ export default function StatisticsPage() {
                 : t("admin.statistics.cards.revenue.yearly")}
             </p>
             <h3 className="text-xl md:text-2xl font-bold text-blue-600 leading-tight break-all">
-              {mode === "quarter"
-                ? vnd(totalQuarterRevenue)
-                : mode === "day"
-                ? vnd(
-                    (Array.isArray(daily.data) ? daily.data : []).reduce(
-                      (sum, x) => sum + (x.revenue || 0),
-                      0
-                    )
-                  )
-                : mode === "year"
-                ? vnd(
-                    Array.isArray(yearly.data) && yearly.data.length > 0
-                      ? yearly.data[0].revenue
-                      : 0
-                  )
-                : vnd(total.data ?? 0)}
+              {vnd(totalRevenue)}
             </h3>
           </div>
           <div className="p-2 bg-blue-50 rounded-full flex-shrink-0">
@@ -516,9 +820,7 @@ export default function StatisticsPage() {
                 </p>
               </div>
             </div>
-          ) : chartData.length > 1 &&
-            (mode !== "year" ||
-              (mode === "year" && yearly.data && yearly.data.length > 0)) ? (
+          ) : chartData.length > 1 ? (
             <div className="-ml-4 sm:ml-0">
               <Chart
                 chartType="ColumnChart"
@@ -608,7 +910,7 @@ export default function StatisticsPage() {
                       </span>
                     </div>
                     <span className="text-blue-600 font-bold whitespace-nowrap">
-                      {vnd(m.revenue)}
+                      {vnd(m.totalRevenue)}
                     </span>
                   </div>
                 ))}

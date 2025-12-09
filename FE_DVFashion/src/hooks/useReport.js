@@ -16,14 +16,18 @@ export const useExportRevenueReport = () => {
       } else if (mode === "quarter") {
         periodType = "QUARTERLY";
         // Nếu có nhiều năm, lấy min/max từ dữ liệu hoặc mặc định 1 năm
-        const years = (yearlyData ?? []).map((x) => Number(x.period));
+        const years = Array.isArray(yearlyData?.details)
+          ? yearlyData.details.map((x) => Number(x.period))
+          : [year];
         const minYear = years.length ? Math.min(...years) : year;
         const maxYear = years.length ? Math.max(...years) : year;
         start = `${minYear}-01-01`;
         end = `${maxYear}-12-31`;
       } else if (mode === "year") {
         periodType = "YEARLY";
-        const years = (yearlyData ?? []).map((x) => Number(x.period));
+        const years = Array.isArray(yearlyData?.details)
+          ? yearlyData.details.map((x) => Number(x.period))
+          : [year];
         const minYear = years.length ? Math.min(...years) : year;
         const maxYear = years.length ? Math.max(...years) : year;
         start = `${minYear}-01-01`;
