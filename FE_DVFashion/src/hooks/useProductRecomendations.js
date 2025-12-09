@@ -21,7 +21,8 @@ export const useHybridRecommendations = ({
   limit = 10,
   enabled = true,
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const userId = isAuthenticated ? user?.id : null;
 
   return useQuery({

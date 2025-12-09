@@ -16,7 +16,8 @@ export default function TodayProductsPage() {
   const lang = i18n.language || "VI";
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Parse query params
   const params = new URLSearchParams(location.search);

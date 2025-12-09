@@ -10,7 +10,8 @@ import { useTranslation } from "react-i18next";
 export default function ProductCard({ product, onRequireLogin }) {
   const { t } = useTranslation();
   const { addToCart, isAdding } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Lấy variant đầu tiên (hoặc chọn theo logic khác nếu cần)
   const [activeColor, setActiveColor] = useState(

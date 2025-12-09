@@ -5,7 +5,8 @@ import { useAuth } from "./useAuth";
 
 export const useAddress = () => {
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Get all addresses
   const { data, isLoading, error } = useQuery({

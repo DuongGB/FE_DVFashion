@@ -16,7 +16,8 @@ import { useCategory } from "../hooks/useCategory";
 import { useProductsByCategoryPaging } from "../hooks/useProduct";
 
 export default function HomePage() {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Lấy gợi ý hôm nay
   const { data: todayRecs = [], isLoading: loadingTodayRecs } =

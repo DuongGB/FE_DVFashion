@@ -734,7 +734,8 @@ function MegaMenu({
 }
 
 export default function Header() {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [showAccount, setShowAccount] = useState(false);
   const authModal = useAuthModal();
 

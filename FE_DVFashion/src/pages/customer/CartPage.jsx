@@ -23,7 +23,8 @@ import { useAuth } from "../../hooks/useAuth";
 export default function CartPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language || "VI";
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [selectedVoucherCode, setSelectedVoucherCode] = useState("");
   const [voucherInput, setVoucherInput] = useState("");
 

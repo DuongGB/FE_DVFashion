@@ -1,7 +1,8 @@
 import { useAuth } from "../hooks/useAuth";
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   if (!isAuthenticated) {
     return <p className="text-center text-red-500">Bạn chưa đăng nhập!</p>;

@@ -4,7 +4,8 @@ import { useAuth } from "./useAuth";
 
 export const useCart = () => {
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Lấy giỏ hàng
   const {

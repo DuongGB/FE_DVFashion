@@ -18,7 +18,8 @@ export default function ProductDetailPage() {
   const lang = i18n.language || "VI";
   const { id: encodeId } = useParams();
   const id = decodeId(encodeId);
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sử dụng useProductById để lấy chi tiết sản phẩm

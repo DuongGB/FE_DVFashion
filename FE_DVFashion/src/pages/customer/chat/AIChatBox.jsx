@@ -10,7 +10,8 @@ export default function AIChatBox({ isOpen, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { chatWithAI } = useChat();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Đọc lịch sử chat từ localStorage khi mở box
   const [messages, setMessages] = useState(() => {
