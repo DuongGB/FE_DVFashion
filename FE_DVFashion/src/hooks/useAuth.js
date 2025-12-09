@@ -4,7 +4,7 @@ import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
-  const isAuthenticated = getCookie("isAuthenticated") === "true";
+  // const isAuthenticated = getCookie("isAuthenticated") === "true";
 
   // Get current user
   const {
@@ -19,7 +19,7 @@ export const useAuth = () => {
       return res.data.data;
     },
     retry: false,
-    enabled: isAuthenticated, // Only fetch if authenticated
+    // enabled: isAuthenticated, // Only fetch if authenticated
   });
 
   // Register mutation
@@ -35,7 +35,7 @@ export const useAuth = () => {
     mutationFn: authAPI.login,
     onSuccess: async (data) => {
       // Set cookie trước để các hook biết đã đăng nhập
-      setCookie("isAuthenticated", "true");
+      // setCookie("isAuthenticated", "true");
 
       // Nếu API trả về thông tin user luôn, set vào cache ngay
       const userData = data?.data?.data;
@@ -110,10 +110,10 @@ export const useAuth = () => {
 
   return {
     // User data
-    user: isAuthenticated ? user : null,
+    user: user,
     isLoading,
     error,
-    isAuthenticated,
+    // isAuthenticated,
 
     // Login
     login: loginMutation.mutateAsync,

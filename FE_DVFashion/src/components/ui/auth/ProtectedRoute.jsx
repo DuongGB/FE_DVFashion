@@ -3,12 +3,12 @@ import { useAuth } from "../../../hooks/useAuth";
 import { getDefaultRouteByRoles } from "../../../utils/getDefaultRouteByRoles";
 
 export default function ProtectedRoute({ allowedRoles = [] }) {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) return <div>Loading...</div>;
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
