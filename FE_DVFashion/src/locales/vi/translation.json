@@ -2044,6 +2044,21 @@
       "export": "Xuất báo cáo",
       "export.success": "Xuất báo cáo thành công!",
       "export.error": "Xuất báo cáo thất bại!",
+      "export_tax": {
+        "title": "Xuất báo cáo thuế",
+        "month": "Thuế tháng",
+        "quarter": "Thuế quý",
+        "year": "Thuế năm",
+        "exporting": "Đang xuất...",
+        "select_month": "CHỌN THÁNG",
+        "select_quarter": "CHỌN QUÝ",
+        "select_year": "NĂM {{year}}",
+        "form_011": "Bảng kê 01-1/GTGT",
+        "form_014A": "Bảng phân bổ 01-4A/GTGT",
+        "form_04": "Tờ khai 04/GTGT",
+        "success": "Xuất báo cáo thuế thành công!",
+        "error": "Xuất báo cáo thuế thất bại!"
+      },
       "chart": {
         "title_daily": "Biểu đồ doanh thu theo ngày",
         "title_monthly": "Biểu đồ doanh thu theo tháng",

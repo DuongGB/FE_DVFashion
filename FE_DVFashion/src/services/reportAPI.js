@@ -14,15 +14,20 @@ export const reportAPI = {
   },
 };
 
-export function useQuarterlyRevenue({ startYear, endYear, enabled }) {
+export function useRevenue({
+  periodType, // DAILY | MONTHLY | QUARTERLY | YEARLY
+  startDate, // yyyy-MM-dd
+  endDate, // yyyy-MM-dd
+  enabled = true,
+}) {
   return useQuery({
-    queryKey: ["quarterlyRevenue", startYear, endYear],
+    queryKey: ["revenueReport", periodType, startDate, endDate],
     enabled,
     queryFn: async () => {
       const res = await api.get(
-        `/reports/revenue?periodType=QUARTERLY&startDate=${startYear}-01-01&endDate=${endYear}-12-31`
+        `/reports/revenue?periodType=${periodType}&startDate=${startDate}&endDate=${endDate}`
       );
-      return res.data?.data ?? [];
+      return res.data?.data ?? null;
     },
   });
 }
