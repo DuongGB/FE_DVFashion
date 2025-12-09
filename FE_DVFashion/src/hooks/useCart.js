@@ -16,7 +16,6 @@ export const useCart = () => {
     queryFn: async () => {
       try {
         const res = await cartAPI.getCart();
-        console.log("Cart response:", res.data);
         return res.data.data || res.data || { items: [] };
       } catch (error) {
         console.error("Error fetching cart:", error);
@@ -24,19 +23,35 @@ export const useCart = () => {
       }
     },
     enabled: isAuthenticated,
-    retry: (failureCount, error) => {
-      if (error.response?.status === 401) {
-        return false;
-      }
-      return failureCount < 2;
-    },
+    retry: 0, // Giảm từ 2 xuống 0 - cart là data động
+    staleTime: 30 * 1000, //  30 giây - cart thay đổi thường xuyên
+    gcTime: 5 * 60 * 1000, //  5 phút
   });
 
-  // Thêm vào giỏ hàng
+  // Mutations với optimistic updates
   const addToCartMutation = useMutation({
     mutationFn: (data) => cartAPI.addToCart(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["cart"]);
+    onSuccess: async (newItem) => {
+      // Optimistic update giỏ hàng
+      await queryClient.cancelQueries({ queryKey: ["cart"] });
+
+      // Lưu trạng thái giỏ hàng trước đó
+      const previousCart = queryClient.getQueryData(["cart"]);
+
+      // Cập nhật giỏ hàng trong cache
+      queryClient.setQueryData(["cart"], (old) => ({
+        ...old,
+        items: [...(old?.items || []), newItem],
+      }));
+      return { previousCart };
+    },
+    onError: (err, newItem, context) => {
+      // Rollback on error
+      queryClient.setQueryData(["cart"], context.previousCart);
+    },
+    onSettled: () => {
+      // Refetch after mutation
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 
@@ -44,16 +59,48 @@ export const useCart = () => {
   const updateQuantityMutation = useMutation({
     mutationFn: ({ cartItemId, newQuantity }) =>
       cartAPI.updateCartItemQuantity(cartItemId, { newQuantity }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["cart"]);
+    onMutate: async ({ cartItemId, newQuantity }) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      const previousCart = queryClient.getQueryData(["cart"]);
+
+      queryClient.setQueryData(["cart"], (old) => ({
+        ...old,
+        items: old?.items?.map((item) =>
+          item.cartItemId === cartItemId
+            ? { ...item, quantity: newQuantity }
+            : item
+        ),
+      }));
+
+      return { previousCart };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["cart"], context.previousCart);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 
   // Xóa sản phẩm khỏi giỏ hàng
   const removeItemMutation = useMutation({
     mutationFn: (cartItemId) => cartAPI.removeCartItem(cartItemId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["cart"]);
+    onMutate: async (cartItemId) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      const previousCart = queryClient.getQueryData(["cart"]);
+
+      queryClient.setQueryData(["cart"], (old) => ({
+        ...old,
+        items: old?.items?.filter((item) => item.cartItemId !== cartItemId),
+      }));
+
+      return { previousCart };
+    },
+    onError: (err, cartItemId, context) => {
+      queryClient.setQueryData(["cart"], context.previousCart);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 
@@ -61,7 +108,8 @@ export const useCart = () => {
   const clearCartMutation = useMutation({
     mutationFn: () => cartAPI.clearCart(),
     onSuccess: () => {
-      queryClient.invalidateQueries(["cart"]);
+      //Set data trực tiếp thay vì invalidate
+      queryClient.setQueryData(["cart"], { items: [] });
     },
   });
 

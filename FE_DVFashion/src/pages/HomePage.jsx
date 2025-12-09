@@ -17,20 +17,25 @@ import { useProductsByCategoryPaging } from "../hooks/useProduct";
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language || "VI";
 
   // Lấy gợi ý hôm nay
+  // Gợi ý hôm nay -
   const { data: todayRecs = [], isLoading: loadingTodayRecs } =
-    useTodayRecommendations(isAuthenticated ? user?.id : undefined, 10);
+    useTodayRecommendations(isAuthenticated ? user?.id : undefined, 10, {
+      enabled: isAuthenticated && !!user?.id,
+    });
 
-  // Lấy sản phẩm vừa xem hôm nay (chỉ khi đăng nhập)
+  // Lấy sản phẩm đã xem hôm nay
   const { data: todayViewed = [], isLoading: loadingTodayViewed } =
-    useTodayViewedProducts(20);
+    useTodayViewedProducts(20, {
+      enabled: isAuthenticated,
+    });
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
 
-  const currentLanguage = i18n.language || "VI";
   const { categories = [], isLoading: isLoadingCategories } = useCategory({
     lang: currentLanguage,
     active: true,
@@ -39,12 +44,36 @@ export default function HomePage() {
   // Lấy 4 danh mục đầu
   const topCategories = useMemo(() => categories.slice(0, 4), [categories]);
 
-  // Gọi hook cho từng danh mục ở cấp component (KHÔNG trong map)
+  // Gọi hook cho từng danh mục ở cấp component
   const catPagingResults = [
-    useProductsByCategoryPaging(topCategories[0]?.id, 0, 12, currentLanguage),
-    useProductsByCategoryPaging(topCategories[1]?.id, 0, 12, currentLanguage),
-    useProductsByCategoryPaging(topCategories[2]?.id, 0, 12, currentLanguage),
-    useProductsByCategoryPaging(topCategories[3]?.id, 0, 12, currentLanguage),
+    useProductsByCategoryPaging(
+      topCategories[0]?.id ?? null, //Pass null thay vì undefined
+      0,
+      12,
+      currentLanguage,
+      { enabled: !!topCategories[0]?.id }
+    ),
+    useProductsByCategoryPaging(
+      topCategories[1]?.id ?? null,
+      0,
+      12,
+      currentLanguage,
+      { enabled: !!topCategories[1]?.id }
+    ),
+    useProductsByCategoryPaging(
+      topCategories[2]?.id ?? null,
+      0,
+      12,
+      currentLanguage,
+      { enabled: !!topCategories[2]?.id }
+    ),
+    useProductsByCategoryPaging(
+      topCategories[3]?.id ?? null,
+      0,
+      12,
+      currentLanguage,
+      { enabled: !!topCategories[3]?.id }
+    ),
   ];
 
   // Products (existing)

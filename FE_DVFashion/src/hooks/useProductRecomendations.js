@@ -11,10 +11,7 @@ import { useAuth } from "../hooks/useAuth";
 
 /**
  * Hook lấy sản phẩm gợi ý dựa trên hybrid recommendation.
- * It automatically includes the userId if the user is authenticated.
- * @param {object} params - Parameters for recommendations.
- * @param {number} [params.productId] - The ID of the product (optional for homepage).
- * @param {number} [params.limit=10] - The number of recommendations to fetch.
+ * Tự động bao gồm userId nếu user đã đăng nhập.
  */
 export const useHybridRecommendations = ({
   productId = null,
@@ -28,10 +25,11 @@ export const useHybridRecommendations = ({
     queryKey: ["recommendations", "hybrid", { productId, userId, limit }],
     queryFn: () => getHybridRecommendations({ productId, userId, limit }),
     enabled: enabled,
-    staleTime: 1000 * 60 * 15,
-    // Normalize response data
+    staleTime: 30 * 60 * 1000, // 30 phút - gợi ý hybrid ít thay đổi
+    gcTime: 60 * 60 * 1000, // 1 giờ
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     select: (data) => {
-      // Dữ liệu returns ApiResponse<List<ProductResponse>>
       return data?.data ?? data ?? [];
     },
   });
@@ -47,7 +45,9 @@ export const useTopRecommendedProducts = ({ limit = 10, days } = {}) => {
   return useQuery({
     queryKey: ["recommendations", "stats", "top-products", { limit, days }],
     queryFn: () => getTopRecommendedProducts({ limit, days }),
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 15 * 60 * 1000, // 15 phút
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
     select: (data) => data?.data ?? data ?? [],
   });
 };
@@ -61,7 +61,9 @@ export const useRecommendationAnalytics = ({ days } = {}) => {
   return useQuery({
     queryKey: ["recommendations", "stats", "analytics", { days }],
     queryFn: () => getRecommendationAnalytics({ days }),
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
     select: (data) => data?.data ?? data ?? null,
   });
 };
@@ -76,21 +78,37 @@ export const useProductRecommendationStats = ({ limit = 10, days } = {}) => {
   return useQuery({
     queryKey: ["recommendations", "stats", "product-stats", { limit, days }],
     queryFn: () => getProductRecommendationStats({ limit, days }),
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
     select: (data) => data?.data ?? data ?? [],
   });
 };
 
-export const useTodayRecommendations = (userId, limit = 10) =>
+/**
+ * Gợi ý hôm nay cho user - data thay đổi trong ngày
+ */
+export const useTodayRecommendations = (userId, limit = 10, options = {}) =>
   useQuery({
     queryKey: ["todayRecommendations", userId, limit],
     queryFn: () => getTodayRecommendations({ userId, limit }),
-    staleTime: 1000 * 60,
+    staleTime: 5 * 60 * 1000, // 5 phút - data thay đổi trong ngày
+    gcTime: 15 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    ...options,
   });
 
-export const useTodayViewedProducts = (limit = 20) =>
+/**
+ * Sản phẩm đã xem hôm nay - data thay đổi thường xuyên
+ */
+export const useTodayViewedProducts = (limit = 20, options = {}) =>
   useQuery({
     queryKey: ["todayViewedProducts", limit],
     queryFn: () => getTodayViewedProducts({ limit }),
-    staleTime: 1000 * 60,
+    staleTime: 2 * 60 * 1000, // 2 phút - data thay đổi khi user xem sản phẩm
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    ...options,
   });

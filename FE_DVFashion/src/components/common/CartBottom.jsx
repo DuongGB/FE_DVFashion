@@ -17,7 +17,8 @@ export default function CartBottom({
   paymentMethod,
 }) {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const authModal = useAuthModal();
 
   // simple lock check from localStorage (same key used in useCreateOrder)
