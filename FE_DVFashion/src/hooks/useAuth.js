@@ -4,7 +4,6 @@ import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
-  // const isAuthenticated = getCookie("isAuthenticated") === "true";
 
   // Get current user
   const {
@@ -19,8 +18,9 @@ export const useAuth = () => {
       return res.data.data;
     },
     retry: false,
-    // enabled: isAuthenticated, // Only fetch if authenticated
   });
+
+  const isAuthenticated = !!user;
 
   // Register mutation
   const registerMutation = useMutation({
@@ -113,7 +113,7 @@ export const useAuth = () => {
     user: user,
     isLoading,
     error,
-    // isAuthenticated,
+    isAuthenticated,
 
     // Login
     login: loginMutation.mutateAsync,
