@@ -279,23 +279,23 @@ export default function PromotionProductsPage() {
           </p>
         )}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500">
-          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200">
-            <IconCalendar size={14} className="sm:size-16" />
+          <span className="flex items-center gap-1 bg-white/60 backdrop-blur-sm px-2 sm:px-2 py-0.5 rounded-full border border-gray-200 text-xs sm:text-xs">
+            <IconCalendar size={12} />
             {t("promotion.from", "Từ")}{" "}
             {new Date(promotion.startDate).toLocaleDateString(
               i18n.language === "VI" ? "vi-VN" : "en-US"
             )}
           </span>
           <span>→</span>
-          <span className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200">
-            <IconCalendar size={14} className="sm:size-16" />
+          <span className="flex items-center gap-1 bg-white/60 backdrop-blur-sm px-2 sm:px-2 py-0.5 rounded-full border border-gray-200 text-xs sm:text-xs">
+            <IconCalendar size={12} />
             {t("promotion.to", "đến")}{" "}
             {new Date(promotion.endDate).toLocaleDateString(
               i18n.language === "VI" ? "vi-VN" : "en-US"
             )}
           </span>
-          <span className="flex items-center gap-1.5 bg-orange-100/60 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-orange-200 text-orange-700 font-medium">
-            <IconTarget size={14} className="sm:size-16" />
+          <span className="flex items-center gap-1 bg-orange-100/60 backdrop-blur-sm px-2 sm:px-2 py-0.5 rounded-full border border-orange-200 text-orange-700 font-medium text-xs sm:text-xs">
+            <IconTarget size={12} />
             {products.length} {t("search.products_found", "sản phẩm")}
           </span>
         </div>
