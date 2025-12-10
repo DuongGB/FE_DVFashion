@@ -3,12 +3,11 @@ import axios from "axios";
 // Base API configuration
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Hàm kiểm tra đăng nhập
+// Hàm kiểm tra đăng nhập - check cả cookie VÀ localStorage
 function isUserAuthenticated() {
-  // Nếu dùng cookie:
-  return document.cookie.includes("isAuthenticated=true");
-  // Nếu dùng localStorage:
-  // return localStorage.getItem("isAuthenticated") === "true";
+  const cookieAuth = document.cookie.includes("isAuthenticated=true");
+  const localAuth = localStorage.getItem("isAuthenticated") === "true";
+  return cookieAuth || localAuth;
 }
 
 // Create axios instance with base config
@@ -71,7 +70,9 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (err) {
           isRefreshing = false;
-          document.cookie = "isAuthenticated=false; path=/;";
+          // Clear auth khi refresh token thất bại
+          document.cookie = "isAuthenticated=; Max-Age=-99999999; path=/;";
+          localStorage.removeItem("isAuthenticated");
           return Promise.reject(err);
         }
       }

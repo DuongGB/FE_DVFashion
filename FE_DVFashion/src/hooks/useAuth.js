@@ -2,9 +2,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../services/authAPI";
 import { getCookie, setCookie, deleteCookie } from "../utils/cookies";
 
+// Helper function để check auth từ cả cookie VÀ localStorage
+const isAuthenticatedCheck = () => {
+  const cookieAuth = getCookie("isAuthenticated") === "true";
+  const localAuth = localStorage.getItem("isAuthenticated") === "true";
+  return cookieAuth || localAuth;
+};
+
 export const useAuth = () => {
   const queryClient = useQueryClient();
-  const isAuthenticated = getCookie("isAuthenticated") === "true";
+  const isAuthenticated = isAuthenticatedCheck();
 
   // Get current user
   const {
@@ -15,11 +22,10 @@ export const useAuth = () => {
     queryKey: ["auth", "user"],
     queryFn: async () => {
       const res = await authAPI.getCurrentUser();
-      // console.log("Current user:", res.data.data);
       return res.data.data;
     },
     retry: false,
-    enabled: isAuthenticated, // Only fetch if authenticated
+    enabled: isAuthenticated,
   });
 
   // Register mutation
@@ -34,8 +40,16 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authAPI.login,
     onSuccess: async (data) => {
-      // Set cookie trước để các hook biết đã đăng nhập
-      setCookie("isAuthenticated", "true");
+      // Set cả cookie VÀ localStorage để đảm bảo hoạt động trên mọi thiết bị
+      setCookie("isAuthenticated", "true", 7); // 7 ngày
+      localStorage.setItem("isAuthenticated", "true");
+
+      console.log(
+        "Auth set - Cookie:",
+        getCookie("isAuthenticated"),
+        "LocalStorage:",
+        localStorage.getItem("isAuthenticated")
+      );
 
       // Nếu API trả về thông tin user luôn, set vào cache ngay
       const userData = data?.data?.data;
@@ -43,7 +57,7 @@ export const useAuth = () => {
         queryClient.setQueryData(["auth", "user"], userData);
       }
 
-      // Invalidate để fetch lại user data mới nhất (không await để không chặn UI)
+      // Invalidate để fetch lại user data mới nhất
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
 
       // Invalidate các dữ liệu phụ thuộc trạng thái đăng nhập
@@ -60,12 +74,23 @@ export const useAuth = () => {
   const logoutMutation = useMutation({
     mutationFn: authAPI.logout,
     onSuccess: () => {
-      // Clear all caches
+      // Clear all auth data
       deleteCookie("isAuthenticated");
       deleteCookie("token");
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("rememberLogin");
+
       queryClient.clear();
+
       localStorage.removeItem("chatRoomCode");
       localStorage.removeItem("chatGuestInfo");
+
+      console.log(
+        "Auth cleared - Cookie:",
+        getCookie("isAuthenticated"),
+        "LocalStorage:",
+        localStorage.getItem("isAuthenticated")
+      );
     },
   });
 
@@ -78,7 +103,7 @@ export const useAuth = () => {
     },
   });
 
-  // Complete Google login (fetch user info after Google OAuth)
+  // Complete Google login
   const loginGoogleCompleteMutation = useMutation({
     mutationFn: async () => {
       const response = await authAPI.getCurrentUser();
@@ -86,7 +111,8 @@ export const useAuth = () => {
     },
     onSuccess: (userData) => {
       if (userData) {
-        setCookie("isAuthenticated", "true");
+        setCookie("isAuthenticated", "true", 7);
+        localStorage.setItem("isAuthenticated", "true");
         queryClient.invalidateQueries(["auth", "user"]);
       }
     },
