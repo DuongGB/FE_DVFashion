@@ -77,7 +77,12 @@ export const getOrdersByCustomerId = async (customerId) => {
  * @returns {Promise<object>} A paginated response of orders.
  */
 export const getMyOrdersPaging = async (params) => {
-  const response = await api.get("/orders/my-orders/paging", { params });
+  const response = await api.get("/orders/my-orders/paging", {
+    params: {
+      ...params,
+      lang: params?.lang || "VI",
+    },
+  });
   return response.data;
 };
 

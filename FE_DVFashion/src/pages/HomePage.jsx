@@ -20,16 +20,17 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language || "VI";
 
-  // Lấy gợi ý hôm nay
-  // Gợi ý hôm nay -
+  // Chuẩn hóa lang thành VI hoặc EN
+  const lang = currentLanguage.toUpperCase().startsWith("VI") ? "VI" : "EN";
+
+  // Chỉ lấy gợi ý hôm nay khi đã đăng nhập
   const { data: todayRecs = [], isLoading: loadingTodayRecs } =
-    useTodayRecommendations(isAuthenticated ? user?.id : undefined, 10, {
+    useTodayRecommendations(isAuthenticated ? user?.id : undefined, 10, lang, {
       enabled: isAuthenticated && !!user?.id,
     });
-
   // Lấy sản phẩm đã xem hôm nay
   const { data: todayViewed = [], isLoading: loadingTodayViewed } =
-    useTodayViewedProducts(20, {
+    useTodayViewedProducts(20, lang, {
       enabled: isAuthenticated,
     });
 
@@ -47,7 +48,7 @@ export default function HomePage() {
   // Gọi hook cho từng danh mục ở cấp component
   const catPagingResults = [
     useProductsByCategoryPaging(
-      topCategories[0]?.id ?? null, //Pass null thay vì undefined
+      topCategories[0]?.id ?? null,
       0,
       12,
       currentLanguage,
@@ -135,27 +136,6 @@ export default function HomePage() {
   const displayProducts = isLoadingProducts ? null : products;
   const isLoading = isLoadingProducts;
 
-  {
-    isLoading ? (
-      <div className="w-full max-w-7xl mx-auto px-10 py-10">
-        <div className="text-center py-10 text-gray-500">
-          {t("common.loading")} {t("product.loading")}...
-        </div>
-      </div>
-    ) : displayProducts && displayProducts.length > 0 ? (
-      <ProductCarousel
-        products={displayProducts}
-        title={t("product.featured_products")}
-      />
-    ) : (
-      <div className="w-full max-w-7xl mx-auto px-10 py-10">
-        <div className="text-center py-10 text-gray-500">
-          {t("product.no_products_available")}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="font-sans">
       {/* Banner */}
@@ -189,45 +169,15 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ProductCarousel tổng hợp */}
-      {/* {isLoading ? (
-        <div className="w-full max-w-7xl mx-auto px-10 py-10">
-          <div className="text-center py-10 text-gray-500">
-            {t("common.loading")} {t("product.loading")}...
-          </div>
-        </div>
-      ) : displayProducts && displayProducts.length > 0 ? (
+      {/* Gợi ý hôm nay: CHỈ hiển thị khi đã đăng nhập */}
+      {isAuthenticated && todayRecs.length > 0 && (
         <ProductCarousel
-          products={displayProducts}
-          title={
-            isAuthenticated
-              ? t("product.recommended_for_you")
-              : t("product.featured_products")
-          }
+          products={todayRecs}
+          title={t("product.today_recommendations")}
+          loading={loadingTodayRecs}
+          viewAllLink="/today-products?type=recommend"
         />
-      ) : (
-        <div className="w-full max-w-7xl mx-auto px-10 py-10">
-          <div className="text-center py-10 text-gray-500">
-            {t("product.no_products_available")}
-          </div>
-        </div>
-      )} */}
-
-      {/* Gợi ý hôm nay: luôn hiển thị, truyền userId nếu có */}
-      <ProductCarousel
-        products={todayRecs}
-        title={
-          isAuthenticated
-            ? t("product.today_recommendations")
-            : t("product.today_popular")
-        }
-        loading={loadingTodayRecs}
-        viewAllLink={
-          isAuthenticated
-            ? "/today-products?type=recommend"
-            : "/today-products?type=popular"
-        }
-      />
+      )}
 
       {/* Sản phẩm vừa xem hôm nay: chỉ hiển thị khi đã đăng nhập và có dữ liệu */}
       {isAuthenticated && todayViewed.length > 0 && (

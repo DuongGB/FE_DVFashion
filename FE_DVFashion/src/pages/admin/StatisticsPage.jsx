@@ -33,7 +33,7 @@ export default function StatisticsPage() {
   const [endDate, setEndDate] = useState(todayStr);
 
   //  state cho số ngày dự báo
-  const [forecastDays, setForecastDays] = useState(30);
+  const [forecastDays, setForecastDays] = useState(10);
 
   // State cho dropdown và loading - Tách riêng cho từng loại
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);

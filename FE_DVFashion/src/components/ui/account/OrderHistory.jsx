@@ -142,9 +142,14 @@ const OrderCard = ({ order, onReviewClick }) => {
 };
 
 export default function OrderHistory({ onReviewClick, refreshKey = 0 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [page, setPage] = useState(0);
+
+  // Xác định ngôn ngữ hiện tại
+  const lang = (i18n.language || "VI").toUpperCase().startsWith("VI")
+    ? "VI"
+    : "EN";
 
   const {
     data: responseData,
@@ -155,6 +160,7 @@ export default function OrderHistory({ onReviewClick, refreshKey = 0 }) {
       page,
       size: 2,
       refreshKey,
+      lang,
     },
     { keepPreviousData: true }
   );
@@ -167,12 +173,12 @@ export default function OrderHistory({ onReviewClick, refreshKey = 0 }) {
   useEffect(() => {
     if (page < totalPages - 1) {
       queryClient.prefetchQuery({
-        queryKey: ["myOrders", { page: page + 1, size: 2, refreshKey }],
+        queryKey: ["myOrders", { page: page + 1, size: 2, refreshKey, lang }],
         queryFn: () =>
-          getMyOrdersPaging({ page: page + 1, size: 2, refreshKey }),
+          getMyOrdersPaging({ page: page + 1, size: 2, refreshKey, lang }),
       });
     }
-  }, [page, totalPages, refreshKey]);
+  }, [page, totalPages, refreshKey, lang]);
 
   const handlePageChange = (newPage) => setPage(newPage - 1);
 
