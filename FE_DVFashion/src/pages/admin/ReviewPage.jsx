@@ -579,7 +579,9 @@ export default function ReviewPage() {
               <th className="p-3">{t("admin.review.columns.product")}</th>
               <th className="p-3">{t("admin.review.columns.rating")}</th>
               <th className="p-3">{t("admin.review.columns.comment")}</th>
-              <th className="p-3">{t("admin.review.columns.status")}</th>
+              <th className="p-1 min-w-32">
+                {t("admin.review.columns.status")}
+              </th>
               <th className="p-3">{t("admin.review.columns.created_at")}</th>
               <th className="p-3">{t("admin.review.columns.actions")}</th>
             </tr>
