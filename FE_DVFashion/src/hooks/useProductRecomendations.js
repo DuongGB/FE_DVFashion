@@ -88,24 +88,28 @@ export const useProductRecommendationStats = ({ limit = 10, days } = {}) => {
 /**
  * Gợi ý hôm nay cho user - data thay đổi trong ngày
  */
-export const useTodayRecommendations = (userId, limit = 10, options = {}) =>
+export const useTodayRecommendations = (
+  userId,
+  limit = 10,
+  lang = "VI",
+  options = {}
+) =>
   useQuery({
-    queryKey: ["todayRecommendations", userId, limit],
-    queryFn: () => getTodayRecommendations({ userId, limit }),
+    queryKey: ["todayRecommendations", userId, limit, lang],
+    queryFn: () => getTodayRecommendations({ userId, limit, lang }),
     staleTime: 5 * 60 * 1000, // 5 phút - data thay đổi trong ngày
     gcTime: 15 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     ...options,
   });
-
 /**
  * Sản phẩm đã xem hôm nay - data thay đổi thường xuyên
  */
-export const useTodayViewedProducts = (limit = 20, options = {}) =>
+export const useTodayViewedProducts = (limit = 20, lang = "VI", options = {}) =>
   useQuery({
-    queryKey: ["todayViewedProducts", limit],
-    queryFn: () => getTodayViewedProducts({ limit }),
+    queryKey: ["todayViewedProducts", limit, lang],
+    queryFn: () => getTodayViewedProducts({ limit, lang }),
     staleTime: 2 * 60 * 1000, // 2 phút - data thay đổi khi user xem sản phẩm
     gcTime: 10 * 60 * 1000,
     refetchOnMount: false,

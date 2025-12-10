@@ -13,7 +13,9 @@ import getColorHex from "../utils/getColorHex";
 
 export default function TodayProductsPage() {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language || "VI";
+  const lang = (i18n.language || "VI").toUpperCase().startsWith("VI")
+    ? "VI"
+    : "EN";
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useAuth();
@@ -75,7 +77,8 @@ export default function TodayProductsPage() {
   if (type === "recommend" && isAuthenticated) {
     const { data = [], isLoading: loading } = useTodayRecommendations(
       user?.id,
-      1000
+      1000,
+      lang
     );
     rawProducts = data;
     isLoading = loading;

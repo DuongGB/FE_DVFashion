@@ -9,7 +9,9 @@ import { useTodayViewedProducts } from "../../hooks/useProductRecomendations";
 export default function SearchPopup({ show, onClose }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const lang = i18n.language || "VI";
+  const lang = (i18n.language || "VI").toUpperCase().startsWith("VI")
+    ? "VI"
+    : "EN";
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -43,7 +45,7 @@ export default function SearchPopup({ show, onClose }) {
 
   // Fetch recently viewed products - CHỈ KHI popup mở VÀ chưa nhập search
   const { data: recentProducts = [], isLoading: isLoadingRecent } =
-    useTodayViewedProducts(4, {
+    useTodayViewedProducts(4, lang, {
       enabled: show && !debouncedSearch, // Chỉ fetch khi popup mở và không có search
     });
 
