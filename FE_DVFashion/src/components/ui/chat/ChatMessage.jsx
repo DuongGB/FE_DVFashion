@@ -6,13 +6,31 @@ const ChatMessage = ({ message, isOwn, isLoading }) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.toLowerCase();
   const locale = lang.startsWith("vi") ? vi : enUS;
-  const getMessageTime = (createdAt) =>
-    t("customer_support.relative_time", {
-      time: formatDistanceToNow(new Date(createdAt), {
+
+  // Convert UTC to UTC+7 (Vietnam timezone)
+  const convertToUTC7 = (dateString) => {
+    const utcDate = new Date(dateString);
+    // Add 7 hours (7 * 60 * 60 * 1000 milliseconds)
+    return new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
+  };
+
+  const getMessageTime = (createdAt) => {
+    const localTime = convertToUTC7(createdAt);
+    return t("customer_support.relative_time", {
+      time: formatDistanceToNow(localTime, {
         addSuffix: true,
         locale,
       }),
     });
+  };
+
+  // const getMessageTime = (createdAt) =>
+  //   t("customer_support.relative_time", {
+  //     time: formatDistanceToNow(new Date(createdAt), {
+  //       addSuffix: true,
+  //       locale,
+  //     }),
+  //   });
 
   const renderMessageContent = () => {
     if (

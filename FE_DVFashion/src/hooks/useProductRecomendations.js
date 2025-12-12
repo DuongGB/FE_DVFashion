@@ -41,10 +41,15 @@ export const useHybridRecommendations = ({
  * @param {number} [params.limit=10] - Số lượng sản phẩm.
  * @param {number} [params.days] - Thời gian trong quá khứ tính toán.
  */
-export const useTopRecommendedProducts = ({ limit = 10, days } = {}) => {
+export const useTopRecommendedProducts = ({ limit = 10, days, lang } = {}) => {
   return useQuery({
-    queryKey: ["recommendations", "stats", "top-products", { limit, days }],
-    queryFn: () => getTopRecommendedProducts({ limit, days }),
+    queryKey: [
+      "recommendations",
+      "stats",
+      "top-products",
+      { limit, days, lang },
+    ],
+    queryFn: () => getTopRecommendedProducts({ limit, days, lang }),
     staleTime: 15 * 60 * 1000, // 15 phút
     gcTime: 30 * 60 * 1000,
     refetchOnMount: false,
