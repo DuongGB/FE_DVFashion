@@ -147,31 +147,6 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                     {formatDateTime(promotion.endDate)}
                   </div>
                 </div>
-
-                <div>
-                  <div className="text-xs text-gray-500">
-                    {t("admin.promotion.columns.value")}
-                  </div>
-                  <div className="font-medium truncate">
-                    {promotion.type === "PERCENTAGE"
-                      ? `${promotion.value}%`
-                      : promotion.type === "FIXED_AMOUNT"
-                      ? `${promotion.value?.toLocaleString()} VND`
-                      : promotion.type === "FREE_SHIPPING"
-                      ? t("admin.promotion.value.free_shipping")
-                      : promotion.value}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs text-gray-500">
-                    {t("admin.promotion.columns.max_usage")}
-                  </div>
-                  <div className="font-medium">
-                    {promotion.maxUsages ??
-                      t("admin.promotion.value.unlimited")}
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -246,6 +221,7 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                         <th className="p-2">Promotion</th>
                         <th className="p-2">Discount %</th>
                         <th className="p-2">Stock</th>
+                        <th className="p-2">Max/User</th>
                         <th className="p-2">Status</th>
                       </tr>
                     </thead>
@@ -291,6 +267,9 @@ const PromotionDetailModal = ({ open, onClose, promotion = null }) => {
                             </td>
                             <td className="p-2 text-sm">
                               {pp.stockQuantity ?? "-"}
+                            </td>
+                            <td className="p-2 text-sm">
+                              {pp.maxQuantityPerUser ?? "-"}
                             </td>
                             <td className="p-2 text-sm">
                               <span

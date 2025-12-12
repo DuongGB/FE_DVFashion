@@ -7,6 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { useInventory } from "../../../hooks/useInventory";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 import { useProductById } from "../../../hooks/useProduct";
 
 export default function GeneralExportStockModal({ open, onClose }) {
@@ -141,15 +142,21 @@ export default function GeneralExportStockModal({ open, onClose }) {
     setExportError("");
     setExportSuccess("");
     if (!quantity || isNaN(quantity) || Number(quantity) < 1) {
-      setExportError(t("admin.export_stock.error_invalid_quantity"));
+      const msg = t("admin.export_stock.error_invalid_quantity");
+      setExportError(msg);
+      toast.error(msg);
       return;
     }
     if (!reason.trim()) {
-      setExportError(t("admin.export_stock.error_reason_required"));
+      const msg = t("admin.export_stock.error_reason_required");
+      setExportError(msg);
+      toast.error(msg);
       return;
     }
     if (Number(quantity) > foundInventory.availableQuantity) {
-      setExportError(t("admin.export_stock.error_exceed_available"));
+      const msg = t("admin.export_stock.error_exceed_available");
+      setExportError(msg);
+      toast.error(msg);
       return;
     }
     try {
@@ -159,12 +166,16 @@ export default function GeneralExportStockModal({ open, onClose }) {
         reason,
         notes,
       });
-      setExportSuccess(t("admin.export_stock.success"));
+      const msg = t("admin.export_stock.success");
+      setExportSuccess(msg);
+      toast.success(msg);
       setTimeout(() => {
         onClose();
       }, 1500);
     } catch (err) {
-      setExportError(t("admin.export_stock.error_export"));
+      const msg = t("admin.export_stock.error_export");
+      setExportError(msg);
+      toast.error(msg);
     }
   };
 
