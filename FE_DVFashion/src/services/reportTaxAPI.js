@@ -5,6 +5,7 @@ export const reportTaxAPI = {
     const response = await api.get("/tax-reports/vat-form011/export/excel", {
       params: { startDate, endDate },
       responseType: "blob",
+      timeout: 300000,
     });
     // Lấy tên file từ header nếu có
     const disposition = response.headers["content-disposition"];
@@ -19,6 +20,7 @@ export const reportTaxAPI = {
     const response = await api.get("/tax-reports/vat-form04/export/excel", {
       params: { startDate, endDate },
       responseType: "blob",
+      timeout: 300000,
     });
     const disposition = response.headers["content-disposition"];
     let filename = "ToKhaiThue_04_GTGT.xlsx";
@@ -32,6 +34,7 @@ export const reportTaxAPI = {
     const response = await api.get("/tax-reports/vat-form014a/export/excel", {
       params: { startDate, endDate },
       responseType: "blob",
+      timeout: 300000,
     });
     const disposition = response.headers["content-disposition"];
     let filename = "BangPhanBoSoThue_01-4A_GTGT.xlsx";
