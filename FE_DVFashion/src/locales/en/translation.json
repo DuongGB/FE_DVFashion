@@ -721,7 +721,12 @@
     "empty_message": "You don't have any saved addresses",
     "confirm_delete_title": "Confirm Address Deletion",
     "confirm_delete_message": "Are you sure you want to delete the address for {{fullName}}?",
-
+    "create_success": "Address created successfully",
+    "create_error": "Failed to create address",
+    "update_success": "Address updated successfully",
+    "update_error": "Failed to update address",
+    "delete_success": "Address deleted successfully",
+    "delete_error": "Failed to delete address",
     "errors": {
       "fullName_required": "Full name is required",
       "phone_required": "Phone number is required",
