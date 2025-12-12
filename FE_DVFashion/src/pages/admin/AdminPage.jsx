@@ -107,7 +107,9 @@ const AdminPage = () => {
     useTopRecommendedProducts({
       limit: 5,
       days: recommendationDays === 0 ? undefined : recommendationDays,
+      lang: i18n.language?.toUpperCase() || "VI",
     });
+
   const { data: recommendationAnalytics, isLoading: analyticsLoading } =
     useRecommendationAnalytics({
       days: recommendationDays === 0 ? undefined : recommendationDays,

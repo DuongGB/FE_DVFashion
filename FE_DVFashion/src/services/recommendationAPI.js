@@ -38,10 +38,13 @@ export const getHybridRecommendations = async ({
  * @param {number} [params.days] - The number of past days to calculate stats for.
  * @returns {Promise<object>} The API response.
  */
-export const getTopRecommendedProducts = async ({ limit = 10, days }) => {
+export const getTopRecommendedProducts = async ({ limit = 10, days, lang }) => {
   const params = { limit };
   if (days !== undefined && days !== null) {
     params.days = days;
+  }
+  if (lang !== undefined && lang !== null) {
+    params.lang = lang;
   }
 
   const response = await api.get("/recommendations/stats/top-products", {
