@@ -73,14 +73,6 @@ export default function InventoryPage() {
     new Set((inventories || []).map((inv) => inv.sizeName).filter(Boolean))
   );
 
-  // Nếu đang loading hoặc lỗi
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <LoadingSpinner size="medium" />
-      </div>
-    );
-  }
   if (error) return <div>{t("admin.inventory.error")}</div>;
 
   // Lọc inventory
@@ -113,8 +105,8 @@ export default function InventoryPage() {
   // Đếm số filter đang active
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.colors.length > 0) count += filters.colors.length;
-    if (filters.sizes.length > 0) count += filters.sizes.length;
+    if (filters.colors.length > 0) count++;
+    if (filters.sizes.length > 0) count++;
     if (stockFilter !== "all") count++;
     if (search) count++;
     return count;
@@ -123,10 +115,10 @@ export default function InventoryPage() {
   // Xoá filter
   const removeFilter = (type, value = null) => {
     setFilters((prev) => {
-      if (type === "colors" || type === "sizes") {
+      if (value) {
         return {
           ...prev,
-          [type]: prev[type].filter((v) => v !== value),
+          [type]: prev[type].filter((item) => item !== value),
         };
       }
       return prev;
@@ -160,23 +152,24 @@ export default function InventoryPage() {
 
   // Xác định màu sắc dựa trên mức tồn kho
   const getStockLevelColor = (inventory) => {
-    if (inventory.quantityInStock === 0) return "text-red-600 font-bold";
+    if (inventory.quantityInStock === 0) return "text-red-600";
     if (inventory.quantityInStock <= inventory.minStockLevel)
-      return "text-yellow-600 font-bold";
+      return "text-yellow-600";
     return "text-green-600";
   };
 
   // Thống kê số lượng các loại tồn kho
-  const totalProducts = inventories.length;
-  const normalStock = inventories.filter(
-    (inv) => inv.quantityInStock > inv.minStockLevel
-  ).length;
-  const lowStock = inventories.filter(
-    (inv) => inv.quantityInStock > 0 && inv.quantityInStock <= inv.minStockLevel
-  ).length;
-  const outOfStock = inventories.filter(
-    (inv) => inv.quantityInStock === 0
-  ).length;
+  const totalProducts = inventories?.length || 0;
+  const normalStock =
+    inventories?.filter((inv) => inv.quantityInStock > inv.minStockLevel)
+      .length || 0;
+  const lowStock =
+    inventories?.filter(
+      (inv) =>
+        inv.quantityInStock > 0 && inv.quantityInStock <= inv.minStockLevel
+    ).length || 0;
+  const outOfStock =
+    inventories?.filter((inv) => inv.quantityInStock === 0).length || 0;
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-0">
@@ -473,7 +466,11 @@ export default function InventoryPage() {
 
       {/* Inventory Table - Mobile Card View */}
       <div className="block lg:hidden space-y-3">
-        {paginatedInventories.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <LoadingSpinner size="medium" />
+          </div>
+        ) : paginatedInventories.length > 0 ? (
           paginatedInventories.map((inventory) => (
             <div
               key={inventory.id}
@@ -618,7 +615,7 @@ export default function InventoryPage() {
         )}
       </div>
 
-      {/* Inventory Table */}
+      {/* Inventory Table - Desktop */}
       <div className="hidden lg:block backdrop-blur-xl bg-white/60 border border-white/30 shadow-lg rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1200px]">
@@ -654,7 +651,15 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedInventories.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={9} className="py-12">
+                    <div className="flex justify-center">
+                      <LoadingSpinner size="medium" />
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedInventories.length > 0 ? (
                 paginatedInventories.map((inventory) => (
                   <tr
                     key={inventory.id}
