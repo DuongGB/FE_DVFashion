@@ -438,9 +438,6 @@ export default function PromotionPage() {
                   {t("admin.promotion.columns.type")}
                 </th>
                 <th className="p-2 text-sm">
-                  {t("admin.promotion.columns.max_usage")}
-                </th>
-                <th className="p-2 text-sm">
                   {t("admin.promotion.columns.start_date")}
                 </th>
                 <th className="p-2 text-sm">
@@ -486,9 +483,6 @@ export default function PromotionPage() {
                       </div>
                     </td>
                     <td className="p-2 text-sm">{promo.type}</td>
-                    <td className="p-2 text-sm">
-                      {promo.maxUsages || t("admin.promotion.value.unlimited")}
-                    </td>
                     <td className="p-2 text-sm">
                       {formatDateTime(promo.startDate)}
                     </td>

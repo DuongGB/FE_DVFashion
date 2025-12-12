@@ -19,6 +19,7 @@ import { useAdminReviews, useModerateReview } from "../../hooks/useReview";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 const statusKeys = [
   "PENDING",
@@ -30,7 +31,9 @@ const statusKeys = [
 ];
 
 export default function ReviewPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const language = (i18n.language || "VI").toUpperCase();
 
   const statusConfig = statusKeys.reduce((acc, key) => {
     acc[key] = {
@@ -66,8 +69,9 @@ export default function ReviewPage() {
   // Fetch all reviews without filters (server will handle basic filtering)
   const { data, isLoading, isError, error, refetch } = useAdminReviews({
     page: 0,
-    size: 1000, // Get all reviews
+    size: 1000,
     sort: "createdAt,desc",
+    lang: language,
   });
 
   const { mutate: moderateReview, isLoading: isModerating } =
@@ -589,11 +593,8 @@ export default function ReviewPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="7" className="text-center p-6">
-                  <div className="flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2">{t("admin.review.loading")}</span>
-                  </div>
+                <td colSpan="7" className="py-12">
+                  <LoadingSpinner className="mx-auto my-8" />
                 </td>
               </tr>
             ) : paginatedReviews.length > 0 ? (

@@ -172,7 +172,12 @@ const CustomerSupportPage = () => {
     try {
       const lang = i18n.language?.toLowerCase();
       const locale = lang.startsWith("vi") ? vi : enUS;
-      const distance = formatDistanceToNow(new Date(dateString), {
+
+      // Convert UTC to UTC+7 (Vietnam timezone)
+      const utcDate = new Date(dateString);
+      const localTime = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
+
+      const distance = formatDistanceToNow(localTime, {
         addSuffix: true,
         locale,
       });
@@ -181,6 +186,20 @@ const CustomerSupportPage = () => {
       return "";
     }
   };
+
+  // const getRelativeTime = (dateString) => {
+  //   try {
+  //     const lang = i18n.language?.toLowerCase();
+  //     const locale = lang.startsWith("vi") ? vi : enUS;
+  //     const distance = formatDistanceToNow(new Date(dateString), {
+  //       addSuffix: true,
+  //       locale,
+  //     });
+  //     return t("customer_support.relative_time", { time: distance });
+  //   } catch (error) {
+  //     return "";
+  //   }
+  // };
 
   const getLastMessageText = (room) => {
     if (!room.lastMessage) {

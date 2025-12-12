@@ -18,6 +18,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { useProductStatistics } from "../../hooks/useProduct";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function ProductPage() {
   const { t, i18n } = useTranslation();
@@ -50,7 +51,6 @@ export default function ProductPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearch(searchInput);
-      setCurrentPage(0);
     }, 1000);
     return () => clearTimeout(handler);
   }, [searchInput]);
@@ -76,10 +76,9 @@ export default function ProductPage() {
     };
 
     if (search) params.search = search;
-    if (statusFilter) params.status = statusFilter.toUpperCase();
-    if (filters.categoryIds.length > 0) {
-      params.categoryId = filters.categoryIds[0];
-    }
+    if (statusFilter) params.status = statusFilter;
+    if (filters.categoryIds.length > 0)
+      params.categoryIds = filters.categoryIds;
     if (filters.onSale !== null) params.onSale = filters.onSale;
     if (filters.priceRange.min) params.minPrice = filters.priceRange.min;
     if (filters.priceRange.max) params.maxPrice = filters.priceRange.max;
@@ -93,9 +92,9 @@ export default function ProductPage() {
     [search, statusFilter, filters, currentPage, language]
   );
   const {
-    products,
-    totalElements,
-    totalPages,
+    products = [],
+    totalElements = 0,
+    totalPages = 1,
     isLoading: isLoadingProducts,
     filterInfo,
     refetch,
@@ -128,14 +127,7 @@ export default function ProductPage() {
 
   // Toggle status handler
   const handleToggleStatus = (product) => {
-    if (isStaff) {
-      toast.error(
-        t("admin.product.messages.staff_status_denied") ||
-          "Bạn không có quyền thực hiện thao tác này!",
-        { autoClose: 2000, position: "top-right" }
-      );
-      return;
-    }
+    if (isStaff) return;
 
     let newStatus;
     switch (product.status) {
@@ -143,8 +135,8 @@ export default function ProductPage() {
         newStatus = "INACTIVE";
         break;
       case "INACTIVE":
-      case "OUT_OF_STOCK":
       case "DISCONTINUED":
+      case "OUT_OF_STOCK":
         newStatus = "ACTIVE";
         break;
       default:
@@ -178,23 +170,10 @@ export default function ProductPage() {
       onConfirm: async () => {
         setLoadingStatusId(product.id);
         try {
-          await updateProduct({
-            productId: product.id,
-            productData: {
-              ...product,
-              status: newStatus,
-            },
-            lang: language,
-          });
-        } catch (error) {
-          toast.error(
-            t("admin.product.actions.error") ||
-              "Có lỗi xảy ra khi cập nhật trạng thái!",
-            { autoClose: 2000, position: "top-center" }
-          );
-        } finally {
-          setLoadingStatusId(null);
-        }
+          await updateProduct({ ...product, status: newStatus });
+          refetch && refetch();
+        } catch (e) {}
+        setLoadingStatusId(null);
       },
     });
   };
@@ -211,14 +190,17 @@ export default function ProductPage() {
   const handleFilterChange = (filterType, value, isMultiple = false) => {
     setFilters((prev) => {
       if (isMultiple) {
-        const currentValues = prev[filterType] || [];
-        const newValues = currentValues.includes(value)
-          ? currentValues.filter((v) => v !== value)
-          : [...currentValues, value];
-        return { ...prev, [filterType]: newValues };
-      } else {
-        return { ...prev, [filterType]: value };
+        return {
+          ...prev,
+          [filterType]: prev[filterType].includes(value)
+            ? prev[filterType].filter((v) => v !== value)
+            : [...prev[filterType], value],
+        };
       }
+      return {
+        ...prev,
+        [filterType]: value,
+      };
     });
   };
 
@@ -240,7 +222,7 @@ export default function ProductPage() {
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.priceRange.min || filters.priceRange.max) count++;
-    if (filters.categoryIds.length > 0) count += filters.categoryIds.length;
+    if (filters.categoryIds.length > 0) count++;
     if (filters.onSale !== null) count++;
     if (statusFilter) count++;
     if (search) count++;
@@ -249,28 +231,14 @@ export default function ProductPage() {
 
   // Handle create product
   const handleCreateProduct = () => {
-    if (isStaff) {
-      toast.error(
-        t("admin.product.messages.staff_create_denied") ||
-          "Bạn không có quyền tạo sản phẩm mới!",
-        { autoClose: 2000, position: "top-center" }
-      );
-      return;
-    }
+    if (isStaff) return;
     setEditingProduct(null);
     setShowForm(true);
   };
 
   // Handle edit product
   const handleEditProduct = (product) => {
-    if (isStaff) {
-      toast.error(
-        t("admin.product.messages.staff_edit_denied") ||
-          "Bạn không có quyền chỉnh sửa sản phẩm!",
-        { autoClose: 2000, position: "top-right" }
-      );
-      return;
-    }
+    if (isStaff) return;
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -320,13 +288,8 @@ export default function ProductPage() {
   const getTotalStock = (product) => {
     if (!product.variants) return 0;
     return product.variants.reduce((total, variant) => {
-      if (!variant.sizes) return total;
-      return (
-        total +
-        variant.sizes.reduce((variantTotal, size) => {
-          return variantTotal + (size.stockQuantity || 0);
-        }, 0)
-      );
+      if (typeof variant.stock === "number") return total + variant.stock;
+      return total;
     }, 0);
   };
 
@@ -335,35 +298,14 @@ export default function ProductPage() {
     if (!product.variants || product.variants.length === 0) return null;
     for (const variant of product.variants) {
       if (variant.images && variant.images.length > 0) {
-        const primaryImage = variant.images.find((img) => img.isPrimary);
-        if (primaryImage) return primaryImage;
         return variant.images[0];
       }
     }
     return null;
   };
 
-  if (isLoadingProducts || isLoadingCategories || statsLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-6 rounded-lg shadow border flex flex-col gap-2"
-            >
-              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-              <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Loading cho statistics và categories
+  const isLoadingHeader = isLoadingCategories || statsLoading;
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-0">
@@ -400,54 +342,68 @@ export default function ProductPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
-                {t("admin.product.total_products")}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                {stats?.totalProducts ?? 0}
-              </p>
+        {isLoadingHeader ? (
+          [...Array(4)].map((_, idx) => (
+            <div
+              key={idx}
+              className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg animate-pulse"
+            >
+              <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+              <div className="h-8 w-16 bg-gray-200 rounded" />
             </div>
-          </div>
-        </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
-                {t("admin.product.active_products")}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-green-600">
-                {stats?.totalActiveProducts ?? 0}
-              </p>
+          ))
+        ) : (
+          <>
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
+                    {t("admin.product.total_products")}
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                    {stats?.totalProducts ?? 0}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
-                {t("admin.product.inactive_products")}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-red-600">
-                {stats?.totalInactiveProducts ?? 0}
-              </p>
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
+                    {t("admin.product.active_products")}
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
+                    {stats?.totalActiveProducts ?? 0}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
-                {t("admin.product.on_sale_products")}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-orange-600">
-                {stats?.totalProductsOnPromotion ?? 0}
-              </p>
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
+                    {t("admin.product.inactive_products")}
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">
+                    {stats?.totalInactiveProducts ?? 0}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+            <div className="backdrop-blur-xl bg-white/60 border border-white/30 p-3 sm:p-4 lg:p-6 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2">
+                    {t("admin.product.on_sale_products")}
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-600">
+                    {stats?.totalProductsOnPromotion ?? 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Filters + Refresh */}
@@ -463,10 +419,7 @@ export default function ProductPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setSearch(searchInput);
-                    setCurrentPage(0);
-                  }
+                  if (e.key === "Enter") setSearch(searchInput);
                 }}
                 placeholder={t("admin.product.search_placeholder")}
                 className="backdrop-blur-sm bg-white/80 border border-white/30 w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
@@ -549,12 +502,14 @@ export default function ProductPage() {
                   value={tempMinPrice}
                   onChange={(e) => setTempMinPrice(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter")
                       setFilters((prev) => ({
                         ...prev,
-                        priceRange: { ...prev.priceRange, min: tempMinPrice },
+                        priceRange: {
+                          ...prev.priceRange,
+                          min: tempMinPrice,
+                        },
                       }));
-                    }
                   }}
                   className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
@@ -569,12 +524,14 @@ export default function ProductPage() {
                   value={tempMaxPrice}
                   onChange={(e) => setTempMaxPrice(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter")
                       setFilters((prev) => ({
                         ...prev,
-                        priceRange: { ...prev.priceRange, max: tempMaxPrice },
+                        priceRange: {
+                          ...prev.priceRange,
+                          max: tempMaxPrice,
+                        },
                       }));
-                    }
                   }}
                   className="backdrop-blur-sm bg-white/80 border border-white/30 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
@@ -646,7 +603,11 @@ export default function ProductPage() {
 
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-3">
-        {products.length > 0 ? (
+        {isLoadingProducts ? (
+          <div className="flex justify-center py-8">
+            <LoadingSpinner />
+          </div>
+        ) : products.length > 0 ? (
           products.map((product) => {
             const primaryImage = getPrimaryImage(product);
             const totalStock = getTotalStock(product);
@@ -674,7 +635,6 @@ export default function ProductPage() {
                     <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 mb-1">
                       {product.name}
                     </h3>
-                    {/* <p className="text-xs text-gray-500">ID: {product.id}</p> */}
                     <p className="text-xs text-gray-600 mt-1">
                       {product.categoryName}
                     </p>
@@ -839,55 +799,49 @@ export default function ProductPage() {
               </tr>
             </thead>
             <tbody>
-              {products.length > 0 ? (
+              {isLoadingProducts ? (
+                <tr>
+                  <td colSpan={10} className="py-12">
+                    <div className="flex justify-center">
+                      <LoadingSpinner />
+                    </div>
+                  </td>
+                </tr>
+              ) : products.length > 0 ? (
                 products.map((product) => {
                   const primaryImage = getPrimaryImage(product);
                   const totalStock = getTotalStock(product);
-
                   return (
-                    <tr
-                      key={product.id}
-                      className="border-b hover:bg-white/80 transition-colors"
-                    >
+                    <tr key={product.id}>
                       <td className="p-3">{product.id}</td>
                       <td className="p-3">
                         {primaryImage ? (
                           <img
                             src={primaryImage.imageUrl}
                             alt={product.name}
-                            className="w-10 h-10 rounded object-cover"
+                            className="w-12 h-12 object-cover rounded"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                          <div className="w-12 h-12 flex items-center justify-center bg-gray-100 text-gray-400 text-xs rounded">
                             No Image
                           </div>
                         )}
                       </td>
-                      <td className="p-3">
-                        <div>
-                          <p className="font-semibold">{product.name}</p>
-                        </div>
-                      </td>
+                      <td className="p-3">{product.name}</td>
                       <td className="p-3">{product.categoryName}</td>
-                      <td className="p-3 font-medium">
-                        {formatPrice(product.price)}
-                      </td>
+                      <td className="p-3">{formatPrice(product.price)}</td>
                       <td className="p-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {formatPrice(product.salePrice)}
+                        {formatPrice(product.salePrice)}
+                        {product.onSale && (
+                          <span className="ml-2 bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">
+                            {t("admin.product.values.sale")}
                           </span>
-                          {product.onSale && (
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-fit">
-                              {t("admin.product.values.sale")}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </td>
                       <td className="p-3">
                         {isStaff ? (
                           <span
-                            className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(
+                            className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
                               product.status
                             )}`}
                           >
@@ -897,17 +851,12 @@ export default function ProductPage() {
                           <button
                             onClick={() => handleToggleStatus(product)}
                             disabled={loadingStatusId === product.id}
-                            className={`px-3 py-1 rounded text-sm font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
+                            className={`px-2 py-1 rounded text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-50 hover:opacity-80 ${getStatusColor(
                               product.status
                             )}`}
-                            title={
-                              product.status === "ACTIVE"
-                                ? t("admin.product.status.inactive")
-                                : t("admin.product.status.active")
-                            }
                           >
                             {loadingStatusId === product.id ? (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center justify-center gap-1">
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
                               </div>
                             ) : (
@@ -916,14 +865,14 @@ export default function ProductPage() {
                           </button>
                         )}
                       </td>
-                      <td className="p-3 text-center">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                      <td className="p-3">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
                           {product.variants ? product.variants.length : 0}
                         </span>
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="p-3">
                         <span
-                          className={`px-2 py-1 rounded text-sm font-medium ${
+                          className={`px-2 py-1 rounded text-xs font-medium ${
                             totalStock > 0
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
@@ -935,30 +884,27 @@ export default function ProductPage() {
                       <td className="p-3">
                         <div className="flex gap-2">
                           <button
-                            className="text-blue-600 hover:text-blue-800 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                            className="flex items-center gap-1 px-2 py-1 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded transition-all text-xs cursor-pointer"
                             onClick={() => handleViewProduct(product)}
-                            title={t("admin.product.actions.view_details")}
                           >
-                            <IconEye size={24} />
+                            <IconEye size={16} />
+                            {t("admin.product.actions.view_details")}
                           </button>
                           {!isStaff ? (
                             <button
-                              className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50 transition-colors"
+                              className="flex items-center gap-1 px-2 py-1 text-yellow-600 bg-yellow-50 hover:bg-yellow-100 rounded transition-all text-xs cursor-pointer"
                               onClick={() => handleEditProduct(product)}
-                              title={t("admin.product.actions.edit")}
                             >
-                              <IconEdit size={24} />
+                              <IconEdit size={16} />
+                              {t("admin.product.actions.edit")}
                             </button>
                           ) : (
                             <button
-                              className="text-gray-400 p-1 cursor-not-allowed opacity-50"
+                              className="flex items-center gap-1 px-2 py-1 text-gray-400 bg-gray-50 rounded text-xs cursor-not-allowed opacity-50"
                               onClick={() => handleEditProduct(product)}
-                              title={
-                                t("admin.product.staff_no_permission") ||
-                                "Không có quyền chỉnh sửa"
-                              }
                             >
-                              <IconEdit size={24} />
+                              <IconEdit size={16} />
+                              {t("admin.product.actions.edit")}
                             </button>
                           )}
                         </div>
@@ -978,14 +924,12 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* Pagination */}
       <Pagination
         currentPage={currentPage + 1}
         totalPages={totalPages}
         onPageChange={(page) => setCurrentPage(page - 1)}
       />
 
-      {/* Product Detail Modal */}
       <ProductDetailModal
         product={selectedProduct}
         open={showDetailModal}
@@ -995,7 +939,6 @@ export default function ProductPage() {
         }}
       />
 
-      {/* Product Form Modal */}
       {!isStaff && (
         <ProductForm
           isOpen={showForm}
