@@ -36,6 +36,9 @@ const AdminPage = () => {
   const now = new Date();
   const currentYear = now.getFullYear();
 
+  // Lấy ngôn ngữ hiện tại
+  const language = (i18n.language || "VI").toUpperCase();
+
   // Fetch monthly revenue for current year
   const { data: monthlyRevenueData } = useMonthlyRevenue({ year: currentYear });
 
@@ -85,19 +88,19 @@ const AdminPage = () => {
 
   // Lấy top 5 sản phẩm bán chạy nhất
   const { data: bestSellingProducts, isLoading: isLoadingBestSelling } =
-    useTopBestSellingProducts({ limit: 5 });
+    useTopBestSellingProducts({ limit: 5, lang: language });
 
   // Lấy top 5 sản phẩm tồn kho cao nhất
   const { data: topStockProducts, isLoading: isLoadingTopStock } =
-    useTopStockProducts({ limit: 5 });
+    useTopStockProducts({ limit: 5, lang: language });
 
   // Lấy top 5 sản phẩm tồn kho thấp nhất
   const { data: lowStockProducts, isLoading: isLoadingLowStock } =
-    useLowStockItems({ limit: 5 });
+    useLowStockItems({ limit: 5, lang: language });
 
   // Lấy top 5 khuyến mãi mang lại doanh thu cao nhất
   const { data: topPromotions, isLoading: isLoadingPromotions } =
-    useTopPromotionsByRevenue({ limit: 5 });
+    useTopPromotionsByRevenue({ limit: 5, lang: language });
 
   // Lấy danh sách khách hàng
   const { users, isLoadingUsers } = useUser();

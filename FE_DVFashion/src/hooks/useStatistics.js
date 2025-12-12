@@ -89,10 +89,14 @@ export const useYearlyRevenue = ({ year, enabled = true } = {}) => {
 /**
  * Hook lấy top 10 sản phẩm bán chạy nhất
  */
-export const useTopBestSellingProducts = ({ enabled = true } = {}) => {
+export const useTopBestSellingProducts = ({
+  limit = 10,
+  lang = "VI",
+  enabled = true,
+} = {}) => {
   return useQuery({
-    queryKey: ["statistics", "products", "best-selling"],
-    queryFn: () => statisticAPI.getTopBestSellingProducts(),
+    queryKey: ["statistics", "products", "best-selling", lang],
+    queryFn: () => statisticAPI.getTopBestSellingProducts(lang),
     enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
@@ -102,10 +106,14 @@ export const useTopBestSellingProducts = ({ enabled = true } = {}) => {
 /**
  * Hook lấy top sản phẩm tồn kho cao nhất
  */
-export const useTopStockProducts = ({ limit = 10, enabled = true } = {}) => {
+export const useTopStockProducts = ({
+  limit = 10,
+  lang = "VI",
+  enabled = true,
+} = {}) => {
   return useQuery({
-    queryKey: ["statistics", "stock-products", "top-stock", limit],
-    queryFn: () => statisticAPI.getTopStockProducts(limit),
+    queryKey: ["statistics", "stock-products", "top-stock", limit, lang],
+    queryFn: () => statisticAPI.getTopStockProducts(limit, lang),
     enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
@@ -115,10 +123,14 @@ export const useTopStockProducts = ({ limit = 10, enabled = true } = {}) => {
 /**
  * Hook lấy top sản phẩm tồn kho thấp nhất
  */
-export const useLowStockItems = ({ limit = 10, enabled = true } = {}) => {
+export const useLowStockItems = ({
+  limit = 10,
+  lang = "VI",
+  enabled = true,
+} = {}) => {
   return useQuery({
-    queryKey: ["statistics", "stock-products", "low-stock", limit],
-    queryFn: () => statisticAPI.getLowStockItems(limit),
+    queryKey: ["statistics", "stock-products", "low-stock", limit, lang],
+    queryFn: () => statisticAPI.getLowStockItems(limit, lang),
     enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],
@@ -130,11 +142,12 @@ export const useLowStockItems = ({ limit = 10, enabled = true } = {}) => {
  */
 export const useTopPromotionsByRevenue = ({
   limit = 10,
+  lang = "VI",
   enabled = true,
 } = {}) => {
   return useQuery({
-    queryKey: ["statistics", "promotions", "top-revenue", limit],
-    queryFn: () => statisticAPI.getTopPromotionsByRevenue(limit),
+    queryKey: ["statistics", "promotions", "top-revenue", limit, lang],
+    queryFn: () => statisticAPI.getTopPromotionsByRevenue(limit, lang),
     enabled,
     staleTime: 1000 * 60 * 15,
     select: (response) => response?.data ?? [],

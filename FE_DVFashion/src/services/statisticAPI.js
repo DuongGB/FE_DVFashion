@@ -57,17 +57,19 @@ export const statisticAPI = {
   /**
    * Lấy top 10 sản phẩm bán chạy nhất
    */
-  getTopBestSellingProducts: async () => {
-    const response = await api.get("/statistics/products/best-selling");
+  getTopBestSellingProducts: async (lang = "VI") => {
+    const response = await api.get("/statistics/products/best-selling", {
+      params: { lang },
+    });
     return response.data;
   },
 
   /**
    * Lấy top sản phẩm tồn kho cao nhất
    */
-  getTopStockProducts: async (limit = 10) => {
+  getTopStockProducts: async (limit = 10, lang = "VI") => {
     const response = await api.get("/statistics/stock-products/top-stock", {
-      params: { limit },
+      params: { limit, lang },
     });
     return response.data;
   },
@@ -75,9 +77,9 @@ export const statisticAPI = {
   /**
    * Lấy top sản phẩm tồn kho thấp nhất
    */
-  getLowStockItems: async (limit = 10) => {
+  getLowStockItems: async (limit = 10, lang = "VI") => {
     const response = await api.get("/statistics/stock-products/low-stock", {
-      params: { limit },
+      params: { limit, lang },
     });
     return response.data;
   },
@@ -85,13 +87,12 @@ export const statisticAPI = {
   /**
    * Lấy top khuyến mãi doanh thu cao nhất
    */
-  getTopPromotionsByRevenue: async (limit = 10) => {
+  getTopPromotionsByRevenue: async (limit = 10, lang = "VI") => {
     const response = await api.get("/statistics/promotions/top-revenue", {
-      params: { limit },
+      params: { limit, lang },
     });
     return response.data;
   },
-
   /**
    * Lấy toàn bộ chuỗi thời gian doanh thu (time series) cho ML/training
    */

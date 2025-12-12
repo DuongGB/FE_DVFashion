@@ -30,7 +30,9 @@ const statusKeys = [
 ];
 
 export default function ReviewPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const language = (i18n.language || "VI").toUpperCase();
 
   const statusConfig = statusKeys.reduce((acc, key) => {
     acc[key] = {
@@ -66,8 +68,9 @@ export default function ReviewPage() {
   // Fetch all reviews without filters (server will handle basic filtering)
   const { data, isLoading, isError, error, refetch } = useAdminReviews({
     page: 0,
-    size: 1000, // Get all reviews
+    size: 1000,
     sort: "createdAt,desc",
+    lang: language,
   });
 
   const { mutate: moderateReview, isLoading: isModerating } =
