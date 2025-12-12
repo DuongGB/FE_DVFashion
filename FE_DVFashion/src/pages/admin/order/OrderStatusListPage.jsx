@@ -47,7 +47,6 @@ function getAllowedBatchTargetStatuses(selectedOrders, orders) {
   let allowed = null;
   for (const status of currentStatuses) {
     const nexts = ORDER_STATUS_FLOW[status] || [];
-    // KHÔNG cho phép giữ nguyên trạng thái hiện tại
     const allowedForThis = [...nexts];
     if (allowed === null) {
       allowed = allowedForThis;
@@ -295,13 +294,6 @@ export default function OrderStatusListPage({ status }) {
     setCurrentPage(1);
   };
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <LoadingSpinner size="medium" />
-      </div>
-    );
-
   if (isError) return <div className="text-red-600">{t("common.error")}</div>;
 
   const isAllPageSelected =
@@ -498,101 +490,106 @@ export default function OrderStatusListPage({ status }) {
 
       {/* Mobile Card View (Visible < md) */}
       <div className="md:hidden space-y-4">
-        {orders.length === 0 && (
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <LoadingSpinner size="medium" />
+          </div>
+        ) : orders.length === 0 ? (
           <div className="text-center py-8 bg-white/60 rounded-lg shadow border border-white/30 text-gray-500">
             {t("order.no_orders_found")}
           </div>
-        )}
-        {orders.map((order) => {
-          const payment = order.payment?.paymentMethod || order.paymentMethod;
-          const orderNumber = order.orderNumber ?? order.id;
-          return (
-            <div
-              key={orderNumber}
-              className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ${
-                selectedOrders.includes(orderNumber)
-                  ? "ring-2 ring-blue-500"
-                  : ""
-              }`}
-            >
-              <div className="p-4 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.includes(orderNumber)}
-                      onChange={() => handleSelectOrder(orderNumber)}
-                      className="w-5 h-5 rounded border-gray-300"
-                    />
-                    <div>
-                      <div className="font-bold text-gray-900">
-                        #{orderNumber}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {formatDateTime(order.orderDate)}
+        ) : (
+          orders.map((order) => {
+            const payment = order.payment?.paymentMethod || order.paymentMethod;
+            const orderNumber = order.orderNumber ?? order.id;
+            return (
+              <div
+                key={orderNumber}
+                className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ${
+                  selectedOrders.includes(orderNumber)
+                    ? "ring-2 ring-blue-500"
+                    : ""
+                }`}
+              >
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(orderNumber)}
+                        onChange={() => handleSelectOrder(orderNumber)}
+                        className="w-5 h-5 rounded border-gray-300"
+                      />
+                      <div>
+                        <div className="font-bold text-gray-900">
+                          #{orderNumber}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {formatDateTime(order.orderDate)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <span
-                    className={`text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase shadow-sm ${
-                      statusColors[order.status] ?? "bg-gray-400"
-                    }`}
-                  >
-                    {t(`order.status.${order.status?.toLowerCase()}`) ||
-                      order.status}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-sm border-t border-b border-gray-100 py-3">
-                  <div>
-                    <span className="text-gray-500 text-xs block">
-                      {t("account.main.full_name")}
-                    </span>
-                    <span className="font-medium">{order.customerName}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-gray-500 text-xs block">
-                      {t("order.total_amount")}
-                    </span>
-                    <span className="font-bold text-blue-700">
-                      {formatVND(order.totalAmount)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div
-                    className={`flex items-center gap-1.5 text-sm ${
-                      paymentMethodColors[payment] ?? "text-gray-600"
-                    }`}
-                  >
-                    {paymentMethodIcons[payment]}
-                    <span className="truncate max-w-[120px]">
-                      {payment === "CASH_ON_DELIVERY" && "COD"}
-                      {payment === "PAYPAL" && "PayPal"}
-                      {payment === "BANK_TRANSFER" && "Bank"}
-                      {!payment && "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition"
-                      onClick={() => setSelectedOrder(order)}
+                    <span
+                      className={`text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase shadow-sm ${
+                        statusColors[order.status] ?? "bg-gray-400"
+                      }`}
                     >
-                      <IconEye size={18} />
-                    </button>
-                    <button
-                      className="p-2 bg-yellow-50 text-yellow-600 rounded-full hover:bg-yellow-100 transition"
-                      onClick={() => setEditingOrder(order)}
+                      {t(`order.status.${order.status?.toLowerCase()}`) ||
+                        order.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm border-t border-b border-gray-100 py-3">
+                    <div>
+                      <span className="text-gray-500 text-xs block">
+                        {t("account.main.full_name")}
+                      </span>
+                      <span className="font-medium">{order.customerName}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-gray-500 text-xs block">
+                        {t("order.total_amount")}
+                      </span>
+                      <span className="font-bold text-blue-700">
+                        {formatVND(order.totalAmount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <div
+                      className={`flex items-center gap-1.5 text-sm ${
+                        paymentMethodColors[payment] ?? "text-gray-600"
+                      }`}
                     >
-                      <IconEdit size={18} />
-                    </button>
+                      {paymentMethodIcons[payment]}
+                      <span className="truncate max-w-[120px]">
+                        {payment === "CASH_ON_DELIVERY" && "COD"}
+                        {payment === "PAYPAL" && "PayPal"}
+                        {payment === "BANK_TRANSFER" && "Bank"}
+                        {!payment && "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <IconEye size={18} />
+                      </button>
+                      <button
+                        className="p-2 bg-yellow-50 text-yellow-600 rounded-full hover:bg-yellow-100 transition"
+                        onClick={() => setEditingOrder(order)}
+                      >
+                        <IconEdit size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Desktop Table View (Visible >= md) */}
@@ -622,84 +619,15 @@ export default function OrderStatusListPage({ status }) {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => {
-                const payment =
-                  order.payment?.paymentMethod || order.paymentMethod;
-                const orderNumber = order.orderNumber ?? order.id;
-                return (
-                  <tr
-                    key={orderNumber}
-                    className="border-b hover:bg-white/80 transition-colors last:border-b-0"
-                  >
-                    <td className="p-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedOrders.includes(orderNumber)}
-                        onChange={() => handleSelectOrder(orderNumber)}
-                        className="w-4 h-4 rounded border-gray-300"
-                      />
-                    </td>
-                    <td className="p-3 whitespace-nowrap font-medium text-gray-900">
-                      {orderNumber}
-                    </td>
-                    <td className="p-3 whitespace-nowrap">
-                      {order.customerName}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-sm text-gray-600">
-                      {formatDateTime(order.orderDate)}
-                    </td>
-                    <td className="p-3 whitespace-nowrap">
-                      <span
-                        className={`text-white text-xs px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap font-medium ${
-                          statusColors[order.status] ?? "bg-gray-400"
-                        }`}
-                      >
-                        {t(`order.status.${order.status?.toLowerCase()}`) ||
-                          order.status}
-                      </span>
-                    </td>
-                    <td className="p-3 whitespace-nowrap">
-                      <span
-                        className={`flex items-center gap-2 text-sm font-medium ${
-                          paymentMethodColors[payment] ?? "text-gray-600"
-                        }`}
-                      >
-                        {paymentMethodIcons[payment]}
-                        <span>
-                          {payment === "CASH_ON_DELIVERY" &&
-                            t("order.payment_method.cod")}
-                          {payment === "PAYPAL" &&
-                            t("order.payment_method.paypal")}
-                          {payment === "BANK_TRANSFER" && "Bank"}
-                          {!payment && "N/A"}
-                        </span>
-                      </span>
-                    </td>
-                    <td className="p-3 font-bold whitespace-nowrap text-gray-900">
-                      {formatVND(order.totalAmount)}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                          onClick={() => setSelectedOrder(order)}
-                          title={t("common.view_details")}
-                        >
-                          <IconEye size={20} />
-                        </button>
-                        <button
-                          className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors cursor-pointer"
-                          onClick={() => setEditingOrder(order)}
-                          title={t("common.edit")}
-                        >
-                          <IconEdit size={20} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {orders.length === 0 && (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="py-12">
+                    <div className="flex justify-center">
+                      <LoadingSpinner size="medium" />
+                    </div>
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-500">
                     <div className="flex flex-col items-center justify-center">
@@ -708,13 +636,91 @@ export default function OrderStatusListPage({ status }) {
                     </div>
                   </td>
                 </tr>
+              ) : (
+                orders.map((order) => {
+                  const payment =
+                    order.payment?.paymentMethod || order.paymentMethod;
+                  const orderNumber = order.orderNumber ?? order.id;
+                  return (
+                    <tr
+                      key={orderNumber}
+                      className="border-b hover:bg-white/80 transition-colors last:border-b-0"
+                    >
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.includes(orderNumber)}
+                          onChange={() => handleSelectOrder(orderNumber)}
+                          className="w-4 h-4 rounded border-gray-300"
+                        />
+                      </td>
+                      <td className="p-3 whitespace-nowrap font-medium text-gray-900">
+                        {orderNumber}
+                      </td>
+                      <td className="p-3 whitespace-nowrap">
+                        {order.customerName}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-sm text-gray-600">
+                        {formatDateTime(order.orderDate)}
+                      </td>
+                      <td className="p-3 whitespace-nowrap">
+                        <span
+                          className={`text-white text-xs px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap font-medium ${
+                            statusColors[order.status] ?? "bg-gray-400"
+                          }`}
+                        >
+                          {t(`order.status.${order.status?.toLowerCase()}`) ||
+                            order.status}
+                        </span>
+                      </td>
+                      <td className="p-3 whitespace-nowrap">
+                        <span
+                          className={`flex items-center gap-2 text-sm font-medium ${
+                            paymentMethodColors[payment] ?? "text-gray-600"
+                          }`}
+                        >
+                          {paymentMethodIcons[payment]}
+                          <span>
+                            {payment === "CASH_ON_DELIVERY" &&
+                              t("order.payment_method.cod")}
+                            {payment === "PAYPAL" &&
+                              t("order.payment_method.paypal")}
+                            {payment === "BANK_TRANSFER" && "Bank"}
+                            {!payment && "N/A"}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="p-3 font-bold whitespace-nowrap text-gray-900">
+                        {formatVND(order.totalAmount)}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                            onClick={() => setSelectedOrder(order)}
+                            title={t("common.view_details")}
+                          >
+                            <IconEye size={20} />
+                          </button>
+                          <button
+                            className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors cursor-pointer"
+                            onClick={() => setEditingOrder(order)}
+                            title={t("common.edit")}
+                          >
+                            <IconEdit size={20} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Batch update modal - RESPONSIVE: Width and Max Height */}
+      {/* Batch update modal */}
       {showBatchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div
