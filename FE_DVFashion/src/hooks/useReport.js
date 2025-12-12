@@ -4,7 +4,7 @@ import { reportAPI } from "../services/reportAPI";
 // mode: "day" | "month" | "quarter" | "year"
 export const useExportRevenueReport = () => {
   const exportReport = useCallback(
-    async ({ mode, year, startDate, endDate, yearlyData }) => {
+    async ({ mode, year, startDate, endDate, yearlyData, onProgress }) => {
       let periodType = "DAILY";
       let start = startDate;
       let end = endDate;
@@ -15,7 +15,6 @@ export const useExportRevenueReport = () => {
         end = `${year}-12-31`;
       } else if (mode === "quarter") {
         periodType = "QUARTERLY";
-        // Nếu có nhiều năm, lấy min/max từ dữ liệu hoặc mặc định 1 năm
         const years = Array.isArray(yearlyData?.details)
           ? yearlyData.details.map((x) => Number(x.period))
           : [year];
@@ -38,6 +37,7 @@ export const useExportRevenueReport = () => {
         periodType,
         startDate: start,
         endDate: end,
+        onProgress,
       });
 
       // Lấy tên file từ header hoặc mặc định

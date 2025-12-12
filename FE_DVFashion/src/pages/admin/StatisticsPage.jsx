@@ -41,6 +41,7 @@ export default function StatisticsPage() {
   const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [isExportingTax, setIsExportingTax] = useState(false);
   const [exportingTaxType, setExportingTaxType] = useState("");
+  const [exportProgress, setExportProgress] = useState(0);
 
   // Sử dụng useRevenue thay vì các hook cũ
   const daily = useRevenue({
@@ -128,6 +129,7 @@ export default function StatisticsPage() {
   const handleExportTax = async (type, period) => {
     setIsExportingTax(true);
     setExportingTaxType(`${type}-${period.value}`);
+    setExportProgress(0); // Reset progress
     closeAllDropdowns();
 
     try {
@@ -135,6 +137,7 @@ export default function StatisticsPage() {
       const params = {
         startDate: period.startDate,
         endDate: period.endDate,
+        onProgress: (percent) => setExportProgress(percent),
       };
       if (type === "011") res = await exportVATForm011(params);
       if (type === "04") res = await exportVATForm04(params);
@@ -153,12 +156,15 @@ export default function StatisticsPage() {
       toast.success(`Xuất báo cáo ${type} ${period.label} thành công!`);
     } catch (e) {
       toast.error(
-        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+        e.message ||
+          t("admin.statistics.export.error") ||
+          "Xuất báo cáo thất bại!"
       );
       console.error(e);
     } finally {
       setIsExportingTax(false);
       setExportingTaxType("");
+      setExportProgress(0);
     }
   };
 
@@ -166,6 +172,7 @@ export default function StatisticsPage() {
   const handleExportTaxYear = async (type) => {
     setIsExportingTax(true);
     setExportingTaxType(`${type}-year`);
+    setExportProgress(0);
     closeAllDropdowns();
 
     try {
@@ -173,6 +180,7 @@ export default function StatisticsPage() {
       const params = {
         startDate: `${year}-01-01`,
         endDate: `${year}-12-31`,
+        onProgress: (percent) => setExportProgress(percent),
       };
       if (type === "011") res = await exportVATForm011(params);
       if (type === "04") res = await exportVATForm04(params);
@@ -191,17 +199,21 @@ export default function StatisticsPage() {
       toast.success(`Xuất báo cáo ${type} năm ${year} thành công!`);
     } catch (e) {
       toast.error(
-        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+        e.message ||
+          t("admin.statistics.export.error") ||
+          "Xuất báo cáo thất bại!"
       );
       console.error(e);
     } finally {
       setIsExportingTax(false);
       setExportingTaxType("");
+      setExportProgress(0);
     }
   };
 
   // Hàm xử lý xuất báo cáo
   const handleExportReport = async () => {
+    setExportProgress(0);
     try {
       const yearlyData =
         mode === "quarter" || mode === "year" ? yearly.data : undefined;
@@ -211,6 +223,7 @@ export default function StatisticsPage() {
         startDate,
         endDate,
         yearlyData,
+        onProgress: (percent) => setExportProgress(percent),
       });
 
       // Tạo link download file
@@ -222,12 +235,17 @@ export default function StatisticsPage() {
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      toast.success("Xuất báo cáo thành công!");
     } catch (err) {
-      // Xử lý lỗi nếu cần
       toast.error(
-        t("admin.statistics.export.error") || "Xuất báo cáo thất bại!"
+        err.message ||
+          t("admin.statistics.export.error") ||
+          "Xuất báo cáo thất bại!"
       );
       console.error(err);
+    } finally {
+      setExportProgress(0);
     }
   };
 
@@ -472,12 +490,45 @@ export default function StatisticsPage() {
                 title="Xuất thuế theo tháng"
               >
                 {isExportingTax && exportingTaxType.includes("M") ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-5 h-5">
+                      <svg className="animate-spin" viewBox="0 0 50 50">
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          className="opacity-25"
+                        />
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeDasharray="125.6"
+                          strokeDashoffset={
+                            125.6 - (125.6 * exportProgress) / 100
+                          }
+                          className="transition-all duration-300"
+                          style={{
+                            transformOrigin: "50% 50%",
+                            transform: "rotate(-90deg)",
+                          }}
+                        />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">
+                        {exportProgress}%
+                      </span>
+                    </div>
                     <span className="whitespace-nowrap text-sm">
-                      {t("admin.statistics.export_tax.exporting")}
+                      {t("admin.statistics.export_tax.exporting")}{" "}
+                      {exportProgress}%
                     </span>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <IconDownload size={16} />
@@ -542,12 +593,44 @@ export default function StatisticsPage() {
                 title="Xuất thuế theo quý"
               >
                 {isExportingTax && exportingTaxType.includes("Q") ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-5 h-5">
+                      <svg className="animate-spin" viewBox="0 0 50 50">
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          className="opacity-25"
+                        />
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeDasharray="125.6"
+                          strokeDashoffset={
+                            125.6 - (125.6 * exportProgress) / 100
+                          }
+                          className="transition-all duration-300"
+                          style={{
+                            transformOrigin: "50% 50%",
+                            transform: "rotate(-90deg)",
+                          }}
+                        />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">
+                        {exportProgress}%
+                      </span>
+                    </div>
                     <span className="whitespace-nowrap text-sm">
-                      Đang xuất...
+                      Đang xuất... {exportProgress}%
                     </span>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <IconDownload size={16} />
@@ -614,12 +697,44 @@ export default function StatisticsPage() {
                 title="Xuất thuế theo năm"
               >
                 {isExportingTax && exportingTaxType.includes("year") ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-5 h-5">
+                      <svg className="animate-spin" viewBox="0 0 50 50">
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          className="opacity-25"
+                        />
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeDasharray="125.6"
+                          strokeDashoffset={
+                            125.6 - (125.6 * exportProgress) / 100
+                          }
+                          className="transition-all duration-300"
+                          style={{
+                            transformOrigin: "50% 50%",
+                            transform: "rotate(-90deg)",
+                          }}
+                        />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">
+                        {exportProgress}%
+                      </span>
+                    </div>
                     <span className="whitespace-nowrap text-sm">
-                      Đang xuất...
+                      Đang xuất... {exportProgress}%
                     </span>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <IconDownload size={16} />
