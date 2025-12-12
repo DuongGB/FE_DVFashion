@@ -2,10 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addressAPI } from "../services/addressAPI";
 import { toast } from "react-toastify";
 import { useAuth } from "./useAuth";
+import { useTranslation } from "react-i18next";
 
 export const useAddress = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   // Get all addresses
   const { data, isLoading, error } = useQuery({
@@ -32,10 +34,10 @@ export const useAddress = () => {
     mutationFn: addressAPI.createAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      toast.success("Address created successfully");
+      toast.success(t("address.create_success"));
     },
     onError: () => {
-      toast.error("Failed to create address");
+      toast.error(t("address.create_error"));
     },
   });
 
@@ -45,10 +47,10 @@ export const useAddress = () => {
       addressAPI.updateAddress(id, addressData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      toast.success("Address updated successfully");
+      toast.success(t("address.update_success"));
     },
     onError: () => {
-      toast.error("Failed to update address");
+      toast.error(t("address.update_error"));
     },
   });
 
@@ -57,10 +59,10 @@ export const useAddress = () => {
     mutationFn: addressAPI.deleteAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      toast.success("Address deleted successfully");
+      toast.success(t("address.delete_success"));
     },
     onError: () => {
-      toast.error("Failed to delete address");
+      toast.error(t("address.delete_error"));
     },
   });
 

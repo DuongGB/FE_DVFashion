@@ -3,6 +3,7 @@ import { IconX, IconPackage, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useInventory } from "../../../hooks/useInventory";
 import { useTranslation } from "react-i18next";
 import { useProductById } from "../../../hooks/useProduct";
+import { toast } from "react-toastify";
 
 export default function GeneralImportStockModal({ open, onClose }) {
   const { t, i18n } = useTranslation();
@@ -136,11 +137,15 @@ export default function GeneralImportStockModal({ open, onClose }) {
     setImportError("");
     setImportSuccess("");
     if (!quantity || isNaN(quantity) || Number(quantity) <= 0) {
-      setImportError(t("admin.import_stock.error_invalid_quantity"));
+      const msg = t("admin.import_stock.error_invalid_quantity");
+      setImportError(msg);
+      toast.error(msg);
       return;
     }
     if (!supplierInfo.trim()) {
-      setImportError(t("admin.import_stock.error_supplier_required"));
+      const msg = t("admin.import_stock.error_supplier_required");
+      setImportError(msg);
+      toast.error(msg);
       return;
     }
     try {
@@ -150,12 +155,16 @@ export default function GeneralImportStockModal({ open, onClose }) {
         notes,
         supplierInfo,
       });
-      setImportSuccess(t("admin.import_stock.success"));
+      const msg = t("admin.import_stock.success");
+      setImportSuccess(msg);
+      toast.success(msg);
       setTimeout(() => {
         onClose();
       }, 1500);
     } catch (err) {
-      setImportError(t("admin.import_stock.error_import"));
+      const msg = t("admin.import_stock.error_import");
+      setImportError(msg);
+      toast.error(msg);
     }
   };
 
