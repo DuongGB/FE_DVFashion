@@ -19,6 +19,7 @@ import { useAdminReviews, useModerateReview } from "../../hooks/useReview";
 import { showConfirmationToast } from "../../utils/showConfirmationToast";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 const statusKeys = [
   "PENDING",
@@ -592,11 +593,8 @@ export default function ReviewPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="7" className="text-center p-6">
-                  <div className="flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2">{t("admin.review.loading")}</span>
-                  </div>
+                <td colSpan="7" className="py-12">
+                  <LoadingSpinner className="mx-auto my-8" />
                 </td>
               </tr>
             ) : paginatedReviews.length > 0 ? (
