@@ -57,7 +57,6 @@ export default function CategoryPage() {
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-    // eslint-disable-ne
   }, [searchInput]);
 
   // Đồng bộ localCategories khi categories thay đổi
@@ -319,13 +318,6 @@ export default function CategoryPage() {
     inactive: sortedCategories?.filter((c) => !c.active).length || 0,
   };
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <LoadingSpinner size="medium" />
-      </div>
-    );
-
   // Handle error state
   if (error) {
     return (
@@ -475,11 +467,8 @@ export default function CategoryPage() {
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-3">
         {isLoading ? (
-          <div className="text-center text-gray-500 p-4">
-            <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-              {t("admin.category.loading")}
-            </div>
+          <div className="flex justify-center py-8">
+            <LoadingSpinner size="medium" />
           </div>
         ) : paginatedCategories.length > 0 ? (
           paginatedCategories.map((category, index) => (
@@ -575,10 +564,9 @@ export default function CategoryPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="text-center text-gray-500 p-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                    {t("admin.category.loading")}
+                <td colSpan={6} className="py-12">
+                  <div className="flex justify-center">
+                    <LoadingSpinner size="medium" />
                   </div>
                 </td>
               </tr>
